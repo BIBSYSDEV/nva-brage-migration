@@ -37,9 +37,6 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
-    - name: Find jacocoReports
-      run: ls build/reports/jacoco/test/
-
     - shell: bash
       env:
         CODACY_PROJECT_TOKEN : ${{ secrets.CODACY_PROJECT_TOKEN }}
