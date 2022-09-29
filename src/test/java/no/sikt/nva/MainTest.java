@@ -1,3 +1,5 @@
+package no.sikt.nva;
+
 import no.sikt.nva.Main;
 import org.junit.jupiter.api.Test;
 
