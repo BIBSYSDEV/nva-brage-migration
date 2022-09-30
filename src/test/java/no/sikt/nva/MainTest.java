@@ -1,10 +1,11 @@
+package no.sikt.nva;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import java.nio.file.Path;
 import java.util.Objects;
-import no.sikt.nva.Main;
 import no.sikt.nva.model.DcValue;
 import no.sikt.nva.model.DublinCore;
 import no.sikt.nva.model.Element;
@@ -33,7 +34,6 @@ public class MainTest {
         var dublinCore = unmarshallXmlToDublinCore();
         var expectedTitle = "Studie av friluftsliv blant barn og unge i Oslo: Sosial ulikhet og sosial utjevning";
         var actualTitle = getDcValueContainingTitle(dublinCore);
-        assertTrue(dublinCore instanceof DublinCore);
         assertEquals(expectedTitle, actualTitle.getValue());
     }
 
