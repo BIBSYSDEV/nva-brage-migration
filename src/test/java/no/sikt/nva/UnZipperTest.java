@@ -18,7 +18,6 @@ public class UnZipperTest {
 
     @Test
     void shouldUnzipFileAndKeepOriginalStructureAndNames() {
-
         unZipper.unzip("src/test/java/resources/testWithDirectory.zip", new File("tmp"));
         var actualRootDirectory = getActualRootDirectory();
         var actualFileName = getFile();
