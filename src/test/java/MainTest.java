@@ -30,14 +30,21 @@ public class MainTest {
 
     @Test
     void shouldBeAbleToConvertDublinCoreXml() throws JAXBException {
-        var dublinCoreXML = IoUtils.inputStreamFromResources(Path.of("dublin_core.xml"));
-        JAXBContext context = JAXBContext.newInstance(DublinCore.class);
-        var dublinCore = (DublinCore) context.createUnmarshaller().unmarshal(dublinCoreXML);
+        var dublinCore = unmarshallXmlToDublinCore();
         var expectedTitle = "Studie av friluftsliv blant barn og unge i Oslo: Sosial ulikhet og sosial utjevning";
-        var actualTitle =
-            dublinCore.getDcValues().stream().filter(dcValue -> isTitle(dcValue)).findFirst().orElseThrow();
+        var actualTitle = getDcValueContainingTitle(dublinCore);
         assertTrue(dublinCore instanceof DublinCore);
         assertEquals(expectedTitle, actualTitle.getValue());
+    }
+
+    private DublinCore unmarshallXmlToDublinCore() throws JAXBException {
+        var dublinCoreXML = IoUtils.inputStreamFromResources(Path.of("dublin_core.xml"));
+        JAXBContext context = JAXBContext.newInstance(DublinCore.class);
+        return (DublinCore) context.createUnmarshaller().unmarshal(dublinCoreXML);
+    }
+
+    private DcValue getDcValueContainingTitle(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream().filter(dcValue -> isTitle(dcValue)).findFirst().orElseThrow();
     }
 
     private boolean isTitle(DcValue dcValue) {
