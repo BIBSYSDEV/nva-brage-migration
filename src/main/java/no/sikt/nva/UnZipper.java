@@ -18,18 +18,17 @@ public class UnZipper {
     }
 
     public void unzip(InputStream fileToUnzip, File destinationDirectory) {
-        byte[] buffer = new byte[1024];
         try (ZipInputStream inputStream = createInputStream(fileToUnzip)) {
             ZipEntry entry = inputStream.getNextEntry();
-            writeToFile(buffer, inputStream, entry, destinationDirectory);
+            writeToFile(inputStream, entry, destinationDirectory);
             inputStream.closeEntry();
         } catch (IOException e) {
-            throw new RuntimeException(UNZIPPING_WENT_WRONG_WITH_EXCEPTION + e);
+            throw new RuntimeException(UNZIPPING_WENT_WRONG_WITH_EXCEPTION, e);
         }
     }
 
-    @SuppressWarnings("PMD")
-    private void writeToFile(byte[] buffer, ZipInputStream inputStream, ZipEntry entry, File destinationDirectory)
+    @SuppressWarnings("PMD.AvoidReassigningParameters")
+    private void writeToFile(ZipInputStream inputStream, ZipEntry entry, File destinationDirectory)
         throws IOException {
 
         while (entry != null) {
@@ -38,14 +37,15 @@ public class UnZipper {
             if (entry.isDirectory()) {
                 handleUnknownFileType(newFile);
             } else {
-                createFile(buffer, inputStream, newFile);
+                createFile(inputStream, newFile);
             }
             entry = inputStream.getNextEntry();
         }
     }
 
-    @SuppressWarnings("PMD")
-    private void createFile(byte[] buffer, ZipInputStream inputStream, File newFile) throws IOException {
+    @SuppressWarnings("PMD.AssignmentInOperand")
+    private void createFile(ZipInputStream inputStream, File newFile) throws IOException {
+        byte[] buffer = new byte[1024];
         File parent = newFile.getParentFile();
         handleUnknownFileType(parent);
         var outputStream = Files.newOutputStream(Path.of(String.valueOf(newFile)));
