@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import nva.commons.core.JacocoGenerated;
 
+@JacocoGenerated
 public class UnZipper {
 
     public static final String UNZIPPING_WENT_WRONG_WITH_EXCEPTION = "Unzipping went wrong with exception :";
