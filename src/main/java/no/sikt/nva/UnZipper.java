@@ -2,6 +2,7 @@ package no.sikt.nva;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
@@ -16,7 +17,7 @@ public class UnZipper {
     public UnZipper() {
     }
 
-    public void unzip(String fileToUnzip, File destinationDirectory) {
+    public void unzip(InputStream fileToUnzip, File destinationDirectory) {
         byte[] buffer = new byte[1024];
         try (ZipInputStream inputStream = createInputStream(fileToUnzip)) {
             ZipEntry entry = inputStream.getNextEntry();
@@ -62,8 +63,8 @@ public class UnZipper {
         }
     }
 
-    private ZipInputStream createInputStream(String fileToUnzip) throws IOException {
-        return new ZipInputStream(Files.newInputStream(Path.of(fileToUnzip)));
+    private ZipInputStream createInputStream(InputStream fileToUnzip) throws IOException {
+        return new ZipInputStream(fileToUnzip);
     }
 
     private File newFile(File destinationDirectory, ZipEntry entry) throws IOException {
