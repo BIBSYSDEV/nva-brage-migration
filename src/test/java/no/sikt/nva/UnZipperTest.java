@@ -36,7 +36,8 @@ public class UnZipperTest {
     private File getContentInsideDirectory() {
         return Stream.of(Objects.requireNonNull(new File(TEST_DESTINATION_DIRECTORY_NAME).listFiles()))
                    .filter(File::isDirectory)
-                   .collect(Collectors.toList()).get(0);
+                   .collect(Collectors.toList())
+                   .get(0);
     }
 
     private String getFile() {
