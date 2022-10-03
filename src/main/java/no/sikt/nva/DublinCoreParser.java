@@ -5,6 +5,7 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import no.sikt.nva.exceptions.CristinException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -14,6 +15,7 @@ import no.sikt.nva.model.record.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings({"PMD.CollapsibleIfStatements", "PMD.CognitiveComplexity"})
 public class DublinCoreParser {
 
     public static final String SLASH = "/";
@@ -26,7 +28,6 @@ public class DublinCoreParser {
     private static final String TYPE_ELEMENT = "type";
     private static final String URI_QUALIFIER = "uri";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
-
 
     public Record parseDublinCore(File file) throws CristinException, JAXBException {
         var unmarshaller = getUnmarshaller();
@@ -91,7 +92,7 @@ public class DublinCoreParser {
         }
     }
 
-    private void extractAuthor(ArrayList<String> authors, DcValue dcValue) {
+    private void extractAuthor(List<String> authors, DcValue dcValue) {
         var qualifier = dcValue.getQualifier();
         var element = dcValue.getElement();
         if (qualifier != null && element != null) {
@@ -140,5 +141,4 @@ public class DublinCoreParser {
     private Unmarshaller getUnmarshaller() throws JAXBException {
         return JAXBContext.newInstance(DublinCore.class).createUnmarshaller();
     }
-
 }

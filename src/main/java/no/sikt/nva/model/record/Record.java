@@ -44,15 +44,18 @@ public class Record {
                && Objects.equals(authors, record.authors);
     }
 
+    @JacocoGenerated
     @JsonProperty("customerUri")
     public String getCustomerUri() {
         return this.customerUri;
     }
 
+    @JacocoGenerated
     public void setCustomerUri(String customerUri) {
         this.customerUri = customerUri;
     }
 
+    @JacocoGenerated
     @JsonProperty("id")
     public String getId() {
         return this.id;
@@ -62,6 +65,7 @@ public class Record {
         this.id = id;
     }
 
+    @JacocoGenerated
     @JsonProperty("type")
     public String getType() {
         return this.type;
@@ -71,6 +75,7 @@ public class Record {
         this.type = type;
     }
 
+    @JacocoGenerated
     @JsonProperty("title")
     public String getTitle() {
         return this.title;
@@ -80,6 +85,7 @@ public class Record {
         this.title = title;
     }
 
+    @JacocoGenerated
     @JsonProperty("authors")
     public List<String> getAuthors() {
         return this.authors;
@@ -89,6 +95,7 @@ public class Record {
         this.authors = authors;
     }
 
+    @JacocoGenerated
     @JsonProperty("language")
     public String getLanguage() {
         return this.language;
@@ -98,38 +105,36 @@ public class Record {
         this.language = language;
     }
 
+    @JacocoGenerated
     @JsonProperty("license")
     public String getLicense() {
         return this.license;
     }
 
+    @JacocoGenerated
     public void setLicense(String license) {
         this.license = license;
     }
 
+    @JacocoGenerated
     @JsonProperty("embargo")
     public String getEmbargo() {
         return this.embargo;
     }
 
+    @JacocoGenerated
     public void setEmbargo(String embargo) {
         this.embargo = embargo;
     }
 
+    @JacocoGenerated
     @JsonProperty("tags")
     public List<String> getTags() {
         return this.tags;
     }
 
+    @JacocoGenerated
     public void setTags(List<String> tags) {
         this.tags = tags;
-    }
-
-    public void createRecord(Record record) {
-        this.setTitle(record.getTitle());
-        this.setId(record.getId());
-        this.setLanguage(record.getLanguage());
-        this.setType(record.getType());
-        this.setAuthors(record.getAuthors());
     }
 }

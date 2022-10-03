@@ -44,7 +44,7 @@ public class DcValue {
 
     public boolean hasCristinId() {
         if (qualifier != null) {
-            return getQualifier().getValue().equals(CRISTIN_ID_QUALIFIER);
+            return CRISTIN_ID_QUALIFIER.equals(getQualifier().getValue());
         }
         return false;
     }
