@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.File;
 import java.util.ArrayList;
-import no.sikt.nva.exceptions.CristinException;
+import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.record.Record;
 import org.junit.jupiter.api.Test;
 
@@ -19,14 +19,14 @@ public class DublinCoreParserTest {
     @Test
     void shouldConvertFilesWithValidFields() throws Exception {
         var expectedRecord = createTestRecord();
-        var actualRecord = dublinCoreParser.parseDublinCore(new File("src/test/resources/dublin_core.xml"));
+        var actualRecord = dublinCoreParser.parseDublinCoreToRecord(new File("src/test/resources/dublin_core.xml"));
 
         assertThat(actualRecord, is(equalTo(expectedRecord)));
     }
 
     @Test
     void shouldReturnExceptionIfResourceIsInCristin() {
-        assertThrows(CristinException.class, () -> dublinCoreParser.parseDublinCore(new File("src/test/resources/dublin_core_with_cristin_identifier.xml")));
+        assertThrows(DublinCoreException.class, () -> dublinCoreParser.parseDublinCoreToRecord(new File("src/test/resources/dublin_core_with_cristin_identifier.xml")));
     }
 
 
