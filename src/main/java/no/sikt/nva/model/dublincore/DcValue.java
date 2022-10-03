@@ -6,6 +6,7 @@ import nva.commons.core.JacocoGenerated;
 
 public class DcValue {
 
+    private final static String CRISTIN_ID_QUALIFIER = "cristin";
 
     @XmlAttribute
     private Element element;
@@ -17,7 +18,7 @@ public class DcValue {
     private String value;
 
     public DcValue() {
-        
+
     }
 
     public DcValue(Element element, Qualifier qualifier, String value) {
@@ -41,4 +42,10 @@ public class DcValue {
         return value;
     }
 
+    public boolean hasCristinId() {
+        if (qualifier != null) {
+            return getQualifier().getValue().equals(CRISTIN_ID_QUALIFIER);
+        }
+        return false;
+    }
 }
