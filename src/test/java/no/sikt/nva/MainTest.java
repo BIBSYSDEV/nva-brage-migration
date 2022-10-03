@@ -1,14 +1,13 @@
 package no.sikt.nva;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.Objects;
-import no.sikt.nva.model.DcValue;
-import no.sikt.nva.model.DublinCore;
-import no.sikt.nva.model.Element;
+import no.sikt.nva.model.dublincore.DcValue;
+import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.model.dublincore.Element;
 import nva.commons.core.ioutils.IoUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,7 @@ public class MainTest {
     }
 
     @Test
-    void runningMain() {
+    void runningMain() throws JAXBException, IOException {
         Main.main(arguments);
     }
 
@@ -38,7 +37,7 @@ public class MainTest {
     }
 
     private DublinCore unmarshallXmlToDublinCore() throws JAXBException {
-        var dublinCoreXML = IoUtils.inputStreamFromResources(Path.of("dublin_core.xml"));
+        var dublinCoreXML = IoUtils.inputStreamFromResources("dublin_core.xml");
         JAXBContext context = JAXBContext.newInstance(DublinCore.class);
         return (DublinCore) context.createUnmarshaller().unmarshal(dublinCoreXML);
     }

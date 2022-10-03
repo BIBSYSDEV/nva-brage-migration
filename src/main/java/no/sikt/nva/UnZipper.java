@@ -17,11 +17,12 @@ public class UnZipper {
     public UnZipper() {
     }
 
-    public void unzip(InputStream fileToUnzip, File destinationDirectory) {
+    public File unzip(InputStream fileToUnzip, File destinationDirectory) {
         try (ZipInputStream inputStream = createInputStream(fileToUnzip)) {
             ZipEntry entry = inputStream.getNextEntry();
             writeToFile(inputStream, entry, destinationDirectory);
             inputStream.closeEntry();
+            return new File(destinationDirectory.getName());
         } catch (IOException e) {
             throw new RuntimeException(UNZIPPING_WENT_WRONG_WITH_EXCEPTION, e);
         }
