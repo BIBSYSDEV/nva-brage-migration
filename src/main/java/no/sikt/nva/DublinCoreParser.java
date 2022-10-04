@@ -26,7 +26,7 @@ public class DublinCoreParser {
     private static final String URI_QUALIFIER = "uri";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
 
-    public Record parseDublinCoreToRecord(File file) throws DublinCoreException, JAXBException {
+    public Record parseDublinCoreToRecord(File file) throws DublinCoreException {
         try {
             var dublinCore = parseDublinCore(file);
             return convertDublinCoreToRecord(dublinCore);
@@ -82,9 +82,9 @@ public class DublinCoreParser {
     }
 
     private boolean isValidUriIdentifier(Element element, Qualifier qualifier) {
-        return element != null && qualifier != null &&
-               IDENTIFIER_ELEMENT.equals(element.getValue()) &&
-               URI_QUALIFIER.equals(qualifier.getValue());
+        return element != null && qualifier != null
+               && IDENTIFIER_ELEMENT.equals(element.getValue())
+               && URI_QUALIFIER.equals(qualifier.getValue());
     }
 
     private void extractId(Record record, DcValue dcValue) {

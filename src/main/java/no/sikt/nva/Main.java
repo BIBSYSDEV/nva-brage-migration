@@ -1,6 +1,5 @@
 package no.sikt.nva;
 
-import jakarta.xml.bind.JAXBException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,10 +11,11 @@ import no.sikt.nva.model.record.Record;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.ioutils.IoUtils;
 
+@SuppressWarnings("PMD.ShortClassName")
 @JacocoGenerated
 public class Main {
 
-    public static void main(String[] args) throws JAXBException, DublinCoreException {
+    public static void main(String[] args) throws DublinCoreException {
         UnZipper unZipper = new UnZipper();
         DublinCoreParser dublinCoreParser = new DublinCoreParser();
         var fileToUnzip = IoUtils.inputStreamFromResources("testinput.zip");
@@ -29,7 +29,7 @@ public class Main {
         for (File entryDirectory : resourceDirectories) {
             if (entryDirectory.isDirectory()) {
                 for (File file : Objects.requireNonNull(entryDirectory.listFiles())) {
-                    if (file.getName().equals("dublin_core.xml")) {
+                    if ("dublin_core.xml".equals(file.getName())) {
                         var record = dublinCoreParser.parseDublinCoreToRecord(file);
                         records.add(record);
                     }
