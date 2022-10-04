@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -11,6 +12,8 @@ import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.core.StringUtils;
 import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UriWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HandleScraper {
 
@@ -19,6 +22,25 @@ public class HandleScraper {
                                                                                   + "invalid: %s";
 
     private static final URI HANDLE_DOMAIN = UriWrapper.fromHost("https://hdl.handle.net").getUri();
+    private static final Logger logger = LoggerFactory.getLogger(HandleScraper.class);
+
+    /**
+     * Extracts handle from either "handle" file or dublin_core.xml. Will prioritize "handle" file.
+     *
+     * @param handlePath     tries to read handle from handlePath first.
+     * @param dublinCoreFile containing the dublin_core.xml.
+     * @return handle URI
+     * @throws HandleException if neither handlePath nor dublin_core.xml yields hansle.
+     */
+    public static URI extractHandleFromBundle(Path handlePath, File dublinCoreFile) {
+        try {
+            return extractHandleFromHandlePath(handlePath);
+        } catch (HandleException handleException) {
+            logger.error(handleException.getMessage());
+            var dublinCore = DublinCoreParser.unmarshallDublinCore(dublinCoreFile);
+            return extractHandleFromDublinCore(dublinCore);
+        }
+    }
 
     /**
      * Preferred method of extracting handle.
