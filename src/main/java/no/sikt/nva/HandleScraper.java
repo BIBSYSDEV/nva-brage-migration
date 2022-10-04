@@ -20,14 +20,13 @@ public class HandleScraper {
 
     private static final URI HANDLE_DOMAIN = UriWrapper.fromHost("https://hdl.handle.net").getUri();
 
-    public static URI extractHandleFromDublinCore(final DublinCore dublinCore) {
+    public static URI extractHandleFromDublinCore(final DublinCore dublinCore) throws HandleException {
         var dcValueHandle = extractDvValueContainingHandleFromDublinCore(dublinCore);
         var handleString = dcValueHandle.getValue();
-
         return verifiedHandleURI(handleString);
     }
 
-    public static URI extractHandleFromHandlePath(Path handlePath) {
+    public static URI extractHandleFromHandlePath(Path handlePath) throws HandleException {
         String handleSubPath = IoUtils.stringFromResources(handlePath).trim();
         var handle = UriWrapper.fromUri(HANDLE_DOMAIN).addChild(handleSubPath).getUri();
         verifyHandle(handle);
