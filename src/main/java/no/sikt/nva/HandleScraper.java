@@ -36,7 +36,7 @@ public class HandleScraper {
         try {
             return extractHandleFromHandlePath(handlePath);
         } catch (HandleException handleException) {
-            logger.error(handleException.getMessage());
+            logger.warn(handleException.getMessage());
             var dublinCore = DublinCoreParser.unmarshallDublinCore(dublinCoreFile);
             return extractHandleFromDublinCore(dublinCore);
         }
