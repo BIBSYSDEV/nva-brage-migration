@@ -1,6 +1,8 @@
 package no.sikt.nva;
 
 import java.util.concurrent.Callable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -10,6 +12,8 @@ import picocli.CommandLine.Option;
     description = "Tool for migrating Brage bundles"
 )
 public class BrageMigrationCommand implements Callable<Integer> {
+
+    private static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
 
     @Option(names = {"-c", "--customer"}, required = true, description = "customer id in NVA")
     private String customer;
@@ -28,6 +32,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        logger.info("hello from CLI");
         System.out.println("hello world " + customer + " " + String.join(" ", zipFiles));
         return 0;
     }
