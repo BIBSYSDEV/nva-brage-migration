@@ -45,3 +45,7 @@ bin/
 app-info.html
 application-error.log
 application-info.log
+app-info*
+
+### tmp folder containing unzipped result
+/tmp/

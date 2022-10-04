@@ -4,10 +4,10 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Objects;
 import no.sikt.nva.exceptions.HandleException;
-import no.sikt.nva.model.DcValue;
-import no.sikt.nva.model.DublinCore;
-import no.sikt.nva.model.Element;
-import no.sikt.nva.model.Qualifier;
+import no.sikt.nva.model.dublincore.DcValue;
+import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.model.dublincore.Element;
+import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.core.StringUtils;
 import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UriWrapper;
@@ -20,17 +20,32 @@ public class HandleScraper {
 
     private static final URI HANDLE_DOMAIN = UriWrapper.fromHost("https://hdl.handle.net").getUri();
 
-    public static URI extractHandleFromDublinCore(final DublinCore dublinCore) throws HandleException {
-        var dcValueHandle = extractDvValueContainingHandleFromDublinCore(dublinCore);
-        var handleString = dcValueHandle.getValue();
-        return verifiedHandleURI(handleString);
-    }
-
-    public static URI extractHandleFromHandlePath(Path handlePath) throws HandleException {
+    /**
+     * Preferred method of extracting handle.
+     *
+     * @param handlePath path to the handle file
+     * @return handle URI
+     * @throws HandleException if handle file is empty or contains domain in addition to handle sub-path
+     */
+    public static URI extractHandleFromHandlePath(Path handlePath) {
         String handleSubPath = IoUtils.stringFromResources(handlePath).trim();
         var handle = UriWrapper.fromUri(HANDLE_DOMAIN).addChild(handleSubPath).getUri();
         verifyHandle(handle);
         return handle;
+    }
+
+    /**
+     * Extracts handle from a pre-marshalled dublin_core.xml. This method should be used if
+     * extractHandleFromHandlePath(handlePath) fails.
+     *
+     * @param dublinCore xml unmarshalled
+     * @return Handle URI
+     * @throws HandleException if handle is not a handle URI
+     */
+    public static URI extractHandleFromDublinCore(final DublinCore dublinCore) {
+        var dcValueHandle = extractDvValueContainingHandleFromDublinCore(dublinCore);
+        var handleString = dcValueHandle.getValue();
+        return verifiedHandleURI(handleString);
     }
 
     private static DcValue extractDvValueContainingHandleFromDublinCore(DublinCore dublinCore) {
