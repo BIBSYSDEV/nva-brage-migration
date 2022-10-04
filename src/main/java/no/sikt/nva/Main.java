@@ -10,15 +10,19 @@ import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.record.Record;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.ioutils.IoUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.ShortClassName")
 @JacocoGenerated
 public class Main {
 
-    public static void main(String[] args) throws DublinCoreException {
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
+    public static void main(String[] args) {
         UnZipper unZipper = new UnZipper();
         DublinCoreParser dublinCoreParser = new DublinCoreParser();
-        var fileToUnzip = IoUtils.inputStreamFromResources("testinput.zip");
+        var fileToUnzip = IoUtils.inputStreamFromResources("inputWithCristinId.zip");
         var destinationFile = new File("destinationDirectory");
         var unzippedFile = unZipper.unzip(fileToUnzip, destinationFile);
         var resourceDirectories = Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles()))
@@ -29,9 +33,13 @@ public class Main {
         for (File entryDirectory : resourceDirectories) {
             if (entryDirectory.isDirectory()) {
                 for (File file : Objects.requireNonNull(entryDirectory.listFiles())) {
-                    if ("dublin_core.xml".equals(file.getName())) {
-                        var record = dublinCoreParser.parseDublinCoreToRecord(file);
-                        records.add(record);
+                    try {
+                        if ("dublin_core.xml".equals(file.getName())) {
+                            var record = dublinCoreParser.parseDublinCoreToRecord(file);
+                            records.add(record);
+                        }
+                    } catch (DublinCoreException e) {
+                        logger.info(e.getMessage());
                     }
                 }
             }
