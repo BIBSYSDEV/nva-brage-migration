@@ -4,7 +4,6 @@
 
 This repository contains code for extracting metadata from Brage bundles.
 
-
 ## This tool will not convert publications containing cristin-id or publications that are clausuled
 
 If the dublin_core.xml contains <dcvalue element="identifier" qualifier="cristin"> .... </dcvalue>, it will be skipped (and logged as error).
