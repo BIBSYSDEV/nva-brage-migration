@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import nva.commons.core.JacocoGenerated;
-import nva.commons.core.ioutils.IoUtils;
+import org.apache.commons.io.FileUtils;
 
 @JacocoGenerated
 public final class UnZipper {
@@ -23,10 +23,14 @@ public final class UnZipper {
     }
 
     public static List<File> extractResourceDirectories(String pathToZip, String destinationDirectory) {
-        var fileToUnzip = IoUtils.inputStreamFromResources(pathToZip);
-        var destinationFile = new File(destinationDirectory);
-        var unzippedFile = unzip(fileToUnzip, destinationFile);
-        return Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles())).collect(Collectors.toList());
+        File initialFile = new File(pathToZip);
+        try (InputStream fileToUnzip = FileUtils.openInputStream(initialFile)) {
+            var destinationFile = new File(destinationDirectory);
+            var unzippedFile = unzip(fileToUnzip, destinationFile);
+            return Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles())).collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static File unzip(InputStream fileToUnzip, File destinationDirectory) {

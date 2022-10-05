@@ -31,10 +31,16 @@ public class BrageProcessor implements Runnable {
         this.destinationDirectory = destinationDirectory;
     }
 
+    public String getDestinationDirectory() {
+        return destinationDirectory;
+    }
+
     @Override
     public void run() {
-        var resourceDirectories = UnZipper.extractResourceDirectories(zipfile, destinationDirectory);
+
+        List<File> resourceDirectories = UnZipper.extractResourceDirectories(zipfile, destinationDirectory);
         records = processBundles(resourceDirectories);
+
         System.out.println(records);
     }
 

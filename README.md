@@ -14,11 +14,11 @@ skipped (and logged as error).
 Read the manual:
 
 ```shell
-java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT.jar -h
+java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -h
 ```
 
 Sample import:
 
 ```shell
-java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT.jar -z "zipfile1.zip zipfile2.zip" -c custommer-id
+java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -z zipfile1.zip zipfile2.zip -c custommer-id
 ```

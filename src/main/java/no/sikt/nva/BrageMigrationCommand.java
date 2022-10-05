@@ -24,7 +24,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Option(names = {"-c", "--customer"}, required = true, description = "customer id in NVA")
     private String customer;
 
-    @Option(names = {"-z", "--zip-files"}, required = true, description = "input zipfiles containing brage bundles")
+    @Option(names = {"-z",
+        "--zip-files"}, arity = "1..*", description = "input zipfiles containing brage bundles")
     private String[] zipFiles;
 
     @SuppressWarnings("PMD.UnusedPrivateField")
@@ -38,12 +39,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        logger.info("hello from CLI");
         var brageProcessors = createBrageProcessorThread(zipFiles, customer);
-        startProcessors(brageProcessors);
-        waitForAllprocesses(brageProcessors);
+        var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
+        startProcessors(brageProcessorThreads);
+        waitForAllprocesses(brageProcessorThreads);
+        writeRecordsToFiles(brageProcessors);
         System.out.println("hello world " + customer + " " + String.join(" ", zipFiles));
         return 0;
+    }
+
+    private void writeRecordsToFiles(List<BrageProcessor> brageProcessors) {
+        logger.debug("ready to write files" + brageProcessors);
     }
 
     private void waitForAllprocesses(List<Thread> brageProcessors) {
@@ -60,10 +66,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
         brageProcessors.forEach(Thread::start);
     }
 
-    private List<Thread> createBrageProcessorThread(String[] zipFiles, String customer) {
+    private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, String customer) {
         return
             Arrays.stream(zipFiles)
                 .map(zipfile -> BrageProcessorFactory.createBrageProcessor(zipfile, customer))
-                .map(Thread::new).collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 }
