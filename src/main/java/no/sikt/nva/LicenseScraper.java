@@ -1,9 +1,7 @@
 package no.sikt.nva;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
@@ -31,9 +29,30 @@ public class LicenseScraper {
     public static final RDFNode ANY_OBJECT = null;
     public static final String LICENSE_EXCEPTION_MESSAGE = "Extraction of license failed";
     public static final String READING_LICENSE_FILE_EXCEPTION_MESSAGE = "Reading license file has failed";
+    public static final String COULD_NOT_EXTRACT_LICENSE_FROM_SPECIFIED_LOCATION_LOG_MESSAGE_WARNING =
+        "Could not extract "
+        + "license from "
+        + "specified "
+        + "location";
+    public static final String DEFAULT_LICENSE = "Rights Reserved";
     private static final Logger logger = LoggerFactory.getLogger(LicenseScraper.class);
+    private final String customLicenseFilename;
 
-    public URI extractLicenseUri(File file) throws LicenseExtractingException {
+    public LicenseScraper(String customLicenseFilename) {
+        this.customLicenseFilename = customLicenseFilename;
+    }
+
+    public String extractOrCreateLicense(File bundleDirectory) {
+        try {
+            var licenseFile = new File(bundleDirectory, customLicenseFilename);
+            return extractLicenseFromFile(licenseFile);
+        } catch (Exception e) {
+            logger.warn(COULD_NOT_EXTRACT_LICENSE_FROM_SPECIFIED_LOCATION_LOG_MESSAGE_WARNING, e.getMessage());
+            return DEFAULT_LICENSE;
+        }
+    }
+
+    private static String extractLicenseFromFile(File file) throws LicenseExtractingException {
         try {
             Model model = createModel(file);
             var work = new SimpleSelector(ANY_SUBJECT, RDF.type, WORK).getSubject();
@@ -45,27 +64,25 @@ public class LicenseScraper {
                                       .map(Statement::getObject)
                                       .filter(RDFNode::isResource));
         } catch (Exception e) {
-            logger.info(e.getMessage());
-            throw new LicenseExtractingException(LICENSE_EXCEPTION_MESSAGE);
+            throw new LicenseExtractingException(LICENSE_EXCEPTION_MESSAGE, e);
         }
     }
 
-    private URI extractLicense(Stream<RDFNode> model) {
+    private static String extractLicense(Stream<RDFNode> model) {
         return model
                    .map(RDFNode::asResource)
                    .map(Resource::getURI)
-                   .map(URI::create)
                    .collect(SingletonCollector.collect());
     }
 
-    private Model createModel(File file) throws IOException {
+    private static Model createModel(File file) {
         Model model = ModelFactory.createDefaultModel();
 
         try (InputStream inputStream = Files.newInputStream(Paths.get(file.getAbsolutePath()))) {
             RDFDataMgr.read(model, inputStream, Lang.RDFXML);
             return model;
         } catch (Exception e) {
-            throw new IOException(READING_LICENSE_FILE_EXCEPTION_MESSAGE);
+            throw new LicenseExtractingException(READING_LICENSE_FILE_EXCEPTION_MESSAGE, e);
         }
     }
 }

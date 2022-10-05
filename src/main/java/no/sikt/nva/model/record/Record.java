@@ -137,12 +137,4 @@ public class Record {
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
-
-    public void createRecord(Record record) {
-        this.setTitle(record.getTitle());
-        this.setId(record.getId());
-        this.setLanguage(record.getLanguage());
-        this.setType(record.getType());
-        this.setAuthors(record.getAuthors());
-    }
 }
