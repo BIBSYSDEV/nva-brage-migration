@@ -1,6 +1,7 @@
 package no.sikt.nva;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,9 +20,11 @@ public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         UnZipper unZipper = new UnZipper();
         DublinCoreParser dublinCoreParser = new DublinCoreParser();
+        LicenseScraper licenseScraper = new LicenseScraper();
+
         var fileToUnzip = IoUtils.inputStreamFromResources("inputWithCristinId.zip");
         var destinationFile = new File("destinationDirectory");
         var unzippedFile = unZipper.unzip(fileToUnzip, destinationFile);
@@ -32,18 +35,31 @@ public class Main {
 
         for (File entryDirectory : resourceDirectories) {
             if (entryDirectory.isDirectory()) {
+                Record record = new Record();
                 for (File file : Objects.requireNonNull(entryDirectory.listFiles())) {
                     try {
                         if ("dublin_core.xml".equals(file.getName())) {
-                            var record = dublinCoreParser.parseDublinCoreToRecord(file);
-                            records.add(record);
+                            var recordFromDublinCore = dublinCoreParser.parseDublinCoreToRecord(file);
+                            record.createRecord(recordFromDublinCore);
                         }
+
+                        if("license.txt".equals(file.getName())) {
+                            var license = licenseScraper.scrapeLicense(file);
+                            record.setLicense(license);
+                        }
+
                     } catch (DublinCoreException e) {
                         logger.info(e.getMessage());
                     }
                 }
+                /**
+                 * Burde validere ressurs her før vi legger den in?
+                 */
+                records.add(record);
+
             }
         }
         System.out.println(records);
+        System.out.println((logger.toString()));
     }
 }
