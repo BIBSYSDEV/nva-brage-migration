@@ -19,6 +19,7 @@ public class Main {
     private static final String HANDLE_DEFAULT_NAME = "handle";
     private static final String DUBLIN_CORE_XML_DEFAULT_NAME = "dublin_core.xml";
     private static final String DEBUG_FILE_PROCESSING_LOG_MESSAGE = "Processeing file %s part of bundle %s";
+    public static final String DEFAULT_LICENSE_FILE_NAME = "license_rdf";
 
     public static void main(String[] args) {
         var pathToZip = "inputWithCristinId.zip"; //Todo: read this from CLI input
@@ -30,10 +31,12 @@ public class Main {
 
     private static List<Record> processBundles(List<File> resourceDirectories) {
         DublinCoreParser dublinCoreParser = new DublinCoreParser();
+        LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories
                    .stream()
                    .filter(Main::isBundle)
                    .map(bundleDirectory -> processBundle(dublinCoreParser,
+                                                         licenseScraper,
                                                          bundleDirectory))
                    .collect(
                        Collectors.toList());
@@ -43,7 +46,8 @@ public class Main {
         return entryDirectory.isDirectory();
     }
 
-    private static Record processBundle(DublinCoreParser dublinCoreParser, File entryDirectory) {
+    private static Record processBundle(DublinCoreParser dublinCoreParser, LicenseScraper licenseScraper,
+                                        File entryDirectory) {
         var record = new Record();
         try {
             var bundlePath = entryDirectory.getPath();
@@ -51,6 +55,7 @@ public class Main {
             var dublinCoreFile = new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
             record.setId(HandleScraper.extractHandleFromBundle(handlePath, dublinCoreFile));
             dublinCoreParser.parseDublinCoreToRecord(dublinCoreFile, record);
+            record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory));
             Arrays.stream(Objects.requireNonNull(entryDirectory.listFiles()))
                 .forEach(file -> doStuffsForEachFile(file, record));
         } catch (Exception e) {
