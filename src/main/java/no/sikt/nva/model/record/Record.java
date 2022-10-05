@@ -24,7 +24,6 @@ public class Record {
         return Objects.hash(customerUri, id, type, title, language, license, embargo, tags, authors);
     }
 
-    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -43,6 +42,21 @@ public class Record {
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(tags, record.tags)
                && Objects.equals(authors, record.authors);
+    }
+
+    @Override
+    public String toString() {
+        return "Record{" +
+               "customerUri='" + customerUri + '\'' +
+               ", id=" + id +
+               ", type='" + type + '\'' +
+               ", title='" + title + '\'' +
+               ", language='" + language + '\'' +
+               ", license='" + license + '\'' +
+               ", embargo='" + embargo + '\'' +
+               ", tags=" + tags +
+               ", authors=" + authors +
+               '}';
     }
 
     @JacocoGenerated
