@@ -1,12 +1,18 @@
 package no.sikt.nva;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+import nva.commons.core.JacocoGenerated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+@SuppressWarnings({"PMD.DoNotUseThreads"})
+@JacocoGenerated
 @Command(
     name = "Brage migration",
     description = "Tool for migrating Brage bundles"
@@ -33,7 +39,31 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         logger.info("hello from CLI");
+        var brageProcessors = createBrageProcessorThread(zipFiles, customer);
+        startProcessors(brageProcessors);
+        waitForAllprocesses(brageProcessors);
         System.out.println("hello world " + customer + " " + String.join(" ", zipFiles));
         return 0;
+    }
+
+    private void waitForAllprocesses(List<Thread> brageProcessors) {
+        brageProcessors.forEach(brageProcessor -> {
+            try {
+                brageProcessor.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private void startProcessors(List<Thread> brageProcessors) {
+        brageProcessors.forEach(Thread::start);
+    }
+
+    private List<Thread> createBrageProcessorThread(String[] zipFiles, String customer) {
+        return
+            Arrays.stream(zipFiles)
+                .map(zipfile -> BrageProcessorFactory.createBrageProcessor(zipfile, customer))
+                .map(Thread::new).collect(Collectors.toList());
     }
 }
