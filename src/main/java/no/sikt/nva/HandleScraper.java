@@ -65,12 +65,12 @@ public class HandleScraper {
      * @throws HandleException if handle is not a handle URI
      */
     public static URI extractHandleFromDublinCore(final DublinCore dublinCore) {
-        var dcValueHandle = extractDvValueContainingHandleFromDublinCore(dublinCore);
+        var dcValueHandle = extractDcValueContainingHandleFromDublinCore(dublinCore);
         var handleString = dcValueHandle.getValue();
         return verifiedHandleURI(handleString);
     }
 
-    private static DcValue extractDvValueContainingHandleFromDublinCore(DublinCore dublinCore) {
+    private static DcValue extractDcValueContainingHandleFromDublinCore(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(HandleScraper::isIdentifierAndUri)
