@@ -5,19 +5,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.ioutils.IoUtils;
 
 @JacocoGenerated
-public class UnZipper {
+public final class UnZipper {
 
     public static final String UNZIPPING_WENT_WRONG_WITH_EXCEPTION = "Unzipping went wrong with exception :";
 
-    public UnZipper() {
+    private UnZipper() {
     }
 
-    public File unzip(InputStream fileToUnzip, File destinationDirectory) {
+    public static List<File> extractResourceDirectories(String pathToZip, String destinationDirectory) {
+        var fileToUnzip = IoUtils.inputStreamFromResources(pathToZip);
+        var destinationFile = new File(destinationDirectory);
+        var unzippedFile = unzip(fileToUnzip, destinationFile);
+        return Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles())).collect(Collectors.toList());
+    }
+
+    private static File unzip(InputStream fileToUnzip, File destinationDirectory) {
         try (ZipInputStream inputStream = createInputStream(fileToUnzip)) {
             ZipEntry entry = inputStream.getNextEntry();
             writeToFile(inputStream, entry, destinationDirectory);
@@ -29,7 +41,7 @@ public class UnZipper {
     }
 
     @SuppressWarnings("PMD.AvoidReassigningParameters")
-    private void writeToFile(ZipInputStream inputStream, ZipEntry entry, File destinationDirectory)
+    private static void writeToFile(ZipInputStream inputStream, ZipEntry entry, File destinationDirectory)
         throws IOException {
 
         while (entry != null) {
@@ -45,7 +57,7 @@ public class UnZipper {
     }
 
     @SuppressWarnings("PMD.AssignmentInOperand")
-    private void createFile(ZipInputStream inputStream, File newFile) throws IOException {
+    private static void createFile(ZipInputStream inputStream, File newFile) throws IOException {
         byte[] buffer = new byte[1024];
         File parent = newFile.getParentFile();
         handleUnknownFileType(parent);
@@ -58,17 +70,17 @@ public class UnZipper {
         outputStream.close();
     }
 
-    private void handleUnknownFileType(File newFile) throws IOException {
+    private static void handleUnknownFileType(File newFile) throws IOException {
         if (!newFile.isDirectory() && !newFile.mkdirs()) {
             throw new IOException("Failed to create directory " + newFile);
         }
     }
 
-    private ZipInputStream createInputStream(InputStream fileToUnzip) throws IOException {
+    private static ZipInputStream createInputStream(InputStream fileToUnzip) throws IOException {
         return new ZipInputStream(fileToUnzip);
     }
 
-    private File newFile(File destinationDirectory, ZipEntry entry) throws IOException {
+    private static File newFile(File destinationDirectory, ZipEntry entry) throws IOException {
         File destinationFile = new File(destinationDirectory, entry.getName());
         String destinationDirectoryPath = destinationDirectory.getCanonicalPath();
         String destinationFilePath = destinationFile.getCanonicalPath();

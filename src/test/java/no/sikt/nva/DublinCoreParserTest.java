@@ -2,8 +2,6 @@ package no.sikt.nva;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.File;
@@ -20,26 +18,28 @@ public class DublinCoreParserTest {
     @Test
     void shouldConvertFilesWithValidFields() throws Exception {
         var expectedRecord = createTestRecord();
-        var actualRecord = dublinCoreParser.parseDublinCoreToRecord(new File("src/test/resources/dublin_core.xml"));
+        var record = new Record();
+        var actualRecord = dublinCoreParser.parseDublinCoreToRecord(new File("src/test/resources/dublin_core.xml"),
+                                                                    record);
 
         assertThat(actualRecord, is(equalTo(expectedRecord)));
     }
 
     @Test
     void shouldReturnExceptionIfResourceIsInCristin() {
-        assertThrows(DublinCoreException.class, () -> dublinCoreParser.parseDublinCoreToRecord(new File(
-            CRISTIN_DUBLIN_CORE)));
+        var record = new Record();
+        assertThrows(DublinCoreException.class, () ->
+                                                    dublinCoreParser
+                                                        .parseDublinCoreToRecord(new File(
+                                                            CRISTIN_DUBLIN_CORE), record));
     }
-
 
     private Record createTestRecord() {
         ArrayList<String> authors = new ArrayList<>();
         authors.add("Navnesen1, Fornavn1 Mellomnavn1");
         authors.add("Navnesen2, Fornavn2 Mellomnavna2 Mellomnavnb2");
         authors.add("Navnesen3, Fornavn3 Mellomnavn3");
-
         Record record = new Record();
-        record.setId("123567");
         record.setType("Research report");
         record.setTitle("Studie av friluftsliv blant barn og unge i Oslo: Sosial ulikhet og sosial utjevning");
         record.setLanguage("nob");
