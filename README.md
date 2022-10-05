@@ -6,6 +6,14 @@ This repository contains code for extracting metadata from Brage bundles.
 
 ## Run the CLI tool
 
+Read the manual:
+
+```shell
+java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT.jar -h
+```
+
+Sample import:
+
 ```shell
 java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT.jar -z "zipfile1.zip zipfile2.zip" -c custommer-id
 ```

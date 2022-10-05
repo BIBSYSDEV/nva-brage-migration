@@ -17,12 +17,15 @@ repositories {
 }
 
 jar {
+    //Duplicatestrategy is done because log4j.xml settings gets duplicated
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
+        //Makes the ja
         attributes "Main-Class": "no.sikt.nva.BrageMigrationCommand"
     }
 
     from {
+        //Makes sure we includes all dependencies into the same jar.
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
@@ -53,7 +56,9 @@ dependencies {
 
 }
 
+
 compileJava {
+    //Done to make picoli annotation processor:
     options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
 }
 
