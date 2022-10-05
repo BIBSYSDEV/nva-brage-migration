@@ -16,7 +16,7 @@ public class DublinCoreParserTest {
     private final DublinCoreParser dublinCoreParser = new DublinCoreParser();
 
     @Test
-    void shouldConvertFilesWithValidFields() throws Exception {
+    void shouldConvertFilesWithValidFields() {
         var expectedRecord = createTestRecord();
         var record = new Record();
         var actualRecord = dublinCoreParser.parseDublinCoreToRecord(new File("src/test/resources/dublin_core.xml"),
