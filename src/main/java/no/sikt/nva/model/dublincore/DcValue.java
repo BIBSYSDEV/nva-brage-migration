@@ -6,7 +6,7 @@ import nva.commons.core.JacocoGenerated;
 
 public class DcValue {
 
-    private final static String CRISTIN_ID_QUALIFIER = "cristin";
+    private static final String CRISTIN_ID_QUALIFIER = "cristin";
 
     @XmlAttribute
     private Element element;

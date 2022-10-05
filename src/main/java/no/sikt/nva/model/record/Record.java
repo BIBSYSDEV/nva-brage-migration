@@ -1,6 +1,7 @@
 package no.sikt.nva.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
@@ -8,7 +9,7 @@ import nva.commons.core.JacocoGenerated;
 public class Record {
 
     private String customerUri;
-    private String id;
+    private URI id;
     private String type;
     private String title;
     private String language;
@@ -57,11 +58,11 @@ public class Record {
 
     @JacocoGenerated
     @JsonProperty("id")
-    public String getId() {
+    public URI getId() {
         return this.id;
     }
 
-    public void setId(String id) {
+    public void setId(URI id) {
         this.id = id;
     }
 

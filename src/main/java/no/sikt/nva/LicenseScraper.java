@@ -52,7 +52,14 @@ public class LicenseScraper {
         }
     }
 
-    private static String extractLicenseFromFile(File file) throws LicenseExtractingException {
+    /**
+     * Extracts license uri from specified file.
+     *
+     * @param file licenseFile as xml
+     * @return uri as string
+     * @throws LicenseExtractingException if license file has incorrect format
+     */
+    private static String extractLicenseFromFile(File file) {
         try {
             Model model = createModel(file);
             var work = new SimpleSelector(ANY_SUBJECT, RDF.type, WORK).getSubject();

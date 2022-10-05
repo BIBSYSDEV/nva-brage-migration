@@ -1,0 +1,42 @@
+Angående postgres database i bunnen:
+
+Ingen kontroll i databasen på ting ikke går igjen flere plasser.
+
+Anbefales ikke at vi kontakter databasen direkte.
+
+HANDLE:
+
+Variabel delen av handle bør leses fra fila.
+
+XML LESING:
+
+ENUM:
+getValue() xmlString Skal finnes noe som skal ignorere lowercase.
+Logge ting som ikke blir marshallet til noe element.
+Pull parser og jackson er lettere.
+
+SCRAPING AV DUBLIN_CORE.XML:
+
+Mangler med authors -> settes til null.
+
+KUN DISSE TO ÅRSAKENE SOM SKAL FØRE TIL AT VI HOPPER OVER ET FELT:
+
+
+Klausulert eller cristinID.
+
+
+TING SOM ER EMBARGOET SKAL OVER.
+
+
+LICENSE - mangler. sende inn som en variabel i CLI
+
+
+Pico. autogenerering av dokumentasjon. 
+
+JACKSON.
+
+Klausulert? hvordan vises det i xml.
+
+Spatial og coverage: ikke i bruk.
+
+Orcid: Hvis antall forfattere matcher med antall orcid. Mulig at det ikke blir et problem siden det mest sannsynligvis kommer fra Cristin.
