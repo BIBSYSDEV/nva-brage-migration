@@ -2,8 +2,6 @@ package no.sikt.nva;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.File;
@@ -15,12 +13,13 @@ import org.junit.jupiter.api.Test;
 public class DublinCoreParserTest {
 
     public static final String CRISTIN_DUBLIN_CORE = "src/test/resources/dublin_core_with_cristin_identifier.xml";
+    public static final String DUBLIN_CORE = "src/test/resources/dublin_core.xml";
     private final DublinCoreParser dublinCoreParser = new DublinCoreParser();
 
     @Test
     void shouldConvertFilesWithValidFields() throws Exception {
         var expectedRecord = createTestRecord();
-        var actualRecord = dublinCoreParser.parseDublinCoreToRecord(new File("src/test/resources/dublin_core.xml"));
+        var actualRecord = dublinCoreParser.parseDublinCoreToRecord(new File(DUBLIN_CORE));
 
         assertThat(actualRecord, is(equalTo(expectedRecord)));
     }
@@ -30,7 +29,6 @@ public class DublinCoreParserTest {
         assertThrows(DublinCoreException.class, () -> dublinCoreParser.parseDublinCoreToRecord(new File(
             CRISTIN_DUBLIN_CORE)));
     }
-
 
     private Record createTestRecord() {
         ArrayList<String> authors = new ArrayList<>();

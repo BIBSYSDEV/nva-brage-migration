@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#">
+
+<cc:License rdf:about="http://creativecommons.org/licenses/by/4.0/deed.no">
+    <permits xmlns="http://creativecommons.org/ns#" rdf:resource="http://creativecommons.org/ns#DerivativeWorks"/>
+    <permits xmlns="http://creativecommons.org/ns#" rdf:resource="http://creativecommons.org/ns#Distribution"/>
+    <permits xmlns="http://creativecommons.org/ns#" rdf:resource="http://creativecommons.org/ns#Reproduction"/>
+    <requires xmlns="http://creativecommons.org/ns#" rdf:resource="http://creativecommons.org/ns#Attribution"/>
+    <requires xmlns="http://creativecommons.org/ns#" rdf:resource="http://creativecommons.org/ns#Notice"/>
+  </cc:License>
+</rdf:RDF>
