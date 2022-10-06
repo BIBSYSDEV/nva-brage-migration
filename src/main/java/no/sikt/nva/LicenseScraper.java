@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 import no.sikt.nva.exceptions.LicenseExtractingException;
-import no.sikt.nva.model.record.Record;
 import nva.commons.core.SingletonCollector;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
