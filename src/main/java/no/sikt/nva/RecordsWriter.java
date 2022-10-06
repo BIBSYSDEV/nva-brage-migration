@@ -13,7 +13,7 @@ public class RecordsWriter {
 
     public static final String WRITING_RECORDS_HAS_FAILED = "Writing records to file has failed";
 
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecordsWriter.class);
 
     public void writeRecordsToFile(String fileName, List<Record> records) {
         try {
