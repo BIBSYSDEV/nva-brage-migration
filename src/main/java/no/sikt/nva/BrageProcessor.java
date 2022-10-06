@@ -11,22 +11,41 @@ import nva.commons.core.JacocoGenerated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("PMD.ShortClassName")
 @JacocoGenerated
-public class Main {
+public class BrageProcessor implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    public static final String DEFAULT_LICENSE_FILE_NAME = "license_rdf";
+    private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
     private static final String HANDLE_DEFAULT_NAME = "handle";
     private static final String DUBLIN_CORE_XML_DEFAULT_NAME = "dublin_core.xml";
     private static final String DEBUG_FILE_PROCESSING_LOG_MESSAGE = "Processeing file %s part of bundle %s";
-    public static final String DEFAULT_LICENSE_FILE_NAME = "license_rdf";
+    private final String zipfile;
+    @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
+    private final String customerId;
+    private final String destinationDirectory;
+    private List<Record> records;
 
-    public static void main(String[] args) {
-        var pathToZip = "inputWithCristinId.zip"; //Todo: read this from CLI input
-        var pathToDestinationDirectory = "destinationDirectory"; //TODO: read from CLI input
-        var resourceDirectories = UnZipper.extractResourceDirectories(pathToZip, pathToDestinationDirectory);
-        var records = processBundles(resourceDirectories);
+    public BrageProcessor(String zipfile, String customerId, String destinationDirectory) {
+        this.customerId = customerId;
+        this.zipfile = zipfile;
+        this.destinationDirectory = destinationDirectory;
+    }
+
+    public String getDestinationDirectory() {
+        return destinationDirectory;
+    }
+
+    @Override
+    public void run() {
+
+        List<File> resourceDirectories = UnZipper.extractResourceDirectories(zipfile, destinationDirectory);
+        records = processBundles(resourceDirectories);
+
         System.out.println(records);
+    }
+
+    public List<Record> getRecords() {
+        return records;
     }
 
     private static List<Record> processBundles(List<File> resourceDirectories) {
@@ -34,7 +53,7 @@ public class Main {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories
                    .stream()
-                   .filter(Main::isBundle)
+                   .filter(BrageProcessor::isBundle)
                    .map(bundleDirectory -> processBundle(dublinCoreParser,
                                                          licenseScraper,
                                                          bundleDirectory))
@@ -56,6 +75,7 @@ public class Main {
             record.setId(HandleScraper.extractHandleFromBundle(handlePath, dublinCoreFile));
             dublinCoreParser.parseDublinCoreToRecord(dublinCoreFile, record);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory));
+
             Arrays.stream(Objects.requireNonNull(entryDirectory.listFiles()))
                 .forEach(file -> doStuffsForEachFile(file, record));
         } catch (Exception e) {
