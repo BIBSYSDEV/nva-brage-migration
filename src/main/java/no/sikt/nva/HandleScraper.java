@@ -1,7 +1,9 @@
 package no.sikt.nva;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import no.sikt.nva.exceptions.HandleException;
@@ -10,7 +12,6 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.core.StringUtils;
-import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UriWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,21 +21,21 @@ public class HandleScraper {
     public static final String ERROR_MESSAGE_NO_HANDLE_IN_DUBLIN_CORE = "No handle present in dublin_core.xml";
     public static final String ERROR_MESSAGE_HANDLE_IN_DUBLIN_CORE_IS_MALFORMED = "Handle in dublin_core.xml is "
                                                                                   + "invalid: %s";
-
+    public static final String COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MESSAGE = "Could not read handle file";
     private static final URI HANDLE_DOMAIN = UriWrapper.fromHost("https://hdl.handle.net").getUri();
     private static final Logger logger = LoggerFactory.getLogger(HandleScraper.class);
 
     /**
      * Extracts handle from either "handle" file or dublin_core.xml. Will prioritize "handle" file.
      *
-     * @param handlePath     tries to read handle from handlePath first.
+     * @param handleFile     tries to read handle from handleFile first.
      * @param dublinCoreFile containing the dublin_core.xml.
      * @return handle URI
      * @throws HandleException if neither handlePath nor dublin_core.xml yields hansle.
      */
-    public static URI extractHandleFromBundle(Path handlePath, File dublinCoreFile) {
+    public static URI extractHandleFromBundle(Path handleFile, File dublinCoreFile) {
         try {
-            return extractHandleFromHandlePath(handlePath);
+            return extractHandleFromHandlePath(handleFile);
         } catch (HandleException handleException) {
             logger.warn(handleException.getMessage());
             var dublinCore = DublinCoreParser.unmarshallDublinCore(dublinCoreFile);
@@ -50,8 +51,13 @@ public class HandleScraper {
      * @throws HandleException if handle file is empty or contains domain in addition to handle sub-path
      */
     public static URI extractHandleFromHandlePath(Path handlePath) {
-        String handleSubPath = IoUtils.stringFromResources(handlePath).trim();
-        var handle = UriWrapper.fromUri(HANDLE_DOMAIN).addChild(handleSubPath).getUri();
+        String handleSubPath;
+        try {
+            handleSubPath = Files.readString(handlePath);
+        } catch (IOException e) {
+            throw new HandleException(COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MESSAGE, e);
+        }
+        var handle = UriWrapper.fromUri(HANDLE_DOMAIN).addChild(handleSubPath.trim()).getUri();
         verifyHandle(handle);
         return handle;
     }

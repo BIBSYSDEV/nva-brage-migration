@@ -1,3 +1,5 @@
+package no.sikt.nva;
+
 import static no.sikt.nva.HandleScraper.ERROR_MESSAGE_HANDLE_IN_DUBLIN_CORE_IS_MALFORMED;
 import static no.sikt.nva.HandleScraper.ERROR_MESSAGE_NO_HANDLE_IN_DUBLIN_CORE;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
@@ -14,6 +16,7 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
+import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,7 +24,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class HandleScraperTest {
 
-    private final Path handleFile = Path.of("handle");
+    private final Path handleFile = Path.of("src/test/resources/handle");
 
     @Test
     void shouldReturnHandleFromDublinCoreIfDublinCoreHasHandle() {
