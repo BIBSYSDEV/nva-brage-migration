@@ -2,14 +2,18 @@ package no.sikt.nva.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
 public class Record {
 
+    public static final String ORIGIN_INFORMATION_STRING_TEMPLATE = "Bundle location: %s, Handle: %s";
     private String customerUri;
     private URI id;
+
+    private Path origin;
     private String type;
     private String title;
     private String language;
@@ -21,7 +25,7 @@ public class Record {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(customerUri, id, type, title, language, license, embargo, tags, authors);
+        return Objects.hash(customerUri, id, type, title, language, license, embargo, tags, authors, origin);
     }
 
     @Override
@@ -41,7 +45,8 @@ public class Record {
                && Objects.equals(license, record.license)
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(tags, record.tags)
-               && Objects.equals(authors, record.authors);
+               && Objects.equals(authors, record.authors)
+               && Objects.equals(origin, record.origin);
     }
 
     @JacocoGenerated
@@ -136,5 +141,18 @@ public class Record {
     @JacocoGenerated
     public void setTags(List<String> tags) {
         this.tags = tags;
+    }
+
+    @JsonProperty("bare_origin")
+    public Path getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(Path origin) {
+        this.origin = origin;
+    }
+
+    public String getOriginInformation() {
+        return String.format(ORIGIN_INFORMATION_STRING_TEMPLATE, getOrigin(), getId());
     }
 }

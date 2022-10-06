@@ -15,26 +15,31 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"PMD.CollapsibleIfStatements", "PMD.CognitiveComplexity"})
 public class DublinCoreParser {
 
-    public static final String HAS_CRISTIN_ID_MESSAGE = "Following resource has Cristin identifier: ";
-    private static final String UNABLE_TO_UNMARSHALL_DUBLIN_CORE_XML = "Unable to unmarshall dublin_core.xml";
+    public static final String HAS_CRISTIN_ID_MESSAGE_TEMPLATE =
+        "Following resource has Cristin identifier: %s, this error "
+        + "occurred in: %s";
+    private static final String UNABLE_TO_UNMARSHALL_DUBLIN_CORE_XML_TEMPLATE = "Unable to unmarshall dublin_core"
+                                                                                + ".xml, This occurred in %s";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
 
-    public static DublinCore unmarshallDublinCore(File file) {
+    public static DublinCore unmarshallDublinCore(File file, String location) {
         try {
             var unmarshaller = JAXBContext.newInstance(DublinCore.class).createUnmarshaller();
             return (DublinCore) unmarshaller.unmarshal(file);
         } catch (JAXBException e) {
-            throw new DublinCoreException(UNABLE_TO_UNMARSHALL_DUBLIN_CORE_XML, e.getCause());
+            throw new DublinCoreException(
+                String.format(UNABLE_TO_UNMARSHALL_DUBLIN_CORE_XML_TEMPLATE, location),
+                e.getCause());
         }
     }
 
     public Record parseDublinCoreToRecord(File file, Record record) {
         try {
-            var dublinCore = unmarshallDublinCore(file);
+            var dublinCore = unmarshallDublinCore(file, record.getOriginInformation());
             return convertDublinCoreToRecord(dublinCore, record);
         } catch (Exception e) {
-            logger.info(e.getMessage());
-            throw new DublinCoreException(e.getMessage());
+            logger.info(e.getMessage(), record.getOriginInformation());
+            throw new DublinCoreException(record.getOriginInformation(), e);
         }
     }
 
@@ -44,7 +49,8 @@ public class DublinCoreParser {
         for (DcValue dcValue : dublinCore.getDcValues()) {
 
             if (dcValue.hasCristinId()) {
-                throw new DublinCoreException(HAS_CRISTIN_ID_MESSAGE + dcValue.getValue());
+                throw new DublinCoreException(String.format(HAS_CRISTIN_ID_MESSAGE_TEMPLATE, dcValue.getValue(),
+                                                            record.getOriginInformation()));
             }
 
             var element = dcValue.getElement();
