@@ -38,11 +38,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public Integer call() {
         var brageProcessors = createBrageProcessorThread(zipFiles, customer);
         var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
         startProcessors(brageProcessorThreads);
-        waitForAllprocesses(brageProcessorThreads);
+        waitForAllProcesses(brageProcessorThreads);
         writeRecordsToFiles(brageProcessors);
         System.out.println("hello world " + customer + " " + String.join(" ", zipFiles));
         return 0;
@@ -52,7 +52,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         logger.debug("ready to write files" + brageProcessors);
     }
 
-    private void waitForAllprocesses(List<Thread> brageProcessors) {
+    private void waitForAllProcesses(List<Thread> brageProcessors) {
         brageProcessors.forEach(brageProcessor -> {
             try {
                 brageProcessor.join();
