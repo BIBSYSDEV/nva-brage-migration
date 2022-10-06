@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.model.record.Record;
 import nva.commons.core.JacocoGenerated;
@@ -57,6 +58,7 @@ public class BrageProcessor implements Runnable {
                    .map(bundleDirectory -> processBundle(dublinCoreParser,
                                                          licenseScraper,
                                                          bundleDirectory))
+                   .flatMap(Optional::stream)
                    .collect(
                        Collectors.toList());
     }
@@ -65,8 +67,8 @@ public class BrageProcessor implements Runnable {
         return entryDirectory.isDirectory();
     }
 
-    private static Record processBundle(DublinCoreParser dublinCoreParser, LicenseScraper licenseScraper,
-                                        File entryDirectory) {
+    private static Optional<Record> processBundle(DublinCoreParser dublinCoreParser, LicenseScraper licenseScraper,
+                                                  File entryDirectory) {
         var record = new Record();
         try {
             var bundlePath = entryDirectory.getPath();
@@ -75,13 +77,13 @@ public class BrageProcessor implements Runnable {
             record.setId(HandleScraper.extractHandleFromBundle(handlePath, dublinCoreFile));
             dublinCoreParser.parseDublinCoreToRecord(dublinCoreFile, record);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory));
-
             Arrays.stream(Objects.requireNonNull(entryDirectory.listFiles()))
                 .forEach(file -> doStuffsForEachFile(file, record));
         } catch (Exception e) {
             logger.error(e.getMessage());
+            return Optional.empty();
         }
-        return record;
+        return Optional.of(record);
     }
 
     private static void doStuffsForEachFile(File file, Record record) {
