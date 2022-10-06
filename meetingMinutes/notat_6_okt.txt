@@ -16,7 +16,13 @@ NVE finnes i kanalregisteret.
 "@type": ["brage:Report", "nva:ReportResearch"]
 }
 
-TASK:
-Mappe typer til nva-typer. De mest brukte variantene.
+Neste sprint:
+* Mappe typer til nva-typer. De mest brukte variantene.
+* "sekretær oppgaven" -> alle DC element og qualifier typer inn i datamodellen.
+* issn + kanalregister? Her kreves det avklaringer av arkitekt / prosjekt leder. Må refines
+* Logging av felt som burde eksistere, men som ikke gjør det. F.eks authors, title etc. (log.warn).
+* hente ut subjects.
+* Kun forfattere med element="contributor" && qualifier="author" blir overført.
+*
 
 
