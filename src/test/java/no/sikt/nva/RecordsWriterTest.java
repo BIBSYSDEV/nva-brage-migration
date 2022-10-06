@@ -6,9 +6,8 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import no.sikt.nva.model.RecordsWriter;
 import no.sikt.nva.model.record.Record;
 import nva.commons.logutils.LogUtils;
@@ -16,17 +15,14 @@ import org.junit.jupiter.api.Test;
 
 public class RecordsWriterTest {
 
+    public static final String INVALID_FILE_NAME = "";
     RecordsWriter recordsWriter = new RecordsWriter();
 
     @Test
     void shouldLogIfWritingToFileFails() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        recordsWriter.writeRecordsToFile("", generateListOfRecords());
+        recordsWriter.writeRecordsToFile(INVALID_FILE_NAME, Collections.singletonList(createRecord()));
         assertThat(appender.getMessages(), containsString(WRITING_RECORDS_HAS_FAILED));
-    }
-
-    private List<Record> generateListOfRecords() {
-        return IntStream.range(1, 2).boxed().map(item -> createRecord()).collect(Collectors.toList());
     }
 
     private Record createRecord() {
