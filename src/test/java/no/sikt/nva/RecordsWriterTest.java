@@ -19,7 +19,7 @@ public class RecordsWriterTest {
     RecordsWriter recordsWriter = new RecordsWriter();
 
     @Test
-    void shouldThrowExceptionIfWritingToFileFails() {
+    void shouldLogIfWritingToFileFails() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         recordsWriter.writeRecordsToFile("", generateListOfRecords());
         assertThat(appender.getMessages(), containsString(WRITING_RECORDS_HAS_FAILED));

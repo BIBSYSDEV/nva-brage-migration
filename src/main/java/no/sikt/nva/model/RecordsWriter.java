@@ -2,9 +2,9 @@ package no.sikt.nva.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.List;
 import no.sikt.nva.Main;
+import no.sikt.nva.exceptions.RecordsWriterException;
 import no.sikt.nva.model.record.Record;
 import no.unit.nva.commons.json.JsonUtils;
 import org.slf4j.Logger;
@@ -19,7 +19,7 @@ public class RecordsWriter {
     public void writeRecordsToFile(String fileName, List<Record> records) {
         try {
             createFileWithRecords(fileName, records);
-        } catch (IOException e) {
+        } catch (RecordsWriterException e) {
             logger.warn(e.getMessage());
         }
     }
@@ -29,11 +29,11 @@ public class RecordsWriter {
     }
 
     @SuppressWarnings("PMD.AvoidFileStream")
-    private void createFileWithRecords(String fileName, List<Record> records) throws IOException {
+    private void createFileWithRecords(String fileName, List<Record> records) {
         try (FileWriter fileWriter = new FileWriter(fileName)) {
             fileWriter.write(convertRecordsToJsonString(records));
         } catch (Exception e) {
-            throw new IOException(WRITING_RECORDS_HAS_FAILED, e);
+            throw new RecordsWriterException(WRITING_RECORDS_HAS_FAILED, e);
         }
     }
 }
