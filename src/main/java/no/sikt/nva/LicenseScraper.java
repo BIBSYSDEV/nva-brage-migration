@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 import no.sikt.nva.exceptions.LicenseExtractingException;
+import no.sikt.nva.model.record.Record;
 import nva.commons.core.SingletonCollector;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -30,10 +31,7 @@ public class LicenseScraper {
     public static final String LICENSE_EXCEPTION_MESSAGE = "Extraction of license failed";
     public static final String READING_LICENSE_FILE_EXCEPTION_MESSAGE = "Reading license file has failed";
     public static final String COULD_NOT_EXTRACT_LICENSE_FROM_SPECIFIED_LOCATION_LOG_MESSAGE_WARNING =
-        "Could not extract "
-        + "license from "
-        + "specified "
-        + "location";
+        "No license in bundle found, default license used. Bundle information + %s";
     public static final String DEFAULT_LICENSE = "Rights Reserved";
     private static final Logger logger = LoggerFactory.getLogger(LicenseScraper.class);
     private final String customLicenseFilename;
@@ -42,12 +40,14 @@ public class LicenseScraper {
         this.customLicenseFilename = customLicenseFilename;
     }
 
-    public String extractOrCreateLicense(File bundleDirectory) {
+    public String extractOrCreateLicense(File bundleDirectory, String bundleInformation) {
         try {
             var licenseFile = new File(bundleDirectory, customLicenseFilename);
             return extractLicenseFromFile(licenseFile);
         } catch (Exception e) {
-            logger.warn(COULD_NOT_EXTRACT_LICENSE_FROM_SPECIFIED_LOCATION_LOG_MESSAGE_WARNING, e.getMessage());
+            logger.warn(String.format(COULD_NOT_EXTRACT_LICENSE_FROM_SPECIFIED_LOCATION_LOG_MESSAGE_WARNING,
+                                      bundleInformation),
+                        e);
             return DEFAULT_LICENSE;
         }
     }

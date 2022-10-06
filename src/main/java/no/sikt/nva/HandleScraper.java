@@ -38,7 +38,7 @@ public class HandleScraper {
             return extractHandleFromHandlePath(handleFile);
         } catch (HandleException handleException) {
             logger.warn(handleException.getMessage());
-            var dublinCore = DublinCoreParser.unmarshallDublinCore(dublinCoreFile);
+            var dublinCore = DublinCoreParser.unmarshallDublinCore(dublinCoreFile, StringUtils.EMPTY_STRING);
             return extractHandleFromDublinCore(dublinCore);
         }
     }
