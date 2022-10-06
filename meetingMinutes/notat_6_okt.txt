@@ -1,0 +1,22 @@
+type "rapport" + "issn" : publikasjonen er en del av rapport-serie. og issn hører til rapport-serien, ikke selve publikasjonen.
+
+Rapporter er merkelige, de kan både ha issn og isbn. eller ingen.
+
+Publisher: mapping, alt mulig rart som kommer inn. Hører til opprinnelig utgiverkontekst.
+
+type="rapport", så er publisering NVE
+
+utgiver + issn: trenger ikke å hente ut utgiver. Det bør NVA hente ut fra kanalregisteret slik at det blir på riktig format.
+
+NVE finnes i kanalregisteret.
+
+
+
+{
+"@type": ["brage:Report", "nva:ReportResearch"]
+}
+
+TASK:
+Mappe typer til nva-typer. De mest brukte variantene.
+
+

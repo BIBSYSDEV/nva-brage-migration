@@ -14,12 +14,11 @@ import org.junit.jupiter.api.Test;
 public class RecordsWriterTest {
 
     public static final String INVALID_FILE_NAME = "";
-    RecordsWriter recordsWriter = new RecordsWriter();
 
     @Test
     void shouldLogIfWritingToFileFails() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        recordsWriter.writeRecordsToFile(INVALID_FILE_NAME, List.of(createRecord()));
+        RecordsWriter.writeRecordsToFile(INVALID_FILE_NAME, List.of(createRecord()));
         assertThat(appender.getMessages(), containsString(WRITING_RECORDS_HAS_FAILED));
     }
 

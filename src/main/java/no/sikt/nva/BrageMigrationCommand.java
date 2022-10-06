@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import nva.commons.core.JacocoGenerated;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -19,7 +17,8 @@ import picocli.CommandLine.Option;
 )
 public class BrageMigrationCommand implements Callable<Integer> {
 
-    private static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+    public static final String PATH_DELIMITER = "/";
+    public static final String OUTPUT_JSON_FILENAME = "records.json";
 
     @Option(names = {"-c", "--customer"}, required = true, description = "customer id in NVA")
     private String customer;
@@ -49,7 +48,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void writeRecordsToFiles(List<BrageProcessor> brageProcessors) {
-        logger.debug("ready to write files" + brageProcessors);
+        brageProcessors.forEach(brageProcessor -> writeRecordToFile(brageProcessor));
+    }
+
+    private void writeRecordToFile(BrageProcessor brageProcessor) {
+        var outputFileName = brageProcessor.getDestinationDirectory() + PATH_DELIMITER + OUTPUT_JSON_FILENAME;
+        RecordsWriter.writeRecordsToFile(outputFileName, brageProcessor.getRecords());
     }
 
     private void waitForAllProcesses(List<Thread> brageProcessors) {
