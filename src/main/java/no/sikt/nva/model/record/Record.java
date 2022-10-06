@@ -44,21 +44,6 @@ public class Record {
                && Objects.equals(authors, record.authors);
     }
 
-    @Override
-    public String toString() {
-        return "Record{" +
-               "customerUri='" + customerUri + '\'' +
-               ", id=" + id +
-               ", type='" + type + '\'' +
-               ", title='" + title + '\'' +
-               ", language='" + language + '\'' +
-               ", license='" + license + '\'' +
-               ", embargo='" + embargo + '\'' +
-               ", tags=" + tags +
-               ", authors=" + authors +
-               '}';
-    }
-
     @JacocoGenerated
     @JsonProperty("customerUri")
     public String getCustomerUri() {

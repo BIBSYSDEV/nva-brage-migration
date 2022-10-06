@@ -28,6 +28,7 @@ public class RecordsWriter {
         return JsonUtils.dtoObjectMapper.writeValueAsString(records);
     }
 
+    @SuppressWarnings("PMD.AvoidFileStream")
     private void createFileWithRecords(String fileName, List<Record> records) throws IOException {
         try (FileWriter fileWriter = new FileWriter(fileName)) {
             fileWriter.write(convertRecordsToJsonString(records));
