@@ -1,9 +1,8 @@
-package no.sikt.nva.model;
+package no.sikt.nva;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.FileWriter;
 import java.util.List;
-import no.sikt.nva.Main;
 import no.sikt.nva.exceptions.RecordsWriterException;
 import no.sikt.nva.model.record.Record;
 import no.unit.nva.commons.json.JsonUtils;

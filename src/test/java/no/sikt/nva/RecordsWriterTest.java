@@ -1,14 +1,12 @@
 package no.sikt.nva;
 
-import static no.sikt.nva.model.RecordsWriter.WRITING_RECORDS_HAS_FAILED;
+import static no.sikt.nva.RecordsWriter.WRITING_RECORDS_HAS_FAILED;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import no.sikt.nva.model.RecordsWriter;
 import no.sikt.nva.model.record.Record;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
@@ -21,7 +19,7 @@ public class RecordsWriterTest {
     @Test
     void shouldLogIfWritingToFileFails() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        recordsWriter.writeRecordsToFile(INVALID_FILE_NAME, Collections.singletonList(createRecord()));
+        recordsWriter.writeRecordsToFile(INVALID_FILE_NAME, List.of(createRecord()));
         assertThat(appender.getMessages(), containsString(WRITING_RECORDS_HAS_FAILED));
     }
 
