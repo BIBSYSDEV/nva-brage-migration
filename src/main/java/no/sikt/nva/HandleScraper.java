@@ -9,6 +9,7 @@ import java.util.Objects;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.model.dublincore.DublinCoreFactory;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.core.StringUtils;
@@ -38,7 +39,7 @@ public class HandleScraper {
             return extractHandleFromHandlePath(handleFile);
         } catch (HandleException handleException) {
             logger.warn(handleException.getMessage());
-            var dublinCore = DublinCoreParser.unmarshallDublinCore(dublinCoreFile, StringUtils.EMPTY_STRING);
+            var dublinCore = DublinCoreFactory.createDublinCoreFromXml(dublinCoreFile, StringUtils.EMPTY_STRING);
             return extractHandleFromDublinCore(dublinCore);
         }
     }

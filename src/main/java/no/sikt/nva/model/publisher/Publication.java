@@ -1,14 +1,14 @@
 package no.sikt.nva.model.publisher;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import java.util.Objects;
+import nva.commons.core.JacocoGenerated;
 
-public class Publisher {
+public class Publication {
 
-    private List<String> journals;
-    private List<String> issn;
-    private List<String> publishers;
+    private String journals;
+    private String issn;
+    private String publishers;
 
     @Override
     public int hashCode() {
@@ -23,35 +23,39 @@ public class Publisher {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Publisher publisher = (Publisher) o;
-        return Objects.equals(journals, publisher.journals)
-               && Objects.equals(issn, publisher.issn)
-               && Objects.equals(publishers, publisher.publishers);
+        Publication publication = (Publication) o;
+        return Objects.equals(journals, publication.journals)
+               && Objects.equals(issn, publication.issn)
+               && Objects.equals(publishers, publication.publishers);
     }
 
+    @JacocoGenerated
     @JsonProperty("journals")
-    public List<String> getJournals() {
+    public String getJournals() {
         return journals;
     }
 
-    public void setJournals(List<String> journals) {
+    public void setJournals(String journals) {
         this.journals = journals;
     }
+
+    @JacocoGenerated
     @JsonProperty("issns")
-    public List<String> getIssn() {
+    public String getIssn() {
         return issn;
     }
 
-    public void setIssn(List<String> issn) {
+    public void setIssn(String issn) {
         this.issn = issn;
     }
 
+    @JacocoGenerated
     @JsonProperty("publishers")
-    public List<String> getPublishers() {
+    public String getPublishers() {
         return publishers;
     }
 
-    public void setPublishers(List<String> publishers) {
+    public void setPublishers(String publishers) {
         this.publishers = publishers;
     }
 }

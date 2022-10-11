@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import no.sikt.nva.model.dublincore.DublinCoreFactory;
 import no.sikt.nva.model.record.Record;
 import nva.commons.core.JacocoGenerated;
 import org.slf4j.Logger;
@@ -81,8 +82,9 @@ public class BrageProcessor implements Runnable {
             var bundlePath = entryDirectory.getPath();
             var handlePath = Path.of(bundlePath, HANDLE_DEFAULT_NAME);
             var dublinCoreFile = new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
+            var dublinCore = DublinCoreFactory.createDublinCoreFromXml(dublinCoreFile, record.getOriginInformation());
             record.setId(HandleScraper.extractHandleFromBundle(handlePath, dublinCoreFile));
-            dublinCoreParser.parseDublinCoreToRecord(dublinCoreFile, record);
+            dublinCoreParser.convertDublinCoreToRecord(dublinCore, record);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory, record.getOriginInformation()));
             Arrays.stream(Objects.requireNonNull(entryDirectory.listFiles()))
                 .forEach(file -> doStuffsForEachFile(file, record));

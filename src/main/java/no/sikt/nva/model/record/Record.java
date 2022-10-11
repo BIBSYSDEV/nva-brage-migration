@@ -5,7 +5,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
-import no.sikt.nva.model.publisher.Publisher;
+import no.sikt.nva.model.publisher.Publication;
 import nva.commons.core.JacocoGenerated;
 
 public class Record {
@@ -21,7 +21,7 @@ public class Record {
     private String embargo;
     private List<String> tags;
     private List<String> authors;
-    private Publisher publisher;
+    private Publication publication;
 
     @JacocoGenerated
     @Override
@@ -143,12 +143,12 @@ public class Record {
     }
 
     @JsonProperty("publisher")
-    public Publisher getPublisher() {
-        return publisher;
+    public Publication getPublisher() {
+        return publication;
     }
 
-    public void setPublisher(Publisher publisher) {
-        this.publisher = publisher;
+    public void setPublisher(Publication publication) {
+        this.publication = publication;
     }
 
     @JsonProperty("bare_origin")

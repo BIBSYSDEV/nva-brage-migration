@@ -22,7 +22,13 @@ public enum Element {
     TYPE("type"),
 
     @XmlEnumValue("language")
-    LANGUAGE("language");
+    LANGUAGE("language"),
+
+    @XmlEnumValue("publisher")
+    PUBLISHER("publisher"),
+
+    @XmlEnumValue("source")
+    SOURCE("source");
 
     private final String value;
 
