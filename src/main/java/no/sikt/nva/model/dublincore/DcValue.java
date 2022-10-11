@@ -1,7 +1,9 @@
 package no.sikt.nva.model.dublincore;
 
+import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlValue;
+import java.io.StringWriter;
 import nva.commons.core.JacocoGenerated;
 
 public class DcValue {
@@ -47,5 +49,12 @@ public class DcValue {
             return CRISTIN_ID_QUALIFIER.equals(getQualifier().getValue());
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        StringWriter sw = new StringWriter();
+        JAXB.marshal(this, sw);
+        return sw.toString();
     }
 }

@@ -18,6 +18,8 @@ public class DublinCoreParser {
     public static final String HAS_CRISTIN_ID_MESSAGE_TEMPLATE =
         "Following resource has Cristin identifier: %s, this error "
         + "occurred in: %s";
+    public static final String FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE =
+        "Field was not scraped %s in location %s";
     private static final String UNABLE_TO_UNMARSHALL_DUBLIN_CORE_XML_TEMPLATE = "Unable to unmarshall dublin_core"
                                                                                 + ".xml, This occurred in %s";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
@@ -38,7 +40,7 @@ public class DublinCoreParser {
             var dublinCore = unmarshallDublinCore(file, record.getOriginInformation());
             return convertDublinCoreToRecord(dublinCore, record);
         } catch (Exception e) {
-            logger.info(e.getMessage(), record.getOriginInformation());
+            logger.error(e.getMessage(), record.getOriginInformation());
             throw new DublinCoreException(record.getOriginInformation(), e);
         }
     }
@@ -71,11 +73,18 @@ public class DublinCoreParser {
                         record.setType(dcValue.getValue());
                         break;
                     default:
+                        logUnscrapedDcValue(dcValue, record);
                         break;
                 }
             }
         }
         record.setAuthors(authors);
         return record;
+    }
+
+    private void logUnscrapedDcValue(DcValue dcValue, Record record) {
+        logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
+                                  dcValue.toString(),
+                                  record.getOriginInformation()));
     }
 }
