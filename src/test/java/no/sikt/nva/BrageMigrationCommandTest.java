@@ -1,5 +1,7 @@
 package no.sikt.nva;
 
+import static no.sikt.nva.HandleScraper.COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MESSAGE;
+import static no.sikt.nva.HandleScraper.ERROR_MESSAGE_NO_HANDLE_IN_DUBLIN_CORE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyString;
@@ -15,8 +17,6 @@ public class BrageMigrationCommandTest {
     public static final String RESOURCE_WITH_CRISTIN_IDENTIFIER_LOGG_MESSAGE = "Following resource has Cristin "
                                                                                + "identifier:";
     public static final String NO_LICENSE_LOGG_MESSAGE = "No license in bundle found, default license used";
-    public static final String NO_HANDLE_IN_DUBLIN_CORE_LOGG_MESSAGE = "No handle present in dublin_core.xml";
-    public static final String NO_HANDLE_FILE_LOG_MESSAGE = "Could not read handle file";
     private static final int NORMAL_EXIT_CODE = 0;
 
     @Test
@@ -66,7 +66,7 @@ public class BrageMigrationCommandTest {
         var arguments = new String[]{"-c", "nve", "-z", "inputWithoutHandle.zip"};
         int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
-        assertThat(appender.getMessages(), containsString(NO_HANDLE_IN_DUBLIN_CORE_LOGG_MESSAGE));
+        assertThat(appender.getMessages(), containsString(ERROR_MESSAGE_NO_HANDLE_IN_DUBLIN_CORE));
     }
 
     @Test
@@ -75,6 +75,6 @@ public class BrageMigrationCommandTest {
         var arguments = new String[]{"-c", "nve", "-z", "inputWithoutHandle.zip"};
         int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
-        assertThat(appender.getMessages(), containsString(NO_HANDLE_FILE_LOG_MESSAGE));
+        assertThat(appender.getMessages(), containsString(COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MESSAGE));
     }
 }
