@@ -60,7 +60,6 @@ public class Record {
         this.customerUri = customerUri;
     }
 
-    @JacocoGenerated
     @JsonProperty("id")
     public URI getId() {
         return this.id;
@@ -116,7 +115,6 @@ public class Record {
         return this.license;
     }
 
-    @JacocoGenerated
     public void setLicense(String license) {
         this.license = license;
     }
