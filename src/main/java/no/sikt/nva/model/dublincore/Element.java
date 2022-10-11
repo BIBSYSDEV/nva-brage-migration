@@ -9,20 +9,55 @@ import nva.commons.core.JacocoGenerated;
 @XmlEnum
 public enum Element {
 
+    //elements collected from this specification: https://dok.unit.no/brage/veiledninger/metadatafelter
+
     @XmlEnumValue("contributor")
     CONTRIBUTOR("contributor"),
 
-    @XmlEnumValue("title")
-    TITLE("title"),
+    @XmlEnumValue("coverage")
+    COVERAGE("coverage"),
+
+    @XmlEnumValue("creator")
+    creator("creator"),
+
+    @XmlEnumValue("date")
+    DATE("date"),
+
+    @XmlEnumValue("description")
+    DESCRIPTION("description"),
+
+    @XmlEnumValue("format")
+    FORMAT("format"),
 
     @XmlEnumValue("identifier")
     IDENTIFIER("identifier"),
 
-    @XmlEnumValue("type")
-    TYPE("type"),
-
     @XmlEnumValue("language")
-    LANGUAGE("language");
+    LANGUAGE("language"),
+
+    @XmlEnumValue("provenance")
+    PROVENANCE("provenance"),
+
+    @XmlEnumValue("publisher")
+    PUBLISHER("publisher"),
+
+    @XmlEnumValue("relation")
+    RELATION("relation"),
+
+    @XmlEnumValue("rights")
+    RIGHTS("rights"),
+
+    @XmlEnumValue("source")
+    SOURCE("source"),
+
+    @XmlEnumValue("subject")
+    SUBJECT("subject"),
+
+    @XmlEnumValue("title")
+    TITLE("title"),
+
+    @XmlEnumValue("type")
+    TYPE("type");
 
     private final String value;
 
@@ -39,7 +74,7 @@ public enum Element {
         }
         throw new IllegalArgumentException(v);
     }
-    
+
     @JacocoGenerated
     public String getValue() {
         return value;
