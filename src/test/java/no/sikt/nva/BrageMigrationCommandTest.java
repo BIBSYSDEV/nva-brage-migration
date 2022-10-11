@@ -37,17 +37,15 @@ public class BrageMigrationCommandTest {
     void shouldProcessZipFileWithoutLicenseCorrectly() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{"-c", "nve", "-z", "testinput.zip"};
-        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
+        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(NO_LICENSE_LOGG_MESSAGE));
     }
 
     @Test
     void shouldProcessZipFileWithLicenseCorrectlyAndWithoutAnyLogMessages() throws Exception {
         var arguments = new String[]{"-c", "nve", "-z", "inputWithLicense.zip"};
-        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
         assertThat(appender.getMessages(), is(emptyString()));
     }
 
@@ -55,8 +53,7 @@ public class BrageMigrationCommandTest {
     void shouldProcessAndLogFileWithCristinId() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{"-c", "nve", "-z", "inputWithCristinId.zip"};
-        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
+        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(RESOURCE_WITH_CRISTIN_IDENTIFIER_LOGG_MESSAGE));
     }
 
@@ -64,8 +61,7 @@ public class BrageMigrationCommandTest {
     void shouldProcessFileWithoutHandleInDublinCoreFile() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{"-c", "nve", "-z", "inputWithoutHandle.zip"};
-        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
+        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(ERROR_MESSAGE_NO_HANDLE_IN_DUBLIN_CORE));
     }
 
@@ -73,8 +69,7 @@ public class BrageMigrationCommandTest {
     void shouldProcessFileWithoutHandleInHandleFile() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{"-c", "nve", "-z", "inputWithoutHandle.zip"};
-        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
+        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MESSAGE));
     }
 }
