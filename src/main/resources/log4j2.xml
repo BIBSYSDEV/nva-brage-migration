@@ -41,7 +41,7 @@
   </Appenders>
   <Loggers>
     <Logger name="no.sikt.nva" additivity="true">
-      <appender-ref ref="htmlLogger" level="info"/>
+      <AppenderRef ref="htmlLogger"/>
       <AppenderRef ref="infoLog"/>
       <AppenderRef ref="errorLog"/>
     </Logger>
