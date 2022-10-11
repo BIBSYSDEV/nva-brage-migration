@@ -87,7 +87,7 @@ public class BrageProcessor implements Runnable {
             Arrays.stream(Objects.requireNonNull(entryDirectory.listFiles()))
                 .forEach(file -> doStuffsForEachFile(file, record));
         } catch (Exception e) {
-            logger.error(e.getMessage(), record.getOriginInformation());
+            logger.error(e.getMessage() + record.getOriginInformation());
             return Optional.empty();
         }
         return Optional.of(record);
