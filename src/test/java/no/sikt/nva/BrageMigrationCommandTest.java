@@ -17,6 +17,7 @@ public class BrageMigrationCommandTest {
         assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
     }
 
+
     @Test
     void shouldExitWhenZipFileOptionIsNotSet() throws Exception {
         var arguments = new String[]{"-c", "nve"};
