@@ -45,8 +45,7 @@ public class LicenseScraper {
             return extractLicenseFromFile(licenseFile);
         } catch (Exception e) {
             logger.warn(String.format(COULD_NOT_EXTRACT_LICENSE_FROM_SPECIFIED_LOCATION_LOG_MESSAGE_WARNING,
-                                      bundleInformation),
-                        e);
+                                      bundleInformation));
             return DEFAULT_LICENSE;
         }
     }

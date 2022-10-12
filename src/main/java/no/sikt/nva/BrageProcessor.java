@@ -76,7 +76,7 @@ public class BrageProcessor implements Runnable {
             DublinCoreParser.validateAndParseDublinCore(dublinCore, record);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory, record.getOriginInformation()));
         } catch (Exception e) {
-            logger.error(e.getMessage(), record.getOriginInformation());
+            logger.error(e.getMessage() + record.getOriginInformation());
             return Optional.empty();
         }
         return Optional.of(record);
