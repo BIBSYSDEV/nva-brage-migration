@@ -1,7 +1,13 @@
 package no.sikt.nva;
 
+import com.opencsv.CSVReaderHeaderAware;
+import java.io.BufferedReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import nva.commons.core.JacocoGenerated;
@@ -19,6 +25,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     public static final String PATH_DELIMITER = "/";
     public static final String OUTPUT_JSON_FILENAME = "records.json";
+
+    private static final String RESCUE_HANDLE_MAPPING_NVE = "src/main/resources/nve_handles_for_datasets.csv";
 
     @Option(names = {"-c", "--customer"}, required = true, description = "customer id in NVA")
     private String customer;
@@ -48,7 +56,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void writeRecordsToFiles(List<BrageProcessor> brageProcessors) {
-        brageProcessors.forEach(brageProcessor -> writeRecordToFile(brageProcessor));
+        brageProcessors.forEach(this::writeRecordToFile);
     }
 
     private void writeRecordToFile(BrageProcessor brageProcessor) {
@@ -66,14 +74,26 @@ public class BrageMigrationCommand implements Callable<Integer> {
         });
     }
 
+    private Map<String, String> readNveTitleAndHandlesPatch() {
+
+        try (BufferedReader bufferedReader =
+                 Files.newBufferedReader(Paths.get(RESCUE_HANDLE_MAPPING_NVE),
+                                         StandardCharsets.UTF_8)) {
+            return new CSVReaderHeaderAware(bufferedReader).readMap();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void startProcessors(List<Thread> brageProcessors) {
         brageProcessors.forEach(Thread::start);
     }
 
     private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, String customer) {
+        var brageProcessorFactory = new BrageProcessorFactory(readNveTitleAndHandlesPatch());
         return
             Arrays.stream(zipFiles)
-                .map(zipfile -> BrageProcessorFactory.createBrageProcessor(zipfile, customer))
+                .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer))
                 .collect(Collectors.toList());
     }
 }

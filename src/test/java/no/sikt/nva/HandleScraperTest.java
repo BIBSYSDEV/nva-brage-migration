@@ -10,13 +10,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.file.Path;
 import java.util.List;
-import no.sikt.nva.HandleScraper;
+import java.util.Map;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import nva.commons.core.ioutils.IoUtils;
 import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -59,6 +58,24 @@ public class HandleScraperTest {
         var expectedHandle = UriWrapper.fromUri("https://hdl.handle.net/11250/2684299").getUri();
         var actualHandle = HandleScraper.extractHandleFromHandlePath(handleFile);
         assertThat(actualHandle, is(equalTo(expectedHandle)));
+    }
+
+    @Test
+    void findsHandleInRescueMapIfTitleIsPresentInDublinCoreAndInRescueMap() {
+        var expectedHandle = UriWrapper.fromUri("https://hdl.handle.net/11250/2684299").getUri();
+        var title = randomString();
+        var dublinCore = generateDublinCoreWithTitle(title);
+        var rescueMap = Map.of(title, expectedHandle.toString());
+        var handleScraper = new HandleScraper(rescueMap);
+        var acrualtHandle = handleScraper.scrapeHandleFromRescueMapOrHandleFileOrDublinCore(Path.of("invalid/and"
+                                                                                                    + "/ignored"),
+                                                                                            dublinCore);
+        assertThat(acrualtHandle, is(equalTo(expectedHandle)));
+    }
+
+    private DublinCore generateDublinCoreWithTitle(String title) {
+        var dcValue = new DcValue(Element.TITLE, Qualifier.NONE, title);
+        return new DublinCore(List.of(dcValue));
     }
 
     private DublinCore generateDublinCoreWithoutHandle() {

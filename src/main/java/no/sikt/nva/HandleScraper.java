@@ -1,11 +1,12 @@
 package no.sikt.nva;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -25,22 +26,10 @@ public class HandleScraper {
     private static final URI HANDLE_DOMAIN = UriWrapper.fromHost("https://hdl.handle.net").getUri();
     private static final Logger logger = LoggerFactory.getLogger(HandleScraper.class);
 
-    /**
-     * Extracts handle from either "handle" file or dublin_core.xml. Will prioritize "handle" file.
-     *
-     * @param handleFile     tries to read handle from handleFile first.
-     * @param dublinCoreFile containing the dublin_core.xml.
-     * @return handle URI
-     * @throws HandleException if neither handlePath nor dublin_core.xml yields hansle.
-     */
-    public static URI extractHandleFromBundle(Path handleFile, File dublinCoreFile) {
-        try {
-            return extractHandleFromHandlePath(handleFile);
-        } catch (HandleException handleException) {
-            logger.warn(handleException.getMessage());
-            var dublinCore = DublinCoreParser.unmarshallDublinCore(dublinCoreFile, StringUtils.EMPTY_STRING);
-            return extractHandleFromDublinCore(dublinCore);
-        }
+    private final Map<String, String> rescueTitlesAndHandles;
+
+    public HandleScraper(Map<String, String> rescueTitlesAndHandles) {
+        this.rescueTitlesAndHandles = rescueTitlesAndHandles;
     }
 
     /**
@@ -50,7 +39,7 @@ public class HandleScraper {
      * @return handle URI
      * @throws HandleException if handle file is empty or contains domain in addition to handle sub-path
      */
-    public static URI extractHandleFromHandlePath(Path handlePath) {
+    public static URI extractHandleFromHandlePath(final Path handlePath) {
         String handleSubPath;
         try {
             handleSubPath = Files.readString(handlePath);
@@ -76,7 +65,16 @@ public class HandleScraper {
         return verifiedHandleURI(handleString);
     }
 
-    private static DcValue extractDcValueContainingHandleFromDublinCore(DublinCore dublinCore) {
+    public URI scrapeHandleFromRescueMapOrHandleFileOrDublinCore(final Path handlefile, final DublinCore dublinCore) {
+        return quickLookupHandleInCsvFile(dublinCore)
+                   .orElseGet(() -> extractHandleFromBundle(handlefile, dublinCore));
+    }
+
+    private static boolean dcValueIsTitle(final DcValue dcValue) {
+        return (Element.TITLE.equals(dcValue.getElement()) && Qualifier.NONE.equals(dcValue.getQualifier()));
+    }
+
+    private static DcValue extractDcValueContainingHandleFromDublinCore(final DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(HandleScraper::isIdentifierAndUri)
@@ -84,7 +82,7 @@ public class HandleScraper {
                    .orElseThrow(() -> new HandleException(ERROR_MESSAGE_NO_HANDLE_IN_DUBLIN_CORE));
     }
 
-    private static URI verifiedHandleURI(String handleString) {
+    private static URI verifiedHandleURI(final String handleString) {
         var handle = UriWrapper.fromUri(handleString).getUri();
         verifyHandle(handle);
         return handle;
@@ -98,11 +96,44 @@ public class HandleScraper {
         }
     }
 
-    private static boolean isIdentifierAndUri(DcValue dcValue) {
+    private static boolean isIdentifierAndUri(final DcValue dcValue) {
         if (Objects.isNull(dcValue.getElement()) || Objects.isNull(dcValue.getQualifier())) {
             return false;
         } else {
             return dcValue.getElement().equals(Element.IDENTIFIER) && dcValue.getQualifier().equals(Qualifier.URI);
+        }
+    }
+
+    private Optional<URI> quickLookupHandleInCsvFile(final DublinCore dublinCore) {
+        var title =
+            dublinCore.getDcValues()
+                .stream()
+                .filter(HandleScraper::dcValueIsTitle)
+                .findFirst()
+                .orElseThrow()
+                .getValue();
+        var handle = rescueTitlesAndHandles.get(title);
+        if (StringUtils.isNotEmpty(handle)) {
+            return Optional.of(verifiedHandleURI(handle));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Extracts handle from either "handle" file or dublin_core.xml. Will prioritize "handle" file.
+     *
+     * @param handleFile tries to read handle from handleFile first.
+     * @param dublinCore that will be used .
+     * @return handle URI
+     * @throws HandleException if neither handlePath nor dublin_core.xml yields hansle.
+     */
+    private URI extractHandleFromBundle(final Path handleFile, final DublinCore dublinCore) {
+        try {
+            return extractHandleFromHandlePath(handleFile);
+        } catch (HandleException handleException) {
+            logger.warn(handleException.getMessage());
+            return extractHandleFromDublinCore(dublinCore);
         }
     }
 }
