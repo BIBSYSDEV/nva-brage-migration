@@ -4,11 +4,8 @@ import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlValue;
 import java.io.StringWriter;
-import nva.commons.core.JacocoGenerated;
 
 public class DcValue {
-
-    private static final String CRISTIN_ID_QUALIFIER = "cristin";
 
     @XmlAttribute
     private Element element;
@@ -29,26 +26,48 @@ public class DcValue {
         this.value = value;
     }
 
-    @JacocoGenerated
     public Element getElement() {
         return element;
     }
 
-    @JacocoGenerated
     public Qualifier getQualifier() {
         return qualifier;
     }
 
-    @JacocoGenerated
     public String getValue() {
         return value;
     }
 
-    public boolean hasCristinId() {
-        if (qualifier != null) {
-            return CRISTIN_ID_QUALIFIER.equals(getQualifier().getValue());
-        }
-        return false;
+    public boolean isPublisher() {
+        return Element.PUBLISHER.equals(this.element);
+    }
+
+    public boolean isLanguage() {
+        return Element.LANGUAGE.equals(this.element);
+    }
+
+    public boolean isTitle() {
+        return Element.TITLE.equals(this.element);
+    }
+
+    public boolean isType() {
+        return Element.TYPE.equals(this.element);
+    }
+
+    public boolean isJournal() {
+        return Element.SOURCE.equals(this.element) && Qualifier.JOURNAL.equals(this.qualifier);
+    }
+
+    public boolean isIssnValue() {
+        return Element.IDENTIFIER.equals(this.element) && Qualifier.ISSN.equals(this.qualifier);
+    }
+
+    public boolean isCristinDcValue() {
+        return Element.IDENTIFIER.equals(this.element) && Qualifier.CRISTIN.equals(this.qualifier);
+    }
+
+    public boolean isAuthor() {
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
     }
 
     @Override

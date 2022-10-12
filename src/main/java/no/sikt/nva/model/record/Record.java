@@ -1,18 +1,20 @@
 package no.sikt.nva.model.record;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import no.sikt.nva.model.publisher.Publication;
 import nva.commons.core.JacocoGenerated;
 
 public class Record {
 
     public static final String ORIGIN_INFORMATION_STRING_TEMPLATE = "Bundle location: %s, Handle: %s";
+    public static final String ORIGIN_INFORMATION = "Bundle location: %s";
     private String customerUri;
     private URI id;
-
     private Path origin;
     private String type;
     private String title;
@@ -21,6 +23,7 @@ public class Record {
     private String embargo;
     private List<String> tags;
     private List<String> authors;
+    private Publication publication;
 
     @JacocoGenerated
     @Override
@@ -60,7 +63,6 @@ public class Record {
         this.customerUri = customerUri;
     }
 
-    @JacocoGenerated
     @JsonProperty("id")
     public URI getId() {
         return this.id;
@@ -116,7 +118,6 @@ public class Record {
         return this.license;
     }
 
-    @JacocoGenerated
     public void setLicense(String license) {
         this.license = license;
     }
@@ -143,6 +144,15 @@ public class Record {
         this.tags = tags;
     }
 
+    @JsonProperty("publication")
+    public Publication getPublisher() {
+        return publication;
+    }
+
+    public void setPublication(Publication publication) {
+        this.publication = publication;
+    }
+
     @JsonProperty("bare_origin")
     public Path getOrigin() {
         return origin;
@@ -152,7 +162,10 @@ public class Record {
         this.origin = origin;
     }
 
+    @JsonIgnore
     public String getOriginInformation() {
-        return String.format(ORIGIN_INFORMATION_STRING_TEMPLATE, getOrigin(), getId());
+        return Objects.nonNull(getId())
+                   ? String.format(ORIGIN_INFORMATION_STRING_TEMPLATE, getOrigin(), getId())
+                   : String.format(ORIGIN_INFORMATION, getOrigin());
     }
 }

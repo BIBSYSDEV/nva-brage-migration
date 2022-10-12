@@ -27,7 +27,7 @@ public class RecordsWriterTest {
         authors.add(randomString());
         authors.add(randomString());
 
-        Record record = new Record();
+        var record = new Record();
         record.setId(randomUri());
         record.setType(randomString());
         record.setLicense(randomString());

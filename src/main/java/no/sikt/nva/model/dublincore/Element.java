@@ -75,7 +75,6 @@ public enum Element {
         throw new IllegalArgumentException(v);
     }
 
-    @JacocoGenerated
     public String getValue() {
         return value;
     }

@@ -218,7 +218,6 @@ public enum Qualifier {
         throw new IllegalArgumentException(v);
     }
 
-    @JacocoGenerated
     public String getValue() {
         return value;
     }
