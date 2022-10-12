@@ -24,6 +24,9 @@ public enum Qualifier {
     @XmlEnumValue("issn")
     ISSN("issn"),
 
+    @XmlEnumValue("isbn")
+    ISBN("isbn"),
+
     @XmlEnumValue("journal")
     JOURNAL("journal"),
 

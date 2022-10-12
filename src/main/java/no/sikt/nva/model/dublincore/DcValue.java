@@ -60,6 +60,10 @@ public class DcValue {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.ISSN.equals(this.qualifier);
     }
 
+    public boolean isIsbnValue() {
+        return Element.IDENTIFIER.equals(this.element) && Qualifier.ISBN.equals(this.qualifier);
+    }
+
     public boolean isCristinDcValue() {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.CRISTIN.equals(this.qualifier);
     }

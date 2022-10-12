@@ -36,6 +36,7 @@ public class DublinCoreParser {
     private static Publication extractPublication(DublinCore dublinCore) {
         var publication = new Publication();
         publication.setIssn(extractIssn(dublinCore));
+        publication.setIsbn(extractIsbn(dublinCore));
         publication.setJournal(extractJournal(dublinCore));
         publication.setPublisher(extractPublisher(dublinCore));
 
@@ -73,9 +74,15 @@ public class DublinCoreParser {
                    .findAny().orElse(new DcValue()).getValue();
     }
 
-    private static String extractIssn(DublinCore dublinCore) {
+    public static String extractIssn(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isIssnValue)
+                   .findAny().orElse(new DcValue()).getValue();
+    }
+
+    public static String extractIsbn(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isIsbnValue)
                    .findAny().orElse(new DcValue()).getValue();
     }
 }
