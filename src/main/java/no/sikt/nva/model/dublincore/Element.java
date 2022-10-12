@@ -22,7 +22,13 @@ public enum Element {
     TYPE("type"),
 
     @XmlEnumValue("language")
-    LANGUAGE("language");
+    LANGUAGE("language"),
+
+    @XmlEnumValue("publisher")
+    PUBLISHER("publisher"),
+
+    @XmlEnumValue("source")
+    SOURCE("source");
 
     private final String value;
 
@@ -40,7 +46,6 @@ public enum Element {
         throw new IllegalArgumentException(v);
     }
     
-    @JacocoGenerated
     public String getValue() {
         return value;
     }

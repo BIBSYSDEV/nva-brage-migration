@@ -21,6 +21,12 @@ public enum Qualifier {
     @XmlEnumValue("cristin")
     CRISTIN("cristin"),
 
+    @XmlEnumValue("issn")
+    ISSN("issn"),
+
+    @XmlEnumValue("journal")
+    JOURNAL("journal"),
+
     @XmlEnumValue("none")
     NONE("none"),
 
@@ -42,7 +48,6 @@ public enum Qualifier {
         throw new IllegalArgumentException(v);
     }
 
-    @JacocoGenerated
     public String getValue() {
         return value;
     }

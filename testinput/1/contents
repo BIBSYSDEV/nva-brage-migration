@@ -1,0 +1,4 @@
+Random content.pdf	bundle:ORIGINAL	primary:true 
+license.txt	bundle:LICENSE
+Studie av av bla bla bla.pdf.txt	bundle:TEXT	description:Extracted text
+Studie av blablabla.pdf.jpg	bundle:THUMBNAIL	description:Generated Thumbnail

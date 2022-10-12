@@ -33,12 +33,12 @@ public class HandleScraper {
      * @return handle URI
      * @throws HandleException if neither handlePath nor dublin_core.xml yields hansle.
      */
-    public static URI extractHandleFromBundle(Path handleFile, File dublinCoreFile) {
+    public static URI  extractHandleFromBundle(Path handleFile, File dublinCoreFile) {
         try {
             return extractHandleFromHandlePath(handleFile);
         } catch (HandleException handleException) {
             logger.warn(handleException.getMessage());
-            var dublinCore = DublinCoreParser.unmarshallDublinCore(dublinCoreFile, StringUtils.EMPTY_STRING);
+            var dublinCore = DublinCoreFactory.createDublinCoreFromXml(dublinCoreFile, StringUtils.EMPTY_STRING);
             return extractHandleFromDublinCore(dublinCore);
         }
     }
