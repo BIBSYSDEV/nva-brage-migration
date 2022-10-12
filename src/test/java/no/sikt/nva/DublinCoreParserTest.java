@@ -18,7 +18,7 @@ public class DublinCoreParserTest {
     @Test
     void shouldConvertFilesWithValidFields() {
         var expectedRecord = createTestRecord();
-        var record = new Record();
+        var actualRecord = new Record();
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File("src/test/resources/dublin_core.xml"),
                                                                    actualRecord.getOriginInformation());
        DublinCoreParser.validateAndParseDublinCore(dublinCore, actualRecord);

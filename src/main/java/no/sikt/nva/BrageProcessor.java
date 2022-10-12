@@ -50,21 +50,14 @@ public class BrageProcessor implements Runnable {
         return entryDirectory.isDirectory();
     }
 
-    private static void doStuffsForEachFile(File file, Record record) {
-        //TODO: do more useful stuff here:
-        //TODO: skip already processed files here.
-        logger.debug(String.format(DEBUG_FILE_PROCESSING_LOG_MESSAGE, file.getName(), record.getId()));
-    }
-
     private List<Record> processBundles(List<File> resourceDirectories) {
-        DublinCoreParser dublinCoreParser = new DublinCoreParser();
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories
                    .stream()
                    .filter(BrageProcessor::isBundle)
-                   .map(bundleDirectory -> processBundle(dublinCoreParser,
-                                                         licenseScraper,
-                                                         bundleDirectory))
+                   .map(bundleDirectory -> processBundle(
+                       licenseScraper,
+                       bundleDirectory))
                    .flatMap(Optional::stream)
                    .collect(
                        Collectors.toList());
@@ -82,8 +75,6 @@ public class BrageProcessor implements Runnable {
             record.setId(HandleScraper.extractHandleFromBundle(handlePath, dublinCoreFile));
             DublinCoreParser.validateAndParseDublinCore(dublinCore, record);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory, record.getOriginInformation()));
-            Arrays.stream(Objects.requireNonNull(entryDirectory.listFiles()))
-                .forEach(file -> doStuffsForEachFile(file, record));
         } catch (Exception e) {
             logger.error(e.getMessage(), record.getOriginInformation());
             return Optional.empty();
