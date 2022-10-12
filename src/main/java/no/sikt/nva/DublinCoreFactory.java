@@ -1,9 +1,10 @@
-package no.sikt.nva.model.dublincore;
+package no.sikt.nva;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import java.io.File;
 import no.sikt.nva.exceptions.DublinCoreException;
+import no.sikt.nva.model.dublincore.DublinCore;
 
 public final class DublinCoreFactory {
 

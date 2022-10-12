@@ -142,12 +142,12 @@ public class Record {
         this.tags = tags;
     }
 
-    @JsonProperty("publisher")
+    @JsonProperty("publication")
     public Publication getPublisher() {
         return publication;
     }
 
-    public void setPublisher(Publication publication) {
+    public void setPublication(Publication publication) {
         this.publication = publication;
     }
 

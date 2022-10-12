@@ -9,7 +9,6 @@ import java.util.Objects;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.model.dublincore.DublinCoreFactory;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.core.StringUtils;

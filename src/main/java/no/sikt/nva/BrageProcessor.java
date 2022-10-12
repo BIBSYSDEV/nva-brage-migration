@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.model.dublincore.DublinCoreFactory;
 import no.sikt.nva.model.record.Record;
 import nva.commons.core.JacocoGenerated;
 import org.slf4j.Logger;

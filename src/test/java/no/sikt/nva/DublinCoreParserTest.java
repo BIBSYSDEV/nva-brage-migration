@@ -6,9 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import no.sikt.nva.exceptions.DublinCoreException;
-import no.sikt.nva.model.dublincore.DublinCoreFactory;
 import no.sikt.nva.model.publisher.Publication;
 import no.sikt.nva.model.record.Record;
 import org.junit.jupiter.api.Test;
@@ -32,31 +30,26 @@ public class DublinCoreParserTest {
     @Test
     void shouldReturnExceptionIfResourceIsInCristin() {
         var record = new Record();
+        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
+            CRISTIN_DUBLIN_CORE), record.getOriginInformation());
         assertThrows(DublinCoreException.class, () ->
-                                                    DublinCoreFactory.createDublinCoreFromXml(new File(
-                                                        CRISTIN_DUBLIN_CORE), record.getOriginInformation()));
+                                                    dublinCoreParser.convertDublinCoreToRecord(dublinCore, record));
     }
 
     private Record createTestRecord() {
-        ArrayList<String> authors = createAuthors();
-        Publication publication = createPublisher();
         Record record = new Record();
         record.setType("Research report");
         record.setTitle("Studie av friluftsliv blant barn og unge i Oslo: Sosial ulikhet og sosial utjevning");
         record.setLanguage("nob");
-        record.setAuthors(authors);
-        record.setPublisher(publication);
+        record.setAuthors(createAuthors());
+        record.setPublication(createPublication());
         return record;
     }
 
-    private Publication createPublisher() {
-        List<String> publishers = new ArrayList<>();
-        publishers.add("Norges idrettshøgskole");
-        publishers.add("NVE");
+    private Publication createPublication() {
 
         Publication publication = new Publication();
-        publication.setPublishers(publishers);
-
+        publication.setIssn("2345-2344-5567");
         return publication;
     }
 

@@ -6,15 +6,17 @@ import nva.commons.core.JacocoGenerated;
 
 public class Publication {
 
-    private String journals;
+    private String journal;
     private String issn;
-    private String publishers;
+    private String publisher;
 
+    @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(journals, issn, publishers);
+        return Objects.hash(journal, issn, publisher);
     }
 
+    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -24,23 +26,23 @@ public class Publication {
             return false;
         }
         Publication publication = (Publication) o;
-        return Objects.equals(journals, publication.journals)
+        return Objects.equals(journal, publication.journal)
                && Objects.equals(issn, publication.issn)
-               && Objects.equals(publishers, publication.publishers);
+               && Objects.equals(publisher, publication.publisher);
     }
 
     @JacocoGenerated
-    @JsonProperty("journals")
-    public String getJournals() {
-        return journals;
+    @JsonProperty("journal")
+    public String getJournal() {
+        return journal;
     }
 
-    public void setJournals(String journals) {
-        this.journals = journals;
+    public void setJournal(String journal) {
+        this.journal = journal;
     }
 
     @JacocoGenerated
-    @JsonProperty("issns")
+    @JsonProperty("issn")
     public String getIssn() {
         return issn;
     }
@@ -50,12 +52,12 @@ public class Publication {
     }
 
     @JacocoGenerated
-    @JsonProperty("publishers")
-    public String getPublishers() {
-        return publishers;
+    @JsonProperty("publisher")
+    public String getPublisher() {
+        return publisher;
     }
 
-    public void setPublishers(String publishers) {
-        this.publishers = publishers;
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
     }
 }

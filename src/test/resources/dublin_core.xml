@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <dublin_core schema="dc">
-  <dcvalue element="contributor" qualifier="author">Navnesen1,&#x20;Fornavn1&#x20;Mellomnavn1
-  </dcvalue>
+  <dcvalue element="contributor" qualifier="author">Navnesen1,&#x20;Fornavn1&#x20;Mellomnavn1</dcvalue>
   <dcvalue element="contributor" qualifier="author">Navnesen2,&#x20;Fornavn2&#x20;Mellomnavna2&#x20;Mellomnavnb2</dcvalue>
-  <dcvalue element="contributor" qualifier="author">Navnesen3,&#x20;Fornavn3&#x20;Mellomnavn3
-  </dcvalue>
+  <dcvalue element="contributor" qualifier="author">Navnesen3,&#x20;Fornavn3&#x20;Mellomnavn3</dcvalue>
   <dcvalue element="date" qualifier="accessioned">2020-10-22T06:06:39Z</dcvalue>
   <dcvalue element="date" qualifier="available">2020-10-22T06:06:39Z</dcvalue>
   <dcvalue element="date" qualifier="issued">2020</dcvalue>
   <dcvalue element="identifier" qualifier="isbn">978-82-502-0583-3</dcvalue>
-  <dcvalue element="identifier" qualifier="uri">https:&#x2F;&#x2F;hdl.handle.net&#x2F;12&#x2F;3567
-  </dcvalue>
+  <dcvalue element="identifier" qualifier="uri">https:&#x2F;&#x2F;hdl.handle.net&#x2F;12&#x2F;3567</dcvalue>
+  <dcvalue element="identifier" qualifier="issn">2345-2344-5567</dcvalue>
   <dcvalue element="description" qualifier="abstract" language="en_US">Gurba&#x20;Gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;(øæsdfadfåp)</dcvalue>
   <dcvalue element="description" qualifier="provenance" language="en">Gurba&#x20;Gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;gurba&#x20;(øæsdfadfåp)</dcvalue>
   <dcvalue element="language" qualifier="iso" language="en_US">nob</dcvalue>
-  <dcvalue element="publication" qualifier="none" language="en_US">Norges&#x20;idrettshøgskole
-  </dcvalue>
-  <dcvalue element="publication" qualifier="none" language="en_US">NVE</dcvalue>
+  <dcvalue element="publication" qualifier="none" language="en_US">Norges&#x20;idrettshøgskole</dcvalue>
   <dcvalue element="title" qualifier="none" language="en_US">Studie&#x20;av&#x20;friluftsliv&#x20;blant&#x20;barn&#x20;og&#x20;unge&#x20;i&#x20;Oslo:&#x20;Sosial&#x20;ulikhet&#x20;og&#x20;sosial&#x20;utjevning</dcvalue>
   <dcvalue element="type" qualifier="none" language="en_US">Research&#x20;report</dcvalue>
   <dcvalue element="description" qualifier="version" language="en_US">publishedVersion</dcvalue>
