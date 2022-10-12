@@ -11,7 +11,7 @@ public class DublinCore {
     private List<DcValue> dcValues;
 
     /**
-     * Constructor is necessary to parse dublin_core
+     * Constructor is necessary to parse dublin_core.
      */
     public DublinCore() {
 
