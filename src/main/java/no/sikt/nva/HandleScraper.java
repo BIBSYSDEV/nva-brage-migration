@@ -33,7 +33,7 @@ public class HandleScraper {
      * @return handle URI
      * @throws HandleException if neither handlePath nor dublin_core.xml yields hansle.
      */
-    public static URI extractHandleFromBundle(Path handleFile, File dublinCoreFile) {
+    public static URI  extractHandleFromBundle(Path handleFile, File dublinCoreFile) {
         try {
             return extractHandleFromHandlePath(handleFile);
         } catch (HandleException handleException) {

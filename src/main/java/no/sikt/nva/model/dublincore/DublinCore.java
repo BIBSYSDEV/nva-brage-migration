@@ -8,11 +8,7 @@ import java.util.List;
 public class DublinCore {
 
     @XmlElement(name = "dcvalue")
-    private List<DcValue> dcValues;
-
-    public DublinCore() {
-
-    }
+    private final List<DcValue> dcValues;
 
     public DublinCore(List<DcValue> dcValues) {
         this.dcValues = dcValues;
@@ -21,6 +17,4 @@ public class DublinCore {
     public List<DcValue> getDcValues() {
         return dcValues;
     }
-
-
 }

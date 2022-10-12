@@ -8,8 +8,8 @@ import no.sikt.nva.model.dublincore.DublinCore;
 
 public final class DublinCoreFactory {
 
-    private static final String UNABLE_TO_UNMARSHALL_DUBLIN_CORE_XML_TEMPLATE = "Unable to unmarshall dublin_core"
-                                                                                + ".xml, This occurred in %s";
+    private static final String UNABLE_TO_UNMARSHALL_DUBLIN_CORE_XML_TEMPLATE =
+        "Unable to unmarshall dublin_core.xml, This occurred in %s";
 
     private DublinCoreFactory() {
     }
