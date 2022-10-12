@@ -8,7 +8,14 @@ import java.util.List;
 public class DublinCore {
 
     @XmlElement(name = "dcvalue")
-    private final List<DcValue> dcValues;
+    private List<DcValue> dcValues;
+
+    /**
+     * Constructor is necessary to parse dublin_core
+     */
+    public DublinCore() {
+
+    }
 
     public DublinCore(List<DcValue> dcValues) {
         this.dcValues = dcValues;
