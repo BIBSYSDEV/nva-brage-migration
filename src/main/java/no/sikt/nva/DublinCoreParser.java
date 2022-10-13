@@ -112,7 +112,7 @@ public class DublinCoreParser {
 
     private static void logUnscrapedDcValue(DcValue dcValue, BrageLocation brageLocation) {
         logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
-                                  dcValue.toString(),
+                                  dcValue.toXmlString(),
                                   brageLocation.getOriginInformation()));
     }
 }

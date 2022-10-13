@@ -5,7 +5,6 @@ import static no.sikt.nva.HandleScraper.COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MES
 import static no.sikt.nva.HandleScraper.ERROR_MESSAGE_NO_HANDLE_IN_DUBLIN_CORE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -44,12 +43,10 @@ public class BrageMigrationCommandTest {
     }
 
     @Test
-    void shouldProcessZipFileWithLicenseCorrectlyAndWithoutAnyLogMessages() throws Exception {
+    void shouldProcessZipFileWithLicenseCorrectly() throws Exception {
         var arguments = new String[]{"-c", "nve", "-z", "inputWithLicense.zip"};
-        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        BrageMigrationCommand.main(arguments);
-        assertThat(appender.getMessages(), is(emptyString()));
+        var exit = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        assertThat(exit, is(equalTo(NORMAL_EXIT_CODE)));
     }
 
     @Test

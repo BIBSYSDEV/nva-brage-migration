@@ -26,7 +26,7 @@ public class DublinCoreParserTest {
     @Test
     void shouldConvertFilesWithValidFields() {
         var expectedRecord = createTestRecord();
-        var brageLocation = new BrageLocation(Path.of("somebundle/someindex"));
+        var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File("src/test/resources/dublin_core.xml"));
         var actualRecord = DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(actualRecord, is(equalTo(expectedRecord)));
