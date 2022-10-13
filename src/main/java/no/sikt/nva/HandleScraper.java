@@ -71,7 +71,7 @@ public class HandleScraper {
     }
 
     private static boolean dcValueIsTitle(final DcValue dcValue) {
-        return (Element.TITLE.equals(dcValue.getElement()) && Qualifier.NONE.equals(dcValue.getQualifier()));
+        return Element.TITLE.equals(dcValue.getElement()) && Qualifier.NONE.equals(dcValue.getQualifier());
     }
 
     private static DcValue extractDcValueContainingHandleFromDublinCore(final DublinCore dublinCore) {
@@ -126,7 +126,7 @@ public class HandleScraper {
      * @param handleFile tries to read handle from handleFile first.
      * @param dublinCore that will be used .
      * @return handle URI
-     * @throws HandleException if neither handlePath nor dublin_core.xml yields hansle.
+     * @throws HandleException if neither handlePath nor dublin_core.xml yields handle.
      */
     private URI extractHandleFromBundle(final Path handleFile, final DublinCore dublinCore) {
         try {

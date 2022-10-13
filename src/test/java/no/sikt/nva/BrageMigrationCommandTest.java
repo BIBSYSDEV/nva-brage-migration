@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static no.sikt.nva.DublinCoreValidator.Problem.CRISTIN_ID_PRESENT;
 import static no.sikt.nva.HandleScraper.COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MESSAGE;
 import static no.sikt.nva.HandleScraper.ERROR_MESSAGE_NO_HANDLE_IN_DUBLIN_CORE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,12 +13,13 @@ import com.github.stefanbirkner.systemlambda.SystemLambda;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 
+
 public class BrageMigrationCommandTest {
 
-    public static final String RESOURCE_WITH_CRISTIN_IDENTIFIER_LOGG_MESSAGE = "Following resource has Cristin "
-                                                                               + "identifier:";
+
     public static final String NO_LICENSE_LOGG_MESSAGE = "No license in bundle found, default license used";
     private static final int NORMAL_EXIT_CODE = 0;
+
 
     @Test
     void shouldExitWhenCustomerOptionIsNotSet() throws Exception {
@@ -46,6 +48,7 @@ public class BrageMigrationCommandTest {
         var arguments = new String[]{"-c", "nve", "-z", "inputWithLicense.zip"};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         var appender = LogUtils.getTestingAppenderForRootLogger();
+        BrageMigrationCommand.main(arguments);
         assertThat(appender.getMessages(), is(emptyString()));
     }
 
@@ -54,7 +57,7 @@ public class BrageMigrationCommandTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{"-c", "nve", "-z", "inputWithCristinId.zip"};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        assertThat(appender.getMessages(), containsString(RESOURCE_WITH_CRISTIN_IDENTIFIER_LOGG_MESSAGE));
+        assertThat(appender.getMessages(), containsString(String.valueOf(CRISTIN_ID_PRESENT)));
     }
 
     @Test
@@ -72,4 +75,5 @@ public class BrageMigrationCommandTest {
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MESSAGE));
     }
+
 }
