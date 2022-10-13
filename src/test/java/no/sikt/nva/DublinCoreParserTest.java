@@ -12,9 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import no.sikt.nva.exceptions.DublinCoreException;
-import no.sikt.nva.model.dublincore.DcValue;
-import no.sikt.nva.model.dublincore.Element;
-import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.publisher.Publication;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
@@ -48,10 +45,6 @@ public class DublinCoreParserTest {
     @Test
     void shouldLogDcValuesThatAreNotUsedForScraping() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var expectedDcValuedLogged = new DcValue(Element.DESCRIPTION, Qualifier.PROVENANCE,
-                                                 "Gurba Gurba gurba gurba gurba gurba gurba gurba gurba gurba gurba "
-                                                 + "gurba gurba gurba gurba gurba gurba gurba (øæsdfadfåp)").toXmlString();
-
         var record = new Record();
         record.setOrigin(Path.of("something/something"));
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
