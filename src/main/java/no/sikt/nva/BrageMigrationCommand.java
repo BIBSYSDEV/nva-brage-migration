@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import nva.commons.core.JacocoGenerated;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -25,9 +27,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     public static final String PATH_DELIMITER = "/";
     public static final String OUTPUT_JSON_FILENAME = "records.json";
-
+    private static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
     private static final String RESCUE_HANDLE_MAPPING_NVE = "src/main/resources/nve_handles_for_datasets.csv";
-
+    private static final int NORMAL_EXIT_CODE = 0;
+    private static final int ERROR_EXIT_CODE = 2;
     @Option(names = {"-c", "--customer"}, required = true, description = "customer id in NVA")
     private String customer;
 
@@ -46,13 +49,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        var brageProcessors = createBrageProcessorThread(zipFiles, customer);
-        var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
-        startProcessors(brageProcessorThreads);
-        waitForAllProcesses(brageProcessorThreads);
-        writeRecordsToFiles(brageProcessors);
-        System.out.println("hello world " + customer + " " + String.join(" ", zipFiles));
-        return 0;
+        try {
+            var brageProcessors = createBrageProcessorThread(zipFiles, customer);
+            var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
+            startProcessors(brageProcessorThreads);
+            waitForAllProcesses(brageProcessorThreads);
+            writeRecordsToFiles(brageProcessors);
+            return NORMAL_EXIT_CODE;
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return ERROR_EXIT_CODE;
+        }
     }
 
     private void writeRecordsToFiles(List<BrageProcessor> brageProcessors) {
