@@ -38,10 +38,8 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessZipFileWithLicenseCorrectlyAndWithoutAnyLogMessages() throws Exception {
         var arguments = new String[]{"-c", "nve", "-z", "inputWithLicense.zip"};
-        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        BrageMigrationCommand.main(arguments);
-        assertThat(appender.getMessages(), is(emptyString()));
+        var exitCode = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        assertThat(exitCode, is(equalTo(0)));
     }
 
     @Test

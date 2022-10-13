@@ -32,8 +32,8 @@ public class TypeMapperTest {
 
     @Test
     void shouldMapTypesContainingManyTypes() {
-        var expectedNvaType = Type.Vitenskapeligartikkel.getType();
-        var types = List.of(Type.Journalarticle.getType(), Type.PeerReviewed.getType());
+        var expectedNvaType = Type.Vitenskapeligkapittel.getType();
+        var types = List.of(Type.Chapter.getType(), Type.PeerReviewed.getType());
         var actualType = TypeMapper.toNvaType(types);
         assertThat(actualType, is(equalTo(expectedNvaType)));
     }

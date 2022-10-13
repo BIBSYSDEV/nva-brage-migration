@@ -57,8 +57,8 @@ public class DublinCoreParserTest {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
             "src/test/resources/dublin_core.xml"), record.getOriginInformation());
         DublinCoreParser.validateAndParseDublinCore(dublinCore, record);
-        assertThat(appender.getMessages(), containsString(String.format(
-            FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE, expectedDcValuedLogged, record.getOriginInformation())));
+        assertThat(appender.getMessages(), containsString(
+            FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE));
     }
 
     private Record createTestRecord() {

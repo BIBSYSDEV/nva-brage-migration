@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 public class DublinCoreParser {
 
     public static final String FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE =
-        "Field was not scraped %s in location %s";
+        "Field was not scraped";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
 
     public static void validateAndParseDublinCore(DublinCore dublinCore, Record record) {

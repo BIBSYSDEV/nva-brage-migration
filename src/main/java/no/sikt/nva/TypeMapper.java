@@ -1,17 +1,23 @@
 package no.sikt.nva;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.DublinCoreException;
 import nva.commons.core.StringUtils;
 
 public final class TypeMapper {
 
     public static String toNvaType(List<String> types) {
-        if (containsOneType(types)) {
-            return convertToNvaTypeIfOneType(types);
+
+        var strippedTypes = types.stream()
+                                .map(StringUtils::removeWhiteSpaces)
+                                .collect(Collectors.toList());
+
+        if (containsOneType(strippedTypes)) {
+            return convertToNvaTypeIfOneType(strippedTypes);
         }
-        if (containsTwoTypes(types)) {
-            return convertToNvaTypeIfTwoTypes(types);
+        if (containsTwoTypes(strippedTypes)) {
+            return convertToNvaTypeIfTwoTypes(strippedTypes);
         }
         throw new DublinCoreException("Invalid type");
     }

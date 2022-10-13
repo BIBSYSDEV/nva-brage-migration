@@ -31,6 +31,7 @@ public class Record {
         return Objects.hash(customerUri, id, type, title, language, license, embargo, tags, authors, origin);
     }
 
+    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {

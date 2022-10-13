@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
+import nva.commons.core.JacocoGenerated;
 
 @SuppressWarnings("PMD.ShortClassName")
 public class Type {
@@ -11,6 +12,7 @@ public class Type {
     private final List<String> brage;
     private final String nva;
 
+    @JacocoGenerated
     @JsonCreator
     public Type(@JsonProperty("brage") List<String> brage,
                 @JsonProperty("nva") String nva) {
@@ -22,15 +24,12 @@ public class Type {
         return nva;
     }
 
-    public List<String> getBrage() {
-        return brage;
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(brage, nva);
     }
 
+    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -40,6 +39,10 @@ public class Type {
             return false;
         }
         Type type = (Type) o;
-        return Objects.equals(brage, type.brage) && Objects.equals(nva, type.nva);
+        return Objects.equals(getBrage(), type.getBrage()) && Objects.equals(getNva(), type.getNva());
+    }
+
+    public List<String> getBrage() {
+        return brage;
     }
 }
