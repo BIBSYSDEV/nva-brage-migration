@@ -48,6 +48,7 @@ public class BrageMigrationCommandTest {
         var arguments = new String[]{"-c", "nve", "-z", "inputWithLicense.zip"};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         var appender = LogUtils.getTestingAppenderForRootLogger();
+        BrageMigrationCommand.main(arguments);
         assertThat(appender.getMessages(), is(emptyString()));
     }
 
