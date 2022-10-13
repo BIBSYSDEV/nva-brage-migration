@@ -7,14 +7,22 @@ import java.util.Objects;
 public class BrageLocation {
 
     public static final String ORIGIN_INFORMATION_STRING_TEMPLATE = "Bundle location: %s, Handle: %s";
-    public static final String ORIGIN_INFORMATION = "Bundle location: %s";
+    public static final String ORIGIN_INFORMATION = "Bundle location: %s, title: \"%s\"";
     private final Path brageBundlePath;
     private URI handle;
 
+    private String title;
 
     public BrageLocation(Path brageBundlePath) {
         this.brageBundlePath = brageBundlePath;
+    }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public Path getBrageBundlePath() {
@@ -32,6 +40,6 @@ public class BrageLocation {
     public String getOriginInformation() {
         return Objects.nonNull(handle)
                    ? String.format(ORIGIN_INFORMATION_STRING_TEMPLATE, getBrageBundlePath(), getHandle())
-                   : String.format(ORIGIN_INFORMATION, getBrageBundlePath());
+                   : String.format(ORIGIN_INFORMATION, getBrageBundlePath(), getTitle());
     }
 }

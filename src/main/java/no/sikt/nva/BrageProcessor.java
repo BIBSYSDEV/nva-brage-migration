@@ -85,6 +85,7 @@ public class BrageProcessor implements Runnable {
         var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
         try {
             var dublinCore = DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
+            brageLocation.setTitle(DublinCoreParser.extractTitle(dublinCore));
             brageLocation.setHandle(
                 handleScraper.scrapeHandleFromRescueMapOrHandleFileOrDublinCore(getHandlePath(entryDirectory),
                                                                                 dublinCore));
