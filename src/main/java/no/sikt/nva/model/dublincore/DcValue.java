@@ -1,7 +1,9 @@
 package no.sikt.nva.model.dublincore;
 
+import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlValue;
+import java.io.StringWriter;
 
 public class DcValue {
 
@@ -66,5 +68,12 @@ public class DcValue {
 
     public boolean isAuthor() {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
+    }
+
+
+    public String toXmlString() {
+        StringWriter sw = new StringWriter();
+        JAXB.marshal(this, sw);
+        return sw.toString();
     }
 }

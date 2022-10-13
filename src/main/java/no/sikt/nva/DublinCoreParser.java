@@ -8,16 +8,40 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.publisher.Publication;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DublinCoreParser {
+
+    public static final String FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE =
+        "Field was not scraped %s in location %s";
+    private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
 
     public static void validateAndParseDublinCore(DublinCore dublinCore, Record record) {
         var problems = DublinCoreValidator.getDublinCoreErrors(dublinCore);
         if (problems.isEmpty()) {
             updateDublinCoreFromRecord(dublinCore, record);
+            logUnscrapedValues(dublinCore, record);
         } else {
             throw new DublinCoreException(problems);
         }
+    }
+
+    private static void logUnscrapedValues(DublinCore dublinCore, Record record) {
+        dublinCore.getDcValues()
+            .stream()
+            .filter(dcValue -> hasNotBeenScraped(dcValue))
+            .forEach(dcValue -> logUnscrapedDcValue(dcValue, record));
+    }
+
+    private static boolean hasNotBeenScraped(DcValue dcValue) {
+        return !dcValue.isAuthor()
+               && !dcValue.isIssnValue()
+               && !dcValue.isTitle()
+               && !dcValue.isType()
+               && !dcValue.isLanguage()
+               && !dcValue.isJournal()
+               && !dcValue.isPublisher();
     }
 
     private static void updateDublinCoreFromRecord(DublinCore dublinCore, Record record) {
@@ -80,6 +104,12 @@ public class DublinCoreParser {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isIssnValue)
                    .findAny().orElse(new DcValue()).getValue();
+    }
+
+    private static void logUnscrapedDcValue(DcValue dcValue, Record record) {
+        logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
+                                  dcValue.toString(),
+                                  record.getOriginInformation()));
     }
 
     private static Type mapOriginTypeToNvaType(List<String> types) {
