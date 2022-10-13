@@ -50,3 +50,7 @@ app-info*
 
 ### tmp folder containing unzipped result
 /tmp/
+**/inputWithCristinId/**
+**/testinput/**
+**/inputWithLicense/**
+**/inputWithoutHanlde/**
