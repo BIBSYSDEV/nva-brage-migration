@@ -15,6 +15,10 @@ public class DublinCoreException extends RuntimeException {
         super(message, throwable);
     }
 
+    public DublinCoreException(String message) {
+        super(message);
+    }
+
     public DublinCoreException(List<Problem> problemList) {
         super(String.format(PROBLEM_LIST_EXPLANATION, collectProblems(problemList)));
     }

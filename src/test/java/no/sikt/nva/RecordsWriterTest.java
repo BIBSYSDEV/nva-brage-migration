@@ -6,8 +6,10 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import no.sikt.nva.model.record.Record;
+import no.sikt.nva.model.record.Type;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +31,8 @@ public class RecordsWriterTest {
 
         var record = new Record();
         record.setId(randomUri());
-        record.setType(randomString());
+        List<String> types = Collections.singletonList("Research report");
+        record.setType(new Type(types, TypeMapper.toNvaType(types)));
         record.setLicense(randomString());
         record.setLanguage(randomString());
         record.setAuthors(authors);

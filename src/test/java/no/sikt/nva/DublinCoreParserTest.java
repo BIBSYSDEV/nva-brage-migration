@@ -6,9 +6,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.publisher.Publication;
 import no.sikt.nva.model.record.Record;
+import no.sikt.nva.model.record.Type;
 import org.junit.jupiter.api.Test;
 
 public class DublinCoreParserTest {
@@ -21,7 +24,7 @@ public class DublinCoreParserTest {
         var actualRecord = new Record();
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File("src/test/resources/dublin_core.xml"),
                                                                    actualRecord.getOriginInformation());
-       DublinCoreParser.validateAndParseDublinCore(dublinCore, actualRecord);
+        DublinCoreParser.validateAndParseDublinCore(dublinCore, actualRecord);
 
         assertThat(actualRecord, is(equalTo(expectedRecord)));
     }
@@ -37,7 +40,8 @@ public class DublinCoreParserTest {
 
     private Record createTestRecord() {
         Record record = new Record();
-        record.setType("Research report");
+        List<String> types = Collections.singletonList("Research report");
+        record.setType(new Type(types, TypeMapper.toNvaType(types)));
         record.setTitle("Studie av friluftsliv blant barn og unge i Oslo: Sosial ulikhet og sosial utjevning");
         record.setLanguage("nob");
         record.setAuthors(createAuthors());
@@ -46,7 +50,6 @@ public class DublinCoreParserTest {
     }
 
     private Publication createPublication() {
-
         Publication publication = new Publication();
         publication.setIssn("2345-2344-5567");
         return publication;

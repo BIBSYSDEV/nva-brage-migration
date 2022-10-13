@@ -7,6 +7,7 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.publisher.Publication;
 import no.sikt.nva.model.record.Record;
+import no.sikt.nva.model.record.Type;
 
 public class DublinCoreParser {
 
@@ -22,7 +23,7 @@ public class DublinCoreParser {
     private static void updateDublinCoreFromRecord(DublinCore dublinCore, Record record) {
         record.setAuthors(extractAuthors(dublinCore));
         record.setPublication(extractPublication(dublinCore));
-        record.setType(extractType(dublinCore));
+        record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
         record.setTitle(extractTitle(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
     }
@@ -55,10 +56,12 @@ public class DublinCoreParser {
                    .collect(Collectors.toList());
     }
 
-    private static String extractType(DublinCore dublinCore) {
+    private static List<String> extractType(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isType)
-                   .findAny().orElse(new DcValue()).getValue();
+                   .map(DcValue::getValue)
+                   .collect(Collectors.toList());
+
     }
 
     private static String extractLanguage(DublinCore dublinCore) {
@@ -77,5 +80,9 @@ public class DublinCoreParser {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isIssnValue)
                    .findAny().orElse(new DcValue()).getValue();
+    }
+
+    private static Type mapOriginTypeToNvaType(List<String> types) {
+        return new Type(types,TypeMapper.toNvaType(types));
     }
 }

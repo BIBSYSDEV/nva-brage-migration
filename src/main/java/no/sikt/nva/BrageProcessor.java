@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.model.record.Record;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,9 +75,9 @@ public class BrageProcessor implements Runnable {
             var dublinCore = DublinCoreFactory.createDublinCoreFromXml(dublinCoreFile, record.getOriginInformation());
             record.setId(HandleScraper.extractHandleFromBundle(handlePath, dublinCoreFile));
             DublinCoreParser.validateAndParseDublinCore(dublinCore, record);
-            record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory, record.getOriginInformation()));
+            record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory));
         } catch (Exception e) {
-            logger.error(e.getMessage() + record.getOriginInformation());
+            logger.error(e.getMessage() + StringUtils.SPACE + record.getOriginInformation());
             return Optional.empty();
         }
         return Optional.of(record);

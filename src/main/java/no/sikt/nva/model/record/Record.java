@@ -16,7 +16,7 @@ public class Record {
     private String customerUri;
     private URI id;
     private Path origin;
-    private String type;
+    private Type type;
     private String title;
     private String language;
     private String license;
@@ -72,13 +72,12 @@ public class Record {
         this.id = id;
     }
 
-    @JacocoGenerated
     @JsonProperty("type")
-    public String getType() {
+    public Type getType() {
         return this.type;
     }
 
-    public void setType(String type) {
+    public void setType(Type type) {
         this.type = type;
     }
 
@@ -153,7 +152,7 @@ public class Record {
         this.publication = publication;
     }
 
-    @JsonProperty("bare_origin")
+    @JsonProperty("bareOrigin")
     public Path getOrigin() {
         return origin;
     }

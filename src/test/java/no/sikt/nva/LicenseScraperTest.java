@@ -30,7 +30,7 @@ public class LicenseScraperTest {
     @Test
     void shouldReadLicenseWhenCustomLicenseFileIsValid() throws LicenseExtractingException {
         LicenseScraper licenseScraper = new LicenseScraper(VALID_LICENSE_FILE_NAME);
-        var statements = licenseScraper.extractOrCreateLicense(new File(PATH_TO_FILES), StringUtils.EMPTY_STRING);
+        var statements = licenseScraper.extractOrCreateLicense(new File(PATH_TO_FILES));
 
         assertThat(statements, is(equalTo(EXPECTED_LICENSE_FROM_VALID_LICENSE_FILE)));
     }
@@ -38,21 +38,9 @@ public class LicenseScraperTest {
     @ParameterizedTest
     @ValueSource(strings = {FILE_DOES_NOT_EXISTS, INVALID_LICENSE_FILE_NAME})
     void shouldReturnDefaultLicenseAndWriteToLogsWhenLicenseFileCannotBeRead(String filename) {
-        String locationInformation = generateLocationInformation();
-        var appender = LogUtils.getTestingAppenderForRootLogger();
         LicenseScraper licenseScraper = new LicenseScraper(filename);
-        var statements = licenseScraper.extractOrCreateLicense(new File(PATH_TO_FILES), locationInformation);
+        var statements = licenseScraper.extractOrCreateLicense(new File(PATH_TO_FILES));
         assertThat(statements, is(equalTo(DEFAULT_LICENSE)));
-        assertThat(appender.getMessages(), containsString(String.format(
-            COULD_NOT_EXTRACT_LICENSE_FROM_SPECIFIED_LOCATION_LOG_MESSAGE_WARNING, locationInformation)));
-    }
-
-    private static String generateLocationInformation() {
-        var record = new Record();
-        record.setId(randomUri());
-        record.setOrigin(Path.of("path", randomString()));
-        var locationInformation = record.getOriginInformation();
-        return locationInformation;
     }
 }
 
