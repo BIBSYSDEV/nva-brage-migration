@@ -47,7 +47,7 @@ public class DublinCoreParserTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var expectedDcValuedLogged = new DcValue(Element.DESCRIPTION, Qualifier.PROVENANCE,
                                                  "Gurba Gurba gurba gurba gurba gurba gurba gurba gurba gurba gurba "
-                                                 + "gurba gurba gurba gurba gurba gurba gurba (øæsdfadfåp)").toString();
+                                                 + "gurba gurba gurba gurba gurba gurba gurba (øæsdfadfåp)").toXmlString();
 
         var record = new Record();
         record.setOrigin(Path.of("something/something"));

@@ -70,8 +70,8 @@ public class DcValue {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
     }
 
-    @Override
-    public String toString() {
+
+    public String toXmlString() {
         StringWriter sw = new StringWriter();
         JAXB.marshal(this, sw);
         return sw.toString();
