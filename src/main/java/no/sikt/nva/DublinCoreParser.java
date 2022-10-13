@@ -28,10 +28,16 @@ public class DublinCoreParser {
         }
     }
 
+    public static String extractTitle(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isTitle)
+                   .findAny().orElse(new DcValue()).getValue();
+    }
+
     private static void logUnscrapedValues(DublinCore dublinCore, BrageLocation brageLocation) {
         dublinCore.getDcValues()
             .stream()
-            .filter(dcValue -> hasNotBeenScraped(dcValue))
+            .filter(DublinCoreParser::hasNotBeenScraped)
             .forEach(dcValue -> logUnscrapedDcValue(dcValue, brageLocation));
     }
 
@@ -45,7 +51,8 @@ public class DublinCoreParser {
                && !dcValue.isPublisher();
     }
 
-    private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore, BrageLocation brageLocation) {
+    private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
+                                                                     BrageLocation brageLocation) {
         var record = new Record();
         record.setId(brageLocation.getHandle());
         record.setOrigin(brageLocation.getBrageBundlePath());
@@ -94,12 +101,6 @@ public class DublinCoreParser {
     private static String extractLanguage(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isLanguage)
-                   .findAny().orElse(new DcValue()).getValue();
-    }
-
-    private static String extractTitle(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isTitle)
                    .findAny().orElse(new DcValue()).getValue();
     }
 

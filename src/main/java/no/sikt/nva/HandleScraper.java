@@ -70,10 +70,6 @@ public class HandleScraper {
                    .orElseGet(() -> extractHandleFromBundle(handlefile, dublinCore));
     }
 
-    private static boolean dcValueIsTitle(final DcValue dcValue) {
-        return Element.TITLE.equals(dcValue.getElement()) && Qualifier.NONE.equals(dcValue.getQualifier());
-    }
-
     private static DcValue extractDcValueContainingHandleFromDublinCore(final DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
@@ -105,13 +101,7 @@ public class HandleScraper {
     }
 
     private Optional<URI> quickLookupHandleInCsvFile(final DublinCore dublinCore) {
-        var title =
-            dublinCore.getDcValues()
-                .stream()
-                .filter(HandleScraper::dcValueIsTitle)
-                .findFirst()
-                .orElseThrow()
-                .getValue();
+        var title = DublinCoreParser.extractTitle(dublinCore);
         var handle = rescueTitlesAndHandles.get(title);
         if (StringUtils.isNotEmpty(handle)) {
             return Optional.of(verifiedHandleURI(handle));

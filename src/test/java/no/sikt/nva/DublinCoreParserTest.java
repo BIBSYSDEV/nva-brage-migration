@@ -38,15 +38,18 @@ public class DublinCoreParserTest {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
             new File(CRISTIN_DUBLIN_CORE));
         assertThrows(DublinCoreException.class, () ->
-                                                    DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation));
+                                                    DublinCoreParser.validateAndParseDublinCore(dublinCore,
+                                                                                                brageLocation));
     }
 
     @Test
     void shouldLogDcValuesThatAreNotUsedForScraping() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var expectedDcValuedLogged = new DcValue(Element.DESCRIPTION, Qualifier.PROVENANCE,
+        var expectedDcValuedLogged = new DcValue(Element.DESCRIPTION,
+                                                 Qualifier.PROVENANCE,
                                                  "Gurba Gurba gurba gurba gurba gurba gurba gurba gurba gurba gurba "
-                                                 + "gurba gurba gurba gurba gurba gurba gurba (øæsdfadfåp)").toXmlString();
+                                                 + "gurba gurba gurba gurba gurba gurba gurba (øæsdfadfåp)")
+                                         .toXmlString();
 
         var brageLocation = new BrageLocation(Path.of("somebundle/someindex"));
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
