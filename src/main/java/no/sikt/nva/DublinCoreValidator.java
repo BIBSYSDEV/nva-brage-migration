@@ -27,7 +27,7 @@ public final class DublinCoreValidator {
 
     public static List<Warning> getDublinCoreWarnings(DublinCore dublinCore) {
         var warnings = new ArrayList<Warning>();
-        if (!versionIsEitherMissingOrValid(dublinCore)) {
+        if (!versionIsValid(dublinCore) && versionIsPresent(dublinCore)) {
             warnings.add(Warning.VERSION_WARNING);
         }
         return warnings;
@@ -66,11 +66,15 @@ public final class DublinCoreValidator {
                    .anyMatch(DcValue::isIsbnValue);
     }
 
-    private static boolean versionIsEitherMissingOrValid(DublinCore dublinCore) {
+    private static boolean versionIsValid(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isVersion)
-                   .findAny().map(DublinCoreValidator::isValidVersion)
-                   .orElse(false);
+                    .filter(DcValue::isVersion)
+                    .findAny().map(DublinCoreValidator::isValidVersion).orElse(false);
+    }
+
+    private static boolean versionIsPresent(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .anyMatch(DcValue::isVersion);
     }
 
     private static boolean isValidVersion(DcValue version) {

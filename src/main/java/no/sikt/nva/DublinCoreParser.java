@@ -9,6 +9,7 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.publisher.Publication;
 import no.sikt.nva.model.record.Record;
+import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ public class DublinCoreParser {
         "Field was not scraped %s in location %s";
 
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
+    public static final String WARNING_TEXT = "The dublin_core.xml has following warnings: ";
 
     public static void validateAndParseDublinCore(DublinCore dublinCore, Record record) {
         var problems = DublinCoreValidator.getDublinCoreErrors(dublinCore);
@@ -25,7 +27,7 @@ public class DublinCoreParser {
         if (problems.isEmpty()) {
             updateDublinCoreFromRecord(dublinCore, record);
             logUnscrapedValues(dublinCore, record);
-            logger.warn(String.valueOf(warnings));
+            logger.warn(WARNING_TEXT + warnings + StringUtils.SPACE + record.getOriginInformation());
         } else {
             throw new DublinCoreException(problems);
         }
