@@ -1,6 +1,7 @@
 package no.sikt.nva.model.record;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.nio.file.Path;
@@ -26,6 +27,7 @@ public class Record {
     private List<String> authors;
     private Publication publication;
 
+    @JsonInclude
     @JsonProperty("publisherAuthority")
     public Boolean getPublisherAuthority() {
         return publisherAuthority;

@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.dublincore.DcValue;
-import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.publisher.Publication;
@@ -21,13 +20,18 @@ import org.junit.jupiter.api.Test;
 
 public class DublinCoreParserTest {
 
-    public static final String CRISTIN_DUBLIN_CORE = "src/test/resources/dublin_core_with_cristin_identifier.xml";
+    public static final String INVALID_DUBLIN_CORE = "src/test/resources/invalid_dublin_core.xml";
+
+    public static final String VALID_DUBLIN_CORE = "src/test/resources/valid_dublin_core.xml";
+
+    public static final String VALID_DUBLIN_CORE_WITH_WARNINGS =
+        "src/test/resources/valid_dublin_core_with_warnings.xml";
 
     @Test
     void shouldConvertFilesWithValidFields() {
         var expectedRecord = createTestRecord();
         var actualRecord = new Record();
-        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File("src/test/resources/dublin_core.xml"),
+        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(VALID_DUBLIN_CORE),
                                                                    actualRecord.getOriginInformation());
         DublinCoreParser.validateAndParseDublinCore(dublinCore, actualRecord);
 
@@ -38,7 +42,7 @@ public class DublinCoreParserTest {
     void shouldReturnExceptionIfResourceIsInCristin() {
         var record = new Record();
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
-            CRISTIN_DUBLIN_CORE), record.getOriginInformation());
+            INVALID_DUBLIN_CORE), record.getOriginInformation());
         assertThrows(DublinCoreException.class, () ->
                                                     DublinCoreParser.validateAndParseDublinCore(dublinCore, record));
     }
@@ -65,10 +69,21 @@ public class DublinCoreParserTest {
         var record = new Record();
         record.setOrigin(Path.of("something/something"));
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
-            "src/test/resources/dublin_core.xml"), record.getOriginInformation());
-        DublinCoreParser.validateAndParseDublinCore(dublinCore,record);
+            VALID_DUBLIN_CORE), record.getOriginInformation());
+        DublinCoreParser.validateAndParseDublinCore(dublinCore, record);
         var actualPublisherAuthority = record.getPublisherAuthority();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
+    }
+
+    @Test
+    void shouldCreatePublisherAuthorityIfVersionIsNotPresent() {
+        var record = new Record();
+        record.setOrigin(Path.of("something/something"));
+        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
+            VALID_DUBLIN_CORE_WITH_WARNINGS), record.getOriginInformation());
+        DublinCoreParser.validateAndParseDublinCore(dublinCore, record);
+        var actualPublisherAuthority = record.getPublisherAuthority();
+        assertThat(actualPublisherAuthority, is(equalTo(null)));
     }
 
     private Record createTestRecord() {

@@ -48,7 +48,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void writeRecordsToFiles(List<BrageProcessor> brageProcessors) {
-        brageProcessors.forEach(brageProcessor -> writeRecordToFile(brageProcessor));
+        brageProcessors.forEach(this::writeRecordToFile);
     }
 
     private void writeRecordToFile(BrageProcessor brageProcessor) {

@@ -2,29 +2,35 @@ package no.sikt.nva;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.validator.routines.ISBNValidator;
+import org.apache.commons.validator.routines.ISSNValidator;
 
 public final class DublinCoreValidator {
 
     public static final String VERSION_STRING_NVE = "publishedVersion";
-    private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
 
-
-    public enum Problem {
-        CRISTIN_ID_PRESENT
-    }
-
-    public static List<Problem>  getDublinCoreErrors(DublinCore dublinCore) {
-        var problems = new ArrayList<Problem>();
+    public static List<Error> getDublinCoreErrors(DublinCore dublinCore) {
+        var problems = new ArrayList<Error>();
         if (hasCristinIdentifier(dublinCore)) {
-            problems.add(Problem.CRISTIN_ID_PRESENT);
+            problems.add(Error.CRISTIN_ID_PRESENT);
+        }
+        if (!containsPresentValidIssn(dublinCore)) {
+            problems.add(Error.INVALID_ISSN);
+        }
+        if (!containsPresentValidIsbn(dublinCore)) {
+            problems.add(Error.INVALID_ISBN);
         }
         return problems;
+    }
+
+    public static List<Warning> getDublinCoreWarnings(DublinCore dublinCore) {
+        var warnings = new ArrayList<Warning>();
+        if (!versionIsEitherMissingOrValid(dublinCore)) {
+            warnings.add(Warning.VERSION_WARNING);
+        }
+        return warnings;
     }
 
     private static boolean hasCristinIdentifier(DublinCore dublinCore) {
@@ -32,31 +38,52 @@ public final class DublinCoreValidator {
                    .anyMatch(DcValue::isCristinDcValue);
     }
 
-    public static Boolean hasPresentValidVersion(DublinCore dublinCore) {
-        var versionList = dublinCore.getDcValues().stream()
-                          .filter(DcValue::isVersion)
-                          .collect(Collectors.toList());
-
-        if(versionList.size() == 1) {
-            if (VERSION_STRING_NVE.equals(versionList.get(0).getValue())) {
-                return true;
-            } else {
-                logger.warn("Invalid version in dublin_core with handle");
-                return null;
-            }
-        } else {
-            return null;
+    private static boolean containsPresentValidIssn(DublinCore dublinCore) {
+        if (hasIssn(dublinCore)) {
+            var issn = DublinCoreParser.extractIssn(dublinCore);
+            ISSNValidator validator = new ISSNValidator();
+            return validator.isValid(issn);
         }
+        return true;
     }
 
-    private static Boolean isValidVersion(Optional<DcValue> version) {
-        return version.map(dcValue -> isPresentValidVersion(version)).orElse(null);
+    private static boolean containsPresentValidIsbn(DublinCore dublinCore) {
+        if (hasIsbn(dublinCore)) {
+            var isbn = DublinCoreParser.extractIsbn(dublinCore);
+            ISBNValidator validator = new ISBNValidator();
+            return validator.isValid(isbn);
+        }
+        return true;
     }
 
-    private static Boolean isPresentValidVersion(Optional<DcValue> version) {
-         else {
-            logger.warn("Invalid version");
-            return null;
-        }
+    private static boolean hasIssn(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .anyMatch(DcValue::isIssnValue);
+    }
+
+    private static boolean hasIsbn(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .anyMatch(DcValue::isIsbnValue);
+    }
+
+    private static boolean versionIsEitherMissingOrValid(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isVersion)
+                   .findAny().map(DublinCoreValidator::isValidVersion)
+                   .orElse(false);
+    }
+
+    private static boolean isValidVersion(DcValue version) {
+        return VERSION_STRING_NVE.equals(version.getValue());
+    }
+
+    public enum Error {
+        CRISTIN_ID_PRESENT,
+        INVALID_ISSN,
+        INVALID_ISBN
+    }
+
+    public enum Warning {
+        VERSION_WARNING
     }
 }

@@ -109,6 +109,7 @@ public enum Qualifier {
     @XmlEnumValue("issn")
     ISSN("issn"),
 
+
     @XmlEnumValue("pmid")
     PMID("pmid"),
 
