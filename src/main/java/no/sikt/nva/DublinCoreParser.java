@@ -1,6 +1,7 @@
 package no.sikt.nva;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.dublincore.DcValue;
@@ -29,7 +30,7 @@ public class DublinCoreParser {
     private static void logUnscrapedValues(DublinCore dublinCore, Record record) {
         dublinCore.getDcValues()
             .stream()
-            .filter(dcValue -> hasNotBeenScraped(dcValue))
+            .filter(DublinCoreParser::hasNotBeenScraped)
             .forEach(dcValue -> logUnscrapedDcValue(dcValue, record));
     }
 
@@ -40,7 +41,8 @@ public class DublinCoreParser {
                && !dcValue.isType()
                && !dcValue.isLanguage()
                && !dcValue.isJournal()
-               && !dcValue.isPublisher();
+               && !dcValue.isPublisher()
+               && !dcValue.isVersion();
     }
 
     private static void updateDublinCoreFromRecord(DublinCore dublinCore, Record record) {
@@ -49,6 +51,7 @@ public class DublinCoreParser {
         record.setType(extractType(dublinCore));
         record.setTitle(extractTitle(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
+        record.setPublisherAuthority(extractVersion(dublinCore));
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
@@ -103,9 +106,19 @@ public class DublinCoreParser {
                    .findAny().orElse(new DcValue()).getValue();
     }
 
+    private static Boolean extractVersion(DublinCore dublinCore) {
+        var version = dublinCore.getDcValues().stream()
+                          .filter(DcValue::isVersion)
+                          .findAny();
+
+        return isValidVersion(version);
+    }
+
+
+
     private static void logUnscrapedDcValue(DcValue dcValue, Record record) {
         logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
-                                  dcValue.toString(),
+                                  dcValue.toXmlString(),
                                   record.getOriginInformation()));
     }
 }

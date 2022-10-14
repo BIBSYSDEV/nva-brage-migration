@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.dublincore.DcValue;
+import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.publisher.Publication;
@@ -58,6 +59,18 @@ public class DublinCoreParserTest {
             FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE, expectedDcValuedLogged, record.getOriginInformation())));
     }
 
+    @Test
+    void shouldConvertValidVersionToPublisherAuthority() {
+        var expectedPublisherAuthority = true;
+        var record = new Record();
+        record.setOrigin(Path.of("something/something"));
+        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
+            "src/test/resources/dublin_core.xml"), record.getOriginInformation());
+        DublinCoreParser.validateAndParseDublinCore(dublinCore,record);
+        var actualPublisherAuthority = record.getPublisherAuthority();
+        assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
+    }
+
     private Record createTestRecord() {
         Record record = new Record();
         record.setType("Research report");
@@ -65,11 +78,11 @@ public class DublinCoreParserTest {
         record.setLanguage("nob");
         record.setAuthors(createAuthors());
         record.setPublication(createPublication());
+
         return record;
     }
 
     private Publication createPublication() {
-
         Publication publication = new Publication();
         publication.setIssn("2345-2344-5567");
         return publication;

@@ -70,6 +70,10 @@ public class DcValue {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
     }
 
+    public boolean isVersion() {
+        return Element.DESCRIPTION.equals(this.element) && Qualifier.VERSION.equals(this.qualifier);
+    }
+
 
     public String toXmlString() {
         StringWriter sw = new StringWriter();

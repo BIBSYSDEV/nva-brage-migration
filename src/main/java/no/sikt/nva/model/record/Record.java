@@ -21,9 +21,28 @@ public class Record {
     private String language;
     private String license;
     private String embargo;
+    private Boolean publisherAuthority;
     private List<String> tags;
     private List<String> authors;
     private Publication publication;
+
+    @JsonProperty("publisherAuthority")
+    public Boolean getPublisherAuthority() {
+        return publisherAuthority;
+    }
+
+    public void setPublisherAuthority(Boolean publisherAuthority) {
+        this.publisherAuthority = publisherAuthority;
+    }
+
+    @JsonProperty("publication")
+    public Publication getPublication() {
+        return publication;
+    }
+
+    public void setPublication(Publication publication) {
+        this.publication = publication;
+    }
 
     @JacocoGenerated
     @Override
@@ -142,15 +161,6 @@ public class Record {
     @JacocoGenerated
     public void setTags(List<String> tags) {
         this.tags = tags;
-    }
-
-    @JsonProperty("publication")
-    public Publication getPublisher() {
-        return publication;
-    }
-
-    public void setPublication(Publication publication) {
-        this.publication = publication;
     }
 
     @JsonProperty("bare_origin")
