@@ -26,35 +26,12 @@ public class DublinCoreParser {
         }
     }
 
-    private static void logUnscrapedValues(DublinCore dublinCore, Record record) {
-        dublinCore.getDcValues()
-            .stream()
-            .filter(dcValue -> hasNotBeenScraped(dcValue))
-            .forEach(dcValue -> logUnscrapedDcValue(dcValue, record));
-    }
-
-    private static boolean hasNotBeenScraped(DcValue dcValue) {
-        return !dcValue.isAuthor()
-               && !dcValue.isIssnValue()
-               && !dcValue.isTitle()
-               && !dcValue.isType()
-               && !dcValue.isLanguage()
-               && !dcValue.isJournal()
-               && !dcValue.isPublisher();
-    }
-
     private static void updateDublinCoreFromRecord(DublinCore dublinCore, Record record) {
         record.setAuthors(extractAuthors(dublinCore));
         record.setPublication(extractPublication(dublinCore));
         record.setType(extractType(dublinCore));
         record.setTitle(extractTitle(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
-    }
-
-    private static String extractPublisher(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isPublisher)
-                   .findAny().orElse(new DcValue()).getValue();
     }
 
     private static Publication extractPublication(DublinCore dublinCore) {
@@ -66,6 +43,56 @@ public class DublinCoreParser {
 
         return publication;
     }
+
+    private static void logUnscrapedValues(DublinCore dublinCore, Record record) {
+        dublinCore.getDcValues()
+            .stream()
+            .filter(DublinCoreParser::hasNotBeenScraped)
+            .forEach(dcValue -> logUnscrapedDcValue(dcValue, record));
+    }
+
+    private static void logUnscrapedDcValue(DcValue dcValue, Record record) {
+        logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
+                                  dcValue.getValue(),
+                                  record.getOriginInformation()));
+    }
+
+    public static String extractIssn(DublinCore dublinCore) {
+        var issnList = dublinCore.getDcValues().stream()
+                           .filter(DcValue::isIssnValue)
+                           .map(DcValue::getValue)
+                           .collect(Collectors.toList());
+
+        return handleIssnList(issnList);
+    }
+
+    public static String extractIsbn(DublinCore dublinCore) {
+        var isbnList = dublinCore.getDcValues().stream()
+                           .filter(DcValue::isIsbnValue)
+                           .map(DcValue::getValue)
+                           .collect(Collectors.toList());
+
+        return handleIsbnList(isbnList);
+    }
+
+    private static boolean hasNotBeenScraped(DcValue dcValue) {
+        return !dcValue.isAuthor()
+               && !dcValue.isIssnValue()
+               && !dcValue.isTitle()
+               && !dcValue.isType()
+               && !dcValue.isLanguage()
+               && !dcValue.isJournal()
+               && !dcValue.isPublisher()
+               && !dcValue.isIsbnValue();
+    }
+
+    private static String extractPublisher(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isPublisher)
+                   .findAny().orElse(new DcValue()).getValue();
+    }
+
+
 
     private static String extractJournal(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
@@ -98,21 +125,31 @@ public class DublinCoreParser {
                    .findAny().orElse(new DcValue()).getValue();
     }
 
-    public static String extractIssn(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isIssnValue)
-                   .findAny().orElse(new DcValue()).getValue();
+    private static String handleIssnList(List<String> issnList) {
+        if (issnList.isEmpty()) {
+            return new DcValue().getValue();
+        }
+
+        if (isSingleton(issnList)) {
+            logger.warn("Contains many issn values");
+        }
+
+        return issnList.get(0);
     }
 
-    public static String extractIsbn(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isIsbnValue)
-                   .findAny().orElse(new DcValue()).getValue();
+    private static String handleIsbnList(List<String> isbnList) {
+        if (isSingleton(isbnList)) {
+            logger.warn("Contains many isbn values");
+        }
+        if (isbnList.isEmpty()) {
+            return new DcValue().getValue();
+        }
+        return isbnList.get(0);
     }
-                   
-    private static void logUnscrapedDcValue(DcValue dcValue, Record record) {
-        logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
-                                  dcValue.toString(),
-                                  record.getOriginInformation()));
+
+    private static boolean isSingleton(List<String> isbnList) {
+        return isbnList.size() != 1;
     }
+
+
 }

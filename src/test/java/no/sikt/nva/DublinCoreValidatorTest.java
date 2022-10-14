@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 public class DublinCoreValidatorTest {
 
     @Test
-    void shouldReturnEmptyProblemListWhenIssnAndIsbnAreValid() {
+    void validIssnAndIsbnDoesNotAppendProblemsToProblemList() {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
             VALID_DUBLIN_CORE), "someOrigin");
         var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore);

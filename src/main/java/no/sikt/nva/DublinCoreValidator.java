@@ -14,10 +14,10 @@ public final class DublinCoreValidator {
         if (hasCristinIdentifier(dublinCore)) {
             problems.add(Problem.CRISTIN_ID_PRESENT);
         }
-        if (!isValidIssn(dublinCore)) {
+        if (!presentIssnIsValid(dublinCore)) {
             problems.add(Problem.INVALID_ISSN);
         }
-        if (!isValidIsbn(dublinCore)) {
+        if (!presentIsbnIsValid(dublinCore)) {
             problems.add(Problem.INVALID_ISBN);
         }
         return problems;
@@ -28,7 +28,7 @@ public final class DublinCoreValidator {
                    .anyMatch(DcValue::isCristinDcValue);
     }
 
-    private static boolean isValidIssn(DublinCore dublinCore) {
+    private static boolean presentIssnIsValid(DublinCore dublinCore) {
         if (hasIssn(dublinCore)) {
             var issn = DublinCoreParser.extractIssn(dublinCore);
             ISSNValidator validator = new ISSNValidator();
@@ -37,7 +37,7 @@ public final class DublinCoreValidator {
         return true;
     }
 
-    private static boolean isValidIsbn(DublinCore dublinCore) {
+    private static boolean presentIsbnIsValid(DublinCore dublinCore) {
         if (hasIsbn(dublinCore)) {
             var isbn = DublinCoreParser.extractIsbn(dublinCore);
             ISBNValidator validator = new ISBNValidator();
