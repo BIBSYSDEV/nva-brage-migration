@@ -4,6 +4,7 @@ import static no.sikt.nva.DublinCoreValidator.VERSION_STRING_NVE;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import no.sikt.nva.DublinCoreValidator.Warning;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -27,9 +28,15 @@ public class DublinCoreParser {
         if (problems.isEmpty()) {
             updateDublinCoreFromRecord(dublinCore, record);
             logUnscrapedValues(dublinCore, record);
-            logger.warn(WARNING_TEXT + warnings + StringUtils.SPACE + record.getOriginInformation());
+            logWarningsIfNotEmpty(record, warnings);
         } else {
             throw new DublinCoreException(problems);
+        }
+    }
+
+    private static void logWarningsIfNotEmpty(Record record, List<Warning> warnings) {
+        if(!warnings.isEmpty()) {
+            logger.warn(WARNING_TEXT + warnings + StringUtils.SPACE + record.getOriginInformation());
         }
     }
 
