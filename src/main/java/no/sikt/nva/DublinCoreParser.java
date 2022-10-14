@@ -48,7 +48,8 @@ public class DublinCoreParser {
                && !dcValue.isType()
                && !dcValue.isLanguage()
                && !dcValue.isJournal()
-               && !dcValue.isPublisher();
+               && !dcValue.isPublisher()
+               && !dcValue.isUriIdentifier();
     }
 
     private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,

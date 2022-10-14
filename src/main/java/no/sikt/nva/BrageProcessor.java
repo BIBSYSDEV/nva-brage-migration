@@ -58,13 +58,11 @@ public class BrageProcessor implements Runnable {
 
     private static Path getHandlePath(File entryDirectory) {
         var bundlePath = entryDirectory.getPath();
-        var handlePath = Path.of(bundlePath, HANDLE_DEFAULT_NAME);
-        return handlePath;
+        return Path.of(bundlePath, HANDLE_DEFAULT_NAME);
     }
 
     private static File getDublinCoreFile(File entryDirectory) {
-        var dublinCoreFile = new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
-        return dublinCoreFile;
+        return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
     }
 
     private List<Record> processBundles(List<File> resourceDirectories) {
@@ -87,8 +85,8 @@ public class BrageProcessor implements Runnable {
             var dublinCore = DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
             brageLocation.setTitle(DublinCoreParser.extractTitle(dublinCore));
             brageLocation.setHandle(
-                handleScraper.scrapeHandleFromRescueMapOrHandleFileOrDublinCore(getHandlePath(entryDirectory),
-                                                                                dublinCore));
+                handleScraper.scrapeHandle(getHandlePath(entryDirectory),
+                                           dublinCore));
             var record = DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory, record.getOriginInformation()));
             return Optional.of(record);
