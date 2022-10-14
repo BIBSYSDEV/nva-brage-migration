@@ -53,7 +53,7 @@ public class DublinCoreParser {
 
     private static void logUnscrapedDcValue(DcValue dcValue, Record record) {
         logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
-                                  dcValue.getValue(),
+                                  dcValue.toXmlString(),
                                   record.getOriginInformation()));
     }
 
