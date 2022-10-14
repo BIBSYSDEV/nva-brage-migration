@@ -1,6 +1,8 @@
 package no.sikt.nva;
 
 import static no.sikt.nva.DublinCoreValidator.Problem.CRISTIN_ID_PRESENT;
+import static no.sikt.nva.DublinCoreValidator.Problem.INVALID_ISBN;
+import static no.sikt.nva.DublinCoreValidator.Problem.INVALID_ISSN;
 import static no.sikt.nva.HandleScraper.COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MESSAGE;
 import static no.sikt.nva.HandleScraper.ERROR_MESSAGE_NO_HANDLE_IN_DUBLIN_CORE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,6 +42,7 @@ public class BrageMigrationCommandTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{"-c", "nve", "-z", "testinput.zip"};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        var messages = appender.getMessages();
         assertThat(appender.getMessages(), containsString(NO_LICENSE_LOGG_MESSAGE));
     }
 
@@ -55,9 +58,25 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessAndLogFileWithCristinId() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var arguments = new String[]{"-c", "nve", "-z", "inputWithCristinId.zip"};
+        var arguments = new String[]{"-c", "nve", "-z", "invalidFileInput.zip"};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(String.valueOf(CRISTIN_ID_PRESENT)));
+    }
+
+    @Test
+    void shouldProcessAndLogFileWithInvalidIssn() throws Exception {
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var arguments = new String[]{"-c", "nve", "-z", "invalidFileInput.zip"};
+        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        assertThat(appender.getMessages(), containsString(String.valueOf(INVALID_ISSN)));
+    }
+
+    @Test
+    void shouldProcessAndLogFileWithInvalidIsbn() throws Exception {
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var arguments = new String[]{"-c", "nve", "-z", "invalidFileInput.zip"};
+        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        assertThat(appender.getMessages(), containsString(String.valueOf(INVALID_ISBN)));
     }
 
     @Test

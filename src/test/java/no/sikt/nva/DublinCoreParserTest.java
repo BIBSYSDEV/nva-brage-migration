@@ -20,13 +20,15 @@ import org.junit.jupiter.api.Test;
 
 public class DublinCoreParserTest {
 
-    public static final String CRISTIN_DUBLIN_CORE = "src/test/resources/dublin_core_with_cristin_identifier.xml";
+    public static final String INVALID_DUBLIN_CORE = "src/test/resources/invalid_dublin_core.xml";
+
+    public static final String VALID_DUBLIN_CORE = "src/test/resources/valid_dublin_core.xml";
 
     @Test
     void shouldConvertFilesWithValidFields() {
         var expectedRecord = createTestRecord();
         var actualRecord = new Record();
-        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File("src/test/resources/dublin_core.xml"),
+        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(VALID_DUBLIN_CORE),
                                                                    actualRecord.getOriginInformation());
         DublinCoreParser.validateAndParseDublinCore(dublinCore, actualRecord);
 
@@ -37,7 +39,7 @@ public class DublinCoreParserTest {
     void shouldReturnExceptionIfResourceIsInCristin() {
         var record = new Record();
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
-            CRISTIN_DUBLIN_CORE), record.getOriginInformation());
+            INVALID_DUBLIN_CORE), record.getOriginInformation());
         assertThrows(DublinCoreException.class, () ->
                                                     DublinCoreParser.validateAndParseDublinCore(dublinCore, record));
     }
