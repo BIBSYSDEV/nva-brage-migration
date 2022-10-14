@@ -6,10 +6,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class DublinCoreValidator {
 
     public static final String VERSION_STRING_NVE = "publishedVersion";
+    private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
 
 
     public enum Problem {
@@ -35,9 +38,14 @@ public final class DublinCoreValidator {
                           .collect(Collectors.toList());
 
         if(versionList.size() == 1) {
-            if (VERSION_STRING_NVE.equals(version.get().getValue())) {
+            if (VERSION_STRING_NVE.equals(versionList.get(0).getValue())) {
                 return true;
+            } else {
+                logger.warn("Invalid version in dublin_core with handle");
+                return null;
             }
+        } else {
+            return null;
         }
     }
 
