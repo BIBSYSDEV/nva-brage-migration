@@ -12,8 +12,6 @@ import org.junit.jupiter.api.Test;
 
 public class TypeMapperTest {
 
-
-
     @Test
     void shouldMapSingleWordTypesToNvaType() {
         var expectedNvaType = Type.Others.getNvaType();
@@ -41,14 +39,12 @@ public class TypeMapperTest {
     @Test
     void shouldThrowExceptionIfCombinationOfInvalidTypes() {
         var types = List.of(Type.Journalarticle.getType(), Type.Others.getType());
-        assertThrows(DublinCoreException.class, () -> TypeMapper.toNvaType(types)) ;
-
+        assertThrows(DublinCoreException.class, () -> TypeMapper.toNvaType(types));
     }
 
     @Test
     void shouldThrowExceptionIfTypeDoesNotExist() {
         var types = List.of("SomeType");
-        assertThrows(DublinCoreException.class, () -> TypeMapper.toNvaType(types)) ;
-
+        assertThrows(DublinCoreException.class, () -> TypeMapper.toNvaType(types));
     }
 }
