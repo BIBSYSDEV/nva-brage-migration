@@ -174,7 +174,7 @@ public class DublinCoreParser {
     private static String extractRightsholder(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isRightsholder)
-                   .findAny().orElse(new DcValue()).getValue();
+                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
     private static String handleIssnList(List<String> issnList) {
