@@ -166,15 +166,6 @@ public class Record {
         this.tags = tags;
     }
 
-    @JsonProperty("publication")
-    public Publication getPublication() {
-        return publication;
-    }
-
-    public void setPublication(Publication publication) {
-        this.publication = publication;
-    }
-
     @JsonProperty("bare_origin")
     public Path getOrigin() {
         return origin;

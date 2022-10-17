@@ -1,6 +1,7 @@
 package no.sikt.nva;
 
 import static no.sikt.nva.DublinCoreValidator.VERSION_STRING_NVE;
+import static no.sikt.nva.DublinCoreValidator.getDublinCoreWarnings;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,12 +26,12 @@ public class DublinCoreParser {
 
     public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         var problems = DublinCoreValidator.getDublinCoreErrors(dublinCore);
-        var warnings = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
+        var warnings = getDublinCoreWarnings(dublinCore);
         if (problems.isEmpty()) {
-            logWarningsIfNotEmpty(record, warnings);
+            var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
             logUnscrapedValues(dublinCore, brageLocation);
-            var records = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
-            return records;
+            logWarningsIfNotEmpty(record,warnings);
+            return record;
         } else {
             throw new DublinCoreException(problems);
         }
@@ -86,7 +87,6 @@ public class DublinCoreParser {
     private static void logUnscrapedDcValue(DcValue dcValue, BrageLocation brageLocation) {
         logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
                                   dcValue.toXmlString(),
-                                  record.getOriginInformation()));
                                   brageLocation.getOriginInformation()));
     }
 
@@ -98,7 +98,7 @@ public class DublinCoreParser {
                && !dcValue.isLanguage()
                && !dcValue.isJournal()
                && !dcValue.isPublisher()
-               && !dcValue.isVersion();
+               && !dcValue.isVersion()
                && !dcValue.isIsbnValue()
                && !dcValue.isUriIdentifier();
     }
@@ -114,6 +114,7 @@ public class DublinCoreParser {
         record.setTitle(extractTitle(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
+        record.setPublisherAuthority(extractVersion(dublinCore));
         return record;
     }
 

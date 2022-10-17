@@ -69,12 +69,11 @@ public class DublinCoreParserTest {
     @Test
     void shouldConvertValidVersionToPublisherAuthority() {
         var expectedPublisherAuthority = true;
-        var record = new Record();
-        record.setOrigin(Path.of("something/something"));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValue(Element.DESCRIPTION,
                                                                        Qualifier.VERSION,
                                                                        "publishedVersion");
-        DublinCoreParser.validateAndParseDublinCore(dublinCore, record);
+        var record = DublinCoreParser.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        record.setOrigin(Path.of("something/something"));
         var actualPublisherAuthority = record.getPublisherAuthority();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
     }
@@ -87,7 +86,7 @@ public class DublinCoreParserTest {
         var dublinCoreWithoutVersion = DublinCoreFactory.createDublinCoreWithDcValue(Element.CONTRIBUTOR,
                                                                                      Qualifier.AUTHOR,
                                                                                      "someAuthor");
-        DublinCoreParser.validateAndParseDublinCore(dublinCoreWithoutVersion, record);
+        DublinCoreParser.validateAndParseDublinCore(dublinCoreWithoutVersion, new BrageLocation(null));
         var actualPublisherAuthority = record.getPublisherAuthority();
         assertThat(actualPublisherAuthority, is(equalTo(null)));
     }
