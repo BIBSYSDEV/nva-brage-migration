@@ -28,15 +28,6 @@ public class DublinCoreParser {
         }
     }
 
-    private static void updateDublinCoreFromRecord(DublinCore dublinCore, Record record) {
-        record.setAuthors(extractAuthors(dublinCore));
-        record.setPublication(extractPublication(dublinCore));
-        record.setType(extractType(dublinCore));
-        record.setTitle(extractTitle(dublinCore));
-        record.setLanguage(extractLanguage(dublinCore));
-        record.setRightsHolder(extractRightsholder(dublinCore));
-    }    
-
     public static String extractIssn(DublinCore dublinCore) {
         var issnList = dublinCore.getDcValues().stream()
                            .filter(DcValue::isIssnValue)
@@ -106,6 +97,7 @@ public class DublinCoreParser {
         record.setType(extractType(dublinCore));
         record.setTitle(extractTitle(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
+        record.setRightsHolder(extractRightsholder(dublinCore));
         return record;
     }
 
@@ -137,12 +129,6 @@ public class DublinCoreParser {
     private static String extractLanguage(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isLanguage)
-                   .findAny().orElse(new DcValue()).getValue();
-    }
-
-    private static String extractTitle(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isTitle)
                    .findAny().orElse(new DcValue()).getValue();
     }
 
