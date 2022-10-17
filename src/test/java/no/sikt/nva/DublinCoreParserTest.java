@@ -1,6 +1,9 @@
 package no.sikt.nva;
 
 import static no.sikt.nva.DublinCoreParser.FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE;
+import static no.sikt.nva.ResourceNameConstants.INVALID_DUBLIN_CORE_XML_FILE_NAME;
+import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
+import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -10,6 +13,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import no.sikt.nva.exceptions.DublinCoreException;
+import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
@@ -27,35 +31,37 @@ public class DublinCoreParserTest {
     @Test
     void shouldConvertFilesWithValidFields() {
         var expectedRecord = createTestRecord();
-        var actualRecord = new Record();
-        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(VALID_DUBLIN_CORE),
-                                                                   actualRecord.getOriginInformation());
-        DublinCoreParser.validateAndParseDublinCore(dublinCore, actualRecord);
-
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
+            new File(TEST_RESOURCE_PATH + VALID_DUBLIN_CORE_XML_FILE_NAME));
+        var actualRecord = DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
+        DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(actualRecord, is(equalTo(expectedRecord)));
     }
 
     @Test
     void shouldReturnExceptionIfResourceIsInCristin() {
-        var record = new Record();
-        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
-            INVALID_DUBLIN_CORE), record.getOriginInformation());
-        assertThrows(DublinCoreException.class, () ->
-                                                    DublinCoreParser.validateAndParseDublinCore(dublinCore, record));
+        var brageLocation = new BrageLocation(Path.of("somebundle/someindex"));
+        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
+            new File(TEST_RESOURCE_PATH + INVALID_DUBLIN_CORE_XML_FILE_NAME));
+        assertThrows(DublinCoreException.class,
+                     () -> DublinCoreParser.validateAndParseDublinCore(dublinCore,
+                                                                       brageLocation));
     }
 
     @Test
     void shouldLogDcValuesThatAreNotUsedForScraping() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var expectedDcValuedLogged = new DcValue(Element.DESCRIPTION, Qualifier.PROVENANCE,
+        var expectedDcValuedLogged = new DcValue(Element.DESCRIPTION,
+                                                 Qualifier.PROVENANCE,
                                                  "Gurba Gurba gurba gurba gurba gurba gurba gurba gurba gurba gurba "
-                                                 + "gurba gurba gurba gurba gurba gurba gurba (øæsdfadfåp)").toXmlString();
+                                                 + "gurba gurba gurba gurba gurba gurba gurba (øæsdfadfåp)")
+                                         .toXmlString();
 
-        var record = new Record();
-        record.setOrigin(Path.of("something/something"));
-        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
-            "src/test/resources/dublin_core.xml"), record.getOriginInformation());
-        DublinCoreParser.validateAndParseDublinCore(dublinCore, record);
+        var brageLocation = new BrageLocation(Path.of("somebundle/someindex"));
+        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
+            new File(TEST_RESOURCE_PATH + VALID_DUBLIN_CORE_XML_FILE_NAME));
+        var record = DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(appender.getMessages(), containsString(String.format(
             FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE, expectedDcValuedLogged, record.getOriginInformation())));
     }
