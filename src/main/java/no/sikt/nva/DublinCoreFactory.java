@@ -13,19 +13,18 @@ import no.sikt.nva.model.dublincore.Qualifier;
 public final class DublinCoreFactory {
 
     private static final String UNABLE_TO_UNMARSHALL_DUBLIN_CORE_XML_TEMPLATE =
-        "Unable to unmarshall dublin_core.xml, This occurred in %s";
+        "Unable to unmarshall dublin_core.xml";
 
     private DublinCoreFactory() {
     }
 
-    public static DublinCore createDublinCoreFromXml(File xml, String originInformation) {
+    public static DublinCore createDublinCoreFromXml(File xml) {
         try {
             var unmarshaller = JAXBContext.newInstance(DublinCore.class).createUnmarshaller();
             return (DublinCore) unmarshaller.unmarshal(xml);
         } catch (JAXBException e) {
             throw new DublinCoreException(
-                String.format(UNABLE_TO_UNMARSHALL_DUBLIN_CORE_XML_TEMPLATE, originInformation),
-                e.getCause());
+                UNABLE_TO_UNMARSHALL_DUBLIN_CORE_XML_TEMPLATE, e);
         }
     }
 

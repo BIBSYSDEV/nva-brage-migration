@@ -23,6 +23,7 @@ public class Record {
     private String license;
     private String embargo;
     private Boolean publisherAuthority;
+    private String rightsholder;
     private List<String> tags;
     private List<String> authors;
     private Publication publication;
@@ -165,6 +166,15 @@ public class Record {
         this.tags = tags;
     }
 
+    @JsonProperty("publication")
+    public Publication getPublication() {
+        return publication;
+    }
+
+    public void setPublication(Publication publication) {
+        this.publication = publication;
+    }
+
     @JsonProperty("bare_origin")
     public Path getOrigin() {
         return origin;
@@ -179,5 +189,14 @@ public class Record {
         return Objects.nonNull(getId())
                    ? String.format(ORIGIN_INFORMATION_STRING_TEMPLATE, getOrigin(), getId())
                    : String.format(ORIGIN_INFORMATION, getOrigin());
+    }
+
+    @JsonProperty("rightsholder")
+    public String getRightsholder() {
+        return rightsholder;
+    }
+
+    public void setRightsHolder(String rightsholder) {
+        this.rightsholder = rightsholder;
     }
 }

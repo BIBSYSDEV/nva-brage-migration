@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.DublinCoreValidator.Warning;
 import no.sikt.nva.exceptions.DublinCoreException;
+import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.publisher.Publication;
@@ -22,13 +23,14 @@ public class DublinCoreParser {
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
     public static final String WARNING_TEXT = "The dublin_core.xml has following warnings: ";
 
-    public static void validateAndParseDublinCore(DublinCore dublinCore, Record record) {
+    public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         var problems = DublinCoreValidator.getDublinCoreErrors(dublinCore);
         var warnings = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
         if (problems.isEmpty()) {
-            updateDublinCoreFromRecord(dublinCore, record);
-            logUnscrapedValues(dublinCore, record);
             logWarningsIfNotEmpty(record, warnings);
+            logUnscrapedValues(dublinCore, brageLocation);
+            var records = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
+            return records;
         } else {
             throw new DublinCoreException(problems);
         }
@@ -39,7 +41,7 @@ public class DublinCoreParser {
             logger.warn(WARNING_TEXT + warnings + StringUtils.SPACE + record.getOriginInformation());
         }
     }
-
+    
     public static String extractIssn(DublinCore dublinCore) {
         var issnList = dublinCore.getDcValues().stream()
                            .filter(DcValue::isIssnValue)
@@ -58,13 +60,10 @@ public class DublinCoreParser {
         return handleIsbnList(isbnList);
     }
 
-    private static void updateDublinCoreFromRecord(DublinCore dublinCore, Record record) {
-        record.setAuthors(extractAuthors(dublinCore));
-        record.setPublication(extractPublication(dublinCore));
-        record.setType(extractType(dublinCore));
-        record.setTitle(extractTitle(dublinCore));
-        record.setLanguage(extractLanguage(dublinCore));
-        record.setPublisherAuthority(extractVersion(dublinCore));
+    public static String extractTitle(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isTitle)
+                   .findAny().orElse(new DcValue()).getValue();
     }
 
     private static Publication extractPublication(DublinCore dublinCore) {
@@ -77,17 +76,18 @@ public class DublinCoreParser {
         return publication;
     }
 
-    private static void logUnscrapedValues(DublinCore dublinCore, Record record) {
+    private static void logUnscrapedValues(DublinCore dublinCore, BrageLocation brageLocation) {
         dublinCore.getDcValues()
             .stream()
             .filter(DublinCoreParser::hasNotBeenScraped)
-            .forEach(dcValue -> logUnscrapedDcValue(dcValue, record));
+            .forEach(dcValue -> logUnscrapedDcValue(dcValue, brageLocation));
     }
 
-    private static void logUnscrapedDcValue(DcValue dcValue, Record record) {
+    private static void logUnscrapedDcValue(DcValue dcValue, BrageLocation brageLocation) {
         logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
                                   dcValue.toXmlString(),
                                   record.getOriginInformation()));
+                                  brageLocation.getOriginInformation()));
     }
 
     private static boolean hasNotBeenScraped(DcValue dcValue) {
@@ -99,6 +99,22 @@ public class DublinCoreParser {
                && !dcValue.isJournal()
                && !dcValue.isPublisher()
                && !dcValue.isVersion();
+               && !dcValue.isIsbnValue()
+               && !dcValue.isUriIdentifier();
+    }
+
+    private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
+                                                                     BrageLocation brageLocation) {
+        var record = new Record();
+        record.setId(brageLocation.getHandle());
+        record.setOrigin(brageLocation.getBrageBundlePath());
+        record.setAuthors(extractAuthors(dublinCore));
+        record.setPublication(extractPublication(dublinCore));
+        record.setType(extractType(dublinCore));
+        record.setTitle(extractTitle(dublinCore));
+        record.setLanguage(extractLanguage(dublinCore));
+        record.setRightsHolder(extractRightsholder(dublinCore));
+        return record;
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
@@ -132,9 +148,9 @@ public class DublinCoreParser {
                    .findAny().orElse(new DcValue()).getValue();
     }
 
-    private static String extractTitle(DublinCore dublinCore) {
+    private static String extractRightsholder(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isTitle)
+                   .filter(DcValue::isRightsholder)
                    .findAny().orElse(new DcValue()).getValue();
     }
 
