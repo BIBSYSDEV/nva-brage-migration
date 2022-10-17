@@ -30,6 +30,8 @@ public final class DublinCoreValidator {
         if (!versionIsValid(dublinCore) && versionIsPresent(dublinCore)) {
             warnings.add(Warning.VERSION_WARNING);
         }
+        SubjectScraper.getSubjectsWwarnings(dublinCore).ifPresent(warnings::add);
+
         return warnings;
     }
 
@@ -68,8 +70,8 @@ public final class DublinCoreValidator {
 
     private static boolean versionIsValid(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
-                    .filter(DcValue::isVersion)
-                    .findAny().map(DublinCoreValidator::isValidVersion).orElse(false);
+                   .filter(DcValue::isVersion)
+                   .findAny().map(DublinCoreValidator::isValidVersion).orElse(false);
     }
 
     private static boolean versionIsPresent(DublinCore dublinCore) {
@@ -88,6 +90,7 @@ public final class DublinCoreValidator {
     }
 
     public enum Warning {
-        VERSION_WARNING
+        VERSION_WARNING,
+        SUBJECT_WARNING
     }
 }

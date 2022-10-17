@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
@@ -23,11 +24,6 @@ import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 
 public class DublinCoreParserTest {
-
-    public static final String INVALID_DUBLIN_CORE = "src/test/resources/invalid_dublin_core.xml";
-
-    public static final String VALID_DUBLIN_CORE = "src/test/resources/valid_dublin_core.xml";
-
 
     @Test
     void shouldConvertFilesWithValidFields() {
@@ -99,6 +95,7 @@ public class DublinCoreParserTest {
         record.setAuthors(createAuthors());
         record.setPublication(createPublication());
         record.setRightsHolder("NVE");
+        record.setTags(List.of("vannkraft", "energi"));
         return record;
     }
 
