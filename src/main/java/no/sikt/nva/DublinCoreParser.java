@@ -97,6 +97,7 @@ public class DublinCoreParser {
         record.setType(extractType(dublinCore));
         record.setTitle(extractTitle(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
+        record.setRightsHolder(extractRightsholder(dublinCore));
         return record;
     }
 
@@ -128,6 +129,12 @@ public class DublinCoreParser {
     private static String extractLanguage(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isLanguage)
+                   .findAny().orElse(new DcValue()).getValue();
+    }
+
+    private static String extractRightsholder(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isRightsholder)
                    .findAny().orElse(new DcValue()).getValue();
     }
 

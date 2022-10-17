@@ -76,6 +76,11 @@ public class DcValue {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
     }
 
+    public boolean isRightsholder() {
+        return Element.RIGHTS.equals(this.element) && Qualifier.HOLDER.equals(this.qualifier);
+
+    }
+    
     public boolean isUriIdentifier() {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.URI.equals(this.qualifier);
     }

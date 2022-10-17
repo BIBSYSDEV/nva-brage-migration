@@ -52,11 +52,10 @@ public class DublinCoreParserTest {
     @Test
     void shouldLogDcValuesThatAreNotUsedForScraping() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var expectedDcValuedLogged = new DcValue(Element.DESCRIPTION,
-                                                 Qualifier.PROVENANCE,
-                                                 "Gurba Gurba gurba gurba gurba gurba gurba gurba gurba gurba gurba "
-                                                 + "gurba gurba gurba gurba gurba gurba gurba (øæsdfadfåp)")
-                                         .toXmlString();
+        var expectedDcValuedLogged = new DcValue(Element.DESCRIPTION, Qualifier.PROVENANCE,
+                                                 "Gurba Gurba gurba gurba gurba gurba "
+                                                 + "gurba gurba gurba gurba gurba gurba gurba "
+                                                 + "gurba gurba gurba gurba gurba (øæsdfadfåp)").toXmlString();
 
         var brageLocation = new BrageLocation(Path.of("somebundle/someindex"));
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
@@ -73,6 +72,7 @@ public class DublinCoreParserTest {
         record.setLanguage("nob");
         record.setAuthors(createAuthors());
         record.setPublication(createPublication());
+        record.setRightsHolder("NVE");
         return record;
     }
 
