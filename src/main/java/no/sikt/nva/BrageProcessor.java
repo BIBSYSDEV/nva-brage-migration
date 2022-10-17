@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.record.Record;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +93,8 @@ public class BrageProcessor implements Runnable {
                 licenseScraper.extractOrCreateLicense(entryDirectory, brageLocation.getOriginInformation()));
             return Optional.of(record);
         } catch (Exception e) {
-            logger.error(e.getMessage() + brageLocation.getOriginInformation());
+            logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
+
             return Optional.empty();
         }
     }

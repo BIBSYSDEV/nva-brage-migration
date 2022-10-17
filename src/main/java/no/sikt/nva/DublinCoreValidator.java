@@ -9,18 +9,28 @@ import org.apache.commons.validator.routines.ISSNValidator;
 
 public final class DublinCoreValidator {
 
-    public static List<Problem> getDublinCoreErrors(DublinCore dublinCore) {
-        var problems = new ArrayList<Problem>();
+    public static final String VERSION_STRING_NVE = "publishedVersion";
+
+    public static List<Error> getDublinCoreErrors(DublinCore dublinCore) {
+        var problems = new ArrayList<Error>();
         if (hasCristinIdentifier(dublinCore)) {
-            problems.add(Problem.CRISTIN_ID_PRESENT);
+            problems.add(Error.CRISTIN_ID_PRESENT);
         }
-        if (!presentIssnIsValid(dublinCore)) {
-            problems.add(Problem.INVALID_ISSN);
+        if (!containsPresentValidIssn(dublinCore)) {
+            problems.add(Error.INVALID_ISSN);
         }
-        if (!presentIsbnIsValid(dublinCore)) {
-            problems.add(Problem.INVALID_ISBN);
+        if (!containsPresentValidIsbn(dublinCore)) {
+            problems.add(Error.INVALID_ISBN);
         }
         return problems;
+    }
+
+    public static List<Warning> getDublinCoreWarnings(DublinCore dublinCore) {
+        var warnings = new ArrayList<Warning>();
+        if (!versionIsValid(dublinCore) && versionIsPresent(dublinCore)) {
+            warnings.add(Warning.VERSION_WARNING);
+        }
+        return warnings;
     }
 
     private static boolean hasCristinIdentifier(DublinCore dublinCore) {
@@ -28,7 +38,7 @@ public final class DublinCoreValidator {
                    .anyMatch(DcValue::isCristinDcValue);
     }
 
-    private static boolean presentIssnIsValid(DublinCore dublinCore) {
+    private static boolean containsPresentValidIssn(DublinCore dublinCore) {
         if (hasIssn(dublinCore)) {
             var issn = DublinCoreParser.extractIssn(dublinCore);
             ISSNValidator validator = new ISSNValidator();
@@ -37,7 +47,7 @@ public final class DublinCoreValidator {
         return true;
     }
 
-    private static boolean presentIsbnIsValid(DublinCore dublinCore) {
+    private static boolean containsPresentValidIsbn(DublinCore dublinCore) {
         if (hasIsbn(dublinCore)) {
             var isbn = DublinCoreParser.extractIsbn(dublinCore);
             ISBNValidator validator = new ISBNValidator();
@@ -56,9 +66,28 @@ public final class DublinCoreValidator {
                    .anyMatch(DcValue::isIsbnValue);
     }
 
-    public enum Problem {
+    private static boolean versionIsValid(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                    .filter(DcValue::isVersion)
+                    .findAny().map(DublinCoreValidator::isValidVersion).orElse(false);
+    }
+
+    private static boolean versionIsPresent(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .anyMatch(DcValue::isVersion);
+    }
+
+    private static boolean isValidVersion(DcValue version) {
+        return VERSION_STRING_NVE.equals(version.getValue());
+    }
+
+    public enum Error {
         CRISTIN_ID_PRESENT,
         INVALID_ISSN,
         INVALID_ISBN
+    }
+
+    public enum Warning {
+        VERSION_WARNING
     }
 }

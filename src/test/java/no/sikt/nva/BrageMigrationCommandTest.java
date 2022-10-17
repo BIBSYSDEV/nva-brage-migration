@@ -1,8 +1,8 @@
 package no.sikt.nva;
 
-import static no.sikt.nva.DublinCoreValidator.Problem.CRISTIN_ID_PRESENT;
-import static no.sikt.nva.DublinCoreValidator.Problem.INVALID_ISBN;
-import static no.sikt.nva.DublinCoreValidator.Problem.INVALID_ISSN;
+import static no.sikt.nva.DublinCoreValidator.Error.CRISTIN_ID_PRESENT;
+import static no.sikt.nva.DublinCoreValidator.Error.INVALID_ISBN;
+import static no.sikt.nva.DublinCoreValidator.Error.INVALID_ISSN;
 import static no.sikt.nva.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_LICENSE_ZIP_FILE_NAME;
@@ -41,7 +41,6 @@ public class BrageMigrationCommandTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{"-c", "nve", "-z", TEST_INPUT_ZIP_FILE_NAME};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        var messages = appender.getMessages();
         assertThat(appender.getMessages(), containsString(NO_LICENSE_LOGG_MESSAGE));
     }
 
@@ -73,6 +72,7 @@ public class BrageMigrationCommandTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{"-c", "nve", "-z", INVALID_FILE_INPUT_ZIP_FILE_NAME};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        var m = appender.getMessages();
         assertThat(appender.getMessages(), containsString(String.valueOf(INVALID_ISBN)));
     }
 

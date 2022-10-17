@@ -24,4 +24,5 @@ public class DublinCore {
     public List<DcValue> getDcValues() {
         return dcValues;
     }
+
 }
