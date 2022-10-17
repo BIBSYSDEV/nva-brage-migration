@@ -35,7 +35,7 @@ public class DublinCoreParser {
     }
 
     private static void logWarningsIfNotEmpty(Record record, List<Warning> warnings) {
-        if(!warnings.isEmpty()) {
+        if (!warnings.isEmpty()) {
             logger.warn(WARNING_TEXT + warnings + StringUtils.SPACE + record.getOriginInformation());
         }
     }

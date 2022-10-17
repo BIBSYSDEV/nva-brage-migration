@@ -24,8 +24,6 @@ public class DublinCoreParserTest {
 
     public static final String VALID_DUBLIN_CORE = "src/test/resources/valid_dublin_core.xml";
 
-    public static final String VALID_DUBLIN_CORE_WITH_WARNINGS =
-        "src/test/resources/valid_dublin_core_with_warnings.xml";
 
     @Test
     void shouldConvertFilesWithValidFields() {
@@ -68,8 +66,9 @@ public class DublinCoreParserTest {
         var expectedPublisherAuthority = true;
         var record = new Record();
         record.setOrigin(Path.of("something/something"));
-        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
-            VALID_DUBLIN_CORE), record.getOriginInformation());
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValue(Element.DESCRIPTION,
+                                                                       Qualifier.VERSION,
+                                                                       "publishedVersion");
         DublinCoreParser.validateAndParseDublinCore(dublinCore, record);
         var actualPublisherAuthority = record.getPublisherAuthority();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
@@ -79,9 +78,11 @@ public class DublinCoreParserTest {
     void shouldCreatePublisherAuthorityIfVersionIsNotPresent() {
         var record = new Record();
         record.setOrigin(Path.of("something/something"));
-        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
-            VALID_DUBLIN_CORE_WITH_WARNINGS), record.getOriginInformation());
-        DublinCoreParser.validateAndParseDublinCore(dublinCore, record);
+
+        var dublinCoreWithoutVersion = DublinCoreFactory.createDublinCoreWithDcValue(Element.CONTRIBUTOR,
+                                                                                     Qualifier.AUTHOR,
+                                                                                     "someAuthor");
+        DublinCoreParser.validateAndParseDublinCore(dublinCoreWithoutVersion, record);
         var actualPublisherAuthority = record.getPublisherAuthority();
         assertThat(actualPublisherAuthority, is(equalTo(null)));
     }

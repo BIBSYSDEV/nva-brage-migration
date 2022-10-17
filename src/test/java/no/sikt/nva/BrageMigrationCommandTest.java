@@ -75,6 +75,7 @@ public class BrageMigrationCommandTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{"-c", "nve", "-z", "invalidFileInput.zip"};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        var m = appender.getMessages();
         assertThat(appender.getMessages(), containsString(String.valueOf(INVALID_ISBN)));
     }
 
