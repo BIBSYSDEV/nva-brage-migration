@@ -32,6 +32,7 @@ public class DublinCoreParser {
         record.setType(extractType(dublinCore));
         record.setTitle(extractTitle(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
+        record.setRightsHolder(extractRightsholder(dublinCore));
     }
 
     private static Publication extractPublication(DublinCore dublinCore) {
@@ -122,6 +123,12 @@ public class DublinCoreParser {
     private static String extractTitle(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isTitle)
+                   .findAny().orElse(new DcValue()).getValue();
+    }
+
+    private static String extractRightsholder(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isRightsholder)
                    .findAny().orElse(new DcValue()).getValue();
     }
 

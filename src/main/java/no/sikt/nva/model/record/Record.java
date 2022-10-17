@@ -21,6 +21,7 @@ public class Record {
     private String language;
     private String license;
     private String embargo;
+    private String rightsholder;
     private List<String> tags;
     private List<String> authors;
     private Publication publication;
@@ -145,7 +146,7 @@ public class Record {
     }
 
     @JsonProperty("publication")
-    public Publication getPublisher() {
+    public Publication getPublication() {
         return publication;
     }
 
@@ -167,5 +168,14 @@ public class Record {
         return Objects.nonNull(getId())
                    ? String.format(ORIGIN_INFORMATION_STRING_TEMPLATE, getOrigin(), getId())
                    : String.format(ORIGIN_INFORMATION, getOrigin());
+    }
+
+    @JsonProperty("rightsholder")
+    public String getRightsholder() {
+        return rightsholder;
+    }
+
+    public void setRightsHolder(String rightsholder) {
+        this.rightsholder = rightsholder;
     }
 }
