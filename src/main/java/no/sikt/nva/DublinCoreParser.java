@@ -28,10 +28,38 @@ public class DublinCoreParser {
         }
     }
 
+    public static String extractIssn(DublinCore dublinCore) {
+        var issnList = dublinCore.getDcValues().stream()
+                           .filter(DcValue::isIssnValue)
+                           .map(DcValue::getValue)
+                           .collect(Collectors.toList());
+
+        return handleIssnList(issnList);
+    }
+
+    public static String extractIsbn(DublinCore dublinCore) {
+        var isbnList = dublinCore.getDcValues().stream()
+                           .filter(DcValue::isIsbnValue)
+                           .map(DcValue::getValue)
+                           .collect(Collectors.toList());
+
+        return handleIsbnList(isbnList);
+    }
+
     public static String extractTitle(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isTitle)
                    .findAny().orElse(new DcValue()).getValue();
+    }
+
+    private static Publication extractPublication(DublinCore dublinCore) {
+        var publication = new Publication();
+        publication.setIssn(extractIssn(dublinCore));
+        publication.setIsbn(extractIsbn(dublinCore));
+        publication.setJournal(extractJournal(dublinCore));
+        publication.setPublisher(extractPublisher(dublinCore));
+
+        return publication;
     }
 
     private static void logUnscrapedValues(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -39,6 +67,12 @@ public class DublinCoreParser {
             .stream()
             .filter(DublinCoreParser::hasNotBeenScraped)
             .forEach(dcValue -> logUnscrapedDcValue(dcValue, brageLocation));
+    }
+
+    private static void logUnscrapedDcValue(DcValue dcValue, BrageLocation brageLocation) {
+        logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
+                                  dcValue.toXmlString(),
+                                  brageLocation.getOriginInformation()));
     }
 
     private static boolean hasNotBeenScraped(DcValue dcValue) {
@@ -49,6 +83,7 @@ public class DublinCoreParser {
                && !dcValue.isLanguage()
                && !dcValue.isJournal()
                && !dcValue.isPublisher()
+               && !dcValue.isIsbnValue()
                && !dcValue.isUriIdentifier();
     }
 
@@ -69,15 +104,6 @@ public class DublinCoreParser {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isPublisher)
                    .findAny().orElse(new DcValue()).getValue();
-    }
-
-    private static Publication extractPublication(DublinCore dublinCore) {
-        var publication = new Publication();
-        publication.setIssn(extractIssn(dublinCore));
-        publication.setJournal(extractJournal(dublinCore));
-        publication.setPublisher(extractPublisher(dublinCore));
-
-        return publication;
     }
 
     private static String extractJournal(DublinCore dublinCore) {
@@ -105,15 +131,29 @@ public class DublinCoreParser {
                    .findAny().orElse(new DcValue()).getValue();
     }
 
-    private static String extractIssn(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isIssnValue)
-                   .findAny().orElse(new DcValue()).getValue();
+    private static String handleIssnList(List<String> issnList) {
+        if (issnList.isEmpty()) {
+            return new DcValue().getValue();
+        }
+
+        if (isSingleton(issnList)) {
+            logger.warn("Contains many issn values");
+        }
+
+        return issnList.get(0);
     }
 
-    private static void logUnscrapedDcValue(DcValue dcValue, BrageLocation brageLocation) {
-        logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
-                                  dcValue.toXmlString(),
-                                  brageLocation.getOriginInformation()));
+    private static String handleIsbnList(List<String> isbnList) {
+        if (isSingleton(isbnList)) {
+            logger.warn("Contains many isbn values");
+        }
+        if (isbnList.isEmpty()) {
+            return new DcValue().getValue();
+        }
+        return isbnList.get(0);
+    }
+
+    private static boolean isSingleton(List<String> isbnList) {
+        return isbnList.size() != 1;
     }
 }

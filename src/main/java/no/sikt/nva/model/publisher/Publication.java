@@ -8,12 +8,15 @@ public class Publication {
 
     private String journal;
     private String issn;
+    private String isbn;
     private String publisher;
+
+
 
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(journal, issn, publisher);
+        return Objects.hash(journal, issn, isbn, publisher);
     }
 
     @JacocoGenerated
@@ -28,7 +31,8 @@ public class Publication {
         Publication publication = (Publication) o;
         return Objects.equals(journal, publication.journal)
                && Objects.equals(issn, publication.issn)
-               && Objects.equals(publisher, publication.publisher);
+               && Objects.equals(publisher, publication.publisher)
+               && Objects.equals(isbn, publication.isbn);
     }
 
     @JacocoGenerated
@@ -49,6 +53,16 @@ public class Publication {
 
     public void setIssn(String issn) {
         this.issn = issn;
+    }
+
+    @JacocoGenerated
+    @JsonProperty("isbn")
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
     }
 
     @JacocoGenerated

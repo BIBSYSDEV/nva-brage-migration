@@ -1,6 +1,9 @@
 package no.sikt.nva;
 
 import static no.sikt.nva.DublinCoreParser.FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE;
+import static no.sikt.nva.ResourceNameConstants.INVALID_DUBLIN_CORE_XML_FILE_NAME;
+import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
+import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,14 +24,18 @@ import org.junit.jupiter.api.Test;
 
 public class DublinCoreParserTest {
 
-    public static final String CRISTIN_DUBLIN_CORE = "src/test/resources/dublin_core_with_cristin_identifier.xml";
+    public static final String INVALID_DUBLIN_CORE = "src/test/resources/invalid_dublin_core.xml";
+
+    public static final String VALID_DUBLIN_CORE = "src/test/resources/valid_dublin_core.xml";
 
     @Test
     void shouldConvertFilesWithValidFields() {
         var expectedRecord = createTestRecord();
         var brageLocation = new BrageLocation(null);
-        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File("src/test/resources/dublin_core.xml"));
+        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
+            new File(TEST_RESOURCE_PATH + VALID_DUBLIN_CORE_XML_FILE_NAME));
         var actualRecord = DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
+        DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(actualRecord, is(equalTo(expectedRecord)));
     }
 
@@ -36,10 +43,10 @@ public class DublinCoreParserTest {
     void shouldReturnExceptionIfResourceIsInCristin() {
         var brageLocation = new BrageLocation(Path.of("somebundle/someindex"));
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
-            new File(CRISTIN_DUBLIN_CORE));
-        assertThrows(DublinCoreException.class, () ->
-                                                    DublinCoreParser.validateAndParseDublinCore(dublinCore,
-                                                                                                brageLocation));
+            new File(TEST_RESOURCE_PATH + INVALID_DUBLIN_CORE_XML_FILE_NAME));
+        assertThrows(DublinCoreException.class,
+                     () -> DublinCoreParser.validateAndParseDublinCore(dublinCore,
+                                                                       brageLocation));
     }
 
     @Test
@@ -53,7 +60,7 @@ public class DublinCoreParserTest {
 
         var brageLocation = new BrageLocation(Path.of("somebundle/someindex"));
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
-            new File("src/test/resources/dublin_core.xml"));
+            new File(TEST_RESOURCE_PATH + VALID_DUBLIN_CORE_XML_FILE_NAME));
         var record = DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(appender.getMessages(), containsString(String.format(
             FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE, expectedDcValuedLogged, record.getOriginInformation())));

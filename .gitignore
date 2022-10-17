@@ -54,3 +54,4 @@ app-info*
 **/testinput/**
 **/inputWithLicense/**
 **/inputWithoutHandle/**
+**/invalidFileInput/**

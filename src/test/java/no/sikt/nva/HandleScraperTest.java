@@ -1,6 +1,8 @@
 package no.sikt.nva;
 
 import static no.sikt.nva.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
+import static no.sikt.nva.ResourceNameConstants.HANDLE_FILE_NAME;
+import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -22,7 +24,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class HandleScraperTest {
 
-    private final Path handleFile = Path.of("src/test/resources/handle");
+    private final Path handleFile = Path.of(TEST_RESOURCE_PATH + HANDLE_FILE_NAME);
 
     @Test
     void shouldReturnHandleFromDublinCoreIfDublinCoreHasHandle() throws HandleException {

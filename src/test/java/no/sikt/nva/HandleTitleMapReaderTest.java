@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static no.sikt.nva.ResourceNameConstants.TITLES_HANDLES_CSV_FILE_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
@@ -10,8 +11,7 @@ public class HandleTitleMapReaderTest {
 
     @Test
     void shouldReadCsvFileAndOutputAMapWithTitlesAndHandles() {
-        var handleFileName = "title_handles.csv";
-        var handleTitleMapReader = new HandleTitleMapReader(handleFileName);
+        var handleTitleMapReader = new HandleTitleMapReader(TITLES_HANDLES_CSV_FILE_NAME);
         var actualTitleHandleMap = handleTitleMapReader.readNveTitleAndHandlesPatch();
         assertThat(actualTitleHandleMap, allOf(aMapWithSize(3),
                                                hasEntry("Some super title", "https://hdl.handle.net/11250/2836938"),
