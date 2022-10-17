@@ -1,6 +1,6 @@
 package no.sikt.nva;
 
-import static no.sikt.nva.DublinCoreParser.FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE;
+import static no.sikt.nva.DublinCoreParser.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.ResourceNameConstants.INVALID_DUBLIN_CORE_XML_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
@@ -61,9 +61,9 @@ public class DublinCoreParserTest {
         var brageLocation = new BrageLocation(Path.of("somebundle/someindex"));
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
             new File(TEST_RESOURCE_PATH + VALID_DUBLIN_CORE_XML_FILE_NAME));
-        var record = DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(appender.getMessages(), containsString(String.format(
-            FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE, expectedDcValuedLogged, record.getOriginInformation())));
+        DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(appender.getMessages(), containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE));
+        assertThat(appender.getMessages(), containsString(expectedDcValuedLogged));
     }
 
     private Record createTestRecord() {

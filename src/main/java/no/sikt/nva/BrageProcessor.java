@@ -88,7 +88,8 @@ public class BrageProcessor implements Runnable {
                 handleScraper.scrapeHandle(getHandlePath(entryDirectory),
                                            dublinCore));
             var record = DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
-            record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory, record.getOriginInformation()));
+            record.setLicense(
+                licenseScraper.extractOrCreateLicense(entryDirectory, brageLocation.getOriginInformation()));
             return Optional.of(record);
         } catch (Exception e) {
             logger.error(e.getMessage() + brageLocation.getOriginInformation());

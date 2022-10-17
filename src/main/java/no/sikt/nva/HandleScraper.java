@@ -20,7 +20,7 @@ public class HandleScraper {
     private static final String ERROR_MESSAGE_HANDLE_IN_DUBLIN_CORE_IS_MALFORMED = "Handle in dublin_core.xml is "
                                                                                    + "invalid: %s";
     private static final String COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MESSAGE = "Could not read handle file";
-    private static final URI HANDLE_DOMAIN = UriWrapper.fromHost("https://hdl.handle.net").getUri();
+    public static final URI HANDLE_DOMAIN = UriWrapper.fromHost("https://hdl.handle.net").getUri();
     private final Map<String, String> titlesAndHandles;
 
     public HandleScraper(Map<String, String> titlesAndHandles) {
@@ -63,7 +63,7 @@ public class HandleScraper {
 
     private URI extractHandleFromDublinCore(final DublinCore dublinCore) throws HandleException {
         var dcValueHandle = extractDcValueContainingHandleFromDublinCore(dublinCore);
-        var handleString = dcValueHandle.getValue();
+        var handleString = dcValueHandle.scrapeValueAndSetToScraped();
         return verifiedHandleURI(handleString);
     }
 

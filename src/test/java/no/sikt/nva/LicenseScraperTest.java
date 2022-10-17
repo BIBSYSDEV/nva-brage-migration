@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.is;
 import java.io.File;
 import java.nio.file.Path;
 import no.sikt.nva.exceptions.LicenseExtractingException;
-import no.sikt.nva.model.record.Record;
+import no.sikt.nva.model.BrageLocation;
 import nva.commons.core.StringUtils;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
@@ -48,11 +48,9 @@ public class LicenseScraperTest {
     }
 
     private static String generateLocationInformation() {
-        var record = new Record();
-        record.setId(randomUri());
-        record.setOrigin(Path.of("path", randomString()));
-        var locationInformation = record.getOriginInformation();
-        return locationInformation;
+        var brageLocation = new BrageLocation(Path.of("path", randomString()));
+        brageLocation.setHandle(randomUri());
+        return brageLocation.getOriginInformation();
     }
 }
 
