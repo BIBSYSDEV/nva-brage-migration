@@ -28,6 +28,7 @@ public class DublinCoreParserTest {
 
     public static final String VALID_DUBLIN_CORE = "src/test/resources/valid_dublin_core.xml";
 
+
     @Test
     void shouldConvertFilesWithValidFields() {
         var expectedRecord = createTestRecord();
@@ -65,6 +66,31 @@ public class DublinCoreParserTest {
             FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE, expectedDcValuedLogged, record.getOriginInformation())));
     }
 
+    @Test
+    void shouldConvertValidVersionToPublisherAuthority() {
+        var expectedPublisherAuthority = true;
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValue(Element.DESCRIPTION,
+                                                                       Qualifier.VERSION,
+                                                                       "publishedVersion");
+        var record = DublinCoreParser.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        record.setOrigin(Path.of("something/something"));
+        var actualPublisherAuthority = record.getPublisherAuthority();
+        assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
+    }
+
+    @Test
+    void shouldCreatePublisherAuthorityIfVersionIsNotPresent() {
+        var record = new Record();
+        record.setOrigin(Path.of("something/something"));
+
+        var dublinCoreWithoutVersion = DublinCoreFactory.createDublinCoreWithDcValue(Element.CONTRIBUTOR,
+                                                                                     Qualifier.AUTHOR,
+                                                                                     "someAuthor");
+        DublinCoreParser.validateAndParseDublinCore(dublinCoreWithoutVersion, new BrageLocation(null));
+        var actualPublisherAuthority = record.getPublisherAuthority();
+        assertThat(actualPublisherAuthority, is(equalTo(null)));
+    }
+
     private Record createTestRecord() {
         Record record = new Record();
         record.setType("Research report");
@@ -77,7 +103,6 @@ public class DublinCoreParserTest {
     }
 
     private Publication createPublication() {
-
         Publication publication = new Publication();
         publication.setIssn("2345-2344-5567");
         return publication;

@@ -2,8 +2,8 @@ package no.sikt.nva;
 
 import static no.sikt.nva.DublinCoreParserTest.INVALID_DUBLIN_CORE;
 import static no.sikt.nva.DublinCoreParserTest.VALID_DUBLIN_CORE;
-import static no.sikt.nva.DublinCoreValidator.Problem.INVALID_ISBN;
-import static no.sikt.nva.DublinCoreValidator.Problem.INVALID_ISSN;
+import static no.sikt.nva.DublinCoreValidator.Error.INVALID_ISBN;
+import static no.sikt.nva.DublinCoreValidator.Error.INVALID_ISSN;
 import static no.sikt.nva.ResourceNameConstants.INVALID_DUBLIN_CORE_XML_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
