@@ -4,9 +4,11 @@ import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlValue;
 import java.io.StringWriter;
+import nva.commons.core.StringUtils;
 
 public class DcValue {
 
+    public static final String XML_PREFIX = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
     @XmlAttribute
     private Element element;
 
@@ -76,11 +78,16 @@ public class DcValue {
 
     public boolean isRightsholder() {
         return Element.RIGHTS.equals(this.element) && Qualifier.HOLDER.equals(this.qualifier);
+
+    }
+    
+    public boolean isUriIdentifier() {
+        return Element.IDENTIFIER.equals(this.element) && Qualifier.URI.equals(this.qualifier);
     }
 
     public String toXmlString() {
         StringWriter sw = new StringWriter();
         JAXB.marshal(this, sw);
-        return sw.toString();
+        return sw.toString().replace(XML_PREFIX, StringUtils.EMPTY_STRING);
     }
 }
