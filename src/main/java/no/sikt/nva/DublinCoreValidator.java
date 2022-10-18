@@ -3,7 +3,6 @@ package no.sikt.nva;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -49,12 +48,8 @@ public final class DublinCoreValidator {
                         .filter(DcValue::isType)
                         .map(DcValue::getValue)
                         .collect(Collectors.toList());
-        try {
-            TypeMapper.toNvaType(types);
-            return true;
-        } catch (DublinCoreException e) {
-            return false;
-        }
+
+        return TypeMapper.hasValidTypes(types);
     }
 
     private static boolean containsPresentValidIssn(DublinCore dublinCore, BrageLocation brageLocation) {

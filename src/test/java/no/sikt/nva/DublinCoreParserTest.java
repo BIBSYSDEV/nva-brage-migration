@@ -92,7 +92,7 @@ public class DublinCoreParserTest {
     private Record createTestRecord() {
         Record record = new Record();
         List<String> types = Collections.singletonList("Research report");
-        record.setType(new Type(types, TypeMapper.toNvaType(types)));
+        record.setType(new Type(types, TypeMapper.convertBrageTypeToNvaType(types)));
         record.setTitle("Studie av friluftsliv blant barn og unge i Oslo: Sosial ulikhet og sosial utjevning");
         record.setLanguage("nob");
         record.setAuthors(createAuthors());

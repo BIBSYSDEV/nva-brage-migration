@@ -197,6 +197,6 @@ public class DublinCoreParser {
     }
 
     private static Type mapOriginTypeToNvaType(List<String> types) {
-        return new Type(types,TypeMapper.toNvaType(types));
+        return new Type(types,TypeMapper.convertBrageTypeToNvaType(types));
     }
 }

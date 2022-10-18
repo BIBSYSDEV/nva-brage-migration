@@ -32,7 +32,7 @@ public class RecordsWriterTest {
         var record = new Record();
         record.setId(randomUri());
         List<String> types = Collections.singletonList("Research report");
-        record.setType(new Type(types, TypeMapper.toNvaType(types)));
+        record.setType(new Type(types, TypeMapper.convertBrageTypeToNvaType(types)));
         record.setLicense(randomString());
         record.setLanguage(randomString());
         record.setAuthors(authors);

@@ -1,126 +1,106 @@
 package no.sikt.nva;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.DublinCoreException;
-import nva.commons.core.StringUtils;
-import org.apache.commons.lang3.EnumUtils;
+import org.jetbrains.annotations.NotNull;
 
 public final class TypeMapper {
 
-    public static final String INVALID_TYPE_MESSAGE = "Invalid type";
+    private static final Map<Set<BrageType>, NvaType> TYPE_MAP = Map.of(
+        Set.of(BrageType.BOOK, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_MONOGRAPH,
+        Set.of(BrageType.CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER,
+        Set.of(BrageType.JOURNAL_ARTICLE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE,
+        Set.of(BrageType.BOOK), NvaType.BOOK,
+        Set.of(BrageType.CHAPTER), NvaType.CHAPTER,
+        Set.of(BrageType.JOURNAL_ARTICLE), NvaType.JOURNAL_ARTICLE,
+        Set.of(BrageType.DATASET), NvaType.DATASET,
+        Set.of(BrageType.OTHERS), NvaType.OTHERS,
+        Set.of(BrageType.REPORT), NvaType.REPORT,
+        Set.of(BrageType.RESEARCH_REPORT), NvaType.RESEARCH_REPORT
+    );
+    public static final String COULD_NOT_CONVERT_TO_TYPE = "Could not convert types: ";
 
-    public static String toNvaType(List<String> types) {
-        if (canBeConverted(types)) {
-            var strippedTypes = types.stream()
-                                    .map(StringUtils::removeWhiteSpaces)
-                                    .collect(Collectors.toList());
-
-            return convertToNvaType(strippedTypes);
+    public static String convertBrageTypeToNvaType(List<String> brageTypesAsString) {
+        var brageTypes = convertToBrageType(brageTypesAsString);
+        var nvaType = TYPE_MAP.get(brageTypes);
+        if (Objects.nonNull(nvaType)) {
+            return nvaType.getValue();
         } else {
-            throw new DublinCoreException(INVALID_TYPE_MESSAGE);
+            throw new DublinCoreException(COULD_NOT_CONVERT_TO_TYPE + String.join(", ", brageTypesAsString));
         }
     }
 
-    public static boolean canBeConverted(List<String> types) {
-        return types.stream().allMatch(TypeMapper::isType);
+    public static boolean hasValidTypes(List<String> brageTypesAsStrings) {
+        var brageTypes = convertToBrageType(brageTypesAsStrings);
+        return TYPE_MAP.containsKey(brageTypes);
     }
 
-    private static String convertToNvaType(List<String> types) {
-        if (containsOneType(types)) {
-            return getTypeFromSingleton(types);
-        }
-        if (containsTwoTypes(types)) {
-            return getTypeFromListWithTwoTypes(types);
-        }
-        throw new DublinCoreException(INVALID_TYPE_MESSAGE);
+    @NotNull
+    private static Set<BrageType> convertToBrageType(List<String> brageTypesAsStrings) {
+        return brageTypesAsStrings
+                   .stream().map(BrageType::fromValue).collect(
+                Collectors.toSet());
     }
 
-    private static String getTypeFromListWithTwoTypes(List<String> types) {
-        if (mapsToScientificMonograph(types)) {
-            return Type.Vitenskapeligmonografi.type;
-        }
-        if (mapsToScientificChapter(types)) {
-            return Type.Vitenskapeligkapittel.type;
-        }
-        if (mapsToScientificArticle(types)) {
-            return Type.Vitenskapeligartikkel.type;
-        }
-        throw new DublinCoreException(INVALID_TYPE_MESSAGE);
-    }
+    public enum BrageType {
 
-    private static String getTypeFromSingleton(List<String> types) {
-        try {
-            var type = getTypeFromList(types);
-            var strippedType = StringUtils.removeWhiteSpaces(type);
-            return Type.valueOf(strippedType).nvaType;
-        } catch (Exception e) {
-            throw new DublinCoreException(INVALID_TYPE_MESSAGE);
-        }
-    }
+        BOOK("Book"),
+        CHAPTER("Chapter"),
+        DATASET("Dataset"),
+        JOURNAL_ARTICLE("Journal article"),
+        OTHERS("Others"),
+        REPORT("Report"),
+        RESEARCH_REPORT("Research report"),
+        PEER_REVIEWED("Peer Reviewed");
 
-    private static boolean mapsToScientificArticle(List<String> types) {
-        return types.contains(String.valueOf(Type.Journalarticle.getType())) && types.contains(
-            String.valueOf(Type.PeerReviewed.getType()));
-    }
+        private final String value;
 
-    private static boolean mapsToScientificChapter(List<String> types) {
-        return types.contains(String.valueOf(Type.Chapter.type))
-               && types.contains(String.valueOf(Type.PeerReviewed));
-    }
-
-    private static boolean mapsToScientificMonograph(List<String> types) {
-        return types.contains(String.valueOf(Type.Book.type))
-               && types.contains(String.valueOf(Type.PeerReviewed));
-    }
-
-    private static String getTypeFromList(List<String> types) {
-        return types.get(0);
-    }
-
-    private static boolean containsTwoTypes(List<String> types) {
-        return types.size() == 2;
-    }
-
-    private static boolean containsOneType(List<String> types) {
-        return types.size() == 1;
-    }
-
-    private static boolean isType(String type) {
-        return EnumUtils.isValidEnum(Type.class, StringUtils.removeWhiteSpaces(type));
-    }
-
-    public enum Type {
-
-        Book("Book", "Faglig Monografi"),
-        Chapter("Chapter", "Faglig kapittel"),
-        Dataset("Dataset", "Datasett"),
-        Journalarticle("Journal article", "Fagartikkel"),
-        Others("Others", "Annen rapport"),
-        Report("Report", "Rapport"),
-        Researchreport("Research report", "Forskningsrapport"),
-        Vitenskapeligmonografi("Vitenskapelig monografi"),
-        Vitenskapeligkapittel("Vitenskapelig kapittel"),
-        Vitenskapeligartikkel("Vitenskapelig artikkel"),
-        PeerReviewed("Peer Reviewed");
-        private final String type;
-        private String nvaType;
-
-        Type(String type, String nvaType) {
-            this.nvaType = nvaType;
-            this.type = type;
+        BrageType(String type) {
+            this.value = type;
         }
 
-        Type(String type) {
-            this.type = type;
+        public static BrageType fromValue(String v) {
+            for (BrageType c : BrageType.values()) {
+                if (c.getValue().equalsIgnoreCase(v)) {
+                    return c;
+                }
+            }
+            return null;
+        }
+
+        public String getValue() {
+            return value;
         }
 
         public String getType() {
-            return type;
+            return value;
+        }
+    }
+
+    public enum NvaType {
+        BOOK("Faglig monografi"),
+        CHAPTER("Faglig kapittel"),
+        DATASET("Datasett"),
+        JOURNAL_ARTICLE("Fagartikkel"),
+        OTHERS("Annen rapport"),
+        REPORT("Rapport"),
+        RESEARCH_REPORT("Forskningsrapport"),
+        SCIENTIFIC_MONOGRAPH("Vitenskapelig monografi"),
+        SCIENTIFIC_CHAPTER("Vitenskapelig kapittel"),
+        SCIENTIFIC_ARTICLE("Vitenskapelig artikkel");
+
+        private final String value;
+
+        NvaType(String value) {
+            this.value = value;
         }
 
-        public String getNvaType() {
-            return nvaType;
+        public String getValue() {
+            return value;
         }
     }
 }
