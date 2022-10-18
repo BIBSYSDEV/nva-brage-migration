@@ -2,6 +2,8 @@ package no.sikt.nva;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import org.apache.commons.validator.routines.ISBNValidator;
@@ -11,15 +13,18 @@ public final class DublinCoreValidator {
 
     public static final String VERSION_STRING_NVE = "publishedVersion";
 
-    public static List<Error> getDublinCoreErrors(DublinCore dublinCore) {
+    public static List<Error> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         var problems = new ArrayList<Error>();
         if (hasCristinIdentifier(dublinCore)) {
             problems.add(Error.CRISTIN_ID_PRESENT);
         }
-        if (!containsPresentValidIssn(dublinCore)) {
+        if (!hasValidType(dublinCore)) {
+            problems.add(Error.INVALID_TYPE);
+        }
+        if (!containsPresentValidIssn(dublinCore, brageLocation)) {
             problems.add(Error.INVALID_ISSN);
         }
-        if (!containsPresentValidIsbn(dublinCore)) {
+        if (!containsPresentValidIsbn(dublinCore, brageLocation)) {
             problems.add(Error.INVALID_ISBN);
         }
         return problems;
@@ -38,18 +43,27 @@ public final class DublinCoreValidator {
                    .anyMatch(DcValue::isCristinDcValue);
     }
 
-    private static boolean containsPresentValidIssn(DublinCore dublinCore) {
+    private static boolean hasValidType(DublinCore dublinCore) {
+        var types = dublinCore.getDcValues().stream()
+                        .filter(DcValue::isType)
+                        .map(DcValue::getValue)
+                        .collect(Collectors.toList());
+
+        return TypeMapper.hasValidTypes(types);
+    }
+
+    private static boolean containsPresentValidIssn(DublinCore dublinCore, BrageLocation brageLocation) {
         if (hasIssn(dublinCore)) {
-            var issn = DublinCoreParser.extractIssn(dublinCore);
+            var issn = DublinCoreParser.extractIssn(dublinCore, brageLocation);
             ISSNValidator validator = new ISSNValidator();
             return validator.isValid(issn);
         }
         return true;
     }
 
-    private static boolean containsPresentValidIsbn(DublinCore dublinCore) {
+    private static boolean containsPresentValidIsbn(DublinCore dublinCore, BrageLocation brageLocation) {
         if (hasIsbn(dublinCore)) {
-            var isbn = DublinCoreParser.extractIsbn(dublinCore);
+            var isbn = DublinCoreParser.extractIsbn(dublinCore, brageLocation);
             ISBNValidator validator = new ISBNValidator();
             return validator.isValid(isbn);
         }
@@ -68,8 +82,8 @@ public final class DublinCoreValidator {
 
     private static boolean versionIsValid(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
-                    .filter(DcValue::isVersion)
-                    .findAny().map(DublinCoreValidator::isValidVersion).orElse(false);
+                   .filter(DcValue::isVersion)
+                   .findAny().map(DublinCoreValidator::isValidVersion).orElse(false);
     }
 
     private static boolean versionIsPresent(DublinCore dublinCore) {
@@ -83,6 +97,7 @@ public final class DublinCoreValidator {
 
     public enum Error {
         CRISTIN_ID_PRESENT,
+        INVALID_TYPE,
         INVALID_ISSN,
         INVALID_ISBN
     }

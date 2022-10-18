@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
@@ -19,10 +21,13 @@ import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.publisher.Publication;
 import no.sikt.nva.model.record.Record;
+import no.sikt.nva.model.record.Type;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 
 public class DublinCoreParserTest {
+
+
 
     @Test
     void shouldConvertFilesWithValidFields() {
@@ -64,9 +69,9 @@ public class DublinCoreParserTest {
     @Test
     void shouldConvertValidVersionToPublisherAuthority() {
         var expectedPublisherAuthority = true;
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValue(Element.DESCRIPTION,
-                                                                       Qualifier.VERSION,
-                                                                       "publishedVersion");
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Book");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue,typeDcValue));
         var record = DublinCoreParser.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         record.setOrigin(Path.of("something/something"));
         var actualPublisherAuthority = record.getPublisherAuthority();
@@ -77,10 +82,8 @@ public class DublinCoreParserTest {
     void shouldCreatePublisherAuthorityIfVersionIsNotPresent() {
         var record = new Record();
         record.setOrigin(Path.of("something/something"));
-
-        var dublinCoreWithoutVersion = DublinCoreFactory.createDublinCoreWithDcValue(Element.CONTRIBUTOR,
-                                                                                     Qualifier.AUTHOR,
-                                                                                     "someAuthor");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Book");
+        var dublinCoreWithoutVersion = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
         DublinCoreParser.validateAndParseDublinCore(dublinCoreWithoutVersion, new BrageLocation(null));
         var actualPublisherAuthority = record.getPublisherAuthority();
         assertThat(actualPublisherAuthority, is(equalTo(null)));
@@ -88,7 +91,8 @@ public class DublinCoreParserTest {
 
     private Record createTestRecord() {
         Record record = new Record();
-        record.setType("Research report");
+        List<String> types = Collections.singletonList("Research report");
+        record.setType(new Type(types, TypeMapper.convertBrageTypeToNvaType(types)));
         record.setTitle("Studie av friluftsliv blant barn og unge i Oslo: Sosial ulikhet og sosial utjevning");
         record.setLanguage("nob");
         record.setAuthors(createAuthors());

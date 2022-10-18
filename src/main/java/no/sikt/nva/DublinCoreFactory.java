@@ -7,8 +7,6 @@ import java.util.List;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.model.dublincore.Element;
-import no.sikt.nva.model.dublincore.Qualifier;
 
 public final class DublinCoreFactory {
 
@@ -28,8 +26,7 @@ public final class DublinCoreFactory {
         }
     }
 
-    public static DublinCore createDublinCoreWithDcValue(Element element, Qualifier qualifier, String value) {
-        var dcValue = new DcValue(element, qualifier, value);
-        return new DublinCore(List.of(dcValue));
+    public static DublinCore createDublinCoreWithDcValues(List<DcValue> dcValues) {
+        return new DublinCore(dcValues);
     }
 }

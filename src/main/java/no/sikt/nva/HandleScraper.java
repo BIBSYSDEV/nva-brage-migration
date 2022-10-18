@@ -19,7 +19,7 @@ public class HandleScraper {
         "Could not find handle in handle-file nor dublin_core or in supplied csv";
     private static final String ERROR_MESSAGE_HANDLE_IN_DUBLIN_CORE_IS_MALFORMED = "Handle in dublin_core.xml is "
                                                                                    + "invalid: %s";
-    private static final String COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MESSAGE = "Could not read handle file";
+    public static final String COULD_NOT_READ_HANDLE_FILE_EXCEPTION_MESSAGE = "Could not read handle file";
     public static final URI HANDLE_DOMAIN = UriWrapper.fromHost("https://hdl.handle.net").getUri();
     private final Map<String, String> titlesAndHandles;
 

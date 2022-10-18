@@ -12,48 +12,51 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.publisher.Publication;
 import no.sikt.nva.model.record.Record;
+import no.sikt.nva.model.record.Type;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DublinCoreParser {
 
+    private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
     public static final String DELIMITER = "\n";
     public static final String WARNING_TEXT = "The dublin_core.xml has following warnings: ";
-    private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
+
 
     public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
-        var problems = DublinCoreValidator.getDublinCoreErrors(dublinCore);
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
         var warnings = getDublinCoreWarnings(dublinCore);
-        if (problems.isEmpty()) {
+        if (errors.isEmpty()) {
             var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
             logUnscrapedValues(dublinCore, brageLocation);
             logWarningsIfNotEmpty(brageLocation, warnings);
             return record;
         } else {
-            throw new DublinCoreException(problems);
+            throw new DublinCoreException(errors);
         }
     }
 
-    public static String extractIssn(DublinCore dublinCore) {
+    public static String extractIssn(DublinCore dublinCore, BrageLocation brageLocation) {
         var issnList = dublinCore.getDcValues()
                            .stream()
                            .filter(DcValue::isIssnValue)
                            .map(DcValue::scrapeValueAndSetToScraped)
                            .collect(Collectors.toList());
 
-        return handleIssnList(issnList);
+        return handleIssnList(issnList, brageLocation);
     }
 
-    public static String extractIsbn(DublinCore dublinCore) {
+
+    public static String extractIsbn(DublinCore dublinCore, BrageLocation brageLocation) {
         var isbnList = dublinCore.getDcValues()
                            .stream()
                            .filter(DcValue::isIsbnValue)
                            .map(DcValue::scrapeValueAndSetToScraped)
                            .collect(Collectors.toList());
 
-        return handleIsbnList(isbnList);
+        return handleIsbnList(isbnList, brageLocation);
     }
 
     public static String extractTitle(DublinCore dublinCore) {
@@ -71,10 +74,10 @@ public class DublinCoreParser {
         }
     }
 
-    private static Publication extractPublication(DublinCore dublinCore) {
+    private static Publication extractPublication(DublinCore dublinCore, BrageLocation brageLocation) {
         var publication = new Publication();
-        publication.setIssn(extractIssn(dublinCore));
-        publication.setIsbn(extractIsbn(dublinCore));
+        publication.setIssn(extractIssn(dublinCore, brageLocation));
+        publication.setIsbn(extractIsbn(dublinCore, brageLocation));
         publication.setJournal(extractJournal(dublinCore));
         publication.setPublisher(extractPublisher(dublinCore));
 
@@ -118,8 +121,8 @@ public class DublinCoreParser {
         record.setId(brageLocation.getHandle());
         record.setOrigin(brageLocation.getBrageBundlePath());
         record.setAuthors(extractAuthors(dublinCore));
-        record.setPublication(extractPublication(dublinCore));
-        record.setType(extractType(dublinCore));
+        record.setPublication(extractPublication(dublinCore, brageLocation));
+        record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
         record.setTitle(extractTitle(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
@@ -153,13 +156,11 @@ public class DublinCoreParser {
                    .collect(Collectors.toList());
     }
 
-    private static String extractType(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
+    private static List<String> extractType(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
                    .filter(DcValue::isType)
-                   .findAny()
-                   .orElse(new DcValue())
-                   .scrapeValueAndSetToScraped();
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
     }
 
     private static String extractLanguage(DublinCore dublinCore) {
@@ -177,9 +178,10 @@ public class DublinCoreParser {
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
-    private static String handleIssnList(List<String> issnList) {
-        if (!isSingleton(issnList)) {
-            logger.warn("Contains many issn values");
+    @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
+    private static String handleIssnList(List<String> issnList, BrageLocation brageLocation) {
+        if (issnList.size() > 1) {
+            logger.warn("Following resource contains many issn values" + brageLocation.getOriginInformation());
         }
         if (issnList.isEmpty()) {
             return new DcValue().getValue();
@@ -187,9 +189,10 @@ public class DublinCoreParser {
         return issnList.get(0);
     }
 
-    private static String handleIsbnList(List<String> isbnList) {
-        if (!isSingleton(isbnList)) {
-            logger.warn("Contains many isbn values");
+    @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
+    private static String handleIsbnList(List<String> isbnList, BrageLocation brageLocation) {
+        if (isbnList.size() > 1) {
+            logger.warn("Following resource contains many isbn values: " + brageLocation.getOriginInformation());
         }
         if (isbnList.isEmpty()) {
             return new DcValue().getValue();
@@ -209,12 +212,12 @@ public class DublinCoreParser {
     }
 
     private static Optional<Boolean> mapToNvaVersion(DcValue version) {
-        return VERSION_STRING_NVE.equals(version.getValue())
+        return VERSION_STRING_NVE.equals(version.scrapeValueAndSetToScraped())
                    ? Optional.of(true)
                    : Optional.empty();
     }
 
-    private static boolean isSingleton(List<String> list) {
-        return list.size() == 1;
+    private static Type mapOriginTypeToNvaType(List<String> types) {
+        return new Type(types,TypeMapper.convertBrageTypeToNvaType(types));
     }
 }
