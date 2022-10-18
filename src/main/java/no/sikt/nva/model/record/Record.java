@@ -1,6 +1,5 @@
 package no.sikt.nva.model.record;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
@@ -12,12 +11,10 @@ import nva.commons.core.JacocoGenerated;
 
 public class Record {
 
-    public static final String ORIGIN_INFORMATION_STRING_TEMPLATE = "Bundle location: %s, Handle: %s";
-    public static final String ORIGIN_INFORMATION = "Bundle location: %s";
     private String customerUri;
     private URI id;
     private Path origin;
-    private String type;
+    private Type type;
     private String title;
     private String language;
     private String license;
@@ -53,6 +50,7 @@ public class Record {
         return Objects.hash(customerUri, id, type, title, language, license, embargo, tags, authors, origin);
     }
 
+    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -94,13 +92,12 @@ public class Record {
         this.id = id;
     }
 
-    @JacocoGenerated
     @JsonProperty("type")
-    public String getType() {
+    public Type getType() {
         return this.type;
     }
 
-    public void setType(String type) {
+    public void setType(Type type) {
         this.type = type;
     }
 
@@ -166,20 +163,13 @@ public class Record {
         this.tags = tags;
     }
 
-    @JsonProperty("bare_origin")
+    @JsonProperty("bareOrigin")
     public Path getOrigin() {
         return origin;
     }
 
     public void setOrigin(Path origin) {
         this.origin = origin;
-    }
-
-    @JsonIgnore
-    public String getOriginInformation() {
-        return Objects.nonNull(getId())
-                   ? String.format(ORIGIN_INFORMATION_STRING_TEMPLATE, getOrigin(), getId())
-                   : String.format(ORIGIN_INFORMATION, getOrigin());
     }
 
     @JsonProperty("rightsholder")

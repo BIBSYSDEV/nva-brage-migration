@@ -1,5 +1,6 @@
 package no.sikt.nva.model.dublincore;
 
+import static no.sikt.nva.HandleScraper.HANDLE_DOMAIN;
 import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlValue;
@@ -19,8 +20,10 @@ public class DcValue {
     @XmlValue
     private String value;
 
-    public DcValue() {
+    private boolean scraped;
 
+    public DcValue() {
+        this.scraped = false;
     }
 
     public DcValue(Element element, Qualifier qualifier, String value) {
@@ -40,6 +43,15 @@ public class DcValue {
 
     public boolean isSubject() {
         return Element.SUBJECT.equals(this.element);
+    }
+
+    public boolean isScraped() {
+        return scraped;
+    }
+
+    public String scrapeValueAndSetToScraped() {
+        scraped = true;
+        return value;
     }
 
     public String getValue() {
@@ -92,6 +104,22 @@ public class DcValue {
 
     public boolean isUriIdentifier() {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.URI.equals(this.qualifier);
+    }
+
+    public boolean isHandle() {
+        if (StringUtils.isNotEmpty(value)) {
+            return Element.IDENTIFIER.equals(this.element)
+                   && Qualifier.URI.equals(this.qualifier)
+                   && value.contains(HANDLE_DOMAIN.getHost());
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isLicenseInformation() {
+        return Element.RIGHTS.equals(this.element)
+               && (Qualifier.NONE.equals(this.qualifier)
+                   || Qualifier.URI.equals(this.qualifier));
     }
 
     public String toXmlString() {

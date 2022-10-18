@@ -18,8 +18,6 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDF;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LicenseScraper {
 
@@ -32,20 +30,17 @@ public class LicenseScraper {
     public static final String COULD_NOT_EXTRACT_LICENSE_FROM_SPECIFIED_LOCATION_LOG_MESSAGE_WARNING =
         "No license in bundle found, default license used. Bundle information + %s";
     public static final String DEFAULT_LICENSE = "Rights Reserved";
-    private static final Logger logger = LoggerFactory.getLogger(LicenseScraper.class);
     private final String customLicenseFilename;
 
     public LicenseScraper(String customLicenseFilename) {
         this.customLicenseFilename = customLicenseFilename;
     }
 
-    public String extractOrCreateLicense(File bundleDirectory, String bundleInformation) {
+    public String extractOrCreateLicense(File bundleDirectory) {
         try {
             var licenseFile = new File(bundleDirectory, customLicenseFilename);
             return extractLicenseFromFile(licenseFile);
         } catch (Exception e) {
-            logger.warn(String.format(COULD_NOT_EXTRACT_LICENSE_FROM_SPECIFIED_LOCATION_LOG_MESSAGE_WARNING,
-                                      bundleInformation));
             return DEFAULT_LICENSE;
         }
     }

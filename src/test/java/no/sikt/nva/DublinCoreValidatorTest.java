@@ -26,7 +26,7 @@ public class DublinCoreValidatorTest {
     void validIssnAndIsbnDoesNotAppendProblemsToProblemList() {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
             TEST_RESOURCE_PATH + VALID_DUBLIN_CORE_XML_FILE_NAME));
-        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
+        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, null);
         assertThat(actualProblemsList, not(contains(INVALID_ISSN, INVALID_ISBN)));
     }
 
@@ -34,7 +34,7 @@ public class DublinCoreValidatorTest {
     void shouldReturnProblemListContainingInvalidIssnAndInvalidIsbnMessage() {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
             TEST_RESOURCE_PATH + INVALID_DUBLIN_CORE_XML_FILE_NAME));
-        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
+        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, null);
         assertThat(actualProblemsList, hasItems(INVALID_ISSN, INVALID_ISBN));
     }
 
