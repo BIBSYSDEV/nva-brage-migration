@@ -25,7 +25,7 @@ public class DublinCoreParser {
     public static final String WARNING_TEXT = "The dublin_core.xml has following warnings: ";
 
     public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
-        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
         var warnings = getDublinCoreWarnings(dublinCore);
         if (errors.isEmpty()) {
             var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
@@ -43,22 +43,22 @@ public class DublinCoreParser {
         }
     }
 
-    public static String extractIssn(DublinCore dublinCore) {
+    public static String extractIssn(DublinCore dublinCore, BrageLocation brageLocation) {
         var issnList = dublinCore.getDcValues().stream()
                            .filter(DcValue::isIssnValue)
                            .map(DcValue::getValue)
                            .collect(Collectors.toList());
 
-        return handleIssnList(issnList);
+        return handleIssnList(issnList, brageLocation);
     }
 
-    public static String extractIsbn(DublinCore dublinCore) {
+    public static String extractIsbn(DublinCore dublinCore, BrageLocation brageLocation) {
         var isbnList = dublinCore.getDcValues().stream()
                            .filter(DcValue::isIsbnValue)
                            .map(DcValue::getValue)
                            .collect(Collectors.toList());
 
-        return handleIsbnList(isbnList);
+        return handleIsbnList(isbnList, brageLocation);
     }
 
     public static String extractTitle(DublinCore dublinCore) {
@@ -67,10 +67,10 @@ public class DublinCoreParser {
                    .findAny().orElse(new DcValue()).getValue();
     }
 
-    private static Publication extractPublication(DublinCore dublinCore) {
+    private static Publication extractPublication(DublinCore dublinCore, BrageLocation brageLocation) {
         var publication = new Publication();
-        publication.setIssn(extractIssn(dublinCore));
-        publication.setIsbn(extractIsbn(dublinCore));
+        publication.setIssn(extractIssn(dublinCore, brageLocation));
+        publication.setIsbn(extractIsbn(dublinCore, brageLocation));
         publication.setJournal(extractJournal(dublinCore));
         publication.setPublisher(extractPublisher(dublinCore));
 
@@ -109,7 +109,7 @@ public class DublinCoreParser {
         record.setId(brageLocation.getHandle());
         record.setOrigin(brageLocation.getBrageBundlePath());
         record.setAuthors(extractAuthors(dublinCore));
-        record.setPublication(extractPublication(dublinCore));
+        record.setPublication(extractPublication(dublinCore, brageLocation));
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
         record.setTitle(extractTitle(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
@@ -157,9 +157,10 @@ public class DublinCoreParser {
                    .findAny().orElse(new DcValue()).getValue();
     }
 
-    private static String handleIssnList(List<String> issnList) {
-        if (!isSingleton(issnList)) {
-            logger.warn("Contains many issn values");
+    @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
+    private static String handleIssnList(List<String> issnList, BrageLocation brageLocation) {
+        if (issnList.size() > 1) {
+            logger.warn("Following resource contains many issn values" + brageLocation.getOriginInformation());
         }
         if (issnList.isEmpty()) {
             return new DcValue().getValue();
@@ -167,9 +168,10 @@ public class DublinCoreParser {
         return issnList.get(0);
     }
 
-    private static String handleIsbnList(List<String> isbnList) {
-        if (!isSingleton(isbnList)) {
-            logger.warn("Contains many isbn values ");
+    @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
+    private static String handleIsbnList(List<String> isbnList, BrageLocation brageLocation) {
+        if (isbnList.size() > 1) {
+            logger.warn("Following resource contains many isbn values: " + brageLocation.getOriginInformation());
         }
         if (isbnList.isEmpty()) {
             return new DcValue().getValue();
@@ -192,10 +194,6 @@ public class DublinCoreParser {
         return VERSION_STRING_NVE.equals(version.getValue())
                    ? Optional.of(true)
                    : Optional.empty();
-    }
-
-    private static boolean isSingleton(List<String> list) {
-        return list.size() == 1;
     }
 
     private static Type mapOriginTypeToNvaType(List<String> types) {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.DublinCoreException;
+import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import org.apache.commons.validator.routines.ISBNValidator;
@@ -13,7 +14,7 @@ public final class DublinCoreValidator {
 
     public static final String VERSION_STRING_NVE = "publishedVersion";
 
-    public static List<Error> getDublinCoreErrors(DublinCore dublinCore) {
+    public static List<Error> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         var problems = new ArrayList<Error>();
         if (hasCristinIdentifier(dublinCore)) {
             problems.add(Error.CRISTIN_ID_PRESENT);
@@ -21,10 +22,10 @@ public final class DublinCoreValidator {
         if (!hasValidType(dublinCore)) {
             problems.add(Error.INVALID_TYPE);
         }
-        if (!containsPresentValidIssn(dublinCore)) {
+        if (!containsPresentValidIssn(dublinCore, brageLocation)) {
             problems.add(Error.INVALID_ISSN);
         }
-        if (!containsPresentValidIsbn(dublinCore)) {
+        if (!containsPresentValidIsbn(dublinCore, brageLocation)) {
             problems.add(Error.INVALID_ISBN);
         }
         return problems;
@@ -56,18 +57,18 @@ public final class DublinCoreValidator {
         }
     }
 
-    private static boolean containsPresentValidIssn(DublinCore dublinCore) {
+    private static boolean containsPresentValidIssn(DublinCore dublinCore, BrageLocation brageLocation) {
         if (hasIssn(dublinCore)) {
-            var issn = DublinCoreParser.extractIssn(dublinCore);
+            var issn = DublinCoreParser.extractIssn(dublinCore, brageLocation);
             ISSNValidator validator = new ISSNValidator();
             return validator.isValid(issn);
         }
         return true;
     }
 
-    private static boolean containsPresentValidIsbn(DublinCore dublinCore) {
+    private static boolean containsPresentValidIsbn(DublinCore dublinCore, BrageLocation brageLocation) {
         if (hasIsbn(dublinCore)) {
-            var isbn = DublinCoreParser.extractIsbn(dublinCore);
+            var isbn = DublinCoreParser.extractIsbn(dublinCore, brageLocation);
             ISBNValidator validator = new ISBNValidator();
             return validator.isValid(isbn);
         }
