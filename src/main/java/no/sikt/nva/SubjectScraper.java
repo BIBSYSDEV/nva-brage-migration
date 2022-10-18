@@ -16,7 +16,7 @@ public final class SubjectScraper {
 
     }
 
-    public static Optional<Warning> getSubjectsWwarnings(DublinCore dublinCore) {
+    public static Optional<Warning> getSubjectsWarnings(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(SubjectScraper::isUnrecognizedSubjectType)
