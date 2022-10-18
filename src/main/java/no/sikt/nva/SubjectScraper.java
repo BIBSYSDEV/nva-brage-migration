@@ -28,7 +28,7 @@ public final class SubjectScraper {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isSubject)
-                   .map(DcValue::getValue)
+                   .map(DcValue::scrapeValueAndSetToScraped)
                    .collect(
                        Collectors.toList());
     }
