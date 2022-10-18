@@ -18,11 +18,10 @@ import org.slf4j.LoggerFactory;
 
 public class DublinCoreParser {
 
-    public static final String FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE =
-        "Field was not scraped %s in location %s";
-
-    private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
+    public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
+    public static final String DELIMITER = "\n";
     public static final String WARNING_TEXT = "The dublin_core.xml has following warnings: ";
+    private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
 
     public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         var problems = DublinCoreValidator.getDublinCoreErrors(dublinCore);
@@ -30,41 +29,46 @@ public class DublinCoreParser {
         if (problems.isEmpty()) {
             var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
             logUnscrapedValues(dublinCore, brageLocation);
-            logWarningsIfNotEmpty(record,warnings);
+            logWarningsIfNotEmpty(brageLocation, warnings);
             return record;
         } else {
             throw new DublinCoreException(problems);
         }
     }
 
-    private static void logWarningsIfNotEmpty(Record record, List<Warning> warnings) {
-        if (!warnings.isEmpty()) {
-            logger.warn(WARNING_TEXT + warnings + StringUtils.SPACE + record.getOriginInformation());
-        }
-    }
-    
     public static String extractIssn(DublinCore dublinCore) {
-        var issnList = dublinCore.getDcValues().stream()
+        var issnList = dublinCore.getDcValues()
+                           .stream()
                            .filter(DcValue::isIssnValue)
-                           .map(DcValue::getValue)
+                           .map(DcValue::scrapeValueAndSetToScraped)
                            .collect(Collectors.toList());
 
         return handleIssnList(issnList);
     }
 
     public static String extractIsbn(DublinCore dublinCore) {
-        var isbnList = dublinCore.getDcValues().stream()
+        var isbnList = dublinCore.getDcValues()
+                           .stream()
                            .filter(DcValue::isIsbnValue)
-                           .map(DcValue::getValue)
+                           .map(DcValue::scrapeValueAndSetToScraped)
                            .collect(Collectors.toList());
 
         return handleIsbnList(isbnList);
     }
 
     public static String extractTitle(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
+        return dublinCore.getDcValues()
+                   .stream()
                    .filter(DcValue::isTitle)
-                   .findAny().orElse(new DcValue()).getValue();
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
+    }
+
+    private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<Warning> warnings) {
+        if (!warnings.isEmpty()) {
+            logger.warn(WARNING_TEXT + warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
+        }
     }
 
     private static Publication extractPublication(DublinCore dublinCore) {
@@ -78,29 +82,34 @@ public class DublinCoreParser {
     }
 
     private static void logUnscrapedValues(DublinCore dublinCore, BrageLocation brageLocation) {
-        dublinCore.getDcValues()
-            .stream()
-            .filter(DublinCoreParser::hasNotBeenScraped)
-            .forEach(dcValue -> logUnscrapedDcValue(dcValue, brageLocation));
+        List<String> unscrapedDcValues = findUnscrapedFields(dublinCore);
+        logUnscrapedFields(brageLocation, unscrapedDcValues);
     }
 
-    private static void logUnscrapedDcValue(DcValue dcValue, BrageLocation brageLocation) {
-        logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
-                                  dcValue.toXmlString(),
-                                  brageLocation.getOriginInformation()));
+    private static void logUnscrapedFields(BrageLocation brageLocation, List<String> unscrapedDcValues) {
+        if (!unscrapedDcValues.isEmpty()) {
+            logger.info(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE
+                        + String.join(DELIMITER, unscrapedDcValues)
+                        + DELIMITER
+                        + brageLocation.getOriginInformation());
+        }
     }
 
-    private static boolean hasNotBeenScraped(DcValue dcValue) {
-        return !dcValue.isAuthor()
-               && !dcValue.isIssnValue()
-               && !dcValue.isTitle()
-               && !dcValue.isType()
-               && !dcValue.isLanguage()
-               && !dcValue.isJournal()
-               && !dcValue.isPublisher()
-               && !dcValue.isVersion()
-               && !dcValue.isIsbnValue()
-               && !dcValue.isUriIdentifier();
+    private static List<String> findUnscrapedFields(DublinCore dublinCore) {
+        var unscrapedDcValues = dublinCore.getDcValues()
+                                    .stream()
+                                    .filter(DublinCoreParser::shouldBeLoggedAsUnscraped)
+                                    .map(DcValue::toXmlString)
+                                    .collect(Collectors.toList());
+        return unscrapedDcValues;
+    }
+
+    private static boolean shouldBeLoggedAsUnscraped(DcValue dcValue) {
+        return !dcValue.isScraped() && !fieldIsIgnored(dcValue);
+    }
+
+    private static boolean fieldIsIgnored(DcValue dcValue) {
+        return dcValue.isLicenseInformation() || dcValue.isHandle();
     }
 
     private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
@@ -119,40 +128,53 @@ public class DublinCoreParser {
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
+        return dublinCore.getDcValues()
+                   .stream()
                    .filter(DcValue::isPublisher)
-                   .findAny().orElse(new DcValue()).getValue();
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
     }
 
     private static String extractJournal(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
+        return dublinCore.getDcValues()
+                   .stream()
                    .filter(DcValue::isJournal)
-                   .findAny().orElse(new DcValue()).getValue();
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
     }
 
     private static List<String> extractAuthors(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
+        return dublinCore.getDcValues()
+                   .stream()
                    .filter(DcValue::isAuthor)
-                   .map(DcValue::getValue)
+                   .map(DcValue::scrapeValueAndSetToScraped)
                    .collect(Collectors.toList());
     }
 
     private static String extractType(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
+        return dublinCore.getDcValues()
+                   .stream()
                    .filter(DcValue::isType)
-                   .findAny().orElse(new DcValue()).getValue();
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
     }
 
     private static String extractLanguage(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
+        return dublinCore.getDcValues()
+                   .stream()
                    .filter(DcValue::isLanguage)
-                   .findAny().orElse(new DcValue()).getValue();
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
     }
 
     private static String extractRightsholder(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isRightsholder)
-                   .findAny().orElse(new DcValue()).getValue();
+                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
     private static String handleIssnList(List<String> issnList) {
