@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.is;
 import java.io.File;
 import java.nio.file.Path;
 import no.sikt.nva.exceptions.LicenseExtractingException;
-import no.sikt.nva.model.record.Record;
+import no.sikt.nva.model.BrageLocation;
 import nva.commons.core.StringUtils;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
