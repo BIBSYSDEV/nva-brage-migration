@@ -1,6 +1,6 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.DublinCoreParser.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
+import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.ResourceNameConstants.INVALID_DUBLIN_CORE_XML_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
@@ -22,10 +22,13 @@ import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.publisher.Publication;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
+import no.sikt.nva.scrapers.DublinCoreFactory;
+import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.TypeMapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 
-public class DublinCoreParserTest {
+public class DublinCoreScraperTest {
 
 
     @Test
@@ -34,8 +37,8 @@ public class DublinCoreParserTest {
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
             new File(TEST_RESOURCE_PATH + VALID_DUBLIN_CORE_XML_FILE_NAME));
-        var actualRecord = DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
-        DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
+        var actualRecord = DublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        DublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(actualRecord, is(equalTo(expectedRecord)));
     }
 
@@ -45,8 +48,8 @@ public class DublinCoreParserTest {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
             new File(TEST_RESOURCE_PATH + INVALID_DUBLIN_CORE_XML_FILE_NAME));
         assertThrows(DublinCoreException.class,
-                     () -> DublinCoreParser.validateAndParseDublinCore(dublinCore,
-                                                                       brageLocation));
+                     () -> DublinCoreScraper.validateAndParseDublinCore(dublinCore,
+                                                                        brageLocation));
     }
 
     @Test
@@ -60,7 +63,7 @@ public class DublinCoreParserTest {
         var brageLocation = new BrageLocation(Path.of("somebundle/someindex"));
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(
             new File(TEST_RESOURCE_PATH + VALID_DUBLIN_CORE_XML_FILE_NAME));
-        DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
+        DublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(appender.getMessages(), containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE));
         assertThat(appender.getMessages(), containsString(expectedDcValuedLogged));
     }
@@ -71,7 +74,7 @@ public class DublinCoreParserTest {
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
         var typeDcValue = new DcValue(Element.TYPE, null, "Book");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue,typeDcValue));
-        var record = DublinCoreParser.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         record.setOrigin(Path.of("something/something"));
         var actualPublisherAuthority = record.getPublisherAuthority();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
@@ -83,7 +86,7 @@ public class DublinCoreParserTest {
         record.setOrigin(Path.of("something/something"));
         var typeDcValue = new DcValue(Element.TYPE, null, "Book");
         var dublinCoreWithoutVersion = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
-        DublinCoreParser.validateAndParseDublinCore(dublinCoreWithoutVersion, new BrageLocation(null));
+        DublinCoreScraper.validateAndParseDublinCore(dublinCoreWithoutVersion, new BrageLocation(null));
         var actualPublisherAuthority = record.getPublisherAuthority();
         assertThat(actualPublisherAuthority, is(equalTo(null)));
     }

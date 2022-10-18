@@ -1,4 +1,4 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;

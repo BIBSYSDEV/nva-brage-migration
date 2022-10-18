@@ -1,4 +1,4 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
 import java.io.IOException;
 import java.net.URI;
@@ -91,7 +91,7 @@ public class HandleScraper {
     }
 
     private Optional<URI> getHandleFromInTitlesAndHandlesMap(final DublinCore dublinCore) throws HandleException {
-        var title = DublinCoreParser.extractTitle(dublinCore);
+        var title = DublinCoreScraper.extractTitle(dublinCore);
         if (StringUtils.isNotEmpty(title)) {
             var handle = titlesAndHandles.get(title);
             if (StringUtils.isNotEmpty(handle)) {

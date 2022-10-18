@@ -1,4 +1,4 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
 import java.util.List;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
 import java.io.File;
 import java.io.InputStream;

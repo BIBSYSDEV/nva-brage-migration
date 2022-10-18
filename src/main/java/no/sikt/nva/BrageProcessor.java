@@ -8,6 +8,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.record.Record;
+import no.sikt.nva.scrapers.DublinCoreFactory;
+import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.HandleScraper;
+import no.sikt.nva.scrapers.LicenseScraper;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
@@ -84,11 +88,11 @@ public class BrageProcessor implements Runnable {
         var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
         try {
             var dublinCore = DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
-            brageLocation.setTitle(DublinCoreParser.extractTitle(dublinCore));
+            brageLocation.setTitle(DublinCoreScraper.extractTitle(dublinCore));
             brageLocation.setHandle(
                 handleScraper.scrapeHandle(getHandlePath(entryDirectory),
                                            dublinCore));
-            var record = DublinCoreParser.validateAndParseDublinCore(dublinCore, brageLocation);
+            var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory));
             return Optional.of(record);
         } catch (Exception e) {

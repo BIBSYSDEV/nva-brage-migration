@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
+import no.sikt.nva.scrapers.TypeMapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 

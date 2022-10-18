@@ -1,6 +1,6 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
+import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
 import static no.sikt.nva.ResourceNameConstants.HANDLE_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
@@ -17,6 +17,7 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
+import no.sikt.nva.scrapers.HandleScraper;
 import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

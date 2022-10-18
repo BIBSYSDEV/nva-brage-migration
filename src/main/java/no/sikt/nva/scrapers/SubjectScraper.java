@@ -1,9 +1,9 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.DublinCoreValidator.Warning;
+import no.sikt.nva.scrapers.DublinCoreValidator.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Qualifier;
