@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 public class DublinCoreParserTest {
 
 
-
     @Test
     void shouldConvertFilesWithValidFields() {
         var expectedRecord = createTestRecord();
@@ -98,6 +97,7 @@ public class DublinCoreParserTest {
         record.setAuthors(createAuthors());
         record.setPublication(createPublication());
         record.setRightsHolder("NVE");
+        record.setTags(List.of("vannkraft", "energi"));
         return record;
     }
 

@@ -5,6 +5,7 @@ import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlValue;
 import java.io.StringWriter;
+import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 
 public class DcValue {
@@ -31,12 +32,17 @@ public class DcValue {
         this.value = value;
     }
 
+    @JacocoGenerated
     public Element getElement() {
         return element;
     }
 
     public Qualifier getQualifier() {
         return qualifier;
+    }
+
+    public boolean isSubject() {
+        return Element.SUBJECT.equals(this.element);
     }
 
     public boolean isScraped() {
@@ -94,9 +100,8 @@ public class DcValue {
 
     public boolean isRightsholder() {
         return Element.RIGHTS.equals(this.element) && Qualifier.HOLDER.equals(this.qualifier);
-
     }
-    
+
     public boolean isUriIdentifier() {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.URI.equals(this.qualifier);
     }

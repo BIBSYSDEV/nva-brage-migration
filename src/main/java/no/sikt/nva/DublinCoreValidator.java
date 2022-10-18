@@ -35,6 +35,8 @@ public final class DublinCoreValidator {
         if (!versionIsValid(dublinCore) && versionIsPresent(dublinCore)) {
             warnings.add(Warning.VERSION_WARNING);
         }
+        SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
+
         return warnings;
     }
 
@@ -103,6 +105,7 @@ public final class DublinCoreValidator {
     }
 
     public enum Warning {
-        VERSION_WARNING
+        VERSION_WARNING,
+        SUBJECT_WARNING
     }
 }

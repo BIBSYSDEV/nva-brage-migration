@@ -127,6 +127,7 @@ public class DublinCoreParser {
         record.setLanguage(extractLanguage(dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore));
+        record.setTags(SubjectScraper.extractTags(dublinCore));
         return record;
     }
 
