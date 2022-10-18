@@ -1,6 +1,7 @@
 package no.sikt.nva.model.record;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.nio.file.Path;
@@ -21,9 +22,30 @@ public class Record {
     private String language;
     private String license;
     private String embargo;
+    private Boolean publisherAuthority;
+    private String rightsholder;
     private List<String> tags;
     private List<String> authors;
     private Publication publication;
+
+    @JsonInclude
+    @JsonProperty("publisherAuthority")
+    public Boolean getPublisherAuthority() {
+        return publisherAuthority;
+    }
+
+    public void setPublisherAuthority(Boolean publisherAuthority) {
+        this.publisherAuthority = publisherAuthority;
+    }
+
+    @JsonProperty("publication")
+    public Publication getPublication() {
+        return publication;
+    }
+
+    public void setPublication(Publication publication) {
+        this.publication = publication;
+    }
 
     @JacocoGenerated
     @Override
@@ -144,15 +166,6 @@ public class Record {
         this.tags = tags;
     }
 
-    @JsonProperty("publication")
-    public Publication getPublisher() {
-        return publication;
-    }
-
-    public void setPublication(Publication publication) {
-        this.publication = publication;
-    }
-
     @JsonProperty("bareOrigin")
     public Path getOrigin() {
         return origin;
@@ -167,5 +180,14 @@ public class Record {
         return Objects.nonNull(getId())
                    ? String.format(ORIGIN_INFORMATION_STRING_TEMPLATE, getOrigin(), getId())
                    : String.format(ORIGIN_INFORMATION, getOrigin());
+    }
+
+    @JsonProperty("rightsholder")
+    public String getRightsholder() {
+        return rightsholder;
+    }
+
+    public void setRightsHolder(String rightsholder) {
+        this.rightsholder = rightsholder;
     }
 }

@@ -1,13 +1,19 @@
 package no.sikt.nva;
 
+import static no.sikt.nva.DublinCoreValidator.VERSION_STRING_NVE;
+import static no.sikt.nva.DublinCoreValidator.getDublinCoreWarnings;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import no.sikt.nva.DublinCoreValidator.Warning;
 import no.sikt.nva.exceptions.DublinCoreException;
+import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.publisher.Publication;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
+import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,22 +22,72 @@ public class DublinCoreParser {
     public static final String FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE =
         "Field was not scraped";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
+    public static final String WARNING_TEXT = "The dublin_core.xml has following warnings: ";
 
-    public static void validateAndParseDublinCore(DublinCore dublinCore, Record record) {
-        var problems = DublinCoreValidator.getDublinCoreErrors(dublinCore);
-        if (problems.isEmpty()) {
-            updateDublinCoreFromRecord(dublinCore, record);
-            logUnscrapedValues(dublinCore, record);
+    public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
+        var warnings = getDublinCoreWarnings(dublinCore);
+        if (errors.isEmpty()) {
+            var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
+            logUnscrapedValues(dublinCore, brageLocation);
+            logWarningsIfNotEmpty(record,warnings);
+            return record;
         } else {
-            throw new DublinCoreException(problems);
+            throw new DublinCoreException(errors);
         }
     }
 
-    private static void logUnscrapedValues(DublinCore dublinCore, Record record) {
+    private static void logWarningsIfNotEmpty(Record record, List<Warning> warnings) {
+        if (!warnings.isEmpty()) {
+            logger.warn(WARNING_TEXT + warnings + StringUtils.SPACE + record.getOriginInformation());
+        }
+    }
+
+    public static String extractIssn(DublinCore dublinCore) {
+        var issnList = dublinCore.getDcValues().stream()
+                           .filter(DcValue::isIssnValue)
+                           .map(DcValue::getValue)
+                           .collect(Collectors.toList());
+
+        return handleIssnList(issnList);
+    }
+
+    public static String extractIsbn(DublinCore dublinCore) {
+        var isbnList = dublinCore.getDcValues().stream()
+                           .filter(DcValue::isIsbnValue)
+                           .map(DcValue::getValue)
+                           .collect(Collectors.toList());
+
+        return handleIsbnList(isbnList);
+    }
+
+    public static String extractTitle(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isTitle)
+                   .findAny().orElse(new DcValue()).getValue();
+    }
+
+    private static Publication extractPublication(DublinCore dublinCore) {
+        var publication = new Publication();
+        publication.setIssn(extractIssn(dublinCore));
+        publication.setIsbn(extractIsbn(dublinCore));
+        publication.setJournal(extractJournal(dublinCore));
+        publication.setPublisher(extractPublisher(dublinCore));
+
+        return publication;
+    }
+
+    private static void logUnscrapedValues(DublinCore dublinCore, BrageLocation brageLocation) {
         dublinCore.getDcValues()
             .stream()
-            .filter(dcValue -> hasNotBeenScraped(dcValue))
-            .forEach(dcValue -> logUnscrapedDcValue(dcValue, record));
+            .filter(DublinCoreParser::hasNotBeenScraped)
+            .forEach(dcValue -> logUnscrapedDcValue(dcValue, brageLocation));
+    }
+
+    private static void logUnscrapedDcValue(DcValue dcValue, BrageLocation brageLocation) {
+        logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
+                                  dcValue.toXmlString(),
+                                  brageLocation.getOriginInformation()));
     }
 
     private static boolean hasNotBeenScraped(DcValue dcValue) {
@@ -41,30 +97,31 @@ public class DublinCoreParser {
                && !dcValue.isType()
                && !dcValue.isLanguage()
                && !dcValue.isJournal()
-               && !dcValue.isPublisher();
+               && !dcValue.isPublisher()
+               && !dcValue.isVersion()
+               && !dcValue.isIsbnValue()
+               && !dcValue.isUriIdentifier();
     }
 
-    private static void updateDublinCoreFromRecord(DublinCore dublinCore, Record record) {
+    private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
+                                                                     BrageLocation brageLocation) {
+        var record = new Record();
+        record.setId(brageLocation.getHandle());
+        record.setOrigin(brageLocation.getBrageBundlePath());
         record.setAuthors(extractAuthors(dublinCore));
         record.setPublication(extractPublication(dublinCore));
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
         record.setTitle(extractTitle(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
+        record.setRightsHolder(extractRightsholder(dublinCore));
+        record.setPublisherAuthority(extractVersion(dublinCore));
+        return record;
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isPublisher)
                    .findAny().orElse(new DcValue()).getValue();
-    }
-
-    private static Publication extractPublication(DublinCore dublinCore) {
-        var publication = new Publication();
-        publication.setIssn(extractIssn(dublinCore));
-        publication.setJournal(extractJournal(dublinCore));
-        publication.setPublisher(extractPublisher(dublinCore));
-
-        return publication;
     }
 
     private static String extractJournal(DublinCore dublinCore) {
@@ -94,22 +151,51 @@ public class DublinCoreParser {
                    .findAny().orElse(new DcValue()).getValue();
     }
 
-    private static String extractTitle(DublinCore dublinCore) {
+    private static String extractRightsholder(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isTitle)
+                   .filter(DcValue::isRightsholder)
                    .findAny().orElse(new DcValue()).getValue();
     }
 
-    private static String extractIssn(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isIssnValue)
-                   .findAny().orElse(new DcValue()).getValue();
+    private static String handleIssnList(List<String> issnList) {
+        if (!isSingleton(issnList)) {
+            logger.warn("Contains many issn values");
+        }
+        if (issnList.isEmpty()) {
+            return new DcValue().getValue();
+        }
+        return issnList.get(0);
     }
 
-    private static void logUnscrapedDcValue(DcValue dcValue, Record record) {
-        logger.info(String.format(FIELD_WAS_NOT_SCRAPED_IN_LOCATION_LOG_MESSAGE,
-                                  dcValue.toString(),
-                                  record.getOriginInformation()));
+    private static String handleIsbnList(List<String> isbnList) {
+        if (!isSingleton(isbnList)) {
+            logger.warn("Contains many isbn values ");
+        }
+        if (isbnList.isEmpty()) {
+            return new DcValue().getValue();
+        }
+        return isbnList.get(0);
+    }
+
+    private static Boolean extractVersion(DublinCore dublinCore) {
+        var version = dublinCore.getDcValues().stream()
+                          .filter(DcValue::isVersion)
+                          .findAny();
+        if (version.isPresent()) {
+            return mapToNvaVersion(version.get()).orElse(null);
+        } else {
+            return null;
+        }
+    }
+
+    private static Optional<Boolean> mapToNvaVersion(DcValue version) {
+        return VERSION_STRING_NVE.equals(version.getValue())
+                   ? Optional.of(true)
+                   : Optional.empty();
+    }
+
+    private static boolean isSingleton(List<String> list) {
+        return list.size() == 1;
     }
 
     private static Type mapOriginTypeToNvaType(List<String> types) {

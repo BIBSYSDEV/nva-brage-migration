@@ -6,18 +6,36 @@ import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import org.apache.commons.validator.routines.ISBNValidator;
+import org.apache.commons.validator.routines.ISSNValidator;
 
 public final class DublinCoreValidator {
 
-    public static List<Problem> getDublinCoreErrors(DublinCore dublinCore) {
-        var problems = new ArrayList<Problem>();
+    public static final String VERSION_STRING_NVE = "publishedVersion";
+
+    public static List<Error> getDublinCoreErrors(DublinCore dublinCore) {
+        var problems = new ArrayList<Error>();
         if (hasCristinIdentifier(dublinCore)) {
-            problems.add(Problem.CRISTIN_ID_PRESENT);
+            problems.add(Error.CRISTIN_ID_PRESENT);
         }
-        if(!hasInvalidType(dublinCore)) {
-            problems.add(Problem.INVALID_TYPE);
+        if (!hasValidType(dublinCore)) {
+            problems.add(Error.INVALID_TYPE);
+        }
+        if (!containsPresentValidIssn(dublinCore)) {
+            problems.add(Error.INVALID_ISSN);
+        }
+        if (!containsPresentValidIsbn(dublinCore)) {
+            problems.add(Error.INVALID_ISBN);
         }
         return problems;
+    }
+
+    public static List<Warning> getDublinCoreWarnings(DublinCore dublinCore) {
+        var warnings = new ArrayList<Warning>();
+        if (!versionIsValid(dublinCore) && versionIsPresent(dublinCore)) {
+            warnings.add(Warning.VERSION_WARNING);
+        }
+        return warnings;
     }
 
     private static boolean hasCristinIdentifier(DublinCore dublinCore) {
@@ -25,7 +43,7 @@ public final class DublinCoreValidator {
                    .anyMatch(DcValue::isCristinDcValue);
     }
 
-    private static boolean hasInvalidType(DublinCore dublinCore) {
+    private static boolean hasValidType(DublinCore dublinCore) {
         var types = dublinCore.getDcValues().stream()
                         .filter(DcValue::isType)
                         .map(DcValue::getValue)
@@ -38,8 +56,57 @@ public final class DublinCoreValidator {
         }
     }
 
-    public enum Problem {
+    private static boolean containsPresentValidIssn(DublinCore dublinCore) {
+        if (hasIssn(dublinCore)) {
+            var issn = DublinCoreParser.extractIssn(dublinCore);
+            ISSNValidator validator = new ISSNValidator();
+            return validator.isValid(issn);
+        }
+        return true;
+    }
+
+    private static boolean containsPresentValidIsbn(DublinCore dublinCore) {
+        if (hasIsbn(dublinCore)) {
+            var isbn = DublinCoreParser.extractIsbn(dublinCore);
+            ISBNValidator validator = new ISBNValidator();
+            return validator.isValid(isbn);
+        }
+        return true;
+    }
+
+    private static boolean hasIssn(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .anyMatch(DcValue::isIssnValue);
+    }
+
+    private static boolean hasIsbn(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .anyMatch(DcValue::isIsbnValue);
+    }
+
+    private static boolean versionIsValid(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isVersion)
+                   .findAny().map(DublinCoreValidator::isValidVersion).orElse(false);
+    }
+
+    private static boolean versionIsPresent(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .anyMatch(DcValue::isVersion);
+    }
+
+    private static boolean isValidVersion(DcValue version) {
+        return VERSION_STRING_NVE.equals(version.getValue());
+    }
+
+    public enum Error {
         CRISTIN_ID_PRESENT,
-        INVALID_TYPE
+        INVALID_TYPE,
+        INVALID_ISSN,
+        INVALID_ISBN
+    }
+
+    public enum Warning {
+        VERSION_WARNING
     }
 }
