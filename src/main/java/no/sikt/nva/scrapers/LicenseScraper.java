@@ -27,8 +27,6 @@ public class LicenseScraper {
     public static final RDFNode ANY_OBJECT = null;
     public static final String LICENSE_EXCEPTION_MESSAGE = "Extraction of license failed";
     public static final String READING_LICENSE_FILE_EXCEPTION_MESSAGE = "Reading license file has failed";
-    public static final String COULD_NOT_EXTRACT_LICENSE_FROM_SPECIFIED_LOCATION_LOG_MESSAGE_WARNING =
-        "No license in bundle found, default license used. Bundle information + %s";
     public static final String DEFAULT_LICENSE = "Rights Reserved";
     private final String customLicenseFilename;
 
@@ -39,20 +37,13 @@ public class LicenseScraper {
     public String extractOrCreateLicense(File bundleDirectory) {
         try {
             var licenseFile = new File(bundleDirectory, customLicenseFilename);
-           var license = extractLicenseFromFile(licenseFile);
-           return LicenseMapper.mapLicenseToNva(license);
+            var license = extractLicenseFromFile(licenseFile);
+            return LicenseMapper.mapLicenseToNva(license);
         } catch (Exception e) {
             return DEFAULT_LICENSE;
         }
     }
 
-    /**
-     * Extracts license uri from specified file.
-     *
-     * @param file licenseFile as xml
-     * @return uri as string
-     * @throws LicenseExtractingException if license file has incorrect format
-     */
     private static String extractLicenseFromFile(File file) {
         try {
             Model model = createModel(file);

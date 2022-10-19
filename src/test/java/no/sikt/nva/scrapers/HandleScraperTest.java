@@ -1,8 +1,8 @@
 package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
 import static no.sikt.nva.ResourceNameConstants.HANDLE_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
+import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -17,7 +17,6 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.sikt.nva.scrapers.HandleScraper;
 import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,7 +40,7 @@ public class HandleScraperTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"https://example.com/11250/2684299", "https://hdl.handle.net"})
-    void shouldThrowExceptionWhenhandleInDublinCoreIsMalformed(String malformedHandle) {
+    void shouldThrowExceptionWhenHandleInDublinCoreIsMalformed(String malformedHandle) {
         var rescueMapNotContainingTitle = Map.of("Some title", "https://hdl.handle.net/11250/daffdf");
         var incorrectHandlePath = Path.of("does/not/exists");
         var handleScraper = new HandleScraper(rescueMapNotContainingTitle);

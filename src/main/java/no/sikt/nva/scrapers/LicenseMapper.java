@@ -2,33 +2,52 @@ package no.sikt.nva.scrapers;
 
 import java.net.URI;
 import java.util.Map;
-import nva.commons.core.paths.UriWrapper;
+import no.sikt.nva.exceptions.DublinCoreException;
 import org.apache.commons.validator.routines.UrlValidator;
 
 public class LicenseMapper {
 
-    public static final String CREATIVECOMMONS_HOST_NAME = "creativecommons.org";
+    private static final String CREATIVE_COMMONS_HOST_NAME = "creativecommons.org";
+    private static final String NOT_MATCHING_LICENSE_MESSAGE =
+        "No configuration to map license, Rights Reserved license used";
+    private static final Map<BrageLicense, NvaLicense> LICENSE_MAP =
+        Map.of(BrageLicense.CC0, NvaLicense.CC0,
+               BrageLicense.CC_BY, NvaLicense.CC_BY,
+               BrageLicense.CC_BY_NC, NvaLicense.CC_BY_NC,
+               BrageLicense.CC_BY_ND, NvaLicense.CC_BY_ND,
+               BrageLicense.CC_BY_SA, NvaLicense.CC_BY_SA,
+               BrageLicense.CC_BY_NC_ND, NvaLicense.CC_BY_NC_ND,
+               BrageLicense.CC_BY_NC_SA, NvaLicense.CC_BY_NC_SA);
 
-    //    private static final Map<String, NvaLicense> LICENSE_MAP;
-
-    public static String mapLicenseToNva(String license) {
-        return null;
+    public static String mapLicenseToNva(String licenseUri) {
+        var licenseName = getLicenseName(licenseUri);
+        var brageLicense = convertToBrageLicense(licenseName);
+        return LICENSE_MAP.get(brageLicense).getValue();
     }
 
-//    public static String getLicenseName(String licenseUri) {
-//       if(isValidUri(licenseUri) && hasCreativeCommonsHost(licenseUri)) {
-//
-//       }
-//    }
+    private static String getLicenseName(String licenseUri) {
+        if (isValidUri(licenseUri) && hasCreativeCommonsHost(licenseUri)) {
+            return parseLicensePath(licenseUri);
+        }
+        throw new DublinCoreException(NOT_MATCHING_LICENSE_MESSAGE);
+    }
 
-    public static boolean isValidUri(String uri) {
+    private static boolean isValidUri(String uri) {
         var uriValidator = UrlValidator.getInstance();
         return uriValidator.isValid(uri);
     }
 
-    public static boolean hasCreativeCommonsHost(String licenseUri) {
+    private static boolean hasCreativeCommonsHost(String licenseUri) {
         var uri = URI.create(licenseUri);
-        return uri.getHost().equals(CREATIVECOMMONS_HOST_NAME);
+        return CREATIVE_COMMONS_HOST_NAME.equals(uri.getHost());
+    }
+
+    private static BrageLicense convertToBrageLicense(String brageLicense) {
+        return BrageLicense.fromValue(brageLicense);
+    }
+
+    private static String parseLicensePath(String licenseUri) {
+        return URI.create(licenseUri).getPath().split("/")[2];
     }
 
     public enum NvaLicense {
@@ -43,6 +62,35 @@ public class LicenseMapper {
 
         NvaLicense(String value) {
             this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    public enum BrageLicense {
+        CC0("cc0"),
+        CC_BY("by"),
+        CC_BY_NC("by-nc"),
+        CC_BY_NC_ND("by-nc-nd"),
+        CC_BY_NC_SA("by-nc-sa"),
+        CC_BY_ND("by-nd"),
+        CC_BY_SA("by-sa");
+
+        private final String value;
+
+        BrageLicense(String value) {
+            this.value = value;
+        }
+
+        public static BrageLicense fromValue(String value) {
+            for (BrageLicense license : BrageLicense.values()) {
+                if (license.getValue().equalsIgnoreCase(value)) {
+                    return license;
+                }
+            }
+            return null;
         }
 
         public String getValue() {
