@@ -1,11 +1,11 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.DublinCoreValidator.VERSION_STRING_NVE;
-import static no.sikt.nva.DublinCoreValidator.getDublinCoreWarnings;
+import static no.sikt.nva.scrapers.DublinCoreValidator.VERSION_STRING_NVE;
+import static no.sikt.nva.scrapers.DublinCoreValidator.getDublinCoreWarnings;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.DublinCoreValidator.Warning;
+import no.sikt.nva.scrapers.DublinCoreValidator.Warning;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
@@ -17,9 +17,9 @@ import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DublinCoreParser {
+public class DublinCoreScraper {
 
-    private static final Logger logger = LoggerFactory.getLogger(DublinCoreParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
     public static final String DELIMITER = "\n";
     public static final String WARNING_TEXT = "The dublin_core.xml has following warnings: ";
@@ -101,7 +101,7 @@ public class DublinCoreParser {
     private static List<String> findUnscrapedFields(DublinCore dublinCore) {
         var unscrapedDcValues = dublinCore.getDcValues()
                                     .stream()
-                                    .filter(DublinCoreParser::shouldBeLoggedAsUnscraped)
+                                    .filter(DublinCoreScraper::shouldBeLoggedAsUnscraped)
                                     .map(DcValue::toXmlString)
                                     .collect(Collectors.toList());
         return unscrapedDcValues;
@@ -219,6 +219,6 @@ public class DublinCoreParser {
     }
 
     private static Type mapOriginTypeToNvaType(List<String> types) {
-        return new Type(types,TypeMapper.convertBrageTypeToNvaType(types));
+        return new Type(types, TypeMapper.convertBrageTypeToNvaType(types));
     }
 }

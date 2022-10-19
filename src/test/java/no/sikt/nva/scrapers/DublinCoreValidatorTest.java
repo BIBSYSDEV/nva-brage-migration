@@ -1,10 +1,10 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.DublinCoreValidator.Error.INVALID_ISBN;
-import static no.sikt.nva.DublinCoreValidator.Error.INVALID_ISSN;
 import static no.sikt.nva.ResourceNameConstants.INVALID_DUBLIN_CORE_XML_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
+import static no.sikt.nva.model.ErrorDetails.Error.INVALID_ISBN;
+import static no.sikt.nva.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -13,7 +13,10 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import java.io.File;
 import java.util.List;
-import no.sikt.nva.DublinCoreValidator.Warning;
+import no.sikt.nva.model.ErrorDetails;
+import no.sikt.nva.scrapers.DublinCoreFactory;
+import no.sikt.nva.scrapers.DublinCoreValidator;
+import no.sikt.nva.scrapers.DublinCoreValidator.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
@@ -27,15 +30,19 @@ public class DublinCoreValidatorTest {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
             TEST_RESOURCE_PATH + VALID_DUBLIN_CORE_XML_FILE_NAME));
         var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, null);
-        assertThat(actualProblemsList, not(contains(INVALID_ISSN, INVALID_ISBN)));
+        assertThat(actualProblemsList, not(contains(new ErrorDetails(INVALID_ISSN, List.of()),
+                                                    new ErrorDetails(INVALID_ISBN, List.of()))));
     }
 
     @Test
     void shouldReturnProblemListContainingInvalidIssnAndInvalidIsbnMessage() {
-        var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
-            TEST_RESOURCE_PATH + INVALID_DUBLIN_CORE_XML_FILE_NAME));
+
+        var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "invalid_issn"),
+                               new DcValue(Element.IDENTIFIER, Qualifier.ISBN, "invalid_isbn"));
+        var dublinCore = new DublinCore(dcValues);
         var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, null);
-        assertThat(actualProblemsList, hasItems(INVALID_ISSN, INVALID_ISBN));
+        assertThat(actualProblemsList, hasItems(new ErrorDetails(INVALID_ISSN, List.of()),
+                                                new ErrorDetails(INVALID_ISBN, List.of())));
     }
 
     @Test

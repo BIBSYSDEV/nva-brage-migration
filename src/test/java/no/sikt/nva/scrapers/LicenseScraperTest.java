@@ -1,21 +1,14 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.LicenseScraper.COULD_NOT_EXTRACT_LICENSE_FROM_SPECIFIED_LOCATION_LOG_MESSAGE_WARNING;
-import static no.sikt.nva.LicenseScraper.DEFAULT_LICENSE;
+import static no.sikt.nva.scrapers.LicenseScraper.DEFAULT_LICENSE;
 import static no.sikt.nva.ResourceNameConstants.INVALID_LICENSE_RDF_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.VALID_LICENSE_RDF_FILE_NAME;
-import static no.unit.nva.testutils.RandomDataGenerator.randomString;
-import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import java.io.File;
-import java.nio.file.Path;
 import no.sikt.nva.exceptions.LicenseExtractingException;
-import no.sikt.nva.model.BrageLocation;
-import nva.commons.core.StringUtils;
-import nva.commons.logutils.LogUtils;
+import no.sikt.nva.scrapers.LicenseScraper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

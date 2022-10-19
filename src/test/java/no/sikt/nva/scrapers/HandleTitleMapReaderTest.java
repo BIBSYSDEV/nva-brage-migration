@@ -1,10 +1,11 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.ResourceNameConstants.TITLES_HANDLES_CSV_FILE_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasEntry;
+import no.sikt.nva.scrapers.HandleTitleMapReader;
 import org.junit.jupiter.api.Test;
 
 public class HandleTitleMapReaderTest {
