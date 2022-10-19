@@ -93,6 +93,7 @@ public class DublinCoreScraper {
         record.setContributors(extractContributors(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore));
         record.setTags(SubjectScraper.extractTags(dublinCore));
+        record.setDate(extractDate(dublinCore));
         return record;
     }
 
@@ -134,24 +135,6 @@ public class DublinCoreScraper {
 
     private static boolean fieldIsIgnored(DcValue dcValue) {
         return dcValue.isLicenseInformation() || dcValue.isHandle();
-    }
-
-    private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
-                                                                     BrageLocation brageLocation) {
-        var record = new Record();
-        record.setId(brageLocation.getHandle());
-        record.setOrigin(brageLocation.getBrageBundlePath());
-        record.setAuthors(extractAuthors(dublinCore));
-        record.setPublication(extractPublication(dublinCore, brageLocation));
-        record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
-        record.setTitle(extractTitle(dublinCore));
-        record.setLanguage(extractLanguage(dublinCore));
-        record.setRightsHolder(extractRightsholder(dublinCore));
-        record.setPublisherAuthority(extractVersion(dublinCore));
-        record.setTags(SubjectScraper.extractTags(dublinCore));
-        record.setDate(extractDate(dublinCore));
-        record.setContributors(extractContributors(dublinCore));
-        return record;
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
@@ -198,6 +181,7 @@ public class DublinCoreScraper {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isDate)
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    }
 
     private static List<Contributor> extractContributors(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()

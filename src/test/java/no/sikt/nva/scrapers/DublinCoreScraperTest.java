@@ -1,8 +1,5 @@
 package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.ResourceNameConstants.INVALID_DUBLIN_CORE_XML_FILE_NAME;
-import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
-import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
 import static no.sikt.nva.scrapers.DublinCoreScraper.ADVISOR;
 import static no.sikt.nva.scrapers.DublinCoreScraper.CONTRIBUTOR;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
@@ -18,9 +15,6 @@ import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.sikt.nva.model.publisher.Publication;
-import no.sikt.nva.model.record.Record;
-import no.sikt.nva.model.record.Type;
 import no.sikt.nva.model.record.Contributor;
 import no.sikt.nva.model.record.Identity;
 import nva.commons.logutils.LogUtils;

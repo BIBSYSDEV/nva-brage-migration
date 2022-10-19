@@ -101,7 +101,7 @@ public class Record {
                && Objects.equals(tags, record.tags)
                && Objects.equals(authors, record.authors)
                && Objects.equals(origin, record.origin)
-               && Objects.equals(date, record.date);
+               && Objects.equals(date, record.date)
                && Objects.equals(contributors, record.contributors);
     }
 
