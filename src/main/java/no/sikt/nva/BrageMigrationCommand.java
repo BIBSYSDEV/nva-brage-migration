@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import no.sikt.nva.scrapers.HandleTitleMapReader;
 import nva.commons.core.JacocoGenerated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

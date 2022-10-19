@@ -1,6 +1,6 @@
 package no.sikt.nva.model.dublincore;
 
-import static no.sikt.nva.HandleScraper.HANDLE_DOMAIN;
+import static no.sikt.nva.scrapers.HandleScraper.HANDLE_DOMAIN;
 import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlValue;
@@ -130,7 +130,7 @@ public class DcValue {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ORCID.equals(this.qualifier);
     }
 
-    public boolean isOther() {
+    public boolean isOtherContributor() {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.OTHER.equals(this.qualifier);
     }
 

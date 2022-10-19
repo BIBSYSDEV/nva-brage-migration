@@ -6,10 +6,18 @@ import nva.commons.core.JacocoGenerated;
 
 public class Identity {
 
+    private static final  String IDENTITY_TYPE = "Identity";
+    private final String type;
     private String name;
 
     public Identity(String name) {
         this.name = name;
+        this.type = IDENTITY_TYPE;
+    }
+
+    @JsonProperty("type")
+    public String getType() {
+        return type;
     }
 
     @JsonProperty("name")
@@ -24,7 +32,7 @@ public class Identity {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(name, type);
     }
 
     @JacocoGenerated
@@ -37,6 +45,6 @@ public class Identity {
             return false;
         }
         Identity identity = (Identity) o;
-        return Objects.equals(name, identity.name);
+        return Objects.equals(name, identity.name) && Objects.equals(type, identity.type);
     }
 }

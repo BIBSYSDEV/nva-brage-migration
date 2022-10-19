@@ -26,12 +26,12 @@ public class Record {
     private Publication publication;
     private List<Contributor> contributors;
 
-    @JsonProperty("contributor")
+    @JsonProperty("contributors")
     public List<Contributor> getContributors() {
         return contributors;
     }
 
-    public void setContributor(List<Contributor> contributors) {
+    public void setContributors(List<Contributor> contributors) {
         this.contributors = contributors;
     }
 
@@ -57,7 +57,17 @@ public class Record {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(customerUri, id, type, title, language, license, embargo, tags, authors, origin);
+        return Objects.hash(customerUri,
+                            id,
+                            type,
+                            title,
+                            language,
+                            license,
+                            embargo,
+                            tags,
+                            authors,
+                            origin,
+                            contributors);
     }
 
     @JacocoGenerated
@@ -73,13 +83,14 @@ public class Record {
         return Objects.equals(customerUri, record.customerUri)
                && Objects.equals(id, record.id)
                && Objects.equals(type, record.type)
-               && Objects.equals(title, record.title)
                && Objects.equals(language, record.language)
+               && Objects.equals(title, record.title)
                && Objects.equals(license, record.license)
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(tags, record.tags)
                && Objects.equals(authors, record.authors)
-               && Objects.equals(origin, record.origin);
+               && Objects.equals(origin, record.origin)
+               && Objects.equals(contributors, record.contributors);
     }
 
     @JacocoGenerated
@@ -167,7 +178,6 @@ public class Record {
     public List<String> getTags() {
         return this.tags;
     }
-
 
     public void setTags(List<String> tags) {
         this.tags = tags;
