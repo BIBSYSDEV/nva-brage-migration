@@ -39,7 +39,8 @@ public class LicenseScraper {
     public String extractOrCreateLicense(File bundleDirectory) {
         try {
             var licenseFile = new File(bundleDirectory, customLicenseFilename);
-            return extractLicenseFromFile(licenseFile);
+           var license = extractLicenseFromFile(licenseFile);
+           return LicenseMapper.mapLicenseToNva(license);
         } catch (Exception e) {
             return DEFAULT_LICENSE;
         }
