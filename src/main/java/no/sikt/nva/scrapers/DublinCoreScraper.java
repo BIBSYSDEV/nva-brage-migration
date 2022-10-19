@@ -127,6 +127,7 @@ public class DublinCoreScraper {
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore));
         record.setTags(SubjectScraper.extractTags(dublinCore));
+        record.setDate(extractDate(dublinCore));
         return record;
     }
 
@@ -175,6 +176,12 @@ public class DublinCoreScraper {
     private static String extractRightsholder(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isRightsholder)
+                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    }
+
+    private static String extractDate(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isDate)
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 

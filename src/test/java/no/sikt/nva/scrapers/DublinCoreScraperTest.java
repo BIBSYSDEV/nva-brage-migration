@@ -1,9 +1,9 @@
 package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.ResourceNameConstants.INVALID_DUBLIN_CORE_XML_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
+import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -22,14 +22,10 @@ import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.publisher.Publication;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
-import no.sikt.nva.scrapers.DublinCoreFactory;
-import no.sikt.nva.scrapers.DublinCoreScraper;
-import no.sikt.nva.scrapers.TypeMapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 
 public class DublinCoreScraperTest {
-
 
     @Test
     void shouldConvertFilesWithValidFields() {
@@ -73,7 +69,7 @@ public class DublinCoreScraperTest {
         var expectedPublisherAuthority = true;
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
         var typeDcValue = new DcValue(Element.TYPE, null, "Book");
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue,typeDcValue));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
         var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         record.setOrigin(Path.of("something/something"));
         var actualPublisherAuthority = record.getPublisherAuthority();
@@ -101,6 +97,7 @@ public class DublinCoreScraperTest {
         record.setPublication(createPublication());
         record.setRightsHolder("NVE");
         record.setTags(List.of("vannkraft", "energi"));
+        record.setDate("2020");
         return record;
     }
 

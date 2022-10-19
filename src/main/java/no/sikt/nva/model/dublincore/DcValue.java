@@ -106,6 +106,10 @@ public class DcValue {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.URI.equals(this.qualifier);
     }
 
+    public boolean isDate() {
+        return Element.DATE.equals(this.element) && Qualifier.ISSUED.equals(this.qualifier);
+    }
+
     public boolean isHandle() {
         if (StringUtils.isNotEmpty(value)) {
             return Element.IDENTIFIER.equals(this.element)

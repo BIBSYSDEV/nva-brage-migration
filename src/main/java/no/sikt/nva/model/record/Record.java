@@ -15,6 +15,7 @@ public class Record {
     private URI id;
     private Path origin;
     private Type type;
+    private String date;
     private String title;
     private String language;
     private String license;
@@ -24,6 +25,15 @@ public class Record {
     private List<String> tags;
     private List<String> authors;
     private Publication publication;
+
+    @JsonProperty("date")
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
 
     @JsonInclude
     @JsonProperty("publisherAuthority")
@@ -47,7 +57,7 @@ public class Record {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(customerUri, id, type, title, language, license, embargo, tags, authors, origin);
+        return Objects.hash(customerUri, id, type, title, language, license, embargo, tags, authors, origin, date);
     }
 
     @JacocoGenerated
@@ -69,7 +79,8 @@ public class Record {
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(tags, record.tags)
                && Objects.equals(authors, record.authors)
-               && Objects.equals(origin, record.origin);
+               && Objects.equals(origin, record.origin)
+               && Objects.equals(date, record.date);
     }
 
     @JacocoGenerated
@@ -158,7 +169,6 @@ public class Record {
         return this.tags;
     }
 
-
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
@@ -175,6 +185,10 @@ public class Record {
     @JsonProperty("rightsholder")
     public String getRightsholder() {
         return rightsholder;
+    }
+
+    public void setRightsholder(String rightsholder) {
+        this.rightsholder = rightsholder;
     }
 
     public void setRightsHolder(String rightsholder) {
