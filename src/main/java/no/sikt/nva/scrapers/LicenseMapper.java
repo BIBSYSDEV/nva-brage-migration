@@ -27,7 +27,7 @@ public class LicenseMapper {
 
     private static String getLicenseName(String licenseUri) {
         if (isValidUri(licenseUri) && hasCreativeCommonsHost(licenseUri)) {
-            return parseLicensePath(licenseUri);
+            return parseLicenseUri(licenseUri);
         }
         throw new DublinCoreException(NOT_MATCHING_LICENSE_MESSAGE);
     }
@@ -46,7 +46,7 @@ public class LicenseMapper {
         return BrageLicense.fromValue(brageLicense);
     }
 
-    private static String parseLicensePath(String licenseUri) {
+    private static String parseLicenseUri(String licenseUri) {
         return URI.create(licenseUri).getPath().split("/")[2];
     }
 
