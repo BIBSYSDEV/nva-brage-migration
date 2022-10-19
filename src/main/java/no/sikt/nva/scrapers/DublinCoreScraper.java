@@ -93,6 +93,7 @@ public class DublinCoreScraper {
         record.setContributors(extractContributors(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore));
         record.setTags(SubjectScraper.extractTags(dublinCore));
+        record.setDate(extractDate(dublinCore));
         return record;
     }
 
@@ -176,6 +177,12 @@ public class DublinCoreScraper {
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
+    private static String extractDate(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isDate)
+                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    }
+
     private static List<Contributor> extractContributors(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isContributor)
@@ -185,7 +192,7 @@ public class DublinCoreScraper {
     }
 
     private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
-        Identity identity = new Identity(dcValue.getValue());
+        Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped());
         if (dcValue.isAuthor()) {
             return Optional.of(new Contributor(CONTRIBUTOR, identity, AUTHOR));
         }
