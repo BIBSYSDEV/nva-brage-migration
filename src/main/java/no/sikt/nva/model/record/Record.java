@@ -83,6 +83,7 @@ public class Record {
         Record record = (Record) o;
         return Objects.equals(customerId, record.customerId)
                && Objects.equals(id, record.id)
+               && Objects.equals(doi, record.doi)
                && Objects.equals(type, record.type)
                && Objects.equals(language, record.language)
                && Objects.equals(title, record.title)
