@@ -49,7 +49,6 @@ public class DublinCoreValidatorTest {
                                new DcValue(Element.SUBJECT, Qualifier.SLUG, randomString()));
         var dublinCore = new DublinCore(dcValues);
         var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
-        assertThat(actualWarningList, hasSize(1));
         assertThat(actualWarningList,
                    hasItems(new WarningDetails(Warning.SUBJECT_WARNING, List.of())));
     }

@@ -67,6 +67,7 @@ public class DublinCoreScraperTest {
         assertThat(actualPublisherAuthority, is(equalTo(null)));
     }
 
+    @Test
     void shouldCreateContributor() {
         List<Contributor> expectedContributors = List.of(
             new Contributor(CONTRIBUTOR, new Identity("Some Person"), ADVISOR));
