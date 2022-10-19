@@ -53,4 +53,22 @@ public class DublinCoreValidatorTest {
         assertThat(actualWarningList,
                    hasItems(new WarningDetails(Warning.SUBJECT_WARNING, List.of())));
     }
+
+    @Test
+    void shouldReturnWarningWhenInvalidDate() {
+        var dcValues = List.of(new DcValue(Element.DATE, Qualifier.ISSUED, "someDate"));
+        var dublinCore = new DublinCore(dcValues);
+        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
+        assertThat(actualWarningList, hasSize(1));
+        assertThat(actualWarningList, hasItems(new WarningDetails(Warning.INVALID_DATE_WARNING, List.of())));
+    }
+
+    @Test
+    void shouldReturnWarningDateNotPresent() {
+        var dcValues = List.of(new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "some advisor"));
+        var dublinCore = new DublinCore(dcValues);
+        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
+        assertThat(actualWarningList, hasSize(1));
+        assertThat(actualWarningList, hasItems(new WarningDetails(Warning.DATE_NOT_PRESENT_WARNING, List.of())));
+    }
 }

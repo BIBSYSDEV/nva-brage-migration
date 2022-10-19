@@ -209,9 +209,6 @@ public class Record {
         return rightsholder;
     }
 
-    public void setRightsholder(String rightsholder) {
-        this.rightsholder = rightsholder;
-    }
 
     public void setRightsHolder(String rightsholder) {
         this.rightsholder = rightsholder;

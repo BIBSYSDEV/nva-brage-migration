@@ -192,7 +192,7 @@ public class DublinCoreScraper {
     }
 
     private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
-        Identity identity = new Identity(dcValue.getValue());
+        Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped());
         if (dcValue.isAuthor()) {
             return Optional.of(new Contributor(CONTRIBUTOR, identity, AUTHOR));
         }

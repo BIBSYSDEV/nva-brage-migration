@@ -37,7 +37,9 @@ public class WarningDetails {
 
     public enum Warning {
         VERSION_WARNING,
-        SUBJECT_WARNING
+        SUBJECT_WARNING,
+        INVALID_DATE_WARNING,
+        DATE_NOT_PRESENT_WARNING
     }
 
 }
