@@ -11,7 +11,7 @@ import nva.commons.core.JacocoGenerated;
 
 public class Record {
 
-    private String customerUri;
+    private URI customerId;
     private URI id;
     private Path origin;
     private Type type;
@@ -57,7 +57,7 @@ public class Record {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(customerUri,
+        return Objects.hash(customerId,
                             id,
                             type,
                             title,
@@ -80,7 +80,7 @@ public class Record {
             return false;
         }
         Record record = (Record) o;
-        return Objects.equals(customerUri, record.customerUri)
+        return Objects.equals(customerId, record.customerId)
                && Objects.equals(id, record.id)
                && Objects.equals(type, record.type)
                && Objects.equals(language, record.language)
@@ -94,14 +94,14 @@ public class Record {
     }
 
     @JacocoGenerated
-    @JsonProperty("customerUri")
-    public String getCustomerUri() {
-        return this.customerUri;
+    @JsonProperty("customerId")
+    public URI getCustomerId() {
+        return this.customerId;
     }
 
     @JacocoGenerated
-    public void setCustomerUri(String customerUri) {
-        this.customerUri = customerUri;
+    public void setCustomerId(URI customerId) {
+        this.customerId = customerId;
     }
 
     @JsonProperty("id")

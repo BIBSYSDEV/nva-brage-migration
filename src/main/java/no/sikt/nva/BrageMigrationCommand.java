@@ -1,11 +1,13 @@
 package no.sikt.nva;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import no.sikt.nva.scrapers.HandleTitleMapReader;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.paths.UriWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -26,7 +28,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
-    @Option(names = {"-c", "--customer"}, required = true, description = "customer id in NVA")
+
+    private static final String NVE_DEV_CUSTOMER_ID =
+        "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
+    @Option(names = {"-c", "--customer"},
+        defaultValue = NVE_DEV_CUSTOMER_ID,
+        description = "customer id in NVA")
     private String customer;
 
     @Option(names = {"-z",
@@ -45,7 +52,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
-            var brageProcessors = createBrageProcessorThread(zipFiles, customer);
+            var customerUri = UriWrapper.fromUri(customer).getUri();
+            var brageProcessors = createBrageProcessorThread(zipFiles, customerUri);
             var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
             startProcessors(brageProcessorThreads);
             waitForAllProcesses(brageProcessorThreads);
@@ -80,7 +88,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         brageProcessors.forEach(Thread::start);
     }
 
-    private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, String customer) {
+    private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, URI customer) {
         var handleTitleMapReader = new HandleTitleMapReader();
         var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch());
         return

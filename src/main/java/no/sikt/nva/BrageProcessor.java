@@ -1,6 +1,7 @@
 package no.sikt.nva;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +28,12 @@ public class BrageProcessor implements Runnable {
 
     private final String zipfile;
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
-    private final String customerId;
+    private final URI customerId;
     private final String destinationDirectory;
     private final HandleScraper handleScraper;
     private List<Record> records;
 
-    public BrageProcessor(String zipfile, String customerId, String destinationDirectory,
+    public BrageProcessor(String zipfile, URI customerId, String destinationDirectory,
                           final Map<String, String> rescueTitleAndHandleMap) {
         this.customerId = customerId;
         this.zipfile = zipfile;
@@ -94,6 +95,7 @@ public class BrageProcessor implements Runnable {
                                            dublinCore));
             var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory));
+            record.setCustomerId(customerId);
             return Optional.of(record);
         } catch (Exception e) {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
