@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.ErrorDetails.Error;
+import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import org.apache.commons.validator.routines.ISBNValidator;
@@ -35,20 +36,24 @@ public final class DublinCoreValidator {
         }
     }
 
-    public static List<Warning> getDublinCoreWarnings(DublinCore dublinCore) {
-        var warnings = new ArrayList<Warning>();
-        if (!versionIsValid(dublinCore) && versionIsPresent(dublinCore)) {
-            warnings.add(Warning.VERSION_WARNING);
-        }
+    public static List<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore) {
+        var warnings = new ArrayList<WarningDetails>();
+        getVersionWarnings(dublinCore).ifPresent(warnings::add);
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
-
         return warnings;
+    }
+
+    private static Optional<WarningDetails> getVersionWarnings(DublinCore dublinCore) {
+        if (!versionIsPresent(dublinCore)) {
+            return Optional.empty();
+        }
+        return getVersionWarning(dublinCore);
     }
 
     private static List<String> getCristinIdentifierErrors(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
-                   .filter(DcValue::isCristinDcValue).map(cristinId -> cristinId.toXmlString()).collect(
+                   .filter(DcValue::isCristinDcValue).map(DcValue::toXmlString).collect(
                 Collectors.toList());
     }
 
@@ -76,7 +81,6 @@ public final class DublinCoreValidator {
         return Optional.empty();
     }
 
-    //enkel å få ut error details. Kan gjerne lage kun én "error object" og slenge på alle dcvaluesene
     private static Optional<ErrorDetails> getIsbnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         if (hasIsbn(dublinCore)) {
             var isbn = DublinCoreScraper.extractIsbn(dublinCore, brageLocation);
@@ -98,10 +102,17 @@ public final class DublinCoreValidator {
                    .anyMatch(DcValue::isIsbnValue);
     }
 
-    private static boolean versionIsValid(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isVersion)
-                   .findAny().map(DublinCoreValidator::isValidVersion).orElse(false);
+    private static Optional<WarningDetails> getVersionWarning(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DublinCoreValidator::dcValueIsVersionAndVersionIsUnvalid)
+                   .findAny()
+                   .map(dcValue -> new WarningDetails(WarningDetails.Warning.VERSION_WARNING,
+                                                      List.of(dcValue.getValue())));
+    }
+
+    private static boolean dcValueIsVersionAndVersionIsUnvalid(DcValue dcValue) {
+        return dcValue.isVersion() && !isValidVersion(dcValue);
     }
 
     private static boolean versionIsPresent(DublinCore dublinCore) {
@@ -111,10 +122,5 @@ public final class DublinCoreValidator {
 
     private static boolean isValidVersion(DcValue version) {
         return VERSION_STRING_NVE.equals(version.getValue());
-    }
-
-    public enum Warning {
-        VERSION_WARNING,
-        SUBJECT_WARNING
     }
 }

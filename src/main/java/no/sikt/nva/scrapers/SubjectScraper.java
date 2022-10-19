@@ -3,7 +3,8 @@ package no.sikt.nva.scrapers;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.scrapers.DublinCoreValidator.Warning;
+import no.sikt.nva.model.WarningDetails;
+import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Qualifier;
@@ -16,12 +17,17 @@ public final class SubjectScraper {
 
     }
 
-    public static Optional<Warning> getSubjectsWarnings(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(SubjectScraper::isUnrecognizedSubjectType)
-                   .findAny()
-                   .map(dcValue -> Warning.SUBJECT_WARNING);
+    public static Optional<WarningDetails> getSubjectsWarnings(DublinCore dublinCore) {
+        var unrecognizedSubjects = dublinCore.getDcValues()
+                                       .stream()
+                                       .filter(SubjectScraper::isUnrecognizedSubjectType)
+                                       .map(DcValue::toXmlString)
+                                       .collect(Collectors.toList());
+        if (!unrecognizedSubjects.isEmpty()) {
+            return Optional.of(new WarningDetails(Warning.SUBJECT_WARNING, unrecognizedSubjects));
+        } else {
+            return Optional.empty();
+        }
     }
 
     public static List<String> extractTags(DublinCore dublinCore) {
