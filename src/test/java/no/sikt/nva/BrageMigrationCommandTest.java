@@ -1,6 +1,5 @@
 package no.sikt.nva;
 
-
 import static no.sikt.nva.model.ErrorDetails.Error.CRISTIN_ID_PRESENT;
 import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_LICENSE_ZIP_FILE_NAME;
@@ -14,38 +13,27 @@ import com.github.stefanbirkner.systemlambda.SystemLambda;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 
-
 public class BrageMigrationCommandTest {
 
-
-    public static final String NO_LICENSE_LOGG_MESSAGE = "No license in bundle found, default license used";
     private static final int NORMAL_EXIT_CODE = 0;
-
-
-    @Test
-    void shouldExitWhenCustomerOptionIsNotSet() throws Exception {
-        var arguments = new String[]{"-z", "zipfile1.zip"};
-        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
-    }
 
     @Test
     void shouldExitWhenZipFileOptionIsNotSet() throws Exception {
-        var arguments = new String[]{"-c", "nve"};
+        var arguments = new String[]{};
         int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
     }
 
     @Test
     void shouldProcessZipFileWithLicenseCorrectlyAndWithoutAnyLogMessages() throws Exception {
-        var arguments = new String[]{"-c", "nve", "-z", "inputWithLicense.zip"};
+        var arguments = new String[]{"-z", "inputWithLicense.zip"};
         var exitCode = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(exitCode, is(equalTo(0)));
     }
 
     @Test
     void shouldProcessZipFileWithLicenseCorrectly() throws Exception {
-        var arguments = new String[]{"-c", "nve", "-z", INPUT_WITH_LICENSE_ZIP_FILE_NAME};
+        var arguments = new String[]{"-z", INPUT_WITH_LICENSE_ZIP_FILE_NAME};
         var exit = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(exit, is(equalTo(NORMAL_EXIT_CODE)));
     }
@@ -53,7 +41,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessAndLogFileWithCristinId() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var arguments = new String[]{"-c", "nve", "-z", "inputWithCristinId.zip"};
+        var arguments = new String[]{"-z", "inputWithCristinId.zip"};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(String.valueOf(CRISTIN_ID_PRESENT)));
     }
@@ -61,7 +49,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessFileWithoutHandleInDublinCoreFile() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var arguments = new String[]{"-c", "nve", "-z", INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
+        var arguments = new String[]{"-z", INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(),
                    containsString(COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV));
@@ -69,7 +57,7 @@ public class BrageMigrationCommandTest {
 
     @Test
     void shouldProcessFileWithoutHandleInHandleFile() throws Exception {
-        var arguments = new String[]{"-c", "nve", "-z", INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
+        var arguments = new String[]{"-z", INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
         var exitCode = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(exitCode, is(equalTo(NORMAL_EXIT_CODE)));
     }

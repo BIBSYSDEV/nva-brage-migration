@@ -11,6 +11,8 @@ import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.publisher.Publication;
+import no.sikt.nva.model.record.Contributor;
+import no.sikt.nva.model.record.Identity;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
 import nva.commons.core.StringUtils;
@@ -19,11 +21,16 @@ import org.slf4j.LoggerFactory;
 
 public class DublinCoreScraper {
 
-    private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
     public static final String DELIMITER = "\n";
     public static final String WARNING_TEXT = "The dublin_core.xml has following warnings: ";
-
+    public static final String CONTRIBUTOR = "Contributor";
+    public static final String ADVISOR = "Advisor";
+    public static final String AUTHOR = "Author";
+    public static final String EDITOR = "Editor";
+    public static final String ILLUSTRATOR = "Illustrator";
+    public static final String OTHER_CONTRIBUTOR = "Other";
+    private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
 
     public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
@@ -48,7 +55,6 @@ public class DublinCoreScraper {
         return handleIssnList(issnList, brageLocation);
     }
 
-
     public static String extractIsbn(DublinCore dublinCore, BrageLocation brageLocation) {
         var isbnList = dublinCore.getDcValues()
                            .stream()
@@ -72,6 +78,22 @@ public class DublinCoreScraper {
         if (!warnings.isEmpty()) {
             logger.warn(WARNING_TEXT + warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
+    }
+
+    private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
+                                                                     BrageLocation brageLocation) {
+        var record = new Record();
+        record.setId(brageLocation.getHandle());
+        record.setOrigin(brageLocation.getBrageBundlePath());
+        record.setPublication(extractPublication(dublinCore, brageLocation));
+        record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
+        record.setTitle(extractTitle(dublinCore));
+        record.setLanguage(extractLanguage(dublinCore));
+        record.setRightsHolder(extractRightsholder(dublinCore));
+        record.setContributors(extractContributors(dublinCore));
+        record.setPublisherAuthority(extractVersion(dublinCore));
+        record.setTags(SubjectScraper.extractTags(dublinCore));
+        return record;
     }
 
     private static Publication extractPublication(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -100,10 +122,10 @@ public class DublinCoreScraper {
 
     private static List<String> findUnscrapedFields(DublinCore dublinCore) {
         return dublinCore.getDcValues()
-                                    .stream()
-                                    .filter(DublinCoreScraper::shouldBeLoggedAsUnscraped)
-                                    .map(DcValue::toXmlString)
-                                    .collect(Collectors.toList());
+                   .stream()
+                   .filter(DublinCoreScraper::shouldBeLoggedAsUnscraped)
+                   .map(DcValue::toXmlString)
+                   .collect(Collectors.toList());
     }
 
     private static boolean shouldBeLoggedAsUnscraped(DcValue dcValue) {
@@ -128,6 +150,7 @@ public class DublinCoreScraper {
         record.setPublisherAuthority(extractVersion(dublinCore));
         record.setTags(SubjectScraper.extractTags(dublinCore));
         record.setDate(extractDate(dublinCore));
+        record.setContributors(extractContributors(dublinCore));
         return record;
     }
 
@@ -147,14 +170,6 @@ public class DublinCoreScraper {
                    .findAny()
                    .orElse(new DcValue())
                    .scrapeValueAndSetToScraped();
-    }
-
-    private static List<String> extractAuthors(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isAuthor)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
     }
 
     private static List<String> extractType(DublinCore dublinCore) {
@@ -183,6 +198,33 @@ public class DublinCoreScraper {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isDate)
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+
+    private static List<Contributor> extractContributors(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isContributor)
+                   .map(DublinCoreScraper::createContributorFromDcValue)
+                   .flatMap(Optional::stream)
+                   .collect(Collectors.toList());
+    }
+
+    private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
+        Identity identity = new Identity(dcValue.getValue());
+        if (dcValue.isAuthor()) {
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, AUTHOR));
+        }
+        if (dcValue.isAdvisor()) {
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, ADVISOR));
+        }
+        if (dcValue.isEditor()) {
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, EDITOR));
+        }
+        if (dcValue.isIllustrator()) {
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, ILLUSTRATOR));
+        }
+        if (dcValue.isOtherContributor()) {
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, OTHER_CONTRIBUTOR));
+        }
+        return Optional.empty();
     }
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")

@@ -11,7 +11,7 @@ import nva.commons.core.JacocoGenerated;
 
 public class Record {
 
-    private String customerUri;
+    private URI customerId;
     private URI id;
     private Path origin;
     private Type type;
@@ -25,6 +25,16 @@ public class Record {
     private List<String> tags;
     private List<String> authors;
     private Publication publication;
+    private List<Contributor> contributors;
+
+    @JsonProperty("contributors")
+    public List<Contributor> getContributors() {
+        return contributors;
+    }
+
+    public void setContributors(List<Contributor> contributors) {
+        this.contributors = contributors;
+    }
 
     @JsonProperty("date")
     public String getDate() {
@@ -57,7 +67,18 @@ public class Record {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(customerUri, id, type, title, language, license, embargo, tags, authors, origin, date);
+        return Objects.hash(customerId,
+                            id,
+                            type,
+                            title,
+                            language,
+                            license,
+                            embargo,
+                            tags,
+                            authors,
+                            origin,
+                            contributors,
+                            date);
     }
 
     @JacocoGenerated
@@ -70,28 +91,29 @@ public class Record {
             return false;
         }
         Record record = (Record) o;
-        return Objects.equals(customerUri, record.customerUri)
+        return Objects.equals(customerId, record.customerId)
                && Objects.equals(id, record.id)
                && Objects.equals(type, record.type)
-               && Objects.equals(title, record.title)
                && Objects.equals(language, record.language)
+               && Objects.equals(title, record.title)
                && Objects.equals(license, record.license)
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(tags, record.tags)
                && Objects.equals(authors, record.authors)
                && Objects.equals(origin, record.origin)
                && Objects.equals(date, record.date);
+               && Objects.equals(contributors, record.contributors);
     }
 
     @JacocoGenerated
-    @JsonProperty("customerUri")
-    public String getCustomerUri() {
-        return this.customerUri;
+    @JsonProperty("customerId")
+    public URI getCustomerId() {
+        return this.customerId;
     }
 
     @JacocoGenerated
-    public void setCustomerUri(String customerUri) {
-        this.customerUri = customerUri;
+    public void setCustomerId(URI customerId) {
+        this.customerId = customerId;
     }
 
     @JsonProperty("id")

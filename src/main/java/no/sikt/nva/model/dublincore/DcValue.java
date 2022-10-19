@@ -90,10 +90,6 @@ public class DcValue {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.CRISTIN.equals(this.qualifier);
     }
 
-    public boolean isAuthor() {
-        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
-    }
-
     public boolean isVersion() {
         return Element.DESCRIPTION.equals(this.element) && Qualifier.VERSION.equals(this.qualifier);
     }
@@ -108,6 +104,38 @@ public class DcValue {
 
     public boolean isDate() {
         return Element.DATE.equals(this.element) && Qualifier.ISSUED.equals(this.qualifier);
+    }
+    
+    public boolean isContributor() {
+        return Element.CONTRIBUTOR.equals(this.element);
+    }
+
+    public boolean isAdvisor() {
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ADVISOR.equals(this.qualifier);
+    }
+
+    public boolean isAuthor() {
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
+    }
+
+    public boolean isDepartment() {
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.DEPARTMENT.equals(this.qualifier);
+    }
+
+    public boolean isEditor() {
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.EDITOR.equals(this.qualifier);
+    }
+
+    public boolean isIllustrator() {
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ILLUSTRATOR.equals(this.qualifier);
+    }
+
+    public boolean isOrcId() {
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ORCID.equals(this.qualifier);
+    }
+
+    public boolean isOtherContributor() {
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.OTHER.equals(this.qualifier);
     }
 
     public boolean isHandle() {
