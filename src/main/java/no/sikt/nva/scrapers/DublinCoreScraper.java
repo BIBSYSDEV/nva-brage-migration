@@ -2,7 +2,6 @@ package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.scrapers.DublinCoreValidator.VERSION_STRING_NVE;
 import static no.sikt.nva.scrapers.DublinCoreValidator.getDublinCoreWarnings;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -107,16 +106,6 @@ public class DublinCoreScraper {
         return publication;
     }
 
-    private static List<Contributor> extractContributors(DublinCore dublinCore) {
-        List<Contributor> contributors = new ArrayList<>();
-        contributors.addAll(extractAdvisors(dublinCore));
-        contributors.addAll(extractAuthors(dublinCore));
-        contributors.addAll(extractEditors(dublinCore));
-        contributors.addAll(extractIllustrator(dublinCore));
-        contributors.addAll(extractOtherContributor(dublinCore));
-        return contributors;
-    }
-
     private static void logUnscrapedValues(DublinCore dublinCore, BrageLocation brageLocation) {
         List<String> unscrapedDcValues = findUnscrapedFields(dublinCore);
         logUnscrapedFields(brageLocation, unscrapedDcValues);
@@ -187,59 +176,32 @@ public class DublinCoreScraper {
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
-    private static List<Contributor> extractAuthors(DublinCore dublinCore) {
-        var authors = dublinCore.getDcValues().stream()
-                          .filter(DcValue::isAuthor)
-                          .map(DcValue::scrapeValueAndSetToScraped)
-                          .collect(Collectors.toList());
-
-        return authors.stream()
-                   .map(author -> new Contributor(CONTRIBUTOR, new Identity(author), AUTHOR))
+    private static List<Contributor> extractContributors(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isContributor)
+                   .map(DublinCoreScraper::createContributorFromDcValue)
+                   .flatMap(Optional::stream)
                    .collect(Collectors.toList());
     }
 
-    private static List<Contributor> extractAdvisors(DublinCore dublinCore) {
-        var advisors = dublinCore.getDcValues().stream()
-                           .filter(DcValue::isAdvisor)
-                           .map(DcValue::scrapeValueAndSetToScraped)
-                           .collect(Collectors.toList());
-
-        return advisors.stream()
-                   .map(advisor -> new Contributor(CONTRIBUTOR, new Identity(advisor), ADVISOR))
-                   .collect(Collectors.toList());
-    }
-
-    private static List<Contributor> extractEditors(DublinCore dublinCore) {
-        var editors = dublinCore.getDcValues().stream()
-                          .filter(DcValue::isEditor)
-                          .map(DcValue::scrapeValueAndSetToScraped)
-                          .collect(Collectors.toList());
-
-        return editors.stream()
-                   .map(advisor -> new Contributor(CONTRIBUTOR, new Identity(advisor), EDITOR))
-                   .collect(Collectors.toList());
-    }
-
-    private static List<Contributor> extractIllustrator(DublinCore dublinCore) {
-        var illustrators = dublinCore.getDcValues().stream()
-                               .filter(DcValue::isIllustrator)
-                               .map(DcValue::scrapeValueAndSetToScraped)
-                               .collect(Collectors.toList());
-
-        return illustrators.stream()
-                   .map(advisor -> new Contributor(CONTRIBUTOR, new Identity(advisor), ILLUSTRATOR))
-                   .collect(Collectors.toList());
-    }
-
-    private static List<Contributor> extractOtherContributor(DublinCore dublinCore) {
-        var otherContributors = dublinCore.getDcValues().stream()
-                                    .filter(DcValue::isOtherContributor)
-                                    .map(DcValue::scrapeValueAndSetToScraped)
-                                    .collect(Collectors.toList());
-
-        return otherContributors.stream()
-                   .map(advisor -> new Contributor(CONTRIBUTOR, new Identity(advisor), OTHER_CONTRIBUTOR))
-                   .collect(Collectors.toList());
+    private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
+        Identity identity = new Identity(dcValue.getValue());
+        if (dcValue.isAuthor()) {
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, AUTHOR));
+        }
+        if (dcValue.isAdvisor()) {
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, ADVISOR));
+        }
+        if (dcValue.isEditor()) {
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, EDITOR));
+        }
+        if (dcValue.isIllustrator()) {
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, ILLUSTRATOR));
+        }
+        if (dcValue.isOtherContributor()) {
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, OTHER_CONTRIBUTOR));
+        }
+        return Optional.empty();
     }
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")

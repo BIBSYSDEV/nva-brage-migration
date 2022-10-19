@@ -46,7 +46,7 @@ public class Contributor {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(type, identity);
+        return Objects.hash(type, identity, role);
     }
 
     @JacocoGenerated
@@ -59,6 +59,8 @@ public class Contributor {
             return false;
         }
         Contributor that = (Contributor) o;
-        return Objects.equals(type, that.type) && Objects.equals(identity, that.identity);
+        return Objects.equals(type, that.type)
+               && Objects.equals(identity, that.identity)
+               && Objects.equals(role, that.role);
     }
 }
