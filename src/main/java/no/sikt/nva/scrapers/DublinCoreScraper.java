@@ -5,9 +5,9 @@ import static no.sikt.nva.scrapers.DublinCoreValidator.getDublinCoreWarnings;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.scrapers.DublinCoreValidator.Warning;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.publisher.Publication;
@@ -68,7 +68,7 @@ public class DublinCoreScraper {
                    .scrapeValueAndSetToScraped();
     }
 
-    private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<Warning> warnings) {
+    private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings) {
         if (!warnings.isEmpty()) {
             logger.warn(WARNING_TEXT + warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
@@ -99,12 +99,11 @@ public class DublinCoreScraper {
     }
 
     private static List<String> findUnscrapedFields(DublinCore dublinCore) {
-        var unscrapedDcValues = dublinCore.getDcValues()
+        return dublinCore.getDcValues()
                                     .stream()
                                     .filter(DublinCoreScraper::shouldBeLoggedAsUnscraped)
                                     .map(DcValue::toXmlString)
                                     .collect(Collectors.toList());
-        return unscrapedDcValues;
     }
 
     private static boolean shouldBeLoggedAsUnscraped(DcValue dcValue) {
