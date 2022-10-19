@@ -24,6 +24,16 @@ public class Record {
     private List<String> tags;
     private List<String> authors;
     private Publication publication;
+    private List<Contributor> contributors;
+
+    @JsonProperty("contributor")
+    public List<Contributor> getContributors() {
+        return contributors;
+    }
+
+    public void setContributor(List<Contributor> contributors) {
+        this.contributors = contributors;
+    }
 
     @JsonInclude
     @JsonProperty("publisherAuthority")
