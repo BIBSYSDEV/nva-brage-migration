@@ -13,6 +13,7 @@ public class Record {
 
     private URI customerId;
     private URI id;
+    private URI doi;
     private Path origin;
     private Type type;
     private String title;
@@ -199,5 +200,14 @@ public class Record {
 
     public void setRightsHolder(String rightsholder) {
         this.rightsholder = rightsholder;
+    }
+
+    @JsonProperty("doi")
+    public URI getDoi() {
+        return doi;
+    }
+
+    public void setDoi(URI doi) {
+        this.doi = doi;
     }
 }

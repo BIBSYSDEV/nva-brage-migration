@@ -37,6 +37,14 @@ public class DcValue {
         return element;
     }
 
+    public boolean isDoi() {
+        return Element.IDENTIFIER.equals(this.element)
+               && Qualifier.DOI.equals(this.qualifier)
+               || Element.IDENTIFIER.equals(this.element)
+                  && Qualifier.URI.equals(this.qualifier)
+                  && value.contains("doi.org");
+    }
+
     public Qualifier getQualifier() {
         return qualifier;
     }

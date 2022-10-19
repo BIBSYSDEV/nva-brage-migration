@@ -10,6 +10,7 @@ import no.sikt.nva.model.ErrorDetails.Error;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import nva.commons.doi.DoiValidator;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
 
@@ -20,6 +21,7 @@ public final class DublinCoreValidator {
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
 
         var errors = new ArrayList<ErrorDetails>();
+        getDoiErrorDetails(dublinCore).ifPresent(errors::add);
         geCristinidErrorDetails(dublinCore).ifPresent(errors::add);
         getInvalidTypes(dublinCore).ifPresent(errors::add);
         getIssnErrors(dublinCore, brageLocation).ifPresent(errors::add);
@@ -41,6 +43,21 @@ public final class DublinCoreValidator {
         getVersionWarnings(dublinCore).ifPresent(warnings::add);
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
         return warnings;
+    }
+
+    private static Optional<ErrorDetails> getDoiErrorDetails(DublinCore dublinCore) {
+        var doiErrors =
+            dublinCore.getDcValues()
+                .stream()
+                .filter(DublinCoreValidator::hasInvalidDoi)
+                .map(DcValue::getValue)
+                .collect(
+                    Collectors.toList());
+        if (doiErrors.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(new ErrorDetails(Error.INVALID_DOI, doiErrors));
+        }
     }
 
     private static Optional<WarningDetails> getVersionWarnings(DublinCore dublinCore) {
@@ -122,5 +139,13 @@ public final class DublinCoreValidator {
 
     private static boolean isValidVersion(DcValue version) {
         return VERSION_STRING_NVE.equals(version.getValue());
+    }
+
+    private static boolean hasInvalidDoi(DcValue dcValue) {
+        return dcValue.isDoi() && isInvalidDoi(dcValue);
+    }
+
+    private static boolean isInvalidDoi(DcValue dcValue) {
+        return !DoiValidator.validateOffline(dcValue.getValue());
     }
 }
