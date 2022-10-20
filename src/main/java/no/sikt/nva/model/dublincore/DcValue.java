@@ -78,8 +78,12 @@ public class DcValue {
         return Element.LANGUAGE.equals(this.element);
     }
 
-    public boolean isTitle() {
-        return Element.TITLE.equals(this.element);
+    public boolean isMainTitle() {
+        return Element.TITLE.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
+    }
+
+    public boolean isAlternativeTitle() {
+        return Element.TITLE.equals(this.element) && Qualifier.ALTERNATIVE.equals(this.qualifier);
     }
 
     public boolean isType() {
@@ -117,7 +121,7 @@ public class DcValue {
     public boolean isDate() {
         return Element.DATE.equals(this.element) && Qualifier.ISSUED.equals(this.qualifier);
     }
-    
+
     public boolean isContributor() {
         return Element.CONTRIBUTOR.equals(this.element);
     }

@@ -17,7 +17,7 @@ public class Record {
     private Path origin;
     private Type type;
     private Date date;
-    private String title;
+    private String mainTitle;
     private String language;
     private String license;
     private String embargo;
@@ -25,8 +25,18 @@ public class Record {
     private String rightsholder;
     private List<String> tags;
     private List<String> authors;
+    private List<String> alternativeTitles;
     private Publication publication;
     private List<Contributor> contributors;
+
+    @JsonProperty("alternativeTitles")
+    public List<String> getAlternativeTitles() {
+        return alternativeTitles;
+    }
+
+    public void setAlternativeTitles(List<String> alternativeTitles) {
+        this.alternativeTitles = alternativeTitles;
+    }
 
     @JsonProperty("contributors")
     public List<Contributor> getContributors() {
@@ -71,7 +81,7 @@ public class Record {
         return Objects.hash(customerId,
                             id,
                             type,
-                            title,
+                            mainTitle,
                             language,
                             license,
                             embargo,
@@ -97,7 +107,7 @@ public class Record {
                && Objects.equals(doi, record.doi)
                && Objects.equals(type, record.type)
                && Objects.equals(language, record.language)
-               && Objects.equals(title, record.title)
+               && Objects.equals(mainTitle, record.mainTitle)
                && Objects.equals(license, record.license)
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(tags, record.tags)
@@ -137,13 +147,13 @@ public class Record {
     }
 
     @JacocoGenerated
-    @JsonProperty("title")
-    public String getTitle() {
-        return this.title;
+    @JsonProperty("mainTitle")
+    public String getMainTitle() {
+        return this.mainTitle;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setMainTitle(String mainTitle) {
+        this.mainTitle = mainTitle;
     }
 
     @JacocoGenerated
