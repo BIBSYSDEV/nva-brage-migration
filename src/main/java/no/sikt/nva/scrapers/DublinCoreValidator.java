@@ -8,6 +8,7 @@ import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.ErrorDetails.Error;
 import no.sikt.nva.model.WarningDetails;
+import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.doi.DoiValidator;
@@ -42,6 +43,7 @@ public final class DublinCoreValidator {
         var warnings = new ArrayList<WarningDetails>();
         getVersionWarnings(dublinCore).ifPresent(warnings::add);
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
+        getDateWarning(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -65,6 +67,27 @@ public final class DublinCoreValidator {
             return Optional.empty();
         }
         return getVersionWarning(dublinCore);
+    }
+
+    private static Optional<WarningDetails> getDateWarning(DublinCore dublinCore) {
+        if (hasDate(dublinCore)) {
+            var date = dublinCore.getDcValues()
+                           .stream()
+                           .filter(DcValue::isDate)
+                           .findAny()
+                           .orElse(new DcValue())
+                           .getValue();
+
+            if (date.matches("\\d{4}")) {
+                return Optional.empty();
+            }
+            return Optional.of(new WarningDetails(Warning.INVALID_DATE_WARNING, List.of(date)));
+        }
+        return Optional.of(new WarningDetails(Warning.DATE_NOT_PRESENT_WARNING, List.of()));
+    }
+
+    private static boolean hasDate(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream().anyMatch(DcValue::isDate);
     }
 
     private static List<String> getCristinIdentifierErrors(DublinCore dublinCore) {

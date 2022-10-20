@@ -11,7 +11,7 @@ import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.model.publisher.Publication;
+import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.Contributor;
 import no.sikt.nva.model.record.Identity;
 import no.sikt.nva.model.record.Record;
@@ -96,6 +96,7 @@ public class DublinCoreScraper {
         record.setPublisherAuthority(extractVersion(dublinCore));
         record.setTags(SubjectScraper.extractTags(dublinCore));
         record.setDoi(extractDoi(dublinCore));
+        record.setDate(extractDate(dublinCore));
         return record;
     }
 
@@ -185,6 +186,12 @@ public class DublinCoreScraper {
     private static String extractRightsholder(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isRightsholder)
+                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    }
+
+    private static String extractDate(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isDate)
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 

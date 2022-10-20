@@ -6,9 +6,9 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
-import no.sikt.nva.model.publisher.Publication;
 import nva.commons.core.JacocoGenerated;
 
+@SuppressWarnings("PMD.TooManyFields")
 public class Record {
 
     private URI customerId;
@@ -16,6 +16,7 @@ public class Record {
     private URI doi;
     private Path origin;
     private Type type;
+    private String date;
     private String title;
     private String language;
     private String license;
@@ -34,6 +35,15 @@ public class Record {
 
     public void setContributors(List<Contributor> contributors) {
         this.contributors = contributors;
+    }
+
+    @JsonProperty("date")
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
     @JsonInclude
@@ -68,7 +78,8 @@ public class Record {
                             tags,
                             authors,
                             origin,
-                            contributors);
+                            contributors,
+                            date);
     }
 
     @JacocoGenerated
@@ -92,6 +103,7 @@ public class Record {
                && Objects.equals(tags, record.tags)
                && Objects.equals(authors, record.authors)
                && Objects.equals(origin, record.origin)
+               && Objects.equals(date, record.date)
                && Objects.equals(contributors, record.contributors);
     }
 

@@ -62,6 +62,10 @@ public class DcValue {
         return value;
     }
 
+    public void setToScraped() {
+        scraped = true;
+    }
+
     public String getValue() {
         return value;
     }
@@ -110,6 +114,10 @@ public class DcValue {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.URI.equals(this.qualifier);
     }
 
+    public boolean isDate() {
+        return Element.DATE.equals(this.element) && Qualifier.ISSUED.equals(this.qualifier);
+    }
+    
     public boolean isContributor() {
         return Element.CONTRIBUTOR.equals(this.element);
     }
