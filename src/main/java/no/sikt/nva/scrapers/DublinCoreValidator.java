@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +14,7 @@ import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.StringUtils;
+import nva.commons.core.language.LanguageMapper;
 import nva.commons.doi.DoiValidator;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
@@ -21,6 +23,7 @@ public final class DublinCoreValidator {
 
     public static final String VERSION_STRING_NVE = "publishedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
+    public static final URI LEXVO_URI_UNDEFINED = URI.create("http://lexvo.org/id/iso639-3/und");
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
 
@@ -47,7 +50,17 @@ public final class DublinCoreValidator {
         getVersionWarnings(dublinCore).ifPresent(warnings::add);
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
         getDateWarning(dublinCore).ifPresent(warnings::add);
+        getLanguageWarning(dublinCore).ifPresent(warnings::add);
         return warnings;
+    }
+
+    public static boolean containsYearAndMonth(String date) {
+        var yearAndMonthList = Arrays.asList(date.split("-"));
+        return yearAndMonthList.size() == 2 && yearAndMonthList.get(yearAndMonthList.size() - 1).matches("\\d{2}");
+    }
+
+    public static boolean containsYearOnly(String date) {
+        return date.matches("\\d{4}");
     }
 
     private static Optional<ErrorDetails> getDoiErrorDetails(DublinCore dublinCore) {
@@ -72,6 +85,19 @@ public final class DublinCoreValidator {
         return getVersionWarning(dublinCore);
     }
 
+    private static Optional<WarningDetails> getLanguageWarning(DublinCore dublinCore) {
+        var language =
+            dublinCore.getDcValues()
+                .stream()
+                .filter(DcValue::isLanguage).findAny().orElse(new DcValue()).getValue();
+        var mappedToNvaLanguage = LanguageMapper.toUri(language);
+        if (!LEXVO_URI_UNDEFINED.equals(mappedToNvaLanguage)) {
+            return Optional.empty();
+        } else {
+            return Optional.of(new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED, List.of(String.valueOf(language))));
+        }
+    }
+
     private static Optional<WarningDetails> getDateWarning(DublinCore dublinCore) {
         if (hasDate(dublinCore)) {
             var date = dublinCore.getDcValues()
@@ -90,15 +116,6 @@ public final class DublinCoreValidator {
             return Optional.of(new WarningDetails(Warning.INVALID_DATE_WARNING, List.of(date)));
         }
         return Optional.of(new WarningDetails(Warning.DATE_NOT_PRESENT_WARNING, List.of()));
-    }
-
-    public static boolean containsYearAndMonth(String date) {
-        var yearAndMonthList = Arrays.asList(date.split("-"));
-        return yearAndMonthList.size() == 2 && yearAndMonthList.get(yearAndMonthList.size() - 1).matches("\\d{2}");
-    }
-
-    public static boolean containsYearOnly(String date) {
-        return date.matches("\\d{4}");
     }
 
     private static boolean hasDate(DublinCore dublinCore) {

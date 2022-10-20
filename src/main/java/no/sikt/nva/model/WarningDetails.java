@@ -13,6 +13,11 @@ public class WarningDetails {
         this.details = details;
     }
 
+    public WarningDetails(Warning warningCode, String detail) {
+        this.warningCode = warningCode;
+        this.details = List.of(detail);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -39,7 +44,8 @@ public class WarningDetails {
         VERSION_WARNING,
         SUBJECT_WARNING,
         INVALID_DATE_WARNING,
-        DATE_NOT_PRESENT_WARNING
+        DATE_NOT_PRESENT_WARNING,
+        LANGUAGE_MAPPED_TO_UNDEFINED
     }
 
 }

@@ -80,7 +80,6 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(new DcValue(Element.DATE, Qualifier.ISSUED, "someDate"));
         var dublinCore = new DublinCore(dcValues);
         var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
-        assertThat(actualWarningList, hasSize(1));
         assertThat(actualWarningList, hasItems(new WarningDetails(Warning.INVALID_DATE_WARNING, List.of())));
     }
 
@@ -89,7 +88,23 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "some advisor"));
         var dublinCore = new DublinCore(dcValues);
         var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
-        assertThat(actualWarningList, hasSize(1));
         assertThat(actualWarningList, hasItems(new WarningDetails(Warning.DATE_NOT_PRESENT_WARNING, List.of())));
+    }
+
+    @Test
+    void shouldReturnWarningIfLanguageIsUndefined() {
+        var dcValues = List.of(new DcValue(Element.LANGUAGE, Qualifier.NONE, "someInvalidLanguage"));
+        var dublinCore = new DublinCore(dcValues);
+        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
+        assertThat(actualWarningList, hasItems(new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED, List.of())));
+    }
+
+    @Test
+    void shouldReturnMapValidLanguageToNvaLanguage() {
+        var dcValues = List.of(new DcValue(Element.LANGUAGE, Qualifier.NONE, "nob"));
+        var dublinCore = new DublinCore(dcValues);
+        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
+        assertThat(actualWarningList, not(hasItems(
+            new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED, List.of()))));
     }
 }
