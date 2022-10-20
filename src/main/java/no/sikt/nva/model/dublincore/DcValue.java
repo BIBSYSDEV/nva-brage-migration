@@ -117,7 +117,7 @@ public class DcValue {
     public boolean isDate() {
         return Element.DATE.equals(this.element) && Qualifier.ISSUED.equals(this.qualifier);
     }
-    
+
     public boolean isContributor() {
         return Element.CONTRIBUTOR.equals(this.element);
     }
@@ -164,6 +164,16 @@ public class DcValue {
         return Element.RIGHTS.equals(this.element)
                && (Qualifier.NONE.equals(this.qualifier)
                    || Qualifier.URI.equals(this.qualifier));
+    }
+
+    public boolean isAbstract() {
+        return Element.DESCRIPTION.equals(this.element)
+               && Qualifier.ABSTRACT.equals(this.qualifier);
+    }
+
+    public boolean isDescription() {
+        return Element.DESCRIPTION.equals(this.element)
+               && Qualifier.NONE.equals(this.qualifier);
     }
 
     public String toXmlString() {

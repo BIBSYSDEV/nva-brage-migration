@@ -11,6 +11,8 @@ import nva.commons.core.JacocoGenerated;
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
 
+    private EntityDescription entityDescription;
+
     private URI customerId;
     private URI id;
     private URI doi;
@@ -222,5 +224,14 @@ public class Record {
 
     public void setDoi(URI doi) {
         this.doi = doi;
+    }
+
+    @JsonProperty("entityDescription")
+    public EntityDescription getEntityDescription() {
+        return entityDescription;
+    }
+
+    public void setEntityDescription(EntityDescription entityDescription) {
+        this.entityDescription = entityDescription;
     }
 }
