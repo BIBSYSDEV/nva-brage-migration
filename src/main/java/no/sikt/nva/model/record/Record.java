@@ -29,6 +29,41 @@ public class Record {
     private Publication publication;
     private List<Contributor> contributors;
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(customerId, id, doi, origin, type, date, mainTitle, language, license, embargo,
+                            publisherAuthority, rightsholder, tags, authors, alternativeTitles, publication,
+                            contributors);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Record record = (Record) o;
+        return Objects.equals(customerId, record.customerId)
+               && Objects.equals(id, record.id)
+               && Objects.equals(doi, record.doi)
+               && Objects.equals(origin, record.origin)
+               && Objects.equals(type, record.type)
+               && Objects.equals(date, record.date)
+               && Objects.equals(mainTitle, record.mainTitle)
+               && Objects.equals(language, record.language)
+               && Objects.equals(license, record.license)
+               && Objects.equals(embargo, record.embargo)
+               && Objects.equals(publisherAuthority, record.publisherAuthority)
+               && Objects.equals(rightsholder, record.rightsholder)
+               && Objects.equals(tags, record.tags)
+               && Objects.equals(authors, record.authors)
+               && Objects.equals(alternativeTitles, record.alternativeTitles)
+               && Objects.equals(publication, record.publication)
+               && Objects.equals(contributors, record.contributors);
+    }
+
     @JsonProperty("alternativeTitles")
     public List<String> getAlternativeTitles() {
         return alternativeTitles;
@@ -73,48 +108,6 @@ public class Record {
 
     public void setPublication(Publication publication) {
         this.publication = publication;
-    }
-
-    @JacocoGenerated
-    @Override
-    public int hashCode() {
-        return Objects.hash(customerId,
-                            id,
-                            type,
-                            mainTitle,
-                            language,
-                            license,
-                            embargo,
-                            tags,
-                            authors,
-                            origin,
-                            contributors,
-                            date);
-    }
-
-    @JacocoGenerated
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Record record = (Record) o;
-        return Objects.equals(customerId, record.customerId)
-               && Objects.equals(id, record.id)
-               && Objects.equals(doi, record.doi)
-               && Objects.equals(type, record.type)
-               && Objects.equals(language, record.language)
-               && Objects.equals(mainTitle, record.mainTitle)
-               && Objects.equals(license, record.license)
-               && Objects.equals(embargo, record.embargo)
-               && Objects.equals(tags, record.tags)
-               && Objects.equals(authors, record.authors)
-               && Objects.equals(origin, record.origin)
-               && Objects.equals(date, record.date)
-               && Objects.equals(contributors, record.contributors);
     }
 
     @JacocoGenerated
