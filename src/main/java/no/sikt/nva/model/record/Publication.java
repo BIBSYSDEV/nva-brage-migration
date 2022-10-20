@@ -11,21 +11,21 @@ public class Publication {
     private String isbn;
     private String publisher;
     @SuppressWarnings("PMD.LinguisticNaming")
-    private String isPartOfSeries;
+    private String partOfSeries;
 
     @JsonProperty("isPartOfSeries")
-    public String getIsPartOfSeries() {
-        return isPartOfSeries;
+    public String getPartOfSeries() {
+        return partOfSeries;
     }
 
-    public void setIsPartOfSeries(String isPartOfSeries) {
-        this.isPartOfSeries = isPartOfSeries;
+    public void setPartOfSeries(String partOfSeries) {
+        this.partOfSeries = partOfSeries;
     }
 
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(journal, issn, isbn, publisher, isPartOfSeries);
+        return Objects.hash(journal, issn, isbn, publisher, partOfSeries);
     }
 
     @JacocoGenerated
@@ -42,7 +42,7 @@ public class Publication {
                && Objects.equals(issn, publication.issn)
                && Objects.equals(publisher, publication.publisher)
                && Objects.equals(isbn, publication.isbn)
-               && Objects.equals(isPartOfSeries, publication.isPartOfSeries);
+               && Objects.equals(partOfSeries, publication.partOfSeries);
     }
 
     @JacocoGenerated

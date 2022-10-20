@@ -119,14 +119,14 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldScrapeIsPartOfSeriesDcValue() {
-        var isPartOfSeries = "Part of some series";
-        var isPartOfSeriesDcValue = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, isPartOfSeries);
+    void shouldScrapePartOfSeriesDcValue() {
+        var partOfSeries = "Part of some series";
+        var partOfSeriesDcValue = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, partOfSeries);
         var typeDcValue = new DcValue(Element.TYPE, null, "Book");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(isPartOfSeriesDcValue, typeDcValue));
+            List.of(partOfSeriesDcValue, typeDcValue));
         var record = DublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getPublication().getIsPartOfSeries(), is(equalTo(isPartOfSeries)));
+        assertThat(record.getPublication().getPartOfSeries(), is(equalTo(partOfSeries)));
     }
 }

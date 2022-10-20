@@ -129,7 +129,7 @@ public class DublinCoreScraper {
         publication.setIsbn(extractIsbn(dublinCore, brageLocation));
         publication.setJournal(extractJournal(dublinCore));
         publication.setPublisher(extractPublisher(dublinCore));
-        publication.setIsPartOfSeries(extractIsPartOfSeries(dublinCore));
+        publication.setPartOfSeries(extractPartOfSeries(dublinCore));
         return publication;
     }
 
@@ -181,7 +181,7 @@ public class DublinCoreScraper {
                    .scrapeValueAndSetToScraped();
     }
 
-    private static String extractIsPartOfSeries(DublinCore dublinCore) {
+    private static String extractPartOfSeries(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isPartOfSeries)
