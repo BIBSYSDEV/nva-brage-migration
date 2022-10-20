@@ -3,10 +3,13 @@ package no.sikt.nva.scrapers;
 import static no.sikt.nva.scrapers.DublinCoreScraper.ADVISOR;
 import static no.sikt.nva.scrapers.DublinCoreScraper.CONTRIBUTOR;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
+import static no.unit.nva.testutils.RandomDataGenerator.randomDoi;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.file.Path;
 import java.util.List;
@@ -77,5 +80,22 @@ public class DublinCoreScraperTest {
         var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         var actualContributors = record.getContributors();
         assertThat(actualContributors, is(equalTo(expectedContributors)));
+    }
+
+    @Test
+    void ifTwoDoiSArePresentOneWillBeScrapedTheOtherLogged() {
+        var expectedLogMessage = "<dcValue element=\"identifier\" qualifier=\"doi\">";
+        var dcValues = List.of(
+            new DcValue(Element.IDENTIFIER, Qualifier.DOI, randomDoi().toString()),
+            new DcValue(Element.IDENTIFIER, Qualifier.DOI, randomDoi().toString()),
+            new DcValue(Element.TYPE, null, "Book"));
+        var brageLocation = new BrageLocation(Path.of("some", "ignoredPath"));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getDoi(), is(notNullValue()));
+        assertThat(appender.getMessages(),
+                   allOf(containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE),
+                         containsString(expectedLogMessage)));
     }
 }
