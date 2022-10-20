@@ -6,6 +6,7 @@ import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_M
 import static no.unit.nva.testutils.RandomDataGenerator.randomDoi;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -97,5 +98,35 @@ public class DublinCoreScraperTest {
         assertThat(appender.getMessages(),
                    allOf(containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE),
                          containsString(expectedLogMessage)));
+    }
+
+    @Test
+    void shouldScrapeTitleAndAlternativeTitles() {
+        var expectedMainTitle = "mainTitle";
+        var expectedAlternativeTitle1 = "alternativeTitle1";
+        var expectedAlternativeTitle2 = "alternativeTitle2";
+        var dcValues = List.of(
+            new DcValue(Element.TITLE, Qualifier.NONE, expectedMainTitle),
+            new DcValue(Element.TITLE, Qualifier.ALTERNATIVE, expectedAlternativeTitle1),
+            new DcValue(Element.TITLE, Qualifier.ALTERNATIVE, expectedAlternativeTitle2),
+            new DcValue(Element.TYPE, null, "Book"));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+
+        assertThat(record.getMainTitle(), is(equalTo(expectedMainTitle)));
+        assertThat(record.getAlternativeTitles(),
+                   containsInAnyOrder(expectedAlternativeTitle1, expectedAlternativeTitle2));
+    }
+
+    @Test
+    void shouldScrapePartOfSeriesDcValue() {
+        var partOfSeries = "Part of some series";
+        var partOfSeriesDcValue = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, partOfSeries);
+        var typeDcValue = new DcValue(Element.TYPE, null, "Book");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(partOfSeriesDcValue, typeDcValue));
+        var record = DublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getPublication().getPartOfSeries(), is(equalTo(partOfSeries)));
     }
 }

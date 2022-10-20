@@ -73,13 +73,21 @@ public class DublinCoreScraper {
         return handleIsbnList(isbnList, brageLocation);
     }
 
-    public static String extractTitle(DublinCore dublinCore) {
+    public static String extractMainTitle(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
-                   .filter(DcValue::isTitle)
+                   .filter(DcValue::isMainTitle)
                    .findAny()
                    .orElse(new DcValue())
                    .scrapeValueAndSetToScraped();
+    }
+
+    public static List<String> extractAlternativeTitles(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isAlternativeTitle)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
     }
 
     private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings) {
@@ -95,7 +103,8 @@ public class DublinCoreScraper {
         record.setOrigin(brageLocation.getBrageBundlePath());
         record.setPublication(extractPublication(dublinCore, brageLocation));
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
-        record.setTitle(extractTitle(dublinCore));
+        record.setMainTitle(extractMainTitle(dublinCore));
+        record.setAlternativeTitles(extractAlternativeTitles(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setContributors(extractContributors(dublinCore));
@@ -145,7 +154,7 @@ public class DublinCoreScraper {
         publication.setIsbn(extractIsbn(dublinCore, brageLocation));
         publication.setJournal(extractJournal(dublinCore));
         publication.setPublisher(extractPublisher(dublinCore));
-
+        publication.setPartOfSeries(extractPartOfSeries(dublinCore));
         return publication;
     }
 
@@ -194,6 +203,15 @@ public class DublinCoreScraper {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isJournal)
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
+    }
+
+    private static String extractPartOfSeries(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isPartOfSeries)
                    .findAny()
                    .orElse(new DcValue())
                    .scrapeValueAndSetToScraped();

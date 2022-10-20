@@ -91,7 +91,7 @@ public class HandleScraper {
     }
 
     private Optional<URI> getHandleFromInTitlesAndHandlesMap(final DublinCore dublinCore) throws HandleException {
-        var title = DublinCoreScraper.extractTitle(dublinCore);
+        var title = DublinCoreScraper.extractMainTitle(dublinCore);
         if (StringUtils.isNotEmpty(title)) {
             var handle = titlesAndHandles.get(title);
             if (StringUtils.isNotEmpty(handle)) {
