@@ -6,7 +6,6 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
-import no.sikt.nva.model.publisher.Publication;
 import nva.commons.core.JacocoGenerated;
 
 public class Record {

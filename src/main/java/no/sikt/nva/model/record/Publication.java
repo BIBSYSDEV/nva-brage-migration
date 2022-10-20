@@ -1,4 +1,4 @@
-package no.sikt.nva.model.publisher;
+package no.sikt.nva.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;

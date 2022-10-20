@@ -54,6 +54,10 @@ public class DcValue {
         return value;
     }
 
+    public void setToScraped() {
+        scraped = true;
+    }
+
     public String getValue() {
         return value;
     }

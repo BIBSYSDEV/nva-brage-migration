@@ -10,7 +10,7 @@ import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.model.publisher.Publication;
+import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.Contributor;
 import no.sikt.nva.model.record.Identity;
 import no.sikt.nva.model.record.Record;
