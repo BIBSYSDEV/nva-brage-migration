@@ -11,8 +11,11 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
+import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
+import no.sikt.nva.model.ErrorDetails.Error;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
@@ -51,6 +54,25 @@ public class DublinCoreValidatorTest {
         var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
         assertThat(actualWarningList,
                    hasItems(new WarningDetails(Warning.SUBJECT_WARNING, List.of())));
+    }
+
+    @Test
+    void shouldReturnErrorDetailsWithDoiErrorIfDoiIsInvalid() {
+        var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.DOI, randomString()));
+        var dublinCore = new DublinCore(dcValues);
+        var brageLocation = new BrageLocation(Path.of("some", "ignored"));
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        assertThat(actualErrorList, hasItems(new ErrorDetails(Error.INVALID_DOI, List.of())));
+    }
+
+    @Test
+    void shouldNotReturnErrorListWithDoiIfDoiIsValid() {
+        var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10"
+                                                                              + ".5194/tc-8-1885-2014"));
+        var dublinCore = new DublinCore(dcValues);
+        var brageLocation = new BrageLocation(Path.of("some", "ignored"));
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        assertThat(actualErrorList, not(hasItems(new ErrorDetails(Error.INVALID_DOI, List.of()))));
     }
 
     @Test
