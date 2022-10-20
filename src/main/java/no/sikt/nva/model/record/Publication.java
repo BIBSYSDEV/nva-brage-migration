@@ -10,10 +10,9 @@ public class Publication {
     private String issn;
     private String isbn;
     private String publisher;
-    @SuppressWarnings("PMD.LinguisticNaming")
     private String partOfSeries;
 
-    @JsonProperty("isPartOfSeries")
+    @JsonProperty("partOfSeries")
     public String getPartOfSeries() {
         return partOfSeries;
     }
