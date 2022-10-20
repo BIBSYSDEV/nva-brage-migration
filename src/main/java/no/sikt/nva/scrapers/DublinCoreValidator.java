@@ -1,6 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -11,12 +12,14 @@ import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import nva.commons.core.StringUtils;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
 
 public final class DublinCoreValidator {
 
     public static final String VERSION_STRING_NVE = "publishedVersion";
+    public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
 
@@ -61,12 +64,24 @@ public final class DublinCoreValidator {
                            .orElse(new DcValue())
                            .getValue();
 
-            if (date.matches("\\d{4}")) {
+            if (containsYearOnly(date)) {
+                return Optional.empty();
+            }
+            if (containsYearAndMonth(date)) {
                 return Optional.empty();
             }
             return Optional.of(new WarningDetails(Warning.INVALID_DATE_WARNING, List.of(date)));
         }
         return Optional.of(new WarningDetails(Warning.DATE_NOT_PRESENT_WARNING, List.of()));
+    }
+
+    public static boolean containsYearAndMonth(String date) {
+        var yearAndMonthList = Arrays.asList(date.split("-"));
+        return yearAndMonthList.size() == 2 && yearAndMonthList.get(yearAndMonthList.size() - 1).matches("\\d{2}");
+    }
+
+    public static boolean containsYearOnly(String date) {
+        return date.matches("\\d{4}");
     }
 
     private static boolean hasDate(DublinCore dublinCore) {
@@ -106,7 +121,8 @@ public final class DublinCoreValidator {
 
     private static Optional<ErrorDetails> getIsbnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         if (hasIsbn(dublinCore)) {
-            var isbn = DublinCoreScraper.extractIsbn(dublinCore, brageLocation);
+            var isbn = DublinCoreScraper.extractIsbn(dublinCore, brageLocation)
+                           .replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING);
             ISBNValidator validator = new ISBNValidator();
             if (!validator.isValid(isbn)) {
                 return Optional.of(new ErrorDetails(Error.INVALID_ISBN, List.of(isbn)));

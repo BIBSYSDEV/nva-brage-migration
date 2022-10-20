@@ -14,7 +14,7 @@ public class Record {
     private URI id;
     private Path origin;
     private Type type;
-    private String date;
+    private Date date;
     private String title;
     private String language;
     private String license;
@@ -36,11 +36,11 @@ public class Record {
     }
 
     @JsonProperty("date")
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 

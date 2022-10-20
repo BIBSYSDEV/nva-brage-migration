@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.scrapers.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.scrapers.DublinCoreValidator.VERSION_STRING_NVE;
 import static no.sikt.nva.scrapers.DublinCoreValidator.getDublinCoreWarnings;
 import java.util.List;
@@ -10,9 +11,10 @@ import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.Contributor;
+import no.sikt.nva.model.record.Date;
 import no.sikt.nva.model.record.Identity;
+import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
 import nva.commons.core.StringUtils;
@@ -30,6 +32,7 @@ public class DublinCoreScraper {
     public static final String EDITOR = "Editor";
     public static final String ILLUSTRATOR = "Illustrator";
     public static final String OTHER_CONTRIBUTOR = "Other";
+    public static final String FIRST_DAY_OF_A_MONTH = "-01";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
 
     public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -60,6 +63,7 @@ public class DublinCoreScraper {
                            .stream()
                            .filter(DcValue::isIsbnValue)
                            .map(DcValue::scrapeValueAndSetToScraped)
+                           .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
                            .collect(Collectors.toList());
 
         return handleIsbnList(isbnList, brageLocation);
@@ -177,10 +181,25 @@ public class DublinCoreScraper {
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
-    private static String extractDate(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isDate)
-                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    private static Date extractDate(DublinCore dublinCore) {
+        var date = dublinCore.getDcValues().stream()
+                       .filter(DcValue::isDate)
+                       .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+
+        if (isNull(date)) {
+            return null;
+        }
+        if (DublinCoreValidator.containsYearOnly(date)) {
+            return new Date(date, date);
+        }
+        if (DublinCoreValidator.containsYearAndMonth(date)) {
+            return new Date(date, date + FIRST_DAY_OF_A_MONTH);
+        }
+        return new Date(date, date);
+    }
+
+    private static boolean isNull(String date) {
+        return date == null;
     }
 
     private static List<Contributor> extractContributors(DublinCore dublinCore) {
