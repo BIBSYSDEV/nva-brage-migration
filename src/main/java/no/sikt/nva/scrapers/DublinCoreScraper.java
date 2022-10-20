@@ -3,6 +3,7 @@ package no.sikt.nva.scrapers;
 import static no.sikt.nva.scrapers.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.scrapers.DublinCoreValidator.VERSION_STRING_NVE;
 import static no.sikt.nva.scrapers.DublinCoreValidator.getDublinCoreWarnings;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
 import nva.commons.core.StringUtils;
+import nva.commons.core.paths.UriWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,8 +99,18 @@ public class DublinCoreScraper {
         record.setContributors(extractContributors(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore));
         record.setTags(SubjectScraper.extractTags(dublinCore));
+        record.setDoi(extractDoi(dublinCore));
         record.setDate(extractDate(dublinCore));
         return record;
+    }
+
+    private static URI extractDoi(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isDoi)
+                   .findFirst()
+                   .map(dcValue -> UriWrapper.fromUri(dcValue.scrapeValueAndSetToScraped()).getUri())
+                   .orElse(null);
     }
 
     private static Publication extractPublication(DublinCore dublinCore, BrageLocation brageLocation) {

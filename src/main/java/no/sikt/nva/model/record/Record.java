@@ -8,10 +8,12 @@ import java.util.List;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
+@SuppressWarnings("PMD.TooManyFields")
 public class Record {
 
     private URI customerId;
     private URI id;
+    private URI doi;
     private Path origin;
     private Type type;
     private Date date;
@@ -92,6 +94,7 @@ public class Record {
         Record record = (Record) o;
         return Objects.equals(customerId, record.customerId)
                && Objects.equals(id, record.id)
+               && Objects.equals(doi, record.doi)
                && Objects.equals(type, record.type)
                && Objects.equals(language, record.language)
                && Objects.equals(title, record.title)
@@ -208,8 +211,16 @@ public class Record {
         return rightsholder;
     }
 
-
     public void setRightsHolder(String rightsholder) {
         this.rightsholder = rightsholder;
+    }
+
+    @JsonProperty("doi")
+    public URI getDoi() {
+        return doi;
+    }
+
+    public void setDoi(URI doi) {
+        this.doi = doi;
     }
 }

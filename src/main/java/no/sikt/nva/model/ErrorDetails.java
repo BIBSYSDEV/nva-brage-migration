@@ -14,6 +14,11 @@ public class ErrorDetails {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(errorCode);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -30,15 +35,11 @@ public class ErrorDetails {
         return errorCode + " = " + details;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(errorCode);
-    }
-
     public enum Error {
         CRISTIN_ID_PRESENT,
         INVALID_TYPE,
         INVALID_ISSN,
-        INVALID_ISBN
+        INVALID_ISBN,
+        INVALID_DOI
     }
 }
