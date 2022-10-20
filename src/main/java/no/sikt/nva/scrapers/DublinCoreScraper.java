@@ -181,11 +181,10 @@ public class DublinCoreScraper {
     }
 
     private static boolean shouldBeLoggedAsUnscraped(DcValue dcValue) {
-        return !dcValue.isScraped() && !fieldIsIgnored(dcValue);
+        return !dcValue.isScraped() && !fieldHasBeenScrapedFromOtherFiles(dcValue);
     }
 
-    private static boolean fieldIsIgnored(DcValue dcValue) {
-        //License and handles will be scraped from seperate file.
+    private static boolean fieldHasBeenScrapedFromOtherFiles(DcValue dcValue) {
         return dcValue.isLicenseInformation()
                || dcValue.isHandle();
     }
