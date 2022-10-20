@@ -14,6 +14,7 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.record.Contributor;
 import no.sikt.nva.model.record.Date;
+import no.sikt.nva.model.record.EntityDescription;
 import no.sikt.nva.model.record.Identity;
 import no.sikt.nva.model.record.Language;
 import no.sikt.nva.model.record.Publication;
@@ -113,7 +114,31 @@ public class DublinCoreScraper {
         record.setTags(SubjectScraper.extractTags(dublinCore));
         record.setDoi(extractDoi(dublinCore));
         record.setDate(extractDate(dublinCore));
+        record.setEntityDescription(extractEntityDescription(dublinCore));
         return record;
+    }
+
+    private static EntityDescription extractEntityDescription(DublinCore dublinCore) {
+        var entityDescription = new EntityDescription();
+        entityDescription.setAbstracts(extractAbstracts(dublinCore));
+        entityDescription.setDescriptions(extractDescriptions(dublinCore));
+        return entityDescription;
+    }
+
+    private static List<String> extractDescriptions(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isDescription)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
+    }
+
+    private static List<String> extractAbstracts(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isAbstract)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
     }
 
     private static URI extractDoi(DublinCore dublinCore) {
@@ -158,11 +183,12 @@ public class DublinCoreScraper {
     }
 
     private static boolean shouldBeLoggedAsUnscraped(DcValue dcValue) {
-        return !dcValue.isScraped() && !fieldIsIgnored(dcValue);
+        return !dcValue.isScraped() && !fieldHasBeenScrapedFromOtherFiles(dcValue);
     }
 
-    private static boolean fieldIsIgnored(DcValue dcValue) {
-        return dcValue.isLicenseInformation() || dcValue.isHandle();
+    private static boolean fieldHasBeenScrapedFromOtherFiles(DcValue dcValue) {
+        return dcValue.isLicenseInformation()
+               || dcValue.isHandle();
     }
 
     private static String extractPublisher(DublinCore dublinCore) {

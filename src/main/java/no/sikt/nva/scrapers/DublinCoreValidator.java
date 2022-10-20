@@ -24,6 +24,7 @@ public final class DublinCoreValidator {
     public static final String VERSION_STRING_NVE = "publishedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final URI LEXVO_URI_UNDEFINED = URI.create("http://lexvo.org/id/iso639-3/und");
+    private static final int ONE_DESCRIPTION = 1;
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
 
@@ -51,6 +52,7 @@ public final class DublinCoreValidator {
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
         getDateWarning(dublinCore).ifPresent(warnings::add);
         getLanguageWarning(dublinCore).ifPresent(warnings::add);
+        getDescriptionsWarning(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -61,6 +63,20 @@ public final class DublinCoreValidator {
 
     public static boolean containsYearOnly(String date) {
         return date.matches("\\d{4}");
+    }
+
+    private static Optional<WarningDetails> getDescriptionsWarning(DublinCore dublinCore) {
+        var descriptions = dublinCore.getDcValues()
+                               .stream()
+                               .filter(DcValue::isDescription)
+                               .map(DcValue::getValue)
+                               .collect(
+                                   Collectors.toList());
+        if (descriptions.size() > ONE_DESCRIPTION) {
+            return Optional.of(new WarningDetails(Warning.MULTIPLE_DESCRIPTION_PRESENT, descriptions));
+        } else {
+            return Optional.empty();
+        }
     }
 
     private static Optional<ErrorDetails> getDoiErrorDetails(DublinCore dublinCore) {
@@ -94,7 +110,8 @@ public final class DublinCoreValidator {
         if (!LEXVO_URI_UNDEFINED.equals(mappedToNvaLanguage)) {
             return Optional.empty();
         } else {
-            return Optional.of(new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED, List.of(String.valueOf(language))));
+            return Optional.of(new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED,
+                                                  List.of(String.valueOf(language))));
         }
     }
 
