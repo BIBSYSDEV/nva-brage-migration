@@ -158,6 +158,16 @@ public class DcValue {
                    || Qualifier.URI.equals(this.qualifier));
     }
 
+    public boolean isAbstract() {
+        return Element.DESCRIPTION.equals(this.element)
+               && Qualifier.ABSTRACT.equals(this.qualifier);
+    }
+
+    public boolean isDescription() {
+        return Element.DESCRIPTION.equals(this.element)
+               && Qualifier.NONE.equals(this.qualifier);
+    }
+
     public String toXmlString() {
         StringWriter sw = new StringWriter();
         JAXB.marshal(this, sw);

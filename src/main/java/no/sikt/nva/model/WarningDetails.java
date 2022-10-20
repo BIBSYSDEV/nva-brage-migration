@@ -39,7 +39,8 @@ public class WarningDetails {
         VERSION_WARNING,
         SUBJECT_WARNING,
         INVALID_DATE_WARNING,
-        DATE_NOT_PRESENT_WARNING
+        DATE_NOT_PRESENT_WARNING,
+        MULTIPLE_DESCRIPTION_PRESENT,
     }
 
 }

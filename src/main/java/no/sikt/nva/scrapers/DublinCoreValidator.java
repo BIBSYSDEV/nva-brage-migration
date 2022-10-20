@@ -21,6 +21,7 @@ public final class DublinCoreValidator {
 
     public static final String VERSION_STRING_NVE = "publishedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
+    private static final int ONE_DESCRIPTION = 1;
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
 
@@ -47,7 +48,31 @@ public final class DublinCoreValidator {
         getVersionWarnings(dublinCore).ifPresent(warnings::add);
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
         getDateWarning(dublinCore).ifPresent(warnings::add);
+        getDescriptionsWarning(dublinCore).ifPresent(warnings::add);
         return warnings;
+    }
+
+    public static boolean containsYearAndMonth(String date) {
+        var yearAndMonthList = Arrays.asList(date.split("-"));
+        return yearAndMonthList.size() == 2 && yearAndMonthList.get(yearAndMonthList.size() - 1).matches("\\d{2}");
+    }
+
+    public static boolean containsYearOnly(String date) {
+        return date.matches("\\d{4}");
+    }
+
+    private static Optional<WarningDetails> getDescriptionsWarning(DublinCore dublinCore) {
+        var descriptions = dublinCore.getDcValues()
+                               .stream()
+                               .filter(DcValue::isDescription)
+                               .map(DcValue::getValue)
+                               .collect(
+                                   Collectors.toList());
+        if (descriptions.size() > ONE_DESCRIPTION) {
+            return Optional.of(new WarningDetails(Warning.MULTIPLE_DESCRIPTION_PRESENT, descriptions));
+        } else {
+            return Optional.empty();
+        }
     }
 
     private static Optional<ErrorDetails> getDoiErrorDetails(DublinCore dublinCore) {
@@ -90,15 +115,6 @@ public final class DublinCoreValidator {
             return Optional.of(new WarningDetails(Warning.INVALID_DATE_WARNING, List.of(date)));
         }
         return Optional.of(new WarningDetails(Warning.DATE_NOT_PRESENT_WARNING, List.of()));
-    }
-
-    public static boolean containsYearAndMonth(String date) {
-        var yearAndMonthList = Arrays.asList(date.split("-"));
-        return yearAndMonthList.size() == 2 && yearAndMonthList.get(yearAndMonthList.size() - 1).matches("\\d{2}");
-    }
-
-    public static boolean containsYearOnly(String date) {
-        return date.matches("\\d{4}");
     }
 
     private static boolean hasDate(DublinCore dublinCore) {
