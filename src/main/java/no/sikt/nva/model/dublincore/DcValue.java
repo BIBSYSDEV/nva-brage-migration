@@ -62,10 +62,6 @@ public class DcValue {
         return value;
     }
 
-    public void setToScraped() {
-        scraped = true;
-    }
-
     public String getValue() {
         return value;
     }
@@ -78,8 +74,12 @@ public class DcValue {
         return Element.LANGUAGE.equals(this.element);
     }
 
-    public boolean isTitle() {
-        return Element.TITLE.equals(this.element);
+    public boolean isMainTitle() {
+        return Element.TITLE.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
+    }
+
+    public boolean isAlternativeTitle() {
+        return Element.TITLE.equals(this.element) && Qualifier.ALTERNATIVE.equals(this.qualifier);
     }
 
     public boolean isType() {
@@ -110,14 +110,10 @@ public class DcValue {
         return Element.RIGHTS.equals(this.element) && Qualifier.HOLDER.equals(this.qualifier);
     }
 
-    public boolean isUriIdentifier() {
-        return Element.IDENTIFIER.equals(this.element) && Qualifier.URI.equals(this.qualifier);
-    }
-
     public boolean isDate() {
         return Element.DATE.equals(this.element) && Qualifier.ISSUED.equals(this.qualifier);
     }
-    
+
     public boolean isContributor() {
         return Element.CONTRIBUTOR.equals(this.element);
     }
@@ -130,20 +126,12 @@ public class DcValue {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
     }
 
-    public boolean isDepartment() {
-        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.DEPARTMENT.equals(this.qualifier);
-    }
-
     public boolean isEditor() {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.EDITOR.equals(this.qualifier);
     }
 
     public boolean isIllustrator() {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ILLUSTRATOR.equals(this.qualifier);
-    }
-
-    public boolean isOrcId() {
-        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ORCID.equals(this.qualifier);
     }
 
     public boolean isOtherContributor() {
