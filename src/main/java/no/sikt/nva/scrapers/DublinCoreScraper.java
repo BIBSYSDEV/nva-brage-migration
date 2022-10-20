@@ -23,6 +23,7 @@ import nva.commons.core.paths.UriWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.GodClass")
 public class DublinCoreScraper {
 
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
@@ -128,7 +129,7 @@ public class DublinCoreScraper {
         publication.setIsbn(extractIsbn(dublinCore, brageLocation));
         publication.setJournal(extractJournal(dublinCore));
         publication.setPublisher(extractPublisher(dublinCore));
-
+        publication.setPartOfSeries(extractPartOfSeries(dublinCore));
         return publication;
     }
 
@@ -175,6 +176,15 @@ public class DublinCoreScraper {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isJournal)
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
+    }
+
+    private static String extractPartOfSeries(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isPartOfSeries)
                    .findAny()
                    .orElse(new DcValue())
                    .scrapeValueAndSetToScraped();

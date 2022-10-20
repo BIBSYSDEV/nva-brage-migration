@@ -138,6 +138,10 @@ public class DcValue {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.OTHER.equals(this.qualifier);
     }
 
+    public boolean isPartOfSeries() {
+        return Element.RELATION.equals(this.element) && Qualifier.IS_PART_OF_SERIES.equals(this.qualifier);
+    }
+
     public boolean isHandle() {
         if (StringUtils.isNotEmpty(value)) {
             return Element.IDENTIFIER.equals(this.element)

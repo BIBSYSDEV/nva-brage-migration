@@ -10,13 +10,21 @@ public class Publication {
     private String issn;
     private String isbn;
     private String publisher;
+    private String partOfSeries;
 
+    @JsonProperty("partOfSeries")
+    public String getPartOfSeries() {
+        return partOfSeries;
+    }
 
+    public void setPartOfSeries(String partOfSeries) {
+        this.partOfSeries = partOfSeries;
+    }
 
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(journal, issn, isbn, publisher);
+        return Objects.hash(journal, issn, isbn, publisher, partOfSeries);
     }
 
     @JacocoGenerated
@@ -32,7 +40,8 @@ public class Publication {
         return Objects.equals(journal, publication.journal)
                && Objects.equals(issn, publication.issn)
                && Objects.equals(publisher, publication.publisher)
-               && Objects.equals(isbn, publication.isbn);
+               && Objects.equals(isbn, publication.isbn)
+               && Objects.equals(partOfSeries, publication.partOfSeries);
     }
 
     @JacocoGenerated

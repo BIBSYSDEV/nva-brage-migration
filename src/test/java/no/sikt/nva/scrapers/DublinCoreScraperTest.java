@@ -117,4 +117,16 @@ public class DublinCoreScraperTest {
         assertThat(record.getAlternativeTitles(),
                    containsInAnyOrder(expectedAlternativeTitle1, expectedAlternativeTitle2));
     }
+
+    @Test
+    void shouldScrapePartOfSeriesDcValue() {
+        var partOfSeries = "Part of some series";
+        var partOfSeriesDcValue = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, partOfSeries);
+        var typeDcValue = new DcValue(Element.TYPE, null, "Book");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(partOfSeriesDcValue, typeDcValue));
+        var record = DublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getPublication().getPartOfSeries(), is(equalTo(partOfSeries)));
+    }
 }
