@@ -9,10 +9,9 @@ public class LicenseMapper {
 
     private static final String CREATIVE_COMMONS_HOST_NAME = "creativecommons.org";
     private static final String NOT_MATCHING_LICENSE_MESSAGE =
-        "No configuration to map license, Rights Reserved license used";
+        "No configuration to map license, Rights Reserved license used for license: ";
     private static final Map<BrageLicense, NvaLicense> LICENSE_MAP =
-        Map.of(BrageLicense.CC0, NvaLicense.CC0,
-               BrageLicense.CC_BY, NvaLicense.CC_BY,
+        Map.of(BrageLicense.CC_BY, NvaLicense.CC_BY,
                BrageLicense.CC_BY_NC, NvaLicense.CC_BY_NC,
                BrageLicense.CC_BY_ND, NvaLicense.CC_BY_ND,
                BrageLicense.CC_BY_SA, NvaLicense.CC_BY_SA,
@@ -29,7 +28,7 @@ public class LicenseMapper {
         if (isValidUri(licenseUri) && hasCreativeCommonsHost(licenseUri)) {
             return parseLicenseUri(licenseUri);
         }
-        throw new DublinCoreException(NOT_MATCHING_LICENSE_MESSAGE);
+        throw new DublinCoreException(NOT_MATCHING_LICENSE_MESSAGE + licenseUri);
     }
 
     private static boolean isValidUri(String uri) {
@@ -51,7 +50,6 @@ public class LicenseMapper {
     }
 
     public enum NvaLicense {
-        CC0("CC0"),
         CC_BY("CC BY"),
         CC_BY_NC("CC BY-NC"),
         CC_BY_NC_ND("CC BY-NC-ND"),
@@ -70,7 +68,6 @@ public class LicenseMapper {
     }
 
     public enum BrageLicense {
-        CC0("cc0"),
         CC_BY("by"),
         CC_BY_NC("by-nc"),
         CC_BY_NC_ND("by-nc-nd"),
