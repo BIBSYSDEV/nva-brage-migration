@@ -9,16 +9,21 @@ public class EntityDescription {
 
     private List<String> descriptions;
     private List<String> abstracts;
-
     private String mainTitle;
-
     private List<String> alternativeTitles;
-
     private List<Contributor> contributors;
-
     private List<String> tags;
+    private PublicationInstance publicationInstance;
 
+    @JsonProperty("publicationInstance")
+    public PublicationInstance getPublicationInstance() {
+        return publicationInstance;
+    }
 
+    @JacocoGenerated
+    public void setPublicationInstance(PublicationInstance publicationInstance) {
+        this.publicationInstance = publicationInstance;
+    }
 
     @JacocoGenerated
     @JsonProperty("tags")
@@ -39,7 +44,6 @@ public class EntityDescription {
         this.contributors = contributors;
     }
 
-    @JacocoGenerated
     @JsonProperty("mainTitle")
     public String getMainTitle() {
         return this.mainTitle;
@@ -49,6 +53,7 @@ public class EntityDescription {
         this.mainTitle = mainTitle;
     }
 
+    @JacocoGenerated
     @JsonProperty
     public List<String> getDescriptions() {
         return descriptions;
@@ -58,6 +63,7 @@ public class EntityDescription {
         this.descriptions = descriptions;
     }
 
+    @JacocoGenerated
     @JsonProperty
     public List<String> getAbstracts() {
         return abstracts;
@@ -76,30 +82,29 @@ public class EntityDescription {
         this.alternativeTitles = alternativeTitles;
     }
 
+    @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(descriptions,
-                            abstracts,
-                            alternativeTitles,
-                            contributors,
-                            tags,
-                            mainTitle);
+        return Objects.hash(descriptions, abstracts, mainTitle, alternativeTitles, contributors, tags,
+                            publicationInstance);
     }
 
+    @JacocoGenerated
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (!(obj instanceof EntityDescription)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        var entityDescription = (EntityDescription) obj;
-        return Objects.equals(descriptions, entityDescription.descriptions)
-               && Objects.equals(abstracts, entityDescription.abstracts)
-               && Objects.equals(mainTitle, entityDescription.mainTitle)
-               && Objects.equals(alternativeTitles, entityDescription.alternativeTitles)
-               && Objects.equals(tags, entityDescription.tags)
-               && Objects.equals(contributors, entityDescription.contributors);
+        EntityDescription that = (EntityDescription) o;
+        return Objects.equals(descriptions, that.descriptions)
+               && Objects.equals(abstracts, that.abstracts)
+               && Objects.equals(mainTitle, that.mainTitle)
+               && Objects.equals(alternativeTitles, that.alternativeTitles)
+               && Objects.equals(contributors, that.contributors)
+               && Objects.equals(tags, that.tags)
+               && Objects.equals(publicationInstance, that.publicationInstance);
     }
 }

@@ -168,15 +168,11 @@ public class DcValue {
                && Qualifier.NONE.equals(this.qualifier);
     }
 
-    public boolean isSponsorship() {
-        return Element.DESCRIPTION.equals(this.element) && Qualifier.SPONSORSHIP.equals(this.qualifier);
-    }
-
     public boolean isSpatialCoverage() {
         return Element.COVERAGE.equals(this.element) && Qualifier.SPATIAL.equals(this.qualifier);
     }
 
-    public boolean isDateCopyright() {
+    public boolean isCopyrightDate() {
         return Element.DATE.equals(this.element) && Qualifier.COPYRIGHT.equals(this.qualifier);
     }
 

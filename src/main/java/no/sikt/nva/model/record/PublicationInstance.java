@@ -1,6 +1,7 @@
 package no.sikt.nva.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nva.commons.core.JacocoGenerated;
 
 public class PublicationInstance {
 
@@ -8,6 +9,7 @@ public class PublicationInstance {
     private String issue;
     private String pageNumber;
 
+    @JacocoGenerated
     @JsonProperty("volume")
     public String getVolume() {
         return volume;
@@ -17,6 +19,7 @@ public class PublicationInstance {
         this.volume = volume;
     }
 
+    @JacocoGenerated
     @JsonProperty("issue")
     public String getIssue() {
         return issue;
@@ -26,6 +29,7 @@ public class PublicationInstance {
         this.issue = issue;
     }
 
+    @JacocoGenerated
     @JsonProperty("pageNumber")
     public String getPageNumber() {
         return pageNumber;

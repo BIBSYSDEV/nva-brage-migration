@@ -124,6 +124,7 @@ public class DublinCoreScraper {
         entityDescription.setAlternativeTitles(extractAlternativeTitles(dublinCore));
         entityDescription.setContributors(extractContributors(dublinCore));
         entityDescription.setTags(SubjectScraper.extractTags(dublinCore));
+        entityDescription.setPublicationInstance(extractPublicationInstance(dublinCore));
         return entityDescription;
     }
 
@@ -192,9 +193,10 @@ public class DublinCoreScraper {
                    .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("PMD")
     private static boolean shouldBeLoggedAsUnscraped(DcValue dcValue) {
         return !dcValue.isScraped() && !fieldHasBeenScrapedFromOtherFiles(dcValue)
-               || !isIgnoredForScraping(dcValue);
+               || isIgnoredForScraping(dcValue);
     }
 
     private static boolean fieldHasBeenScrapedFromOtherFiles(DcValue dcValue) {
@@ -203,7 +205,7 @@ public class DublinCoreScraper {
     }
 
     private static boolean isIgnoredForScraping(DcValue dcValue) {
-        return dcValue.isDateCopyright();
+        return dcValue.isCopyrightDate();
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
@@ -356,11 +358,7 @@ public class DublinCoreScraper {
         var version = dublinCore.getDcValues().stream()
                           .filter(DcValue::isVersion)
                           .findAny();
-        if (version.isPresent()) {
-            return mapToNvaVersion(version.get()).orElse(null);
-        } else {
-            return null;
-        }
+        return version.flatMap(DublinCoreScraper::mapToNvaVersion).orElse(null);
     }
 
     private static Optional<Boolean> mapToNvaVersion(DcValue version) {

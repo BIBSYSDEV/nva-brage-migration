@@ -55,6 +55,8 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldConvertValidVersionToPublisherAuthority() {
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+
         var expectedPublisherAuthority = true;
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
         var typeDcValue = new DcValue(Element.TYPE, null, "Book");
