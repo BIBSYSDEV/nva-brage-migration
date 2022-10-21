@@ -23,18 +23,15 @@ public class Record {
     private String embargo;
     private Boolean publisherAuthority;
     private String rightsholder;
-
     private String spatialCoverage;
     private Publication publication;
 
-    @JacocoGenerated
     @Override
     public int hashCode() {
         return Objects.hash(entityDescription, customerId, id, doi, origin, type, date, language, license, embargo,
-                            publisherAuthority, rightsholder, publication);
+                            publisherAuthority, rightsholder, spatialCoverage, publication);
     }
 
-    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -56,9 +53,8 @@ public class Record {
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(publisherAuthority, record.publisherAuthority)
                && Objects.equals(rightsholder, record.rightsholder)
-               && Objects.equals(publication, record.publication)
-               && Objects.equals(publication, record.publication)
-               && Objects.equals(spatialCoverage, record.spatialCoverage);
+               && Objects.equals(spatialCoverage, record.spatialCoverage)
+               && Objects.equals(publication, record.publication);
     }
 
     @JsonProperty("spatialCoverage")
@@ -69,7 +65,6 @@ public class Record {
     public void setSpatialCoverage(String spatialCoverage) {
         this.spatialCoverage = spatialCoverage;
     }
-
 
     @JsonProperty("date")
     public Date getDate() {
