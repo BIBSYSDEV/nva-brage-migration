@@ -40,6 +40,7 @@ public class ErrorDetails {
         INVALID_TYPE,
         INVALID_ISSN,
         INVALID_ISBN,
-        INVALID_DOI
+        INVALID_DOI_OFFLINE_CHECK,
+        INVALID_DOI_ONLINE_CHECK
     }
 }

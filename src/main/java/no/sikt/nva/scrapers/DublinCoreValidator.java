@@ -16,8 +16,10 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
 import nva.commons.doi.DoiValidator;
+import nva.commons.doi.UnitHttpClient;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("PMD.GodClass")
 public final class DublinCoreValidator {
@@ -25,6 +27,8 @@ public final class DublinCoreValidator {
     public static final String VERSION_STRING_NVE = "publishedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final URI LEXVO_URI_UNDEFINED = URI.create("http://lexvo.org/id/iso639-3/und");
+    public static final String HTTP_STRING = "http";
+    public static final String HTTPS_STRING_FOR_DOI = "https://";
     private static final int ONE_DESCRIPTION = 1;
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -129,17 +133,40 @@ public final class DublinCoreValidator {
     }
 
     private static Optional<ErrorDetails> getDoiErrorDetails(DublinCore dublinCore) {
-        var doiErrors =
+        var doiList =
             dublinCore.getDcValues()
                 .stream()
-                .filter(DublinCoreValidator::hasInvalidDoi)
+                .filter(DcValue::isDoi)
                 .map(DcValue::getValue)
-                .collect(
-                    Collectors.toList());
-        if (doiErrors.isEmpty()) {
+                .map(DublinCoreValidator::addHttpStringIfNotPresent)
+                .collect(Collectors.toList());
+
+        return validateDoiList(doiList);
+    }
+
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    @NotNull
+    private static Optional<ErrorDetails> validateDoiList(List<String> doiList) {
+        if (doiList.isEmpty()) {
             return Optional.empty();
         } else {
-            return Optional.of(new ErrorDetails(Error.INVALID_DOI, doiErrors));
+            for (String doi : doiList) {
+                if (!isValidDoiOffline(doi)) {
+                    return Optional.of(new ErrorDetails(Error.INVALID_DOI_OFFLINE_CHECK, doiList));
+                }
+                if (!isValidDoiOnline(doi)) {
+                    return Optional.of(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, doiList));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static String addHttpStringIfNotPresent(String doi) {
+        if (doi.contains(HTTP_STRING)) {
+            return doi;
+        } else {
+            return HTTPS_STRING_FOR_DOI + doi;
         }
     }
 
@@ -222,7 +249,9 @@ public final class DublinCoreValidator {
     private static Optional<ErrorDetails> getIsbnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         if (hasIsbn(dublinCore)) {
             var isbn = DublinCoreScraper.extractIsbn(dublinCore, brageLocation)
-                           .replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING);
+                           .replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING)
+                           .replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING);
+
             ISBNValidator validator = new ISBNValidator();
             if (!validator.isValid(isbn)) {
                 return Optional.of(new ErrorDetails(Error.INVALID_ISBN, List.of(isbn)));
@@ -278,11 +307,19 @@ public final class DublinCoreValidator {
         return VERSION_STRING_NVE.equals(version.getValue());
     }
 
-    private static boolean hasInvalidDoi(DcValue dcValue) {
-        return dcValue.isDoi() && isInvalidDoi(dcValue);
+    private static boolean isValidDoiOffline(String doi) {
+        var isValidDoi = DoiValidator.validateOffline(doi);
+        return isValidDoi;
     }
 
-    private static boolean isInvalidDoi(DcValue dcValue) {
-        return !DoiValidator.validateOffline(dcValue.getValue());
+    private static boolean isValidDoiOnline(String doi) {
+        var httpClient = new UnitHttpClient();
+        var validator = new DoiValidator(httpClient);
+        try {
+            validator.validateOnline(URI.create(doi));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

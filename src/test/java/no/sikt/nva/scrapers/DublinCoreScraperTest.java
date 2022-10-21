@@ -91,8 +91,8 @@ public class DublinCoreScraperTest {
     void ifTwoDoiSArePresentOneWillBeScrapedTheOtherLogged() {
         var expectedLogMessage = "<dcValue element=\"identifier\" qualifier=\"doi\">";
         var dcValues = List.of(
-            new DcValue(Element.IDENTIFIER, Qualifier.DOI, randomDoi().toString()),
-            new DcValue(Element.IDENTIFIER, Qualifier.DOI, randomDoi().toString()),
+            new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1016/j.scitotenv.2021.151958"),
+            new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1016/j.scitotenv.2021.151958"),
             new DcValue(Element.TYPE, null, "Book"));
         var brageLocation = new BrageLocation(Path.of("some", "ignoredPath"));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
