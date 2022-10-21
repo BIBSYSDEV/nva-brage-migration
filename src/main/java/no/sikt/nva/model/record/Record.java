@@ -19,6 +19,8 @@ public class Record {
     private Type type;
     private Date date;
     private String language;
+    private String mainTitle;
+    private Language language;
     private String license;
     private String embargo;
     private Boolean publisherAuthority;
@@ -116,11 +118,11 @@ public class Record {
 
     @JacocoGenerated
     @JsonProperty("language")
-    public String getLanguage() {
+    public Language getLanguage() {
         return this.language;
     }
 
-    public void setLanguage(String language) {
+    public void setLanguage(Language language) {
         this.language = language;
     }
 
