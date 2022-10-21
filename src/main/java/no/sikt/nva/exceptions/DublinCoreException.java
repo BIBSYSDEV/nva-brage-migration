@@ -8,9 +8,6 @@ public class DublinCoreException extends RuntimeException {
 
     public static final String DELIMITER = ", ";
 
-    public static final String PROBLEM_LIST_EXPLANATION =
-        "The dublin_core.xml has the following errors: %s";
-
     public DublinCoreException(String message, Throwable throwable) {
         super(message, throwable);
     }
@@ -20,12 +17,12 @@ public class DublinCoreException extends RuntimeException {
     }
 
     public DublinCoreException(List<ErrorDetails> errorList) {
-        super(String.format(PROBLEM_LIST_EXPLANATION, collectProblems(errorList)));
+        super(collectProblems(errorList));
     }
 
     private static String collectProblems(List<ErrorDetails> errorList) {
         var problemsAsString = errorList.stream()
-                                   .map(errorDetails -> errorDetails.toString())
+                                   .map(ErrorDetails::toString)
                                    .collect(Collectors.toList());
         return String.join(DELIMITER, problemsAsString);
     }
