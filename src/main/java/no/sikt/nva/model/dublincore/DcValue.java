@@ -168,6 +168,30 @@ public class DcValue {
                && Qualifier.NONE.equals(this.qualifier);
     }
 
+    public boolean isSponsorship() {
+        return Element.DESCRIPTION.equals(this.element) && Qualifier.SPONSORSHIP.equals(this.qualifier);
+    }
+
+    public boolean isSpatialCoverage() {
+        return Element.COVERAGE.equals(this.element) && Qualifier.SPATIAL.equals(this.qualifier);
+    }
+
+    public boolean isDateCopyright() {
+        return Element.DATE.equals(this.element) && Qualifier.COPYRIGHT.equals(this.qualifier);
+    }
+
+    public boolean isVolume() {
+        return Element.SOURCE.equals(this.element) && Qualifier.VOLUME.equals(this.qualifier);
+    }
+
+    public boolean isIssue() {
+        return Element.SOURCE.equals(this.element) && Qualifier.ISSUE.equals(this.qualifier);
+    }
+
+    public boolean isPageNumber() {
+        return Element.SOURCE.equals(this.element) && Qualifier.PAGE_NUMBER.equals(this.qualifier);
+    }
+
     public String toXmlString() {
         StringWriter sw = new StringWriter();
         JAXB.marshal(this, sw);

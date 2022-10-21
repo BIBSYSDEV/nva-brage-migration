@@ -53,6 +53,9 @@ public final class DublinCoreValidator {
         getDateWarning(dublinCore).ifPresent(warnings::add);
         getLanguageWarning(dublinCore).ifPresent(warnings::add);
         getDescriptionsWarning(dublinCore).ifPresent(warnings::add);
+        getVolumeWarning(dublinCore).ifPresent(warnings::add);
+        getIssueWarning(dublinCore).ifPresent(warnings::add);
+        getPageNumberWarning(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -76,6 +79,42 @@ public final class DublinCoreValidator {
             return Optional.of(new WarningDetails(Warning.MULTIPLE_DESCRIPTION_PRESENT, descriptions));
         } else {
             return Optional.empty();
+        }
+    }
+
+    private static Optional<WarningDetails> getVolumeWarning(DublinCore dublinCore) {
+        var volume = dublinCore.getDcValues().stream()
+                         .filter(DcValue::isVolume)
+                         .findAny().orElse(new DcValue()).getValue();
+        try {
+            Integer.parseInt(volume);
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.of(new WarningDetails(Warning.VOLUME_NOT_NUMBER_WARNING, volume));
+        }
+    }
+
+    private static Optional<WarningDetails> getIssueWarning(DublinCore dublinCore) {
+        var issue = dublinCore.getDcValues().stream()
+                        .filter(DcValue::isIssue)
+                        .findAny().orElse(new DcValue()).getValue();
+        try {
+            Integer.parseInt(issue);
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.of(new WarningDetails(Warning.ISSUE_NOT_NUMBER_WARNING, issue));
+        }
+    }
+
+    private static Optional<WarningDetails> getPageNumberWarning(DublinCore dublinCore) {
+        var pageNumber = dublinCore.getDcValues().stream()
+                             .filter(DcValue::isPageNumber)
+                             .findAny().orElse(new DcValue()).getValue();
+        try {
+            Integer.parseInt(pageNumber);
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.of(new WarningDetails(Warning.PAGE_NUMBER_NOT_NUMBER_WARNING, pageNumber));
         }
     }
 

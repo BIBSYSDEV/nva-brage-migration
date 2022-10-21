@@ -25,6 +25,7 @@ public class Record {
     private String embargo;
     private Boolean publisherAuthority;
     private String rightsholder;
+    private String spatialCoverage;
     private List<String> tags;
     private List<String> authors;
     private List<String> alternativeTitles;
@@ -35,7 +36,7 @@ public class Record {
     public int hashCode() {
         return Objects.hash(customerId, id, doi, origin, type, date, mainTitle, language, license, embargo,
                             publisherAuthority, rightsholder, tags, authors, alternativeTitles, publication,
-                            contributors);
+                            contributors, spatialCoverage);
     }
 
     @Override
@@ -63,7 +64,17 @@ public class Record {
                && Objects.equals(authors, record.authors)
                && Objects.equals(alternativeTitles, record.alternativeTitles)
                && Objects.equals(publication, record.publication)
-               && Objects.equals(contributors, record.contributors);
+               && Objects.equals(contributors, record.contributors)
+               && Objects.equals(spatialCoverage, record.spatialCoverage);
+    }
+
+    @JsonProperty("spatialCoverage")
+    public String getSpatialCoverage() {
+        return spatialCoverage;
+    }
+
+    public void setSpatialCoverage(String spatialCoverage) {
+        this.spatialCoverage = spatialCoverage;
     }
 
     @JsonProperty("alternativeTitles")
