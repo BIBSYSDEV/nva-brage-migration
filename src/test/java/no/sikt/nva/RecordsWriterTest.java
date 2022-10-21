@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.containsString;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import no.sikt.nva.model.record.Language;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
 import no.sikt.nva.scrapers.TypeMapper;
@@ -35,7 +36,7 @@ public class RecordsWriterTest {
         List<String> types = Collections.singletonList("Research report");
         record.setType(new Type(types, TypeMapper.convertBrageTypeToNvaType(types)));
         record.setLicense(randomString());
-        record.setLanguage(randomString());
+        record.setLanguage(new Language("nob", randomUri()));
         record.setAuthors(authors);
 
         return record;

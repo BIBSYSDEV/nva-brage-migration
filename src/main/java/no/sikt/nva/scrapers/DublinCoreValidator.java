@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +14,7 @@ import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.StringUtils;
+import nva.commons.core.language.LanguageMapper;
 import nva.commons.doi.DoiValidator;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
@@ -21,6 +23,7 @@ public final class DublinCoreValidator {
 
     public static final String VERSION_STRING_NVE = "publishedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
+    public static final URI LEXVO_URI_UNDEFINED = URI.create("http://lexvo.org/id/iso639-3/und");
     private static final int ONE_DESCRIPTION = 1;
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -48,6 +51,7 @@ public final class DublinCoreValidator {
         getVersionWarnings(dublinCore).ifPresent(warnings::add);
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
         getDateWarning(dublinCore).ifPresent(warnings::add);
+        getLanguageWarning(dublinCore).ifPresent(warnings::add);
         getDescriptionsWarning(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
@@ -95,6 +99,20 @@ public final class DublinCoreValidator {
             return Optional.empty();
         }
         return getVersionWarning(dublinCore);
+    }
+
+    private static Optional<WarningDetails> getLanguageWarning(DublinCore dublinCore) {
+        var language =
+            dublinCore.getDcValues()
+                .stream()
+                .filter(DcValue::isLanguage).findAny().orElse(new DcValue()).getValue();
+        var mappedToNvaLanguage = LanguageMapper.toUri(language);
+        if (!LEXVO_URI_UNDEFINED.equals(mappedToNvaLanguage)) {
+            return Optional.empty();
+        } else {
+            return Optional.of(new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED,
+                                                  List.of(String.valueOf(language))));
+        }
     }
 
     private static Optional<WarningDetails> getDateWarning(DublinCore dublinCore) {
