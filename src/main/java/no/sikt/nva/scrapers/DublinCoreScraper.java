@@ -18,6 +18,7 @@ import no.sikt.nva.model.record.EntityDescription;
 import no.sikt.nva.model.record.Identity;
 import no.sikt.nva.model.record.Language;
 import no.sikt.nva.model.record.Publication;
+import no.sikt.nva.model.record.PublicationInstance;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
 import nva.commons.core.StringUtils;
@@ -111,6 +112,7 @@ public class DublinCoreScraper {
         record.setDoi(extractDoi(dublinCore));
         record.setDate(extractDate(dublinCore));
         record.setEntityDescription(extractEntityDescription(dublinCore));
+        record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
         return record;
     }
 
@@ -122,6 +124,7 @@ public class DublinCoreScraper {
         entityDescription.setAlternativeTitles(extractAlternativeTitles(dublinCore));
         entityDescription.setContributors(extractContributors(dublinCore));
         entityDescription.setTags(SubjectScraper.extractTags(dublinCore));
+        entityDescription.setPublicationInstance(extractPublicationInstance(dublinCore));
         return entityDescription;
     }
 
@@ -160,6 +163,14 @@ public class DublinCoreScraper {
         return publication;
     }
 
+    private static PublicationInstance extractPublicationInstance(DublinCore dublinCore) {
+        var publicationInstance = new PublicationInstance();
+        publicationInstance.setIssue(extractIssue(dublinCore));
+        publicationInstance.setPageNumber(extractPageNumber(dublinCore));
+        publicationInstance.setVolume(extractVolume(dublinCore));
+        return publicationInstance;
+    }
+
     private static void logUnscrapedValues(DublinCore dublinCore, BrageLocation brageLocation) {
         List<String> unscrapedDcValues = findUnscrapedFields(dublinCore);
         logUnscrapedFields(brageLocation, unscrapedDcValues);
@@ -182,13 +193,19 @@ public class DublinCoreScraper {
                    .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("PMD")
     private static boolean shouldBeLoggedAsUnscraped(DcValue dcValue) {
-        return !dcValue.isScraped() && !fieldHasBeenScrapedFromOtherFiles(dcValue);
+        return !dcValue.isScraped() && !fieldHasBeenScrapedFromOtherFiles(dcValue)
+               && !shouldBeIgnored(dcValue);
     }
 
     private static boolean fieldHasBeenScrapedFromOtherFiles(DcValue dcValue) {
         return dcValue.isLicenseInformation()
                || dcValue.isHandle();
+    }
+
+    private static boolean shouldBeIgnored(DcValue dcValue) {
+        return dcValue.isCopyrightDate() || dcValue.isProjectRelation();
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
@@ -227,11 +244,11 @@ public class DublinCoreScraper {
 
     private static Language extractLanguage(DublinCore dublinCore) {
         var brageLanguage = dublinCore.getDcValues()
-            .stream()
-            .filter(DcValue::isLanguage)
-            .findAny()
-            .orElse(new DcValue())
-            .scrapeValueAndSetToScraped();
+                                .stream()
+                                .filter(DcValue::isLanguage)
+                                .findAny()
+                                .orElse(new DcValue())
+                                .scrapeValueAndSetToScraped();
         var nvaLanguage = LanguageMapper.toUri(brageLanguage);
         return new Language(brageLanguage, nvaLanguage);
     }
@@ -239,6 +256,30 @@ public class DublinCoreScraper {
     private static String extractRightsholder(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isRightsholder)
+                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    }
+
+    private static String extractSpatialCoverage(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isSpatialCoverage)
+                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    }
+
+    private static String extractVolume(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isVolume)
+                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    }
+
+    private static String extractIssue(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isIssue)
+                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    }
+
+    private static String extractPageNumber(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isPageNumber)
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
@@ -317,11 +358,7 @@ public class DublinCoreScraper {
         var version = dublinCore.getDcValues().stream()
                           .filter(DcValue::isVersion)
                           .findAny();
-        if (version.isPresent()) {
-            return mapToNvaVersion(version.get()).orElse(null);
-        } else {
-            return null;
-        }
+        return version.flatMap(DublinCoreScraper::mapToNvaVersion).orElse(null);
     }
 
     private static Optional<Boolean> mapToNvaVersion(DcValue version) {

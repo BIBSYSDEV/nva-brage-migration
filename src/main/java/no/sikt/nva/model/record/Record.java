@@ -2,16 +2,18 @@ package no.sikt.nva.model.record;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
+@JsonPropertyOrder({"customerId", "id", "doi", "bareOrigin", "license", "publisherAuthority", "rightsholder", "type",
+    "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
 
     private EntityDescription entityDescription;
-
     private URI customerId;
     private URI id;
     private URI doi;
@@ -23,17 +25,15 @@ public class Record {
     private String embargo;
     private Boolean publisherAuthority;
     private String rightsholder;
-
+    private String spatialCoverage;
     private Publication publication;
 
-    @JacocoGenerated
     @Override
     public int hashCode() {
         return Objects.hash(entityDescription, customerId, id, doi, origin, type, date, language, license, embargo,
-                            publisherAuthority, rightsholder, publication);
+                            publisherAuthority, rightsholder, spatialCoverage, publication);
     }
 
-    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -55,7 +55,17 @@ public class Record {
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(publisherAuthority, record.publisherAuthority)
                && Objects.equals(rightsholder, record.rightsholder)
+               && Objects.equals(spatialCoverage, record.spatialCoverage)
                && Objects.equals(publication, record.publication);
+    }
+
+    @JsonProperty("spatialCoverage")
+    public String getSpatialCoverage() {
+        return spatialCoverage;
+    }
+
+    public void setSpatialCoverage(String spatialCoverage) {
+        this.spatialCoverage = spatialCoverage;
     }
 
     @JsonProperty("date")

@@ -1,9 +1,11 @@
 package no.sikt.nva;
 
+import static no.sikt.nva.ResourceNameConstants.INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME;
+import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_CRISTIN_ID_FILE_NAME;
+import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_LICENSE_ZIP_FILE_NAME;
+import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
 import static no.sikt.nva.model.ErrorDetails.Error.CRISTIN_ID_PRESENT;
 import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
-import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_LICENSE_ZIP_FILE_NAME;
-import static no.sikt.nva.ResourceNameConstants.INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -41,7 +43,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessAndLogFileWithCristinId() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var arguments = new String[]{"-z", "inputWithCristinId.zip"};
+        var arguments = new String[]{"-z", INPUT_WITH_CRISTIN_ID_FILE_NAME};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(String.valueOf(CRISTIN_ID_PRESENT)));
     }
@@ -61,4 +63,5 @@ public class BrageMigrationCommandTest {
         var exitCode = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(exitCode, is(equalTo(NORMAL_EXIT_CODE)));
     }
+
 }

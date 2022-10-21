@@ -10,6 +10,8 @@ public class ResourceNameConstants {
     public static final String VALID_LICENSE_RDF_FILE_NAME = "valid_license_rdf";
     public static final String INPUT_WITH_LICENSE_ZIP_FILE_NAME = "inputWithLicense.zip";
     public static final String INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME = "inputWithoutHandle.zip";
+    public static final String INPUT_WITH_CRISTIN_ID_FILE_NAME = "inputWithCristinId.zip";
+
 
     private ResourceNameConstants() {
 

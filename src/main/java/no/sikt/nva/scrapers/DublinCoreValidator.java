@@ -19,6 +19,7 @@ import nva.commons.doi.DoiValidator;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
 
+@SuppressWarnings("PMD.GodClass")
 public final class DublinCoreValidator {
 
     public static final String VERSION_STRING_NVE = "publishedVersion";
@@ -53,6 +54,9 @@ public final class DublinCoreValidator {
         getDateWarning(dublinCore).ifPresent(warnings::add);
         getLanguageWarning(dublinCore).ifPresent(warnings::add);
         getDescriptionsWarning(dublinCore).ifPresent(warnings::add);
+        getVolumeWarning(dublinCore).ifPresent(warnings::add);
+        getIssueWarning(dublinCore).ifPresent(warnings::add);
+        getPageNumberWarning(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -77,6 +81,51 @@ public final class DublinCoreValidator {
         } else {
             return Optional.empty();
         }
+    }
+
+    private static Optional<WarningDetails> getVolumeWarning(DublinCore dublinCore) {
+        if (hasVolume(dublinCore)) {
+            var volume = dublinCore.getDcValues().stream()
+                             .filter(DcValue::isVolume)
+                             .findAny().orElse(new DcValue()).getValue();
+            try {
+                Integer.parseInt(volume);
+                return Optional.empty();
+            } catch (Exception e) {
+                return Optional.of(new WarningDetails(Warning.VOLUME_NOT_NUMBER_WARNING, volume));
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<WarningDetails> getIssueWarning(DublinCore dublinCore) {
+        if (hasIssue(dublinCore)) {
+            var issue = dublinCore.getDcValues().stream()
+                            .filter(DcValue::isIssue)
+                            .findAny().orElse(new DcValue()).getValue();
+            try {
+                Integer.parseInt(issue);
+                return Optional.empty();
+            } catch (Exception e) {
+                return Optional.of(new WarningDetails(Warning.ISSUE_NOT_NUMBER_WARNING, issue));
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<WarningDetails> getPageNumberWarning(DublinCore dublinCore) {
+        if (hasPageNumber(dublinCore)) {
+            var pageNumber = dublinCore.getDcValues().stream()
+                                 .filter(DcValue::isPageNumber)
+                                 .findAny().orElse(new DcValue()).getValue();
+            try {
+                Integer.parseInt(pageNumber);
+                return Optional.empty();
+            } catch (Exception e) {
+                return Optional.of(new WarningDetails(Warning.PAGE_NUMBER_NOT_NUMBER_WARNING, pageNumber));
+            }
+        }
+        return Optional.empty();
     }
 
     private static Optional<ErrorDetails> getDoiErrorDetails(DublinCore dublinCore) {
@@ -190,6 +239,21 @@ public final class DublinCoreValidator {
     private static boolean hasIsbn(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .anyMatch(DcValue::isIsbnValue);
+    }
+
+    private static boolean hasVolume(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .anyMatch(DcValue::isVolume);
+    }
+
+    private static boolean hasIssue(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .anyMatch(DcValue::isIssue);
+    }
+
+    private static boolean hasPageNumber(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .anyMatch(DcValue::isPageNumber);
     }
 
     private static Optional<WarningDetails> getVersionWarning(DublinCore dublinCore) {
