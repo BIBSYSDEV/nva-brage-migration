@@ -31,9 +31,9 @@ public class RecordsWriterTest {
         List<String> types = Collections.singletonList("Research report");
         record.setType(new Type(types, TypeMapper.convertBrageTypeToNvaType(types)));
         record.setLicense(randomString());
-        record.setLanguage(randomString());
+        record.setLanguage(new Language("as", randomUri()));
         record.setLanguage(new Language("nob", randomUri()));
-        record.setAuthors(authors);
+
 
         return record;
     }

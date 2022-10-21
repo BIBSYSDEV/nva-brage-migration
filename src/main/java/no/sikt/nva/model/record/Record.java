@@ -18,8 +18,6 @@ public class Record {
     private Path origin;
     private Type type;
     private Date date;
-    private String language;
-    private String mainTitle;
     private Language language;
     private String license;
     private String embargo;
@@ -28,12 +26,14 @@ public class Record {
 
     private Publication publication;
 
+    @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(customerId, id, doi, origin, type, date, language, license, embargo,
+        return Objects.hash(entityDescription, customerId, id, doi, origin, type, date, language, license, embargo,
                             publisherAuthority, rightsholder, publication);
     }
 
+    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -43,7 +43,8 @@ public class Record {
             return false;
         }
         Record record = (Record) o;
-        return Objects.equals(customerId, record.customerId)
+        return Objects.equals(entityDescription, record.entityDescription)
+               && Objects.equals(customerId, record.customerId)
                && Objects.equals(id, record.id)
                && Objects.equals(doi, record.doi)
                && Objects.equals(origin, record.origin)
@@ -56,8 +57,6 @@ public class Record {
                && Objects.equals(rightsholder, record.rightsholder)
                && Objects.equals(publication, record.publication);
     }
-
-
 
     @JsonProperty("date")
     public Date getDate() {
@@ -146,7 +145,6 @@ public class Record {
     public void setEmbargo(String embargo) {
         this.embargo = embargo;
     }
-
 
     @JsonProperty("bareOrigin")
     public Path getOrigin() {
