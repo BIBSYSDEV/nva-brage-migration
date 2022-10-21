@@ -106,13 +106,9 @@ public class DublinCoreScraper {
         record.setOrigin(brageLocation.getBrageBundlePath());
         record.setPublication(extractPublication(dublinCore, brageLocation));
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
-        record.setMainTitle(extractMainTitle(dublinCore));
-        record.setAlternativeTitles(extractAlternativeTitles(dublinCore));
         record.setLanguage(extractLanguage(dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
-        record.setContributors(extractContributors(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore));
-        record.setTags(SubjectScraper.extractTags(dublinCore));
         record.setDoi(extractDoi(dublinCore));
         record.setDate(extractDate(dublinCore));
         record.setEntityDescription(extractEntityDescription(dublinCore));
@@ -124,6 +120,10 @@ public class DublinCoreScraper {
         var entityDescription = new EntityDescription();
         entityDescription.setAbstracts(extractAbstracts(dublinCore));
         entityDescription.setDescriptions(extractDescriptions(dublinCore));
+        entityDescription.setMainTitle(extractMainTitle(dublinCore));
+        entityDescription.setAlternativeTitles(extractAlternativeTitles(dublinCore));
+        entityDescription.setContributors(extractContributors(dublinCore));
+        entityDescription.setTags(SubjectScraper.extractTags(dublinCore));
         return entityDescription;
     }
 

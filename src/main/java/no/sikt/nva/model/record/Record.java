@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
@@ -19,26 +18,23 @@ public class Record {
     private Path origin;
     private Type type;
     private Date date;
-    private String mainTitle;
     private Language language;
     private String license;
     private String embargo;
     private Boolean publisherAuthority;
     private String rightsholder;
-    private String spatialCoverage;
-    private List<String> tags;
-    private List<String> authors;
-    private List<String> alternativeTitles;
-    private Publication publication;
-    private List<Contributor> contributors;
 
+    private String spatialCoverage;
+    private Publication publication;
+
+    @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(customerId, id, doi, origin, type, date, mainTitle, language, license, embargo,
-                            publisherAuthority, rightsholder, tags, authors, alternativeTitles, publication,
-                            contributors, spatialCoverage);
+        return Objects.hash(entityDescription, customerId, id, doi, origin, type, date, language, license, embargo,
+                            publisherAuthority, rightsholder, publication);
     }
 
+    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -48,23 +44,20 @@ public class Record {
             return false;
         }
         Record record = (Record) o;
-        return Objects.equals(customerId, record.customerId)
+        return Objects.equals(entityDescription, record.entityDescription)
+               && Objects.equals(customerId, record.customerId)
                && Objects.equals(id, record.id)
                && Objects.equals(doi, record.doi)
                && Objects.equals(origin, record.origin)
                && Objects.equals(type, record.type)
                && Objects.equals(date, record.date)
-               && Objects.equals(mainTitle, record.mainTitle)
                && Objects.equals(language, record.language)
                && Objects.equals(license, record.license)
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(publisherAuthority, record.publisherAuthority)
                && Objects.equals(rightsholder, record.rightsholder)
-               && Objects.equals(tags, record.tags)
-               && Objects.equals(authors, record.authors)
-               && Objects.equals(alternativeTitles, record.alternativeTitles)
                && Objects.equals(publication, record.publication)
-               && Objects.equals(contributors, record.contributors)
+               && Objects.equals(publication, record.publication)
                && Objects.equals(spatialCoverage, record.spatialCoverage);
     }
 
@@ -77,23 +70,6 @@ public class Record {
         this.spatialCoverage = spatialCoverage;
     }
 
-    @JsonProperty("alternativeTitles")
-    public List<String> getAlternativeTitles() {
-        return alternativeTitles;
-    }
-
-    public void setAlternativeTitles(List<String> alternativeTitles) {
-        this.alternativeTitles = alternativeTitles;
-    }
-
-    @JsonProperty("contributors")
-    public List<Contributor> getContributors() {
-        return contributors;
-    }
-
-    public void setContributors(List<Contributor> contributors) {
-        this.contributors = contributors;
-    }
 
     @JsonProperty("date")
     public Date getDate() {
@@ -153,26 +129,6 @@ public class Record {
     }
 
     @JacocoGenerated
-    @JsonProperty("mainTitle")
-    public String getMainTitle() {
-        return this.mainTitle;
-    }
-
-    public void setMainTitle(String mainTitle) {
-        this.mainTitle = mainTitle;
-    }
-
-    @JacocoGenerated
-    @JsonProperty("authors")
-    public List<String> getAuthors() {
-        return this.authors;
-    }
-
-    public void setAuthors(List<String> authors) {
-        this.authors = authors;
-    }
-
-    @JacocoGenerated
     @JsonProperty("language")
     public Language getLanguage() {
         return this.language;
@@ -201,16 +157,6 @@ public class Record {
     @JacocoGenerated
     public void setEmbargo(String embargo) {
         this.embargo = embargo;
-    }
-
-    @JacocoGenerated
-    @JsonProperty("tags")
-    public List<String> getTags() {
-        return this.tags;
-    }
-
-    public void setTags(List<String> tags) {
-        this.tags = tags;
     }
 
     @JsonProperty("bareOrigin")
