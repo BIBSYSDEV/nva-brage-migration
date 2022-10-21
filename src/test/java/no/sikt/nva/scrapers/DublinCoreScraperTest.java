@@ -79,7 +79,7 @@ public class DublinCoreScraperTest {
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Some Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
         var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        var actualContributors = record.getContributors();
+        var actualContributors = record.getEntityDescription().getContributors();
         assertThat(actualContributors, is(equalTo(expectedContributors)));
     }
 
@@ -113,8 +113,8 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
 
-        assertThat(record.getMainTitle(), is(equalTo(expectedMainTitle)));
-        assertThat(record.getAlternativeTitles(),
+        assertThat(record.getEntityDescription().getMainTitle(), is(equalTo(expectedMainTitle)));
+        assertThat(record.getEntityDescription().getAlternativeTitles(),
                    containsInAnyOrder(expectedAlternativeTitle1, expectedAlternativeTitle2));
     }
 

@@ -5,7 +5,6 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import no.sikt.nva.model.record.Language;
@@ -27,17 +26,14 @@ public class RecordsWriterTest {
     }
 
     private Record createRecord() {
-        List<String> authors = new ArrayList<>();
-        authors.add(randomString());
-        authors.add(randomString());
-
         var record = new Record();
         record.setId(randomUri());
         List<String> types = Collections.singletonList("Research report");
         record.setType(new Type(types, TypeMapper.convertBrageTypeToNvaType(types)));
         record.setLicense(randomString());
+        record.setLanguage(new Language("as", randomUri()));
         record.setLanguage(new Language("nob", randomUri()));
-        record.setAuthors(authors);
+
 
         return record;
     }
