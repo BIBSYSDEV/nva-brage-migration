@@ -187,10 +187,14 @@ public class DcValue {
     public boolean isPageNumber() {
         return Element.SOURCE.equals(this.element) && Qualifier.PAGE_NUMBER.equals(this.qualifier);
     }
+    public boolean isProjectRelation() {
+        return Element.RELATION.equals(this.element) && Qualifier.PROJECT.equals(this.qualifier);
+    }
 
     public String toXmlString() {
         StringWriter sw = new StringWriter();
         JAXB.marshal(this, sw);
         return sw.toString().replace(XML_PREFIX, StringUtils.EMPTY_STRING);
     }
+
 }

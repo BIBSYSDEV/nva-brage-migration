@@ -196,7 +196,7 @@ public class DublinCoreScraper {
     @SuppressWarnings("PMD")
     private static boolean shouldBeLoggedAsUnscraped(DcValue dcValue) {
         return !dcValue.isScraped() && !fieldHasBeenScrapedFromOtherFiles(dcValue)
-               || isIgnoredForScraping(dcValue);
+               && !shouldBeIgnored(dcValue);
     }
 
     private static boolean fieldHasBeenScrapedFromOtherFiles(DcValue dcValue) {
@@ -204,8 +204,8 @@ public class DublinCoreScraper {
                || dcValue.isHandle();
     }
 
-    private static boolean isIgnoredForScraping(DcValue dcValue) {
-        return dcValue.isCopyrightDate();
+    private static boolean shouldBeIgnored(DcValue dcValue) {
+        return dcValue.isCopyrightDate() || dcValue.isProjectRelation();
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
