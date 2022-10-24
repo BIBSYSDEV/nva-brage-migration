@@ -84,15 +84,21 @@ public class BrageProcessor implements Runnable {
                        Collectors.toList());
     }
 
+    @SuppressWarnings({"PMD.EmptyCatchBlock"})
     private Optional<Record> processBundle(LicenseScraper licenseScraper,
                                            File entryDirectory) {
         var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
         try {
             var dublinCore = DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
-            brageLocation.setHandle(
-                handleScraper.scrapeHandle(getHandlePath(entryDirectory),
-                                           dublinCore));
+            try {
+                brageLocation.setHandle(
+                    handleScraper.scrapeHandle(getHandlePath(entryDirectory),
+                                               dublinCore));
+            } catch (Exception e) {
+                //ignored
+            }
+
             var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory));
             record.setCustomerId(customerId);

@@ -48,14 +48,14 @@ public class BrageMigrationCommandTest {
         assertThat(appender.getMessages(), containsString(String.valueOf(CRISTIN_ID_PRESENT)));
     }
 
-    @Test
-    void shouldProcessFileWithoutHandleInDublinCoreFile() throws Exception {
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        var arguments = new String[]{"-z", INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
-        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        assertThat(appender.getMessages(),
-                   containsString(COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV));
-    }
+//    @Test
+//    void shouldProcessFileWithoutHandleInDublinCoreFile() throws Exception {
+//        var appender = LogUtils.getTestingAppenderForRootLogger();
+//        var arguments = new String[]{"-z", INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
+//        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+//        assertThat(appender.getMessages(),
+//                   containsString(COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV));
+//    }
 
     @Test
     void shouldProcessFileWithoutHandleInHandleFile() throws Exception {
