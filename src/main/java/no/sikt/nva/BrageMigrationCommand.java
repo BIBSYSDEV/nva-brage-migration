@@ -36,7 +36,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         description = "customer id in NVA")
     private String customer;
 
-    @Option(names = {"-o", "--online-validator"}, description = "enable online data validator, disabled if not present")
+    @Option(names = {"-o", "--online-validator"}, description = "enable online validator, disabled if not present")
     private boolean enableOnlineValidation;
 
     @Option(names = {"-z", "--zip-files"}, arity = "1..*", description = "input zipfiles containing brage bundles")

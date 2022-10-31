@@ -10,6 +10,7 @@ import no.sikt.nva.model.ErrorDetails.Error;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.doi.UnitHttpClient;
+import org.jetbrains.annotations.NotNull;
 
 public class DoiValidator {
 
@@ -17,26 +18,12 @@ public class DoiValidator {
     public static final String HTTPS_STRING_FOR_DOI = "https://";
 
     public static Optional<ArrayList<ErrorDetails>> getDoiErrorDetailsOnline(DublinCore dublinCore) {
-        var doiList =
-            dublinCore.getDcValues()
-                .stream()
-                .filter(DcValue::isDoi)
-                .map(DcValue::getValue)
-                .map(DoiValidator::addHttpStringIfNotPresent)
-                .collect(Collectors.toList());
-
+        var doiList = extractDoiList(dublinCore);
         return validateDoiListOnline(doiList);
     }
 
     public static Optional<ArrayList<ErrorDetails>> getDoiErrorDetailsOffline(DublinCore dublinCore) {
-        var doiList =
-            dublinCore.getDcValues()
-                .stream()
-                .filter(DcValue::isDoi)
-                .map(DcValue::getValue)
-                .map(DoiValidator::addHttpStringIfNotPresent)
-                .collect(Collectors.toList());
-
+        var doiList = extractDoiList(dublinCore);
         return validateDoiListOffline(doiList);
     }
 
@@ -45,11 +32,7 @@ public class DoiValidator {
         for (String doi : doiList) {
             validateDoiOnline(doi).ifPresent(doiErrorList::add);
         }
-        if (!doiErrorList.isEmpty()) {
-            return Optional.of(doiErrorList);
-        } else {
-            return Optional.empty();
-        }
+        return getErrorDetails(doiErrorList);
     }
 
     private static Optional<ArrayList<ErrorDetails>> validateDoiListOffline(List<String> doiList) {
@@ -57,6 +40,11 @@ public class DoiValidator {
         for (String doi : doiList) {
             validateDoiOffline(doi).ifPresent(doiErrorList::add);
         }
+        return getErrorDetails(doiErrorList);
+    }
+
+    @NotNull
+    private static Optional<ArrayList<ErrorDetails>> getErrorDetails(ArrayList<ErrorDetails> doiErrorList) {
         if (!doiErrorList.isEmpty()) {
             return Optional.of(doiErrorList);
         } else {
@@ -95,6 +83,15 @@ public class DoiValidator {
         } else {
             return HTTPS_STRING_FOR_DOI + doi;
         }
+    }
+
+    private static List<String> extractDoiList(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isDoi)
+                   .map(DcValue::getValue)
+                   .map(DoiValidator::addHttpStringIfNotPresent)
+                   .collect(Collectors.toList());
     }
 
     private static boolean isValidDoiOffline(String doi) {
