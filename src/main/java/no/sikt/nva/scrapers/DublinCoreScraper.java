@@ -4,11 +4,13 @@ import static no.sikt.nva.scrapers.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.scrapers.DublinCoreValidator.VERSION_STRING_NVE;
 import static no.sikt.nva.scrapers.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -42,8 +44,13 @@ public class DublinCoreScraper {
     public static final String FIRST_DAY_OF_A_MONTH = "-01";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
 
-    public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
-        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+    public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation,
+                                                    boolean enableOnlineValidation) {
+        var errors = new ArrayList<ErrorDetails>();
+        if (enableOnlineValidation) {
+            errors.addAll(DublinCoreOnlineValidator.getDublinCoreErrors(dublinCore));
+        }
+        errors.addAll(DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation));
         var warnings = getDublinCoreWarnings(dublinCore);
         if (errors.isEmpty()) {
             var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);

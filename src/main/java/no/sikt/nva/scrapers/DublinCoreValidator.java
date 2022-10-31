@@ -16,7 +16,6 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
 import nva.commons.doi.DoiValidator;
-import nva.commons.doi.UnitHttpClient;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
 import org.jetbrains.annotations.NotNull;
@@ -153,9 +152,6 @@ public final class DublinCoreValidator {
             for (String doi : doiList) {
                 if (!isValidDoiOffline(doi)) {
                     return Optional.of(new ErrorDetails(Error.INVALID_DOI_OFFLINE_CHECK, doiList));
-                }
-                if (!isValidDoiOnline(doi)) {
-                    return Optional.of(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, doiList));
                 }
             }
         }
@@ -308,18 +304,6 @@ public final class DublinCoreValidator {
     }
 
     private static boolean isValidDoiOffline(String doi) {
-        var isValidDoi = DoiValidator.validateOffline(doi);
-        return isValidDoi;
-    }
-
-    private static boolean isValidDoiOnline(String doi) {
-        var httpClient = new UnitHttpClient();
-        var validator = new DoiValidator(httpClient);
-        try {
-            validator.validateOnline(URI.create(doi));
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        return DoiValidator.validateOffline(doi);
     }
 }

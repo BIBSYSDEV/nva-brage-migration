@@ -31,12 +31,15 @@ public class BrageProcessor implements Runnable {
     private final URI customerId;
     private final String destinationDirectory;
     private final HandleScraper handleScraper;
+
+    private final boolean enableOnlineValidation;
     private List<Record> records;
 
     public BrageProcessor(String zipfile, URI customerId, String destinationDirectory,
-                          final Map<String, String> rescueTitleAndHandleMap) {
+                          final Map<String, String> rescueTitleAndHandleMap, boolean enableOnlineValidation) {
         this.customerId = customerId;
         this.zipfile = zipfile;
+        this.enableOnlineValidation = enableOnlineValidation;
         this.destinationDirectory = destinationDirectory;
         this.handleScraper = new HandleScraper(rescueTitleAndHandleMap);
     }
@@ -93,7 +96,7 @@ public class BrageProcessor implements Runnable {
             brageLocation.setHandle(
                 handleScraper.scrapeHandle(getHandlePath(entryDirectory),
                                            dublinCore));
-            var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+            var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation, enableOnlineValidation);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory));
             record.setCustomerId(customerId);
             return Optional.of(record);

@@ -36,13 +36,16 @@ public class BrageMigrationCommand implements Callable<Integer> {
         description = "customer id in NVA")
     private String customer;
 
-    @Option(names = {"-z",
-        "--zip-files"}, arity = "1..*", description = "input zipfiles containing brage bundles")
+    @Option(names = {"-o", "--online-validator"}, description = "enable online data validator, disabled if not present")
+    private boolean enableOnlineValidation;
+
+    @Option(names = {"-z", "--zip-files"}, arity = "1..*", description = "input zipfiles containing brage bundles")
     private String[] zipFiles;
 
     @SuppressWarnings("PMD.UnusedPrivateField")
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
     private boolean usageHelpRequested;
+
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
@@ -53,7 +56,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public Integer call() {
         try {
             var customerUri = UriWrapper.fromUri(customer).getUri();
-            var brageProcessors = createBrageProcessorThread(zipFiles, customerUri);
+            var brageProcessors = createBrageProcessorThread(zipFiles, customerUri, enableOnlineValidation);
             var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
             startProcessors(brageProcessorThreads);
             waitForAllProcesses(brageProcessorThreads);
@@ -88,12 +91,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
         brageProcessors.forEach(Thread::start);
     }
 
-    private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, URI customer) {
+    private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, URI customer,
+                                                            boolean enableOnlineValidation) {
         var handleTitleMapReader = new HandleTitleMapReader();
         var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch());
         return
             Arrays.stream(zipFiles)
-                .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer))
+                .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation))
                 .collect(Collectors.toList());
     }
 }

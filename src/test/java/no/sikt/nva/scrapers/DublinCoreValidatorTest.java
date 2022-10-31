@@ -119,9 +119,40 @@ public class DublinCoreValidatorTest {
     @Test
     void shouldTestDoiOnlineAndReturnError() {
         var inputDoi = "doi.org/10.1016/j.scitotenv.2021.151958.";
-        var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.DOI, inputDoi));
-        var dublinCore = new DublinCore(dcValues);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
+        var dcValues = List.of(
+            new DcValue(Element.IDENTIFIER, Qualifier.DOI, inputDoi),
+            new DcValue(Element.TYPE, null, "Book"));
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreOnlineValidator.getDublinCoreErrors(dublinCore);
+
         assertThat(actualErrors, hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of())));
+    }
+
+    @Test
+    void shouldTestDoiOnlineAndProceedWithoutErrors() {
+        var inputDoi = "doi.org/10.1016/j.scitotenv.2021.151958";
+        var dcValues = List.of(
+            new DcValue(Element.IDENTIFIER, Qualifier.DOI, inputDoi),
+            new DcValue(Element.TYPE, null, "Book"));
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreOnlineValidator.getDublinCoreErrors(dublinCore);
+
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of()))));
+    }
+
+    @Test
+    void shouldNotReturnDoiErrorWhenDoiHasValidStructureButUriIsInvalid() {
+        var inputDoi = "doi.org/10.1016/j.scitotenv.2021.151958.";
+        var dcValues = List.of(
+            new DcValue(Element.IDENTIFIER, Qualifier.DOI, inputDoi),
+            new DcValue(Element.TYPE, null, "Book"));
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore,
+                                                                   new BrageLocation(null));
+
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of()))));
     }
 }

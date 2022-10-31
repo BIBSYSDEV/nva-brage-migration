@@ -36,7 +36,7 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, cristinDcValue));
         assertThrows(DublinCoreException.class,
                      () -> DublinCoreScraper.validateAndParseDublinCore(dublinCore,
-                                                                        brageLocation));
+                                                                        brageLocation, false));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class DublinCoreScraperTest {
                                                  + "gurba gurba gurba gurba gurba gurba gurba "
                                                  + "gurba gurba gurba gurba gurba (øæsdfadfåp)");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, expectedDcValuedLogged));
-        DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), false);
         assertThat(appender.getMessages(), containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE));
         assertThat(appender.getMessages(), containsString(expectedDcValuedLogged.toXmlString()));
     }
@@ -61,7 +61,7 @@ public class DublinCoreScraperTest {
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
         var typeDcValue = new DcValue(Element.TYPE, null, "Book");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
-        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), false);
         var actualPublisherAuthority = record.getPublisherAuthority();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
     }
@@ -70,7 +70,7 @@ public class DublinCoreScraperTest {
     void shouldCreatePublisherAuthorityIfVersionIsNotPresent() {
         var typeDcValue = new DcValue(Element.TYPE, null, "Book");
         var dublinCoreWithoutVersion = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
-        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCoreWithoutVersion, new BrageLocation(null));
+        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCoreWithoutVersion, new BrageLocation(null), false);
         var actualPublisherAuthority = record.getPublisherAuthority();
         assertThat(actualPublisherAuthority, is(equalTo(null)));
     }
@@ -82,7 +82,7 @@ public class DublinCoreScraperTest {
         var typeDcValue = new DcValue(Element.TYPE, null, "Book");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Some Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
-        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), false);
         var actualContributors = record.getEntityDescription().getContributors();
         assertThat(actualContributors, is(equalTo(expectedContributors)));
     }
@@ -97,7 +97,7 @@ public class DublinCoreScraperTest {
         var brageLocation = new BrageLocation(Path.of("some", "ignoredPath"));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation, false);
         assertThat(record.getDoi(), is(notNullValue()));
         assertThat(appender.getMessages(),
                    allOf(containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE),
@@ -115,7 +115,7 @@ public class DublinCoreScraperTest {
             new DcValue(Element.TITLE, Qualifier.ALTERNATIVE, expectedAlternativeTitle2),
             new DcValue(Element.TYPE, null, "Book"));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = DublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), false);
 
         assertThat(record.getEntityDescription().getMainTitle(), is(equalTo(expectedMainTitle)));
         assertThat(record.getEntityDescription().getAlternativeTitles(),
@@ -130,7 +130,7 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(partOfSeriesDcValue, typeDcValue));
         var record = DublinCoreScraper
-                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null), false);
         assertThat(record.getPublication().getPartOfSeries(), is(equalTo(partOfSeries)));
     }
 }
