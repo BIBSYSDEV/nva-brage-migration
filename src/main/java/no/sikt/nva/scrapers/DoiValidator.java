@@ -10,7 +10,6 @@ import no.sikt.nva.model.ErrorDetails.Error;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.doi.UnitHttpClient;
-import org.jetbrains.annotations.NotNull;
 
 public class DoiValidator {
 
@@ -43,7 +42,7 @@ public class DoiValidator {
         return getErrorDetails(doiErrorList);
     }
 
-    @NotNull
+    @SuppressWarnings("PMD.LooseCoupling")
     private static Optional<ArrayList<ErrorDetails>> getErrorDetails(ArrayList<ErrorDetails> doiErrorList) {
         if (!doiErrorList.isEmpty()) {
             return Optional.of(doiErrorList);
