@@ -23,6 +23,7 @@ import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.PublicationInstance;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
+import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
 import nva.commons.core.paths.UriWrapper;
@@ -30,11 +31,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.GodClass")
-public class DublinCoreScraper {
+public final class DublinCoreScraper {
 
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
     public static final String DELIMITER = "\n";
-    public static final String WARNING_TEXT = "The dublin_core.xml has following warnings: ";
     public static final String CONTRIBUTOR = "Contributor";
     public static final String ADVISOR = "Advisor";
     public static final String AUTHOR = "Author";
@@ -43,6 +43,11 @@ public class DublinCoreScraper {
     public static final String OTHER_CONTRIBUTOR = "Other";
     public static final String FIRST_DAY_OF_A_MONTH = "-01";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
+
+    @JacocoGenerated
+    private DublinCoreScraper() {
+
+    }
 
     public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation,
                                                     boolean enableOnlineValidation) {
@@ -102,7 +107,7 @@ public class DublinCoreScraper {
 
     private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings) {
         if (!warnings.isEmpty()) {
-            logger.warn(WARNING_TEXT + warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
+            logger.warn(warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
 
