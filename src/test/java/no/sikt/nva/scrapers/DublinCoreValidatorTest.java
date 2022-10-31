@@ -24,6 +24,7 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
+import no.unit.nva.doi.models.Doi;
 import org.junit.jupiter.api.Test;
 
 public class DublinCoreValidatorTest {
@@ -120,7 +121,7 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.TYPE, null, "Book"));
 
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DublinCoreOnlineValidator.getDublinCoreErrors(dublinCore);
+        var actualErrors = DoiValidator.getDoiErrorDetailsOnline(dublinCore).get();
         assertThat(actualErrors, hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of())));
     }
 
@@ -132,23 +133,11 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.TYPE, null, "Book"));
 
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DublinCoreOnlineValidator.getDublinCoreErrors(dublinCore);
+        var actualErrors = DoiValidator.getDoiErrorDetailsOnline(dublinCore).get();
 
         assertThat(actualErrors, hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of())));
     }
 
-    @Test
-    void shouldTestDoiOnlineAndProceedWithoutErrors() {
-        var inputDoi = "doi.org/10.1016/j.scitotenv.2021.151958";
-        var dcValues = List.of(
-            new DcValue(Element.IDENTIFIER, Qualifier.DOI, inputDoi),
-            new DcValue(Element.TYPE, null, "Book"));
-
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DublinCoreOnlineValidator.getDublinCoreErrors(dublinCore);
-
-        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of()))));
-    }
 
     @Test
     void shouldNotReturnDoiErrorWhenDoiHasValidStructureButUriIsInvalid() {

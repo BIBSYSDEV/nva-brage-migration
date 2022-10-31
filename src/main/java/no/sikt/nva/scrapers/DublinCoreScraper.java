@@ -53,8 +53,8 @@ public final class DublinCoreScraper {
 
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         var errors = new ArrayList<ErrorDetails>();
-        if (onlineValidationIsEnabled()) {
-            errors.addAll(DublinCoreOnlineValidator.getDublinCoreErrors(dublinCore));
+        if (getOnlineValidationIsEnabled()) {
+            DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
         }
         errors.addAll(DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation));
         var warnings = getDublinCoreWarnings(dublinCore);
@@ -68,7 +68,7 @@ public final class DublinCoreScraper {
         }
     }
 
-    public boolean onlineValidationIsEnabled() {
+    public boolean getOnlineValidationIsEnabled() {
         return enableOnlineValidation;
     }
 
