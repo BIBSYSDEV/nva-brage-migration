@@ -7,10 +7,13 @@ import static no.sikt.nva.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
@@ -108,12 +111,17 @@ public class DublinCoreValidatorTest {
     }
 
     @Test
-    void shouldValidateDoiCorrectly() {
-        var inputDoi = "https://doi.org/10.1016/j.scitotenv.2021.151958";
-        var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.DOI, inputDoi));
-        var dublinCore = new DublinCore(dcValues);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
-        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of()))));
+    void shouldReturnManyInvalidDoiErrorDetailsWhenResourceContainsMultipleInvalidDoi() {
+        var invalidDoi1 = "doi.org/10.1016/j.scitotenv.2021.151958.";
+        var invalidDoi2 = "doi.org/10.1016/j.scitotenv.2021.984324.";
+        var dcValues = List.of(
+            new DcValue(Element.IDENTIFIER, Qualifier.DOI, invalidDoi1),
+            new DcValue(Element.IDENTIFIER, Qualifier.DOI, invalidDoi2),
+            new DcValue(Element.TYPE, null, "Book"));
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreOnlineValidator.getDublinCoreErrors(dublinCore);
+        assertThat(actualErrors, hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of())));
     }
 
     @Test

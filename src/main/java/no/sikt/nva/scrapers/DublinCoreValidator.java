@@ -15,10 +15,8 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
-import nva.commons.doi.DoiValidator;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
-import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("PMD.GodClass")
 public final class DublinCoreValidator {
@@ -26,14 +24,12 @@ public final class DublinCoreValidator {
     public static final String VERSION_STRING_NVE = "publishedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final URI LEXVO_URI_UNDEFINED = URI.create("http://lexvo.org/id/iso639-3/und");
-    public static final String HTTP_STRING = "http";
-    public static final String HTTPS_STRING_FOR_DOI = "https://";
     private static final int ONE_DESCRIPTION = 1;
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
 
         var errors = new ArrayList<ErrorDetails>();
-        getDoiErrorDetails(dublinCore).ifPresent(errors::add);
+        DoiValidator.getDoiErrorDetailsOffline(dublinCore).ifPresent(errors::addAll);
         geCristinidErrorDetails(dublinCore).ifPresent(errors::add);
         getInvalidTypes(dublinCore).ifPresent(errors::add);
         getIssnErrors(dublinCore, brageLocation).ifPresent(errors::add);
@@ -129,41 +125,6 @@ public final class DublinCoreValidator {
             }
         }
         return Optional.empty();
-    }
-
-    private static Optional<ErrorDetails> getDoiErrorDetails(DublinCore dublinCore) {
-        var doiList =
-            dublinCore.getDcValues()
-                .stream()
-                .filter(DcValue::isDoi)
-                .map(DcValue::getValue)
-                .map(DublinCoreValidator::addHttpStringIfNotPresent)
-                .collect(Collectors.toList());
-
-        return validateDoiList(doiList);
-    }
-
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    @NotNull
-    private static Optional<ErrorDetails> validateDoiList(List<String> doiList) {
-        if (doiList.isEmpty()) {
-            return Optional.empty();
-        } else {
-            for (String doi : doiList) {
-                if (!isValidDoiOffline(doi)) {
-                    return Optional.of(new ErrorDetails(Error.INVALID_DOI_OFFLINE_CHECK, doiList));
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
-    private static String addHttpStringIfNotPresent(String doi) {
-        if (doi.contains(HTTP_STRING)) {
-            return doi;
-        } else {
-            return HTTPS_STRING_FOR_DOI + doi;
-        }
     }
 
     private static Optional<WarningDetails> getVersionWarnings(DublinCore dublinCore) {
@@ -301,9 +262,5 @@ public final class DublinCoreValidator {
 
     private static boolean isValidVersion(DcValue version) {
         return VERSION_STRING_NVE.equals(version.getValue());
-    }
-
-    private static boolean isValidDoiOffline(String doi) {
-        return DoiValidator.validateOffline(doi);
     }
 }

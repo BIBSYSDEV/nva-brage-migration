@@ -43,16 +43,17 @@ public final class DublinCoreScraper {
     public static final String OTHER_CONTRIBUTOR = "Other";
     public static final String FIRST_DAY_OF_A_MONTH = "-01";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
+    private final boolean enableOnlineValidation;
+
 
     @JacocoGenerated
-    private DublinCoreScraper() {
-
+    public DublinCoreScraper(boolean enableOnlineValidation) {
+        this.enableOnlineValidation = enableOnlineValidation;
     }
 
-    public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation,
-                                                    boolean enableOnlineValidation) {
+    public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         var errors = new ArrayList<ErrorDetails>();
-        if (enableOnlineValidation) {
+        if (onlineValidationIsEnabled()) {
             errors.addAll(DublinCoreOnlineValidator.getDublinCoreErrors(dublinCore));
         }
         errors.addAll(DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation));
@@ -65,6 +66,10 @@ public final class DublinCoreScraper {
         } else {
             throw new DublinCoreException(errors);
         }
+    }
+
+    public boolean onlineValidationIsEnabled() {
+        return enableOnlineValidation;
     }
 
     public static String extractIssn(DublinCore dublinCore, BrageLocation brageLocation) {
