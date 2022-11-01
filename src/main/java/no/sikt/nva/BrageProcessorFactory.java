@@ -16,11 +16,13 @@ public class BrageProcessorFactory {
         this.rescueTitleAndHandleMap = rescueTitleAndHandleMap;
     }
 
-    public BrageProcessor createBrageProcessor(String zipfile, URI customerId, boolean enableOnlineValidation) {
+    public BrageProcessor createBrageProcessor(String zipfile, URI customerId, boolean enableOnlineValidation,
+                                               boolean noHandleCheck) {
         var destinationDirectory = zipfile.replace(ZIP_EXTENSION, StringUtils.EMPTY_STRING);
         if (StringUtils.isEmpty(destinationDirectory)) {
             throw new RuntimeException(INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE);
         }
-        return new BrageProcessor(zipfile, customerId, destinationDirectory, rescueTitleAndHandleMap, enableOnlineValidation);
+        return new BrageProcessor(zipfile, customerId, destinationDirectory, rescueTitleAndHandleMap,
+                                  enableOnlineValidation, noHandleCheck);
     }
 }
