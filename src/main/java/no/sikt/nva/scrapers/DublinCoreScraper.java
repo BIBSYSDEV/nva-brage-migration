@@ -1,8 +1,8 @@
 package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.scrapers.DublinCoreValidator.DEHYPHENATION_REGEX;
-import static no.sikt.nva.scrapers.DublinCoreValidator.VERSION_STRING_NVE;
-import static no.sikt.nva.scrapers.DublinCoreValidator.getDublinCoreWarnings;
+import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
+import static no.sikt.nva.validators.DublinCoreValidator.VERSION_STRING_NVE;
+import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,8 @@ import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.PublicationInstance;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
+import no.sikt.nva.validators.DoiValidator;
+import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
@@ -252,7 +254,7 @@ public final class DublinCoreScraper {
                    .scrapeValueAndSetToScraped();
     }
 
-    private static List<String> extractType(DublinCore dublinCore) {
+    public static List<String> extractType(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isType)
                    .map(DcValue::scrapeValueAndSetToScraped)

@@ -1,4 +1,4 @@
-package no.sikt.nva.scrapers;
+package no.sikt.nva.validators;
 
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
@@ -7,13 +7,11 @@ import static no.sikt.nva.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
@@ -24,7 +22,10 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.unit.nva.doi.models.Doi;
+import no.sikt.nva.scrapers.DublinCoreFactory;
+import no.sikt.nva.scrapers.TypeMapper.BrageType;
+import no.sikt.nva.validators.DoiValidator;
+import no.sikt.nva.validators.DublinCoreValidator;
 import org.junit.jupiter.api.Test;
 
 public class DublinCoreValidatorTest {
@@ -151,5 +152,16 @@ public class DublinCoreValidatorTest {
                                                                    new BrageLocation(null));
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of()))));
+    }
+
+    @Test
+    void shouldReturnErrorDetailWhenIssnIsNotInChannelRegister() {
+        var dcValues = List.of(
+            new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-0678"),
+            new DcValue(Element.TYPE, null, BrageType.REPORT.getValue()));
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
+        assertThat(actualErrors, hasItems(new ErrorDetails(Error.ISSN_NOT_FOUND_IN_KANALREGISTER, List.of())));
     }
 }

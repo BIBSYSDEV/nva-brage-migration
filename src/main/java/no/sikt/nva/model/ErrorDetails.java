@@ -39,6 +39,7 @@ public class ErrorDetails {
         CRISTIN_ID_PRESENT,
         INVALID_TYPE,
         INVALID_ISSN,
+        ISSN_NOT_FOUND_IN_KANALREGISTER,
         INVALID_ISBN,
         INVALID_DOI_OFFLINE_CHECK,
         INVALID_DOI_ONLINE_CHECK

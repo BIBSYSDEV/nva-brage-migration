@@ -11,7 +11,6 @@ public class BrageProcessorFactory {
 
     private final Map<String, String> rescueTitleAndHandleMap;
 
-
     public BrageProcessorFactory(Map<String, String> rescueTitleAndHandleMap) {
         this.rescueTitleAndHandleMap = rescueTitleAndHandleMap;
     }
@@ -21,6 +20,10 @@ public class BrageProcessorFactory {
         if (StringUtils.isEmpty(destinationDirectory)) {
             throw new RuntimeException(INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE);
         }
-        return new BrageProcessor(zipfile, customerId, destinationDirectory, rescueTitleAndHandleMap, enableOnlineValidation);
+        return new BrageProcessor(zipfile,
+                                  customerId,
+                                  destinationDirectory,
+                                  rescueTitleAndHandleMap,
+                                  enableOnlineValidation);
     }
 }

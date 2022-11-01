@@ -1,11 +1,13 @@
-package no.sikt.nva.scrapers;
+package no.sikt.nva.validators;
 
+import static java.util.Objects.nonNull;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import no.sikt.nva.channelregister.ChannelRegisterLookUp;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.ErrorDetails.Error;
@@ -13,6 +15,10 @@ import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.SubjectScraper;
+import no.sikt.nva.scrapers.TypeMapper;
+import no.sikt.nva.scrapers.TypeMapper.BrageType;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
 import org.apache.commons.validator.routines.ISBNValidator;
@@ -66,6 +72,22 @@ public final class DublinCoreValidator {
 
     public static boolean containsYearOnly(String date) {
         return date.matches("\\d{4}");
+    }
+
+    private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore,
+                                                       BrageLocation brageLocation) {
+        if (!hasIssn(dublinCore)) {
+            return Optional.empty();
+        }
+        var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
+        if (!isValidIssn(issn)) {
+            return Optional.of(new ErrorDetails(Error.INVALID_ISSN, List.of(issn)));
+        }
+        if (isReport(dublinCore) && nonNull(ChannelRegisterLookUp.lookUpForJournalByIssn(issn))) {
+            return Optional.empty();
+        } else {
+            return Optional.of(new ErrorDetails(Error.ISSN_NOT_FOUND_IN_KANALREGISTER, List.of(issn)));
+        }
     }
 
     private static Optional<WarningDetails> getDescriptionsWarning(DublinCore dublinCore) {
@@ -192,15 +214,13 @@ public final class DublinCoreValidator {
         }
     }
 
-    private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
-        if (hasIssn(dublinCore)) {
-            var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
-            ISSNValidator validator = new ISSNValidator();
-            if (!validator.isValid(issn)) {
-                return Optional.of(new ErrorDetails(Error.INVALID_ISSN, List.of(issn)));
-            }
-        }
-        return Optional.empty();
+    private static boolean isReport(DublinCore dublinCore) {
+        return DublinCoreScraper.extractType(dublinCore).get(0).equals(BrageType.REPORT.getValue());
+    }
+
+    private static boolean isValidIssn(String issn) {
+        ISSNValidator validator = new ISSNValidator();
+        return validator.isValid(issn);
     }
 
     private static Optional<ErrorDetails> getIsbnErrors(DublinCore dublinCore, BrageLocation brageLocation) {

@@ -1,4 +1,4 @@
-package no.sikt.nva.scrapers;
+package no.sikt.nva.validators;
 
 import java.net.URI;
 import java.util.ArrayList;
