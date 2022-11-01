@@ -4,11 +4,13 @@ import static no.sikt.nva.scrapers.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.scrapers.DublinCoreValidator.VERSION_STRING_NVE;
 import static no.sikt.nva.scrapers.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -41,14 +43,20 @@ public final class DublinCoreScraper {
     public static final String OTHER_CONTRIBUTOR = "Other";
     public static final String FIRST_DAY_OF_A_MONTH = "-01";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
+    private final boolean enableOnlineValidation;
+
 
     @JacocoGenerated
-    private DublinCoreScraper() {
-
+    public DublinCoreScraper(boolean enableOnlineValidation) {
+        this.enableOnlineValidation = enableOnlineValidation;
     }
 
-    public static Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
-        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+    public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
+        var errors = new ArrayList<ErrorDetails>();
+        if (onlineValidationIsEnabled()) {
+            DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
+        }
+        errors.addAll(DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation));
         var warnings = getDublinCoreWarnings(dublinCore);
         if (errors.isEmpty()) {
             var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
@@ -58,6 +66,10 @@ public final class DublinCoreScraper {
         } else {
             throw new DublinCoreException(errors);
         }
+    }
+
+    public boolean onlineValidationIsEnabled() {
+        return enableOnlineValidation;
     }
 
     public static String extractIssn(DublinCore dublinCore, BrageLocation brageLocation) {

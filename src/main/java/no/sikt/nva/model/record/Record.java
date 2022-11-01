@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
-@JsonPropertyOrder({"customerId", "id", "doi", "bareOrigin", "license", "publisherAuthority", "rightsholder", "type",
+@JsonPropertyOrder({"customerId", "bareOrigin", "id", "doi", "license", "publisherAuthority", "rightsholder", "type",
     "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {

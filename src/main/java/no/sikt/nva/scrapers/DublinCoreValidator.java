@@ -15,7 +15,6 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
-import nva.commons.doi.DoiValidator;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
 
@@ -30,7 +29,7 @@ public final class DublinCoreValidator {
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
 
         var errors = new ArrayList<ErrorDetails>();
-        getDoiErrorDetails(dublinCore).ifPresent(errors::add);
+        DoiValidator.getDoiErrorDetailsOffline(dublinCore).ifPresent(errors::addAll);
         geCristinidErrorDetails(dublinCore).ifPresent(errors::add);
         getInvalidTypes(dublinCore).ifPresent(errors::add);
         getIssnErrors(dublinCore, brageLocation).ifPresent(errors::add);
@@ -128,21 +127,6 @@ public final class DublinCoreValidator {
         return Optional.empty();
     }
 
-    private static Optional<ErrorDetails> getDoiErrorDetails(DublinCore dublinCore) {
-        var doiErrors =
-            dublinCore.getDcValues()
-                .stream()
-                .filter(DublinCoreValidator::hasInvalidDoi)
-                .map(DcValue::getValue)
-                .collect(
-                    Collectors.toList());
-        if (doiErrors.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(new ErrorDetails(Error.INVALID_DOI, doiErrors));
-        }
-    }
-
     private static Optional<WarningDetails> getVersionWarnings(DublinCore dublinCore) {
         if (!versionIsPresent(dublinCore)) {
             return Optional.empty();
@@ -222,7 +206,9 @@ public final class DublinCoreValidator {
     private static Optional<ErrorDetails> getIsbnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         if (hasIsbn(dublinCore)) {
             var isbn = DublinCoreScraper.extractIsbn(dublinCore, brageLocation)
-                           .replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING);
+                           .replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING)
+                           .replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING);
+
             ISBNValidator validator = new ISBNValidator();
             if (!validator.isValid(isbn)) {
                 return Optional.of(new ErrorDetails(Error.INVALID_ISBN, List.of(isbn)));
@@ -276,13 +262,5 @@ public final class DublinCoreValidator {
 
     private static boolean isValidVersion(DcValue version) {
         return VERSION_STRING_NVE.equals(version.getValue());
-    }
-
-    private static boolean hasInvalidDoi(DcValue dcValue) {
-        return dcValue.isDoi() && isInvalidDoi(dcValue);
-    }
-
-    private static boolean isInvalidDoi(DcValue dcValue) {
-        return !DoiValidator.validateOffline(dcValue.getValue());
     }
 }
