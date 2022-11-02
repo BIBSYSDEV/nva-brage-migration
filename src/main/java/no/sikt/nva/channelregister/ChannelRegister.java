@@ -21,7 +21,7 @@ public final class ChannelRegister {
     private final List<ChannelRegisterJournal> channelRegisterJournals;
 
     private ChannelRegister() {
-        this.channelRegisterJournals = getFromCsv();
+        this.channelRegisterJournals = getJournalsFromCsv();
     }
 
     public static ChannelRegister getRegister() {
@@ -43,7 +43,7 @@ public final class ChannelRegister {
                                             .collect(SingletonCollector.collectOrElse(null)) : null;
     }
 
-    private static List<ChannelRegisterJournal> getFromCsv() {
+    private static List<ChannelRegisterJournal> getJournalsFromCsv() {
 
         try (var inputStream = Thread.currentThread().getContextClassLoader()
                                    .getResourceAsStream(JOURNAL_PATH);
