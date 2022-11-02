@@ -14,6 +14,8 @@ import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.model.dublincore.Element;
+import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.record.Contributor;
 import no.sikt.nva.model.record.Date;
 import no.sikt.nva.model.record.EntityDescription;
@@ -80,6 +82,13 @@ public final class DublinCoreScraper {
                            .collect(Collectors.toList());
 
         return handleIssnList(issnList, brageLocation);
+    }
+
+    public static String getIgnoredFieldNames(){
+        List<DcValue> dcValues = new ArrayList<>();
+        dcValues.add(new DcValue(Element.DATE, Qualifier.COPYRIGHT, null));
+        dcValues.add(new DcValue(Element.RELATION, Qualifier.PROJECT, null));
+        return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(DELIMITER));
     }
 
     public static String extractIsbn(DublinCore dublinCore, BrageLocation brageLocation) {

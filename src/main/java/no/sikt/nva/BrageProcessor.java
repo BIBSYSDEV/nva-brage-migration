@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.scrapers.DublinCoreFactory;
 import no.sikt.nva.scrapers.DublinCoreScraper;
@@ -32,15 +34,21 @@ public class BrageProcessor implements Runnable {
     private final String destinationDirectory;
     private final HandleScraper handleScraper;
     private final boolean enableOnlineValidation;
+    private final boolean noHandleCheck;
     private List<Record> records;
 
-    public BrageProcessor(String zipfile, URI customerId, String destinationDirectory,
-                          final Map<String, String> rescueTitleAndHandleMap, boolean enableOnlineValidation) {
+    public BrageProcessor(String zipfile,
+                          URI customerId,
+                          String destinationDirectory,
+                          final Map<String, String> rescueTitleAndHandleMap,
+                          boolean enableOnlineValidation,
+                          boolean noHandleCheck) {
         this.customerId = customerId;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
         this.destinationDirectory = destinationDirectory;
         this.handleScraper = new HandleScraper(rescueTitleAndHandleMap);
+        this.noHandleCheck = noHandleCheck;
     }
 
     public String getDestinationDirectory() {
@@ -92,9 +100,7 @@ public class BrageProcessor implements Runnable {
         try {
             var dublinCore = DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
-            brageLocation.setHandle(
-                handleScraper.scrapeHandle(getHandlePath(entryDirectory),
-                                           dublinCore));
+            brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
             var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation);
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore,
                                                                       brageLocation);
@@ -104,6 +110,21 @@ public class BrageProcessor implements Runnable {
         } catch (Exception e) {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
             return Optional.empty();
+        }
+    }
+
+    private URI getHandle(File entryDirectory, DublinCore dublinCore) throws HandleException {
+        return noHandleCheck ?
+                   getHandleAndIgnoreErrors(entryDirectory, dublinCore)
+                   : handleScraper.scrapeHandle(getHandlePath(entryDirectory), dublinCore);
+    }
+
+    private URI getHandleAndIgnoreErrors(File entryDirectory, DublinCore dublinCore) {
+        try {
+            return handleScraper.scrapeHandle(getHandlePath(entryDirectory), dublinCore);
+        } catch (HandleException e) {
+            //ignored
+            return null;
         }
     }
 }
