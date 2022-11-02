@@ -19,6 +19,12 @@ java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -h
 
 Sample import:
 
+With specified zipfiles:
 ```shell
 java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -z zipfile1.zip zipfile2.zip -c custommer-id
+```
+
+With all zipfiles specified by the samlingsfil.txt:
+```shell
+java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -c custommer-id
 ```

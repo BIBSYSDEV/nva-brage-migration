@@ -21,10 +21,10 @@ public class BrageMigrationCommandTest {
     private static final int NORMAL_EXIT_CODE = 0;
 
     @Test
-    void shouldExitWhenZipFileOptionIsNotSet() throws Exception {
+    void shouldReadSamlingsfilTxtWhenZipFileOptionIsNotSet() throws Exception {
         var arguments = new String[]{};
         int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
+        assertThat(status, equalTo(NORMAL_EXIT_CODE));
     }
 
     @Test

@@ -1,13 +1,19 @@
 package no.sikt.nva;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.HandleTitleMapReader;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.StringUtils;
 import nva.commons.core.paths.UriWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +48,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Option(names = {"-o", "--online-validator"}, description = "enable online validator, disabled if not present")
     private boolean enableOnlineValidation;
 
-    @Option(names = {"-z", "--zip-files"}, arity = "1..*", description = "input zipfiles containing brage bundles")
+    @Option(names = {"-z", "--zip-files"}, description = "input zipfiles containing brage bundles, if none specified "
+                                                         + "all zipfiles will be read based on samlingsfil.txt")
     private String[] zipFiles;
 
     @SuppressWarnings("PMD.UnusedPrivateField")
@@ -63,6 +70,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
         try {
             printIgnoredDcValuesFieldsInInfoLog();
             var customerUri = UriWrapper.fromUri(customer).getUri();
+            if (Objects.isNull(zipFiles)) {
+                this.zipFiles = readZipfilesFromSamlingsfilTxt();
+            }
             var brageProcessors = createBrageProcessorThread(zipFiles, customerUri, enableOnlineValidation,
                                                              noHandleCheck);
             var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
@@ -74,6 +84,24 @@ public class BrageMigrationCommand implements Callable<Integer> {
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
         }
+    }
+
+    private static String[] readZipfilesFromSamlingsfilTxt() {
+        var zipfiles = new ArrayList<String>();
+        File samlingsfil = new File("samlingsfil.txt");
+        try (var scanner = new Scanner(samlingsfil)) {
+            while(scanner.hasNextLine()) {
+                var fileNamePartial = scanner.nextLine();
+                if (StringUtils.isNotEmpty(fileNamePartial)) {
+                    zipfiles.add(fileNamePartial + ".zip") ;
+                }
+
+            }
+        }catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return  zipfiles.toArray(new String[0]);
+
     }
 
     private void printIgnoredDcValuesFieldsInInfoLog() {
