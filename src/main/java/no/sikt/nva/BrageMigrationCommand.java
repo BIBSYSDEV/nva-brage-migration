@@ -40,6 +40,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private static final String NVE_DEV_CUSTOMER_ID =
         "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
+    private static final String SAMLINGSFIL_TXT = "samlingsfil.txt";
+    private static final String ZIP_FILE_ENDING = ".zip";
     @Option(names = {"-c", "--customer"},
         defaultValue = NVE_DEV_CUSTOMER_ID,
         description = "customer id in NVA")
@@ -71,7 +73,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             printIgnoredDcValuesFieldsInInfoLog();
             var customerUri = UriWrapper.fromUri(customer).getUri();
             if (Objects.isNull(zipFiles)) {
-                this.zipFiles = readZipfilesFromSamlingsfilTxt();
+                this.zipFiles = readZipFileNamesFromSamlingsfilTxt();
             }
             var brageProcessors = createBrageProcessorThread(zipFiles, customerUri, enableOnlineValidation,
                                                              noHandleCheck);
@@ -86,14 +88,14 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
     }
 
-    private static String[] readZipfilesFromSamlingsfilTxt() {
+    private static String[] readZipFileNamesFromSamlingsfilTxt() {
         var zipfiles = new ArrayList<String>();
-        File samlingsfil = new File("samlingsfil.txt");
+        File samlingsfil = new File(SAMLINGSFIL_TXT);
         try (var scanner = new Scanner(samlingsfil)) {
             while(scanner.hasNextLine()) {
                 var fileNamePartial = scanner.nextLine();
                 if (StringUtils.isNotEmpty(fileNamePartial)) {
-                    zipfiles.add(fileNamePartial + ".zip") ;
+                    zipfiles.add(fileNamePartial + ZIP_FILE_ENDING) ;
                 }
 
             }
