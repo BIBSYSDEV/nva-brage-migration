@@ -8,6 +8,10 @@ public class ResourceContent {
 
     private List<ContentFile> contentFiles;
 
+    public ResourceContent(List<ContentFile> contentFiles) {
+        this.contentFiles = contentFiles;
+    }
+
     @JsonProperty("contentFiles")
     public List<ContentFile> getContentFiles() {
         return contentFiles;
@@ -39,6 +43,6 @@ public class ResourceContent {
         TEXT,
         THUMBNAIL,
         LICENSE,
-        CCLICENSE;
+        CCLICENSE
     }
 }

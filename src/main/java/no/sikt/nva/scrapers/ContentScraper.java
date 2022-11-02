@@ -31,19 +31,19 @@ public final class ContentScraper {
 
     public static ResourceContent scrapeContent(Path contentFilePath) throws ContentException {
         try {
-            return createContentBundle(contentFilePath);
+            return createResourceContent(contentFilePath);
         } catch (Exception e) {
             throw new ContentException(CONTENT_FILE_PARSING_ERROR_MESSAGE);
         }
     }
 
-    private static ResourceContent createContentBundle(Path contentFilePath) throws IOException {
+    private static ResourceContent createResourceContent(Path contentFilePath) throws IOException {
         var contentAsString = Files.readString(contentFilePath);
         var contentFilesList = contentAsString.split("\n");
         var contentFileList = new ArrayList<ContentFile>();
 
-        for (String item : contentFilesList) {
-            var array = Arrays.asList(item.split("\t"));
+        for (String fileInfo : contentFilesList) {
+            var array = Arrays.asList(fileInfo.split("\t"));
             extractOriginalFile(array).ifPresent(contentFileList::add);
             extractText(array).ifPresent(contentFileList::add);
             extractThumbnail(array).ifPresent(contentFileList::add);
@@ -51,68 +51,59 @@ public final class ContentScraper {
             ignoreLicense(array);
             logWhenUnknownType(array);
         }
-        var resourceContent = new ResourceContent();
-        resourceContent.setContentFiles(contentFileList);
-        return resourceContent;
+        return new ResourceContent(contentFileList);
     }
 
     private static void logWhenUnknownType(List<String> array) {
-        var bundleType = Arrays.asList(array.get(array.size() - 1).split(":")).get(1);
-        if (KNOWN_CONTENT_FILE_TYPES.contains(bundleType)) {
+        if (KNOWN_CONTENT_FILE_TYPES.contains(getBundleType(array))) {
             logger.warn(UNKNOWN_FILE_LOG_MESSAGE);
         }
     }
 
     private static Optional<ContentFile> ignoreLicense(List<String> array) {
-        var bundleType = Arrays.asList(array.get(array.size() - 1).split(":")).get(1);
-        if (BundleType.LICENSE.name().equals(bundleType)) {
+        if (BundleType.LICENSE.name().equals(getBundleType(array))) {
             return Optional.empty();
         }
         return Optional.empty();
     }
 
     private static Optional<ContentFile> extractOriginalFile(List<String> array) {
-        if (array.size() == SIZE_3) {
-            var bundleType = Arrays.asList(array.get(1).split(":")).get(1);
-            if (BundleType.ORIGINAL.name().equals(bundleType)) {
-                ContentFile contentFile = new ContentFile(getFileName(array), BundleType.ORIGINAL,
-                                                          getDescription(array));
-                return Optional.of(contentFile);
-            }
+        if (hasSizeThree(array, SIZE_3) && BundleType.ORIGINAL.name().equals(getBundleType(array))) {
+            ContentFile contentFile = new ContentFile(getFileName(array), BundleType.ORIGINAL,
+                                                      getDescription(array));
+            return Optional.of(contentFile);
         }
+
         return Optional.empty();
     }
 
+    private static boolean hasSizeThree(List<String> array, int size3) {
+        return array.size() == size3;
+    }
+
     private static Optional<ContentFile> extractText(List<String> array) {
-        if (array.size() == SIZE_3) {
-            var bundleType = Arrays.asList(array.get(1).split(":")).get(1);
-            if (BundleType.TEXT.name().equals(bundleType)) {
-                ContentFile contentFile = new ContentFile(getFileName(array), BundleType.TEXT, getDescription(array));
-                return Optional.of(contentFile);
-            }
+        if (hasSizeThree(array, SIZE_3) && BundleType.TEXT.name().equals(getBundleType(array))) {
+            ContentFile contentFile = new ContentFile(getFileName(array), BundleType.TEXT, getDescription(array));
+            return Optional.of(contentFile);
         }
         return Optional.empty();
     }
 
     private static Optional<ContentFile> extractThumbnail(List<String> array) {
-        if (array.size() == SIZE_3) {
-            var bundleType = Arrays.asList(array.get(1).split(":")).get(1);
-            if (BundleType.THUMBNAIL.name().equals(bundleType)) {
-                ContentFile contentFile = new ContentFile(getFileName(array), BundleType.THUMBNAIL,
-                                                          getDescription(array));
-                return Optional.of(contentFile);
-            }
+
+        if (hasSizeThree(array, SIZE_3) && BundleType.THUMBNAIL.name().equals(getBundleType(array))) {
+            ContentFile contentFile = new ContentFile(getFileName(array), BundleType.THUMBNAIL,
+                                                      getDescription(array));
+            return Optional.of(contentFile);
         }
+
         return Optional.empty();
     }
 
     private static Optional<ContentFile> ignoreCCLicense(List<String> array) {
-        if (array.size() == SIZE_2) {
-            var bundleType = Arrays.asList(array.get(1).split(":")).get(1)
-                                 .replace(HYPHEN, StringUtils.EMPTY_STRING);
-            if (BundleType.CCLICENSE.name().equals(bundleType)) {
-                return Optional.empty();
-            }
+        var bundleType = getBundleType(array).replace(HYPHEN, StringUtils.EMPTY_STRING);
+        if (hasSizeThree(array, SIZE_2) && BundleType.CCLICENSE.name().equals(bundleType)) {
+            return Optional.empty();
         }
         return Optional.empty();
     }
@@ -123,5 +114,9 @@ public final class ContentScraper {
 
     private static String getDescription(List<String> list) {
         return Arrays.asList(list.get(list.size() - 1).split(":")).get(1);
+    }
+
+    private static String getBundleType(List<String> list) {
+        return Arrays.asList(list.get(1).split(":")).get(1);
     }
 }
