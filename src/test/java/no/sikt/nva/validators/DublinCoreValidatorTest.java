@@ -8,10 +8,11 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
@@ -24,8 +25,6 @@ import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.scrapers.DublinCoreFactory;
 import no.sikt.nva.scrapers.TypeMapper.BrageType;
-import no.sikt.nva.validators.DoiValidator;
-import no.sikt.nva.validators.DublinCoreValidator;
 import org.junit.jupiter.api.Test;
 
 public class DublinCoreValidatorTest {
@@ -121,8 +120,9 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.IDENTIFIER, Qualifier.DOI, invalidDoi2),
             new DcValue(Element.TYPE, null, "Book"));
 
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DoiValidator.getDoiErrorDetailsOnline(dublinCore).get();
+         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = new ArrayList<>();
+        DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(actualErrors::addAll);
         assertThat(actualErrors, hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of())));
     }
 
@@ -134,11 +134,11 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.TYPE, null, "Book"));
 
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DoiValidator.getDoiErrorDetailsOnline(dublinCore).get();
+        var actualErrors = new ArrayList<>();
+        DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(actualErrors::addAll);
 
         assertThat(actualErrors, hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of())));
     }
-
 
     @Test
     void shouldNotReturnDoiErrorWhenDoiHasValidStructureButUriIsInvalid() {

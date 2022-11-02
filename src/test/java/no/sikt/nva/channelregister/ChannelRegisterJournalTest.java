@@ -14,7 +14,9 @@ public class ChannelRegisterJournalTest {
     @ParameterizedTest
     @ValueSource(strings = {"2038-324X", "2279-7084"})
     void shouldReturnJournalIdWhenIssnIsFound(String issn) {
-        var actual = ChannelRegisterLookUp.lookUpForJournalByIssn(issn);
+        var register = ChannelRegister.getRegister();
+
+        var actual = register.lookUpInJournalByIssn(issn);
         var expectedIdentifier = "503077";
 
         assertThat(actual, is(equalTo(expectedIdentifier)));
@@ -23,7 +25,8 @@ public class ChannelRegisterJournalTest {
     @Test
     void shouldReturnNullWhenIssnIsNotFound() {
         var issn = "dalksldaf";
-        var actual = ChannelRegisterLookUp.lookUpForJournalByIssn(issn);
+        var register = ChannelRegister.getRegister();
+        var actual = register.lookUpInJournalByIssn(issn);
 
         assertThat(actual, is(nullValue()));
     }
@@ -31,7 +34,8 @@ public class ChannelRegisterJournalTest {
     @ParameterizedTest
     @NullAndEmptySource
     void shouldReturnNullWhenIssnIsNull(String issn) {
-        var actual = ChannelRegisterLookUp.lookUpForJournalByIssn(issn);
+        var register = ChannelRegister.getRegister();
+        var actual = register.lookUpInJournalByIssn(issn);
 
         assertThat(actual, is(nullValue()));
     }

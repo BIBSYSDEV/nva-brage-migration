@@ -1,0 +1,66 @@
+package no.sikt.nva.channelregister;
+
+import static java.util.Objects.nonNull;
+import com.opencsv.bean.CsvToBeanBuilder;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.List;
+import no.sikt.nva.BrageProcessor;
+import nva.commons.core.SingletonCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public final class ChannelRegister {
+
+    public static final String KANALREGISTER_READING_ERROR_MESSAGE = "Fatal error, could not read kanalregister";
+    private static final String JOURNAL_PATH = "journals.csv";
+    private static final char SEPARATOR = ';';
+    private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
+    /*volatile*/ private static ChannelRegister register;
+    private final List<ChannelRegisterJournal> channelRegisterJournals;
+
+    private ChannelRegister() {
+        this.channelRegisterJournals = getFromCsv();
+    }
+
+    public static ChannelRegister getRegister() {
+        ChannelRegister result = register;
+        if (result == null) {
+            synchronized (ChannelRegister.class) {
+                if (register == null) {
+                    register = new ChannelRegister();
+                }
+            }
+        }
+        return register;
+    }
+
+    public String lookUpInJournalByIssn(String issn) {
+        return isNotNullOrEmpty(issn) ? channelRegisterJournals.stream()
+                                            .filter(item -> item.hasIssn(issn))
+                                            .map(ChannelRegisterJournal::getIdentifier)
+                                            .collect(SingletonCollector.collectOrElse(null)) : null;
+    }
+
+    private static List<ChannelRegisterJournal> getFromCsv() {
+
+        try (var inputStream = Thread.currentThread().getContextClassLoader()
+                                   .getResourceAsStream(JOURNAL_PATH);
+            var bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+            var microJournal = new CsvToBeanBuilder<ChannelRegisterJournal>(bufferedReader)
+                                   .withSeparator(SEPARATOR)
+                                   .withType(ChannelRegisterJournal.class)
+                                   .build();
+            return microJournal.parse();
+        } catch (IOException e) {
+            logger.error(KANALREGISTER_READING_ERROR_MESSAGE);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @SuppressWarnings("PMD.InefficientEmptyStringCheck")
+    private boolean isNotNullOrEmpty(String candidate) {
+        return nonNull(candidate) && !candidate.trim().isEmpty();
+    }
+}

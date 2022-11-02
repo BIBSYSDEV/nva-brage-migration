@@ -1,13 +1,13 @@
 package no.sikt.nva.validators;
 
-import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.channelregister.ChannelRegisterLookUp;
+import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.ErrorDetails.Error;
@@ -31,6 +31,7 @@ public final class DublinCoreValidator {
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final URI LEXVO_URI_UNDEFINED = URI.create("http://lexvo.org/id/iso639-3/und");
     private static final int ONE_DESCRIPTION = 1;
+    private static final ChannelRegister register = ChannelRegister.getRegister();
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
 
@@ -75,7 +76,7 @@ public final class DublinCoreValidator {
     }
 
     private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore,
-                                                       BrageLocation brageLocation) {
+                                                        BrageLocation brageLocation) {
         if (!hasIssn(dublinCore)) {
             return Optional.empty();
         }
@@ -83,10 +84,11 @@ public final class DublinCoreValidator {
         if (!isValidIssn(issn)) {
             return Optional.of(new ErrorDetails(Error.INVALID_ISSN, List.of(issn)));
         }
-        if (isReport(dublinCore) && nonNull(ChannelRegisterLookUp.lookUpForJournalByIssn(issn))) {
-            return Optional.empty();
-        } else {
+        var issnFromChannelRegister = register.lookUpInJournalByIssn(issn);
+        if (isReport(dublinCore) && isNull(issnFromChannelRegister)) {
             return Optional.of(new ErrorDetails(Error.ISSN_NOT_FOUND_IN_KANALREGISTER, List.of(issn)));
+        } else {
+            return Optional.empty();
         }
     }
 
