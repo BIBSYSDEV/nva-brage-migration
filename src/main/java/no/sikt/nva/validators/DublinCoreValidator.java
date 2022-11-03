@@ -76,7 +76,7 @@ public final class DublinCoreValidator {
     }
 
     public static Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore, BrageLocation brageLocation) {
-        if (hasType(dublinCore) && isJournalArticle(dublinCore)) {
+        if (typeIsPresentInDublinCore(dublinCore) && isJournalArticle(dublinCore)) {
             var journalIssn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
             var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(journalIssn);
             if (nonNull(journalIssn) && nonNull(possibleChannelRegisterIdentifierByIssn)) {
@@ -233,7 +233,7 @@ public final class DublinCoreValidator {
         return DublinCoreScraper.extractType(dublinCore).get(0).equals(BrageType.JOURNAL_ARTICLE.getValue());
     }
 
-    private static boolean hasType(DublinCore dublinCore) {
+    private static boolean typeIsPresentInDublinCore(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .anyMatch(DcValue::isType);
     }
