@@ -13,6 +13,7 @@ import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.content.ContentFile;
 import no.sikt.nva.model.content.ResourceContent;
 import no.sikt.nva.model.content.ResourceContent.BundleType;
+import nva.commons.core.SingletonCollector;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,16 +45,12 @@ public final class ContentScraper {
         throws IOException {
         var contentAsString = Files.readString(contentFilePath).replaceAll(EMPTY_LINE_REGEX,
                                                                            StringUtils.EMPTY_STRING);
-        var contentFilesFromList = contentAsString.split("\n");
-        var contentList = new ArrayList<ContentFile>();
-        for (String fileInfo : contentFilesFromList) {
-            var array = Arrays.asList(fileInfo.split("\t"));
-            extractOriginalFile(array).ifPresent(contentList::add);
-            extractText(array).ifPresent(contentList::add);
-            extractThumbnail(array).ifPresent(contentList::add);
-            logWhenUnknownType(array, brageLocation);
-        }
-        return new ResourceContent(contentList);
+        var contentFilesFromListAsString = contentAsString.split("\n");
+        var contentFileList = Arrays.stream(contentFilesFromListAsString)
+                                  .map(fileInfo -> convertToFile(fileInfo, brageLocation))
+                                  .flatMap(Optional::stream)
+                                  .collect(Collectors.toList());
+        return new ResourceContent(contentFileList);
     }
 
     private static void logWhenUnknownType(List<String> array, BrageLocation brageLocation) {
