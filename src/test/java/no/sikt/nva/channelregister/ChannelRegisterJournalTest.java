@@ -11,8 +11,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class ChannelRegisterJournalTest {
 
+    public static final String PRINT_ISSN = "2038-324X";
+    public static final String ONLINE_ISSN = "2279-7084";
+
     @ParameterizedTest
-    @ValueSource(strings = {"2038-324X", "2279-7084"})
+    @ValueSource(strings = {PRINT_ISSN, ONLINE_ISSN})
     void shouldReturnJournalIdWhenIssnIsFound(String issn) {
         var register = ChannelRegister.getRegister();
 

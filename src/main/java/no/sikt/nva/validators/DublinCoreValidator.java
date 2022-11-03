@@ -1,7 +1,7 @@
 package no.sikt.nva.validators;
 
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.scrapers.DublinCoreScraper.register;
+import static no.sikt.nva.scrapers.DublinCoreScraper.channelRegister;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,12 +78,12 @@ public final class DublinCoreValidator {
     public static Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         if (hasType(dublinCore) && isJournalArticle(dublinCore)) {
             var journalIssn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
-            var possibleChannelRegisterIdentifierByIssn = register.lookUpInJournalByIssn(journalIssn);
+            var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(journalIssn);
             if (nonNull(journalIssn) && nonNull(possibleChannelRegisterIdentifierByIssn)) {
                 return Optional.empty();
             }
             var journalTitle = DublinCoreScraper.extractJournal(dublinCore);
-            var possibleChannelRegisterIdentifierByJournal = register.lookUpInJournalByTitle(journalTitle);
+            var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(journalTitle);
             if (nonNull(journalTitle) && nonNull(possibleChannelRegisterIdentifierByJournal)) {
                 return Optional.empty();
             } else {

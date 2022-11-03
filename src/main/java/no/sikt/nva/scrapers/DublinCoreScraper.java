@@ -32,6 +32,7 @@ import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
 import nva.commons.core.paths.UriWrapper;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public final class DublinCoreScraper {
     public static final String OTHER_CONTRIBUTOR = "Other";
     public static final String FIRST_DAY_OF_A_MONTH = "-01";
     public static final String JOURNAL_NVA_URI = "https://api.nva.unit.no/publication-channels/journal/";
-    public static final ChannelRegister register = ChannelRegister.getRegister();
+    public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
 
@@ -151,16 +152,20 @@ public final class DublinCoreScraper {
         record.setDoi(extractDoi(dublinCore));
         record.setEntityDescription(extractEntityDescription(dublinCore));
         record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
-
-        var publication = extractPublication(dublinCore, brageLocation);
-        publication.setId(createPublicationIdUri(dublinCore, brageLocation, record));
-        record.setPublication(publication);
+        record.setPublication(createPublicationWithIdentifier(dublinCore, brageLocation, record));
 
         return record;
     }
 
+    @NotNull
+    private static Publication createPublicationWithIdentifier(DublinCore dublinCore, BrageLocation brageLocation, Record record) {
+        var publication = extractPublication(dublinCore, brageLocation);
+        publication.setId(createPublicationIdUri(dublinCore, brageLocation, record));
+        return publication;
+    }
+
     private static String createPublicationIdUri(DublinCore dublinCore, BrageLocation brageLocation, Record record) {
-        return JOURNAL_NVA_URI + register.extractIdentifier(dublinCore, brageLocation) + "/"
+        return JOURNAL_NVA_URI + channelRegister.extractIdentifier(dublinCore, brageLocation) + "/"
                + createValidDateForNvaUri(record.getDate());
     }
 
