@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.content.ContentFile;
@@ -51,6 +52,23 @@ public final class ContentScraper {
                                   .flatMap(Optional::stream)
                                   .collect(Collectors.toList());
         return new ResourceContent(contentFileList);
+    }
+
+    private static Optional<ContentFile> convertToFile(String fileInfo, BrageLocation brageLocation) {
+        var contentList = new ArrayList<ContentFile>();
+        var array = Arrays.asList(fileInfo.split("\t"));
+        extractOriginalFile(array).ifPresent(contentList::add);
+        extractText(array).ifPresent(contentList::add);
+        extractThumbnail(array).ifPresent(contentList::add);
+        logWhenUnknownType(array, brageLocation);
+        if (contentList.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(getContentFileFromSingleton(contentList));
+    }
+
+    private static ContentFile getContentFileFromSingleton(List<ContentFile> contentFileSingletonList) {
+        return contentFileSingletonList.stream().collect(SingletonCollector.collect());
     }
 
     private static void logWhenUnknownType(List<String> array, BrageLocation brageLocation) {
