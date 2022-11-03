@@ -11,14 +11,12 @@ import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.model.content.ContentFile;
 import no.sikt.nva.model.content.ResourceContent;
 import no.sikt.nva.model.content.ResourceContent.BundleType;
-import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class ContentScraper {
 
     public static final int SIZE_3 = 3;
-    public static final int SIZE_2 = 2;
     public static final String CONTENT_FILE_PARSING_ERROR_MESSAGE = "could not parse content file";
     public static final String UNKNOWN_FILE_LOG_MESSAGE = "Unknown file in contents";
     public static final List<String> KNOWN_CONTENT_FILE_TYPES = List.of(BundleType.CCLICENSE.name(),
@@ -26,7 +24,6 @@ public final class ContentScraper {
                                                                         BundleType.ORIGINAL.name(),
                                                                         BundleType.TEXT.name(),
                                                                         BundleType.THUMBNAIL.name());
-    public static final String HYPHEN = "-";
     private static final Logger logger = LoggerFactory.getLogger(ContentScraper.class);
 
     public static ResourceContent scrapeContent(Path contentFilePath) throws ContentException {
@@ -47,8 +44,6 @@ public final class ContentScraper {
             extractOriginalFile(array).ifPresent(contentFileList::add);
             extractText(array).ifPresent(contentFileList::add);
             extractThumbnail(array).ifPresent(contentFileList::add);
-            ignoreCCLicense(array);
-            ignoreLicense(array);
             logWhenUnknownType(array);
         }
         return new ResourceContent(contentFileList);
@@ -60,15 +55,8 @@ public final class ContentScraper {
         }
     }
 
-    private static Optional<ContentFile> ignoreLicense(List<String> array) {
-        if (BundleType.LICENSE.name().equals(getBundleType(array))) {
-            return Optional.empty();
-        }
-        return Optional.empty();
-    }
-
     private static Optional<ContentFile> extractOriginalFile(List<String> array) {
-        if (hasSizeThree(array, SIZE_3) && BundleType.ORIGINAL.name().equals(getBundleType(array))) {
+        if (hasSizeThree(array) && BundleType.ORIGINAL.name().equals(getBundleType(array))) {
             ContentFile contentFile = new ContentFile(getFileName(array), BundleType.ORIGINAL,
                                                       getDescription(array));
             return Optional.of(contentFile);
@@ -77,12 +65,8 @@ public final class ContentScraper {
         return Optional.empty();
     }
 
-    private static boolean hasSizeThree(List<String> array, int size3) {
-        return array.size() == size3;
-    }
-
     private static Optional<ContentFile> extractText(List<String> array) {
-        if (hasSizeThree(array, SIZE_3) && BundleType.TEXT.name().equals(getBundleType(array))) {
+        if (hasSizeThree(array) && BundleType.TEXT.name().equals(getBundleType(array))) {
             ContentFile contentFile = new ContentFile(getFileName(array), BundleType.TEXT, getDescription(array));
             return Optional.of(contentFile);
         }
@@ -91,20 +75,12 @@ public final class ContentScraper {
 
     private static Optional<ContentFile> extractThumbnail(List<String> array) {
 
-        if (hasSizeThree(array, SIZE_3) && BundleType.THUMBNAIL.name().equals(getBundleType(array))) {
+        if (hasSizeThree(array) && BundleType.THUMBNAIL.name().equals(getBundleType(array))) {
             ContentFile contentFile = new ContentFile(getFileName(array), BundleType.THUMBNAIL,
                                                       getDescription(array));
             return Optional.of(contentFile);
         }
 
-        return Optional.empty();
-    }
-
-    private static Optional<ContentFile> ignoreCCLicense(List<String> array) {
-        var bundleType = getBundleType(array).replace(HYPHEN, StringUtils.EMPTY_STRING);
-        if (hasSizeThree(array, SIZE_2) && BundleType.CCLICENSE.name().equals(bundleType)) {
-            return Optional.empty();
-        }
         return Optional.empty();
     }
 
@@ -118,5 +94,9 @@ public final class ContentScraper {
 
     private static String getBundleType(List<String> list) {
         return Arrays.asList(list.get(1).split(":")).get(1);
+    }
+
+    private static boolean hasSizeThree(List<String> array) {
+        return array.size() == SIZE_3;
     }
 }
