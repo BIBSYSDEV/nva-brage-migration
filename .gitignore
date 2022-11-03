@@ -47,6 +47,7 @@ app-info.html
 application-error.log
 application-info.log
 app-info*
+application-warn.log
 
 ### tmp folder containing unzipped result
 /tmp/
@@ -55,3 +56,4 @@ app-info*
 **/inputWithLicense/**
 **/inputWithoutHandle/**
 **/invalidFileInput/**
+**/inputWithInvalidDoi/**
