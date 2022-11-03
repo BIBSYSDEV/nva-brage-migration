@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 import no.sikt.nva.BrageProcessor;
+import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.scrapers.DublinCoreScraper;
 import nva.commons.core.SingletonCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +42,23 @@ public final class ChannelRegister {
     public String lookUpInJournalByIssn(String issn) {
         return isNotNullOrEmpty(issn) ? channelRegisterJournals.stream()
                                             .filter(item -> item.hasIssn(issn))
+                                            .map(ChannelRegisterJournal::getIdentifier)
+                                            .collect(SingletonCollector.collectOrElse(null)) : null;
+    }
+
+    public String lookUpInJournalByTitle(String title) {
+        return isNotNullOrEmpty(title) ? channelRegisterJournals.stream()
+                                             .filter(item -> item.hasTitle(title))
+                                             .map(ChannelRegisterJournal::getIdentifier)
+                                             .collect(SingletonCollector.collectOrElse(null)) : null;
+    }
+
+    public String extractIdentifier(DublinCore dublinCore, BrageLocation brageLocation) {
+        var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
+        var title = DublinCoreScraper.extractJournal(dublinCore);
+
+        return isNotNullOrEmpty(issn) || isNotNullOrEmpty(title) ? channelRegisterJournals.stream()
+                                            .filter(item -> item.hasIssn(issn) || item.hasTitle(title))
                                             .map(ChannelRegisterJournal::getIdentifier)
                                             .collect(SingletonCollector.collectOrElse(null)) : null;
     }

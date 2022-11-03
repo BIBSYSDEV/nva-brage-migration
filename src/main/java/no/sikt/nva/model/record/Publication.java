@@ -11,6 +11,16 @@ public class Publication {
     private String isbn;
     private String publisher;
     private String partOfSeries;
+    private String id;
+
+    @JsonProperty("id")
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     @JsonProperty("partOfSeries")
     public String getPartOfSeries() {
@@ -24,7 +34,7 @@ public class Publication {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(journal, issn, isbn, publisher, partOfSeries);
+        return Objects.hash(journal, issn, isbn, publisher, partOfSeries, id);
     }
 
     @JacocoGenerated
@@ -36,12 +46,13 @@ public class Publication {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Publication publication = (Publication) o;
-        return Objects.equals(journal, publication.journal)
-               && Objects.equals(issn, publication.issn)
-               && Objects.equals(publisher, publication.publisher)
-               && Objects.equals(isbn, publication.isbn)
-               && Objects.equals(partOfSeries, publication.partOfSeries);
+        Publication that = (Publication) o;
+        return Objects.equals(journal, that.journal)
+               && Objects.equals(issn, that.issn)
+               && Objects.equals(isbn, that.isbn)
+               && Objects.equals(publisher, that.publisher)
+               && Objects.equals(partOfSeries, that.partOfSeries)
+               && Objects.equals(id, that.id);
     }
 
     @JacocoGenerated

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
@@ -179,6 +180,7 @@ public final class DublinCoreScraper {
         publication.setJournal(extractJournal(dublinCore));
         publication.setPublisher(extractPublisher(dublinCore));
         publication.setPartOfSeries(extractPartOfSeries(dublinCore));
+        publication.setId(ChannelRegister.getRegister().extractIdentifier(dublinCore, brageLocation));
         return publication;
     }
 
@@ -236,7 +238,7 @@ public final class DublinCoreScraper {
                    .scrapeValueAndSetToScraped();
     }
 
-    private static String extractJournal(DublinCore dublinCore) {
+    public static String extractJournal(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isJournal)

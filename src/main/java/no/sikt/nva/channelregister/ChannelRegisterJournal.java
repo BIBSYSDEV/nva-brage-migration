@@ -73,6 +73,6 @@ public class ChannelRegisterJournal {
         var originalTitle = Optional.ofNullable(this.getOriginalTitle()).orElse(StringUtils.EMPTY_STRING);
         var internationalTitle = Optional.ofNullable(this.getInternationalTitle()).orElse(StringUtils.EMPTY_STRING);
 
-        return originalTitle.contains(title) || internationalTitle.contains(title);
+        return originalTitle.equals(title) || internationalTitle.equals(title);
     }
 }

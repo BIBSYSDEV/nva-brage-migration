@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import no.sikt.nva.model.BrageLocation;
@@ -120,7 +119,7 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.IDENTIFIER, Qualifier.DOI, invalidDoi2),
             new DcValue(Element.TYPE, null, "Book"));
 
-         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var actualErrors = new ArrayList<>();
         DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(actualErrors::addAll);
         assertThat(actualErrors, hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of())));
@@ -155,13 +154,36 @@ public class DublinCoreValidatorTest {
     }
 
     @Test
-    void shouldReturnErrorDetailWhenIssnIsNotInChannelRegister() {
+    void shouldReturnErrorDetailWhenJournalIsNotInChannelRegister() {
         var dcValues = List.of(
             new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-0678"),
-            new DcValue(Element.TYPE, null, BrageType.REPORT.getValue()));
-
+            new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
-        assertThat(actualErrors, hasItems(new ErrorDetails(Error.ISSN_NOT_FOUND_IN_KANALREGISTER, List.of())));
+
+        assertThat(actualErrors, hasItems(new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of())));
     }
+
+    @Test
+    void shouldNotReturnChannelRegisterErrorDetailWhenJournalIssnIsInChannelRegister() {
+        var dcValues = List.of(
+            new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "2038-324X"),
+            new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
+
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of()))));
+    }
+
+    @Test
+    void shouldNotReturnChannelRegisterErrorDetailWhenJournalTitleIsInChannelRegister() {
+        var dcValues = List.of(
+            new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Hydrology and Earth System Sciences"),
+            new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
+
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of()))));
+    }
+
 }
