@@ -56,3 +56,4 @@ application-warn.log
 **/inputWithLicense/**
 **/inputWithoutHandle/**
 **/invalidFileInput/**
+**/inputWithInvalidDoi/**
