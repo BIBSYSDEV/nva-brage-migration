@@ -11,7 +11,6 @@ import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import nva.commons.core.SingletonCollector;
-import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,7 @@ public final class ChannelRegister {
     }
 
     public String lookUpInJournalByIssn(String issn) {
-        return StringUtils.isEmpty(issn) ? channelRegisterJournals.stream()
+        return isNotNullOrEmpty(issn) ? channelRegisterJournals.stream()
                                             .filter(item -> item.hasIssn(issn))
                                             .map(ChannelRegisterJournal::getIdentifier)
                                             .collect(SingletonCollector.collectOrElse(null)) : null;
