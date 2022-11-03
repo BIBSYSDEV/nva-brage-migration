@@ -70,9 +70,9 @@ public class ChannelRegisterJournal {
     }
 
     public boolean hasTitle(String title) {
-        var originalTitle = Optional.ofNullable(this.getOriginalTitle()).orElse(StringUtils.EMPTY_STRING);
-        var internationalTitle = Optional.ofNullable(this.getInternationalTitle()).orElse(StringUtils.EMPTY_STRING);
+        var originalTitle = Optional.of(this.getOriginalTitle()).orElse(StringUtils.EMPTY_STRING);
+        var internationalTitle = Optional.of(this.getInternationalTitle()).orElse(StringUtils.EMPTY_STRING);
 
-        return originalTitle.equals(title) || internationalTitle.equals(title);
+        return originalTitle.equalsIgnoreCase(title) || internationalTitle.equalsIgnoreCase(title);
     }
 }

@@ -178,7 +178,7 @@ public class DublinCoreValidatorTest {
     @Test
     void shouldNotReturnChannelRegisterErrorDetailWhenJournalTitleIsInChannelRegister() {
         var dcValues = List.of(
-            new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Hydrology and Earth System Sciences"),
+            new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Fisheries management and ecology"),
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));

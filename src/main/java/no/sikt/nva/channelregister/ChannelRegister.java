@@ -58,9 +58,12 @@ public final class ChannelRegister {
         var title = DublinCoreScraper.extractJournal(dublinCore);
 
         return isNotNullOrEmpty(issn) || isNotNullOrEmpty(title) ? channelRegisterJournals.stream()
-                                            .filter(item -> item.hasIssn(issn) || item.hasTitle(title))
-                                            .map(ChannelRegisterJournal::getIdentifier)
-                                            .collect(SingletonCollector.collectOrElse(null)) : null;
+                                                                       .filter(
+                                                                           item -> item.hasIssn(issn) || item.hasTitle(
+                                                                               title))
+                                                                       .map(ChannelRegisterJournal::getIdentifier)
+                                                                       .collect(SingletonCollector.collectOrElse(null))
+                   : null;
     }
 
     private static List<ChannelRegisterJournal> getJournalsFromCsv() {

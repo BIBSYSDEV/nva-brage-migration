@@ -1,13 +1,13 @@
 package no.sikt.nva.validators;
 
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.scrapers.DublinCoreScraper.register;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.ErrorDetails.Error;
@@ -31,7 +31,6 @@ public final class DublinCoreValidator {
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final URI LEXVO_URI_UNDEFINED = URI.create("http://lexvo.org/id/iso639-3/und");
     private static final int ONE_DESCRIPTION = 1;
-    private static final ChannelRegister register = ChannelRegister.getRegister();
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
 
