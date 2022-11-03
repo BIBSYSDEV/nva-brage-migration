@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.DublinCoreException;
-import org.jetbrains.annotations.NotNull;
 
 public final class TypeMapper {
 
@@ -39,7 +38,6 @@ public final class TypeMapper {
         return TYPE_MAP.containsKey(brageTypes);
     }
 
-    @NotNull
     private static Set<BrageType> convertToBrageType(List<String> brageTypesAsStrings) {
         return brageTypesAsStrings
                    .stream().map(BrageType::fromValue).collect(
