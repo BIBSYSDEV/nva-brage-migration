@@ -3,6 +3,7 @@ package no.sikt.nva.model.content;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
+import nva.commons.core.JacocoGenerated;
 
 public class ResourceContent {
 
@@ -21,11 +22,13 @@ public class ResourceContent {
         this.contentFiles = contentFiles;
     }
 
+    @JacocoGenerated
     @Override
     public int hashCode() {
         return Objects.hash(contentFiles);
     }
 
+    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {

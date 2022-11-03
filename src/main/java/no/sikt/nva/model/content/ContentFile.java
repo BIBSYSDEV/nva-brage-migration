@@ -2,7 +2,9 @@ package no.sikt.nva.model.content;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
+import java.util.UUID;
 import no.sikt.nva.model.content.ResourceContent.BundleType;
+import nva.commons.core.JacocoGenerated;
 
 public class ContentFile {
 
@@ -10,21 +12,26 @@ public class ContentFile {
     private BundleType bundleType;
     private String description;
     private String unknownType;
+    private UUID identifier;
 
     public ContentFile() {
 
     }
 
-    public ContentFile(String filename, BundleType bundleType, String description) {
+    public ContentFile(String filename, BundleType bundleType, String description, UUID identifier) {
         this.filename = filename;
         this.bundleType = bundleType;
         this.description = description;
+        this.identifier = identifier;
     }
 
-    public ContentFile(String filename, String unknownType, String description) {
-        this.filename = filename;
-        this.unknownType = unknownType;
-        this.description = description;
+    @JsonProperty("identifier")
+    public UUID getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(UUID identifier) {
+        this.identifier = identifier;
     }
 
     @JsonProperty("unknownType")
@@ -36,11 +43,13 @@ public class ContentFile {
         this.unknownType = unknownType;
     }
 
+    @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(filename, bundleType, description);
+        return Objects.hash(filename, bundleType, description, unknownType, identifier);
     }
 
+    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -52,7 +61,9 @@ public class ContentFile {
         ContentFile that = (ContentFile) o;
         return Objects.equals(filename, that.filename)
                && bundleType == that.bundleType
-               && Objects.equals(description, that.description);
+               && Objects.equals(description, that.description)
+               && Objects.equals(unknownType, that.unknownType)
+               && Objects.equals(identifier, that.identifier);
     }
 
     @JsonProperty("filename")

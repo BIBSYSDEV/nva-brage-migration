@@ -115,7 +115,7 @@ public class BrageProcessor implements Runnable {
                                                                       brageLocation);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory));
             record.setCustomerId(customerId);
-            record.setContentBundle(getContent(entryDirectory));
+            record.setContentBundle(getContent(entryDirectory, brageLocation));
             return Optional.of(record);
         } catch (Exception e) {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
@@ -123,8 +123,8 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private ResourceContent getContent(File entryDirectory) throws ContentException {
-        return ContentScraper.scrapeContent(getContentFilePath(entryDirectory));
+    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation) throws ContentException {
+        return ContentScraper.scrapeContent(getContentFilePath(entryDirectory), brageLocation);
     }
 
     private URI getHandle(File entryDirectory, DublinCore dublinCore) throws HandleException {
