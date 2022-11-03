@@ -1,13 +1,16 @@
 package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.scrapers.DublinCoreValidator.DEHYPHENATION_REGEX;
-import static no.sikt.nva.scrapers.DublinCoreValidator.VERSION_STRING_NVE;
-import static no.sikt.nva.scrapers.DublinCoreValidator.getDublinCoreWarnings;
+import static java.util.Objects.nonNull;
+import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
+import static no.sikt.nva.validators.DublinCoreValidator.VERSION_STRING_NVE;
+import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
@@ -25,10 +28,13 @@ import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.PublicationInstance;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
+import no.sikt.nva.validators.DoiValidator;
+import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
 import nva.commons.core.paths.UriWrapper;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,34 +50,14 @@ public final class DublinCoreScraper {
     public static final String ILLUSTRATOR = "Illustrator";
     public static final String OTHER_CONTRIBUTOR = "Other";
     public static final String FIRST_DAY_OF_A_MONTH = "-01";
+    public static final String JOURNAL_NVA_URI = "https://api.nva.unit.no/publication-channels/journal/";
+    public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
-
 
     @JacocoGenerated
     public DublinCoreScraper(boolean enableOnlineValidation) {
         this.enableOnlineValidation = enableOnlineValidation;
-    }
-
-    public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
-        var errors = new ArrayList<ErrorDetails>();
-        if (onlineValidationIsEnabled()) {
-            DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
-        }
-        errors.addAll(DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation));
-        var warnings = getDublinCoreWarnings(dublinCore);
-        if (errors.isEmpty()) {
-            var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
-            logUnscrapedValues(dublinCore, brageLocation);
-            logWarningsIfNotEmpty(brageLocation, warnings);
-            return record;
-        } else {
-            throw new DublinCoreException(errors);
-        }
-    }
-
-    public boolean onlineValidationIsEnabled() {
-        return enableOnlineValidation;
     }
 
     public static String extractIssn(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -84,7 +70,7 @@ public final class DublinCoreScraper {
         return handleIssnList(issnList, brageLocation);
     }
 
-    public static String getIgnoredFieldNames(){
+    public static String getIgnoredFieldNames() {
         List<DcValue> dcValues = new ArrayList<>();
         dcValues.add(new DcValue(Element.DATE, Qualifier.COPYRIGHT, null));
         dcValues.add(new DcValue(Element.RELATION, Qualifier.PROJECT, null));
@@ -119,6 +105,43 @@ public final class DublinCoreScraper {
                    .collect(Collectors.toList());
     }
 
+    public static String extractJournal(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isJournal)
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
+    }
+
+    public static List<String> extractType(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isType)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
+    }
+
+    public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
+        var errors = new ArrayList<ErrorDetails>();
+        if (onlineValidationIsEnabled()) {
+            DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
+        }
+        errors.addAll(DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation));
+        var warnings = getDublinCoreWarnings(dublinCore);
+        if (errors.isEmpty()) {
+            var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
+            logUnscrapedValues(dublinCore, brageLocation);
+            logWarningsIfNotEmpty(brageLocation, warnings);
+            return record;
+        } else {
+            throw new DublinCoreException(errors);
+        }
+    }
+
+    public boolean onlineValidationIsEnabled() {
+        return enableOnlineValidation;
+    }
+
     private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings) {
         if (!warnings.isEmpty()) {
             logger.warn(warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
@@ -128,18 +151,47 @@ public final class DublinCoreScraper {
     private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
                                                                      BrageLocation brageLocation) {
         var record = new Record();
+        record.setDate(extractDate(dublinCore));
         record.setId(brageLocation.getHandle());
         record.setOrigin(brageLocation.getBrageBundlePath());
-        record.setPublication(extractPublication(dublinCore, brageLocation));
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
         record.setLanguage(extractLanguage(dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore));
         record.setDoi(extractDoi(dublinCore));
-        record.setDate(extractDate(dublinCore));
         record.setEntityDescription(extractEntityDescription(dublinCore));
         record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
+        record.setPublication(createPublicationWithIdentifier(dublinCore, brageLocation, record));
+
         return record;
+    }
+
+    @NotNull
+    private static Publication createPublicationWithIdentifier(DublinCore dublinCore, BrageLocation brageLocation,
+                                                               Record record) {
+        var publication = extractPublication(dublinCore, brageLocation);
+        publication.setId(createPublicationIdUri(dublinCore, brageLocation, record));
+        return publication;
+    }
+
+    private static String createPublicationIdUri(DublinCore dublinCore, BrageLocation brageLocation, Record record) {
+        return JOURNAL_NVA_URI + channelRegister.extractIdentifier(dublinCore, brageLocation) + "/"
+               + createValidDateForNvaUri(record.getDate());
+    }
+
+    private static String createValidDateForNvaUri(Date date) {
+        if (nonNull(date) && containsMonthOrYear(date)) {
+            return date.getNva().split("-")[0];
+        }
+        if (nonNull(date)) {
+            return date.getNva();
+        }
+        return StringUtils.EMPTY_STRING;
+    }
+
+    private static boolean containsMonthOrYear(Date date) {
+        return Arrays.stream(date.getNva().split("-")).count() == 2
+               || Arrays.stream(date.getNva().split("-")).count() == 3;
     }
 
     private static EntityDescription extractEntityDescription(DublinCore dublinCore) {
@@ -243,15 +295,6 @@ public final class DublinCoreScraper {
                    .scrapeValueAndSetToScraped();
     }
 
-    private static String extractJournal(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isJournal)
-                   .findAny()
-                   .orElse(new DcValue())
-                   .scrapeValueAndSetToScraped();
-    }
-
     private static String extractPartOfSeries(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
@@ -259,13 +302,6 @@ public final class DublinCoreScraper {
                    .findAny()
                    .orElse(new DcValue())
                    .scrapeValueAndSetToScraped();
-    }
-
-    private static List<String> extractType(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isType)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
     }
 
     private static Language extractLanguage(DublinCore dublinCore) {

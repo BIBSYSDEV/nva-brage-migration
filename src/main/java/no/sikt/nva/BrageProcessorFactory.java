@@ -11,7 +11,6 @@ public class BrageProcessorFactory {
 
     private final Map<String, String> rescueTitleAndHandleMap;
 
-
     public BrageProcessorFactory(Map<String, String> rescueTitleAndHandleMap) {
         this.rescueTitleAndHandleMap = rescueTitleAndHandleMap;
     }

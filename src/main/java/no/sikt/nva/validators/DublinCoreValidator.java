@@ -1,5 +1,7 @@
-package no.sikt.nva.scrapers;
+package no.sikt.nva.validators;
 
+import static java.util.Objects.nonNull;
+import static no.sikt.nva.scrapers.DublinCoreScraper.channelRegister;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +15,10 @@ import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.SubjectScraper;
+import no.sikt.nva.scrapers.TypeMapper;
+import no.sikt.nva.scrapers.TypeMapper.BrageType;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
 import org.apache.commons.validator.routines.ISBNValidator;
@@ -34,6 +40,7 @@ public final class DublinCoreValidator {
         getInvalidTypes(dublinCore).ifPresent(errors::add);
         getIssnErrors(dublinCore, brageLocation).ifPresent(errors::add);
         getIsbnErrors(dublinCore, brageLocation).ifPresent(errors::add);
+        getChannelRegisterErrors(dublinCore, brageLocation).ifPresent(errors::add);
         return errors;
     }
 
@@ -66,6 +73,36 @@ public final class DublinCoreValidator {
 
     public static boolean containsYearOnly(String date) {
         return date.matches("\\d{4}");
+    }
+
+    public static Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore, BrageLocation brageLocation) {
+        if (typeIsPresentInDublinCore(dublinCore) && isJournalArticle(dublinCore)) {
+            var journalIssn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
+            var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(journalIssn);
+            if (nonNull(journalIssn) && nonNull(possibleChannelRegisterIdentifierByIssn)) {
+                return Optional.empty();
+            }
+            var journalTitle = DublinCoreScraper.extractJournal(dublinCore);
+            var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(journalTitle);
+            if (nonNull(journalTitle) && nonNull(possibleChannelRegisterIdentifierByJournal)) {
+                return Optional.empty();
+            } else {
+                return Optional.of(
+                    new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of(brageLocation.getOriginInformation())));
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
+        if (hasIssn(dublinCore)) {
+            var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
+            ISSNValidator validator = new ISSNValidator();
+            if (!validator.isValid(issn)) {
+                return Optional.of(new ErrorDetails(Error.INVALID_ISSN, List.of(issn)));
+            }
+        }
+        return Optional.empty();
     }
 
     private static Optional<WarningDetails> getDescriptionsWarning(DublinCore dublinCore) {
@@ -192,15 +229,13 @@ public final class DublinCoreValidator {
         }
     }
 
-    private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
-        if (hasIssn(dublinCore)) {
-            var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
-            ISSNValidator validator = new ISSNValidator();
-            if (!validator.isValid(issn)) {
-                return Optional.of(new ErrorDetails(Error.INVALID_ISSN, List.of(issn)));
-            }
-        }
-        return Optional.empty();
+    private static boolean isJournalArticle(DublinCore dublinCore) {
+        return DublinCoreScraper.extractType(dublinCore).get(0).equals(BrageType.JOURNAL_ARTICLE.getValue());
+    }
+
+    private static boolean typeIsPresentInDublinCore(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .anyMatch(DcValue::isType);
     }
 
     private static Optional<ErrorDetails> getIsbnErrors(DublinCore dublinCore, BrageLocation brageLocation) {

@@ -114,8 +114,8 @@ public class BrageProcessor implements Runnable {
     }
 
     private URI getHandle(File entryDirectory, DublinCore dublinCore) throws HandleException {
-        return noHandleCheck ?
-                   getHandleAndIgnoreErrors(entryDirectory, dublinCore)
+        return noHandleCheck
+                   ? getHandleAndIgnoreErrors(entryDirectory, dublinCore)
                    : handleScraper.scrapeHandle(getHandlePath(entryDirectory), dublinCore);
     }
 
