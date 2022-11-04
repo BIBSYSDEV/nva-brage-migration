@@ -148,4 +148,34 @@ public class DublinCoreScraperTest {
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(record.getPublication().getPartOfSeries(), is(equalTo(partOfSeries)));
     }
+
+    @Test
+    void shouldReturnJournalIdFromChannelRegisterForJournalWithValidIssn() {
+        var issnToJournalArticle = "2038-324X";
+        var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, issnToJournalArticle);
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var dateDcValue = new DcValue(Element.DATE, Qualifier.ISSUED, "2020");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(issnDcValue, typeDcValue, dateDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getPublication().getId(), is(equalTo("503077/2020")));
+    }
+
+    @Test
+    void shouldReturnIdFromChannelRegisterForResourceWithValidIssn() {
+        var publisherDcValue = new DcValue(Element.PUBLISHER, null, "somePublisher");
+        var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Research Report");
+        var dateDcValue = new DcValue(Element.DATE, Qualifier.ISSUED, "2020");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(publisherDcValue, issnDcValue, typeDcValue, dateDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getPublication().getId(), is(equalTo("450187/2020")));
+    }
 }

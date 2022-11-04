@@ -9,7 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class ChannelRegisterJournalTest {
+public class ChannelRegisterTest {
 
     public static final String PRINT_ISSN = "2038-324X";
     public static final String ONLINE_ISSN = "2279-7084";

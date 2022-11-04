@@ -75,7 +75,7 @@ public final class DublinCoreValidator {
         return date.matches("\\d{4}");
     }
 
-    public static Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore, BrageLocation brageLocation) {
+    private static Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         if (typeIsPresentInDublinCore(dublinCore) && isJournalArticle(dublinCore)) {
             var journalIssn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
             var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(journalIssn);

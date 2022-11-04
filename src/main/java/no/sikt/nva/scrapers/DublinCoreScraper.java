@@ -28,6 +28,7 @@ import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.PublicationInstance;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
+import no.sikt.nva.scrapers.TypeMapper.NvaType;
 import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.JacocoGenerated;
@@ -50,7 +51,6 @@ public final class DublinCoreScraper {
     public static final String ILLUSTRATOR = "Illustrator";
     public static final String OTHER_CONTRIBUTOR = "Other";
     public static final String FIRST_DAY_OF_A_MONTH = "-01";
-    public static final String JOURNAL_NVA_URI = "https://api.nva.unit.no/publication-channels/journal/";
     public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
@@ -170,13 +170,27 @@ public final class DublinCoreScraper {
     private static Publication createPublicationWithIdentifier(DublinCore dublinCore, BrageLocation brageLocation,
                                                                Record record) {
         var publication = extractPublication(dublinCore, brageLocation);
-        publication.setId(createPublicationIdUri(dublinCore, brageLocation, record));
+        record.setPublication(publication);
+        var recordType = record.getType().getNva();
+        if (NvaType.JOURNAL_ARTICLE.getValue().equals(recordType)) {
+            publication.setId(createPublicationIdUriForJournal(dublinCore, brageLocation, record));
+        } else {
+            var identifier = channelRegister.lookUpInChannelRegister(record);
+            if (nonNull(identifier)) {
+                publication.setId(createPublicationIdForNonJournal(record, identifier));
+            }
+        }
         return publication;
     }
 
-    private static String createPublicationIdUri(DublinCore dublinCore, BrageLocation brageLocation, Record record) {
-        return JOURNAL_NVA_URI + channelRegister.extractIdentifier(dublinCore, brageLocation) + "/"
-               + createValidDateForNvaUri(record.getDate());
+    @NotNull
+    private static String createPublicationIdForNonJournal(Record record, String identifier) {
+        return identifier + "/" + createValidDateForNvaUri(record.getDate());
+    }
+
+    private static String createPublicationIdUriForJournal(DublinCore dublinCore, BrageLocation brageLocation,
+                                                           Record record) {
+        return createPublicationIdForNonJournal(record, channelRegister.extractIdentifier(dublinCore, brageLocation));
     }
 
     private static String createValidDateForNvaUri(Date date) {
