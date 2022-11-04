@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.content.ContentFile;
+import no.sikt.nva.model.record.License;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 
@@ -20,15 +21,20 @@ public class ContentScraperTest {
     public static final String TEXT_FILE_NAME = "rapport2022_25.pdf.txt";
     public static final String THUMBNAIL_FILENAME = "rapport2022_25.pdf.jpg";
 
+    private static final License someLicense = new License(null, null);
+    private final ContentScraper contentScraper =
+        new ContentScraper(Path.of(CONTENT_FILE_PATH),
+                           new BrageLocation(null),
+                           someLicense);
+
     @Test
     void shouldCreateResourceContentCorrectly() throws ContentException {
-        var actualContentFilenameList = ContentScraper.scrapeContent(Path.of(CONTENT_FILE_PATH),
-                                                                     new BrageLocation(null))
+
+        var actualContentFilenameList = contentScraper.scrapeContent()
                                             .getContentFiles()
                                             .stream()
                                             .map(ContentFile::getFilename)
                                             .collect(Collectors.toList());
-
         assertThat(actualContentFilenameList, containsInAnyOrder(ORIGINAL_FILENAME_1,
                                                                  ORIGINAL_FILENAME_2,
                                                                  TEXT_FILE_NAME,
@@ -38,7 +44,7 @@ public class ContentScraperTest {
     @Test
     void shouldLogUnknownContentFile() throws ContentException {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        ContentScraper.scrapeContent(Path.of(CONTENT_FILE_PATH), new BrageLocation(null));
+        contentScraper.scrapeContent();
         assertThat(appender.getMessages(), containsString(UNKNOWN_FILE_LOG_MESSAGE));
     }
 }

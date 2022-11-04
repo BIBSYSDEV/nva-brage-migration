@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.net.URI;
 import java.util.Map;
 import no.sikt.nva.exceptions.DublinCoreException;
@@ -10,18 +11,18 @@ public class LicenseMapper {
     private static final String CREATIVE_COMMONS_HOST_NAME = "creativecommons.org";
     private static final String NOT_MATCHING_LICENSE_MESSAGE =
         "No configuration to map license, Rights Reserved license used for license: ";
-    private static final Map<BrageLicense, NvaLicense> LICENSE_MAP =
-        Map.of(BrageLicense.CC_BY, NvaLicense.CC_BY,
-               BrageLicense.CC_BY_NC, NvaLicense.CC_BY_NC,
-               BrageLicense.CC_BY_ND, NvaLicense.CC_BY_ND,
-               BrageLicense.CC_BY_SA, NvaLicense.CC_BY_SA,
-               BrageLicense.CC_BY_NC_ND, NvaLicense.CC_BY_NC_ND,
-               BrageLicense.CC_BY_NC_SA, NvaLicense.CC_BY_NC_SA);
+    private static final Map<BrageLicense, NvaLicenseIdentifier> LICENSE_MAP =
+        Map.of(BrageLicense.CC_BY, NvaLicenseIdentifier.CC_BY,
+               BrageLicense.CC_BY_NC, NvaLicenseIdentifier.CC_BY_NC,
+               BrageLicense.CC_BY_ND, NvaLicenseIdentifier.CC_BY_ND,
+               BrageLicense.CC_BY_SA, NvaLicenseIdentifier.CC_BY_SA,
+               BrageLicense.CC_BY_NC_ND, NvaLicenseIdentifier.CC_BY_NC_ND,
+               BrageLicense.CC_BY_NC_SA, NvaLicenseIdentifier.CC_BY_NC_SA);
 
-    public static String mapLicenseToNva(String licenseUri) {
+    public static NvaLicenseIdentifier mapLicenseToNva(String licenseUri) {
         var licenseName = getLicenseName(licenseUri);
         var brageLicense = convertToBrageLicense(licenseName);
-        return LICENSE_MAP.get(brageLicense).getValue();
+        return LICENSE_MAP.get(brageLicense);
     }
 
     private static String getLicenseName(String licenseUri) {
@@ -49,19 +50,22 @@ public class LicenseMapper {
         return URI.create(licenseUri).getPath().split("/")[2];
     }
 
-    public enum NvaLicense {
+    public enum NvaLicenseIdentifier {
         CC_BY("CC BY"),
         CC_BY_NC("CC BY-NC"),
         CC_BY_NC_ND("CC BY-NC-ND"),
         CC_BY_NC_SA("CC BY-NC-SA"),
         CC_BY_ND("CC BY-ND"),
-        CC_BY_SA("CC BY-SA");
+        CC_BY_SA("CC BY-SA"),
+
+        DEFAULT_LICENSE("Rights Reserved");
         private final String value;
 
-        NvaLicense(String value) {
+        NvaLicenseIdentifier(String value) {
             this.value = value;
         }
 
+        @JsonValue
         public String getValue() {
             return value;
         }
@@ -90,6 +94,7 @@ public class LicenseMapper {
             return null;
         }
 
+        @JsonValue
         public String getValue() {
             return value;
         }

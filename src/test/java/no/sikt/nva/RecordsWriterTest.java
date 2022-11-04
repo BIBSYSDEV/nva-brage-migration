@@ -1,7 +1,6 @@
 package no.sikt.nva;
 
 import static no.sikt.nva.RecordsWriter.WRITING_RECORDS_HAS_FAILED;
-import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -30,7 +29,6 @@ public class RecordsWriterTest {
         record.setId(randomUri());
         List<String> types = Collections.singletonList("Research report");
         record.setType(new Type(types, TypeMapper.convertBrageTypeToNvaType(types)));
-        record.setLicense(randomString());
         record.setLanguage(new Language("as", randomUri()));
         record.setLanguage(new Language("nob", randomUri()));
 

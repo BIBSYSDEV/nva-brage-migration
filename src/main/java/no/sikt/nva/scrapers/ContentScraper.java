@@ -3,7 +3,6 @@ package no.sikt.nva.scrapers;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +13,7 @@ import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.content.ContentFile;
 import no.sikt.nva.model.content.ResourceContent;
 import no.sikt.nva.model.content.ResourceContent.BundleType;
-import nva.commons.core.SingletonCollector;
+import no.sikt.nva.model.record.License;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,79 +32,37 @@ public final class ContentScraper {
     public static final String EMPTY_LINE_REGEX = "(?m)(^\\s*$\\r?\\n)+";
     private static final Logger logger = LoggerFactory.getLogger(ContentScraper.class);
 
-    public static ResourceContent scrapeContent(Path contentFilePath, BrageLocation brageLocation)
+    private final Path contentFilePath;
+    private final BrageLocation brageLocation;
+    private final License license;
+
+    public ContentScraper(Path contentFilePath, BrageLocation brageLocation, License license) {
+        this.contentFilePath = contentFilePath;
+        this.brageLocation = brageLocation;
+        this.license = license;
+    }
+
+    public ResourceContent scrapeContent()
         throws ContentException {
         try {
-            return createResourceContent(contentFilePath, brageLocation);
+            return createResourceContent();
         } catch (Exception e) {
             throw new ContentException(CONTENT_FILE_PARSING_ERROR_MESSAGE);
         }
     }
 
-    private static ResourceContent createResourceContent(Path contentFilePath, BrageLocation brageLocation)
-        throws IOException {
-        var contentAsString = Files.readString(contentFilePath).replaceAll(EMPTY_LINE_REGEX,
-                                                                           StringUtils.EMPTY_STRING);
-        var contentFilesFromListAsString = contentAsString.split("\n");
-        var contentFileList = Arrays.stream(contentFilesFromListAsString)
-                                  .map(fileInfo -> convertToFile(fileInfo, brageLocation))
-                                  .flatMap(Optional::stream)
-                                  .collect(Collectors.toList());
-        return new ResourceContent(contentFileList);
+    private static boolean isKnownFileType(List<String> fileInformationList) {
+        return hasFilenameBundleAndDescription(fileInformationList) && bundleIsOfKnownType(fileInformationList);
     }
 
-    private static Optional<ContentFile> convertToFile(String fileInfo, BrageLocation brageLocation) {
-        var contentList = new ArrayList<ContentFile>();
-        var array = Arrays.asList(fileInfo.split("\t"));
-        extractOriginalFile(array).ifPresent(contentList::add);
-        extractText(array).ifPresent(contentList::add);
-        extractThumbnail(array).ifPresent(contentList::add);
-        logWhenUnknownType(array, brageLocation);
-        if (contentList.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(getContentFileFromSingleton(contentList));
+    private static boolean bundleIsOfKnownType(List<String> fileInformationList) {
+        return BundleType.ORIGINAL.name().equals(getBundleType(fileInformationList))
+               || BundleType.TEXT.name().equals(getBundleType(fileInformationList))
+               || BundleType.THUMBNAIL.name().equals(getBundleType(fileInformationList));
     }
 
-    private static ContentFile getContentFileFromSingleton(List<ContentFile> contentFileSingletonList) {
-        return contentFileSingletonList.stream().collect(SingletonCollector.collect());
-    }
-
-    private static void logWhenUnknownType(List<String> array, BrageLocation brageLocation) {
-        var type = getBundleType(array);
-        if (!KNOWN_CONTENT_FILE_TYPES.contains(type)) {
-            logger.warn(UNKNOWN_FILE_LOG_MESSAGE + getBundleType(array) + IN_BUNDLE + brageLocation);
-        }
-    }
-
-    private static Optional<ContentFile> extractOriginalFile(List<String> array) {
-        if (hasSizeThree(array) && BundleType.ORIGINAL.name().equals(getBundleType(array))) {
-            ContentFile contentFile = new ContentFile(getFileName(array), BundleType.ORIGINAL,
-                                                      getDescription(array), UUID.randomUUID());
-            return Optional.of(contentFile);
-        }
-
-        return Optional.empty();
-    }
-
-    private static Optional<ContentFile> extractText(List<String> array) {
-        if (hasSizeThree(array) && BundleType.TEXT.name().equals(getBundleType(array))) {
-            ContentFile contentFile = new ContentFile(getFileName(array), BundleType.TEXT, getDescription(array),
-                                                      UUID.randomUUID());
-            return Optional.of(contentFile);
-        }
-        return Optional.empty();
-    }
-
-    private static Optional<ContentFile> extractThumbnail(List<String> array) {
-
-        if (hasSizeThree(array) && BundleType.THUMBNAIL.name().equals(getBundleType(array))) {
-            ContentFile contentFile = new ContentFile(getFileName(array), BundleType.THUMBNAIL,
-                                                      getDescription(array), UUID.randomUUID());
-            return Optional.of(contentFile);
-        }
-
-        return Optional.empty();
+    private static BundleType extractBundleType(List<String> fileInformationList) {
+        return BundleType.valueOf(getBundleType(fileInformationList));
     }
 
     private static String getFileName(List<String> list) {
@@ -120,7 +77,46 @@ public final class ContentScraper {
         return Arrays.asList(list.get(1).split(":")).get(1);
     }
 
-    private static boolean hasSizeThree(List<String> array) {
-        return array.size() == SIZE_3;
+    private static boolean hasFilenameBundleAndDescription(List<String> fileInformationList) {
+        return fileInformationList.size() == SIZE_3;
+    }
+
+    private ResourceContent createResourceContent()
+        throws IOException {
+        var contentFileAsString = Files.readString(contentFilePath).replaceAll(EMPTY_LINE_REGEX,
+                                                                               StringUtils.EMPTY_STRING);
+        var contentFilesFromListAsString = contentFileAsString.split("\n");
+        var contentFileList = Arrays.stream(contentFilesFromListAsString)
+                                  .map(this::convertToFile)
+                                  .flatMap(Optional::stream)
+                                  .collect(Collectors.toList());
+        return new ResourceContent(contentFileList);
+    }
+
+    private Optional<ContentFile> convertToFile(String fileInfo) {
+        var fileInformationList = Arrays.asList(fileInfo.split("\t"));
+        if (isKnownFileType(fileInformationList)) {
+            return Optional.of(extractFileContent(fileInformationList));
+        } else {
+            logWhenUnknownType(fileInformationList);
+            return Optional.empty();
+        }
+    }
+
+    private ContentFile extractFileContent(List<String> fileInformationList) {
+        var contentFile = new ContentFile();
+        contentFile.setFilename(getFileName(fileInformationList));
+        contentFile.setLicense(license);
+        contentFile.setDescription(getDescription(fileInformationList));
+        contentFile.setBundleType(extractBundleType(fileInformationList));
+        contentFile.setIdentifier(UUID.randomUUID());
+        return contentFile;
+    }
+
+    private void logWhenUnknownType(List<String> fileInformationList) {
+        var type = getBundleType(fileInformationList);
+        if (!KNOWN_CONTENT_FILE_TYPES.contains(type)) {
+            logger.warn(UNKNOWN_FILE_LOG_MESSAGE + getBundleType(fileInformationList) + IN_BUNDLE + brageLocation);
+        }
     }
 }

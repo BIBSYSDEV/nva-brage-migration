@@ -55,6 +55,11 @@ public class BrageProcessor implements Runnable {
         this.noHandleCheck = noHandleCheck;
     }
 
+    public static Path getContentFilePath(File entryDirectory) {
+        var bundlePath = entryDirectory.getPath();
+        return Path.of(bundlePath, CONTENT_FILE_DEFAULT_NAME);
+    }
+
     public String getDestinationDirectory() {
         return destinationDirectory;
     }
@@ -79,11 +84,6 @@ public class BrageProcessor implements Runnable {
     private static Path getHandlePath(File entryDirectory) {
         var bundlePath = entryDirectory.getPath();
         return Path.of(bundlePath, HANDLE_DEFAULT_NAME);
-    }
-
-    public static Path getContentFilePath(File entryDirectory) {
-        var bundlePath = entryDirectory.getPath();
-        return Path.of(bundlePath, CONTENT_FILE_DEFAULT_NAME);
     }
 
     private static File getDublinCoreFile(File entryDirectory) {
@@ -113,9 +113,8 @@ public class BrageProcessor implements Runnable {
             var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation);
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore,
                                                                       brageLocation);
-            record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory));
             record.setCustomerId(customerId);
-            record.setContentBundle(getContent(entryDirectory, brageLocation));
+            record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper));
             return Optional.of(record);
         } catch (Exception e) {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
@@ -123,8 +122,11 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation) throws ContentException {
-        return ContentScraper.scrapeContent(getContentFilePath(entryDirectory), brageLocation);
+    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation, LicenseScraper licenseScraper)
+        throws ContentException {
+        var license = licenseScraper.extractOrCreateLicense(entryDirectory);
+        var contentScraper = new ContentScraper(getContentFilePath(entryDirectory), brageLocation, license);
+        return contentScraper.scrapeContent();
     }
 
     private URI getHandle(File entryDirectory, DublinCore dublinCore) throws HandleException {
@@ -132,7 +134,6 @@ public class BrageProcessor implements Runnable {
                    ? getHandleAndIgnoreErrors(entryDirectory, dublinCore)
                    : handleScraper.scrapeHandle(getHandlePath(entryDirectory), dublinCore);
     }
-
 
     private URI getHandleAndIgnoreErrors(File entryDirectory, DublinCore dublinCore) {
         try {

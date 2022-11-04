@@ -1,0 +1,22 @@
+Typer:
+* "Bachelor thesis" -> DegreeBachelor, "Working paper" -> ReportWorkingPaper, "Student paper"  -> OtherStudentWork og "Master thesis" -> DegreeMaster skal inn. Må finne ut hva det skal hete i NVA.
+* Noen brage typer har flere typer på samme objekt komma separert, ta ut første type. eks: INVALID_TYPE = [Book, Research report] Bundle location: 219619/8, Handle: https://hdl.handle.net/11250/194659
+
+
+
+DOI:
+* Snusk fortsatt. eks. INVALID_DOI_OFFLINE_CHECK = [https://10.1111/dar.13146]
+
+
+Ting som har errors skal ikke skippes.
+
+Cristin-id til warning.
+
+
+Cristin publikasjoner: grovt forklart.
+Slå opp i cristin-id i NVA. Finnes ? se på metadata, finnes handlene fra Brage ? hent over filene fra Brage, men ikke metadata.
+Hvis NVA ikke har cristin-id: skal posten hoppes over.
+
+
+
+

@@ -9,7 +9,7 @@ import java.util.Objects;
 import no.sikt.nva.model.content.ResourceContent;
 import nva.commons.core.JacocoGenerated;
 
-@JsonPropertyOrder({"customerId", "bareOrigin", "id", "doi", "license", "publisherAuthority", "rightsholder", "type",
+@JsonPropertyOrder({"customerId", "bareOrigin", "id", "doi", "publisherAuthority", "rightsholder", "type",
     "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
     "recordContent"})
 @SuppressWarnings("PMD.TooManyFields")
@@ -23,7 +23,6 @@ public class Record {
     private Type type;
     private Date date;
     private Language language;
-    private String license;
     private String embargo;
     private Boolean publisherAuthority;
     private String rightsholder;
@@ -42,8 +41,19 @@ public class Record {
 
     @Override
     public int hashCode() {
-        return Objects.hash(entityDescription, customerId, id, doi, origin, type, date, language, license, embargo,
-                            publisherAuthority, rightsholder, spatialCoverage, publication);
+        return Objects.hash(entityDescription,
+                            customerId,
+                            id,
+                            doi,
+                            origin,
+                            type,
+                            date,
+                            language,
+                            embargo,
+                            publisherAuthority,
+                            rightsholder,
+                            spatialCoverage,
+                            publication);
     }
 
     @Override
@@ -63,7 +73,6 @@ public class Record {
                && Objects.equals(type, record.type)
                && Objects.equals(date, record.date)
                && Objects.equals(language, record.language)
-               && Objects.equals(license, record.license)
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(publisherAuthority, record.publisherAuthority)
                && Objects.equals(rightsholder, record.rightsholder)
@@ -146,16 +155,6 @@ public class Record {
 
     public void setLanguage(Language language) {
         this.language = language;
-    }
-
-    @JacocoGenerated
-    @JsonProperty("license")
-    public String getLicense() {
-        return this.license;
-    }
-
-    public void setLicense(String license) {
-        this.license = license;
     }
 
     @JacocoGenerated

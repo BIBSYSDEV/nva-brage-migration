@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
 import no.sikt.nva.model.content.ResourceContent.BundleType;
+import no.sikt.nva.model.record.License;
 import nva.commons.core.JacocoGenerated;
 
 public class ContentFile {
@@ -14,15 +15,18 @@ public class ContentFile {
     private String unknownType;
     private UUID identifier;
 
+    private License license;
+
     public ContentFile() {
 
     }
 
-    public ContentFile(String filename, BundleType bundleType, String description, UUID identifier) {
+    public ContentFile(String filename, BundleType bundleType, String description, UUID identifier, License license) {
         this.filename = filename;
         this.bundleType = bundleType;
         this.description = description;
         this.identifier = identifier;
+        this.license = license;
     }
 
     @JsonProperty("identifier")
@@ -46,7 +50,12 @@ public class ContentFile {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(filename, bundleType, description, unknownType, identifier);
+        return Objects.hash(filename,
+                            bundleType,
+                            description,
+                            unknownType,
+                            license,
+                            identifier);
     }
 
     @JacocoGenerated
@@ -61,6 +70,7 @@ public class ContentFile {
         ContentFile that = (ContentFile) o;
         return Objects.equals(filename, that.filename)
                && bundleType == that.bundleType
+               && Objects.equals(license, that.license)
                && Objects.equals(description, that.description)
                && Objects.equals(unknownType, that.unknownType)
                && Objects.equals(identifier, that.identifier);
@@ -83,6 +93,14 @@ public class ContentFile {
     @JsonProperty("description")
     public void setBundleType(BundleType bundleType) {
         this.bundleType = bundleType;
+    }
+
+    public License getLicense() {
+        return license;
+    }
+
+    public void setLicense(License license) {
+        this.license = license;
     }
 
     public String getDescription() {
