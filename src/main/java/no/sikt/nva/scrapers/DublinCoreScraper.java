@@ -376,20 +376,21 @@ public final class DublinCoreScraper {
 
     private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
         Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped());
+        String brageType = dcValue.getQualifier().getValue();
         if (dcValue.isAuthor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, AUTHOR));
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, AUTHOR, brageType));
         }
         if (dcValue.isAdvisor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, ADVISOR));
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, ADVISOR, brageType));
         }
         if (dcValue.isEditor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, EDITOR));
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, EDITOR, brageType));
         }
         if (dcValue.isIllustrator()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, ILLUSTRATOR));
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, ILLUSTRATOR, brageType));
         }
         if (dcValue.isOtherContributor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, OTHER_CONTRIBUTOR));
+            return Optional.of(new Contributor(CONTRIBUTOR, identity, OTHER_CONTRIBUTOR, brageType));
         }
         return Optional.empty();
     }

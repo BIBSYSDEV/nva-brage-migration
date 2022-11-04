@@ -10,10 +10,13 @@ public class Contributor {
     private Identity identity;
     private String role;
 
-    public Contributor(String type, Identity identity, String role) {
+    private String brageRole;
+
+    public Contributor(String type, Identity identity, String role, String brageRole) {
         this.type = type;
         this.identity = identity;
         this.role = role;
+        this.brageRole = brageRole;
     }
 
     @JsonProperty("role")
@@ -43,10 +46,18 @@ public class Contributor {
         this.identity = identity;
     }
 
+    public String getBrageRole() {
+        return brageRole;
+    }
+
+    public void setBrageRole(String brageRole) {
+        this.brageRole = brageRole;
+    }
+
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(type, identity, role);
+        return Objects.hash(type, identity, role, brageRole);
     }
 
     @JacocoGenerated
@@ -60,6 +71,7 @@ public class Contributor {
         }
         Contributor that = (Contributor) o;
         return Objects.equals(type, that.type)
+               && Objects.equals(brageRole, that.brageRole)
                && Objects.equals(identity, that.identity)
                && Objects.equals(role, that.role);
     }
