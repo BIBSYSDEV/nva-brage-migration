@@ -9,7 +9,7 @@ import java.util.Objects;
 import no.sikt.nva.model.content.ResourceContent;
 import nva.commons.core.JacocoGenerated;
 
-@JsonPropertyOrder({"customerId", "bareOrigin", "id", "doi", "license", "publisherAuthority", "rightsholder", "type",
+@JsonPropertyOrder({"customerId", "bareOrigin", "id", "doi", "publisherAuthority", "rightsholder", "type",
     "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
     "recordContent"})
 @SuppressWarnings("PMD.TooManyFields")
@@ -23,7 +23,6 @@ public class Record {
     private Type type;
     private Date date;
     private Language language;
-    private License license;
     private String embargo;
     private Boolean publisherAuthority;
     private String rightsholder;
@@ -42,8 +41,19 @@ public class Record {
 
     @Override
     public int hashCode() {
-        return Objects.hash(entityDescription, customerId, id, doi, origin, type, date, language, embargo,
-                            publisherAuthority, rightsholder, spatialCoverage, publication, license);
+        return Objects.hash(entityDescription,
+                            customerId,
+                            id,
+                            doi,
+                            origin,
+                            type,
+                            date,
+                            language,
+                            embargo,
+                            publisherAuthority,
+                            rightsholder,
+                            spatialCoverage,
+                            publication);
     }
 
     @Override
@@ -56,7 +66,6 @@ public class Record {
         }
         Record record = (Record) o;
         return Objects.equals(entityDescription, record.entityDescription)
-               && Objects.equals(license, record.license)
                && Objects.equals(customerId, record.customerId)
                && Objects.equals(id, record.id)
                && Objects.equals(doi, record.doi)
@@ -146,14 +155,6 @@ public class Record {
 
     public void setLanguage(Language language) {
         this.language = language;
-    }
-
-    public License getLicense() {
-        return license;
-    }
-
-    public void setLicense(License license) {
-        this.license = license;
     }
 
     @JacocoGenerated

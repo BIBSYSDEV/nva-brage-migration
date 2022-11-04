@@ -5,7 +5,8 @@ import java.util.Objects;
 import no.sikt.nva.scrapers.LicenseMapper.NvaLicenseIdentifier;
 
 public class NvaLicense {
-    private final static String TYPE = "License";
+
+    private static final String TYPE = "License";
     private NvaLicenseIdentifier identifier;
 
     public NvaLicense(NvaLicenseIdentifier identifier) {
@@ -21,7 +22,7 @@ public class NvaLicense {
     }
 
     @JsonProperty("type")
-    public String getType(){
+    public String getType() {
         return TYPE;
     }
 
@@ -29,7 +30,6 @@ public class NvaLicense {
     public int hashCode() {
         return Objects.hash(TYPE, identifier);
     }
-
 
     @Override
     public boolean equals(Object o) {
