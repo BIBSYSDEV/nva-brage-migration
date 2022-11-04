@@ -8,8 +8,11 @@ import static org.hamcrest.Matchers.containsString;
 import java.util.Collections;
 import java.util.List;
 import no.sikt.nva.model.record.Language;
+import no.sikt.nva.model.record.License;
+import no.sikt.nva.model.record.NvaLicense;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
+import no.sikt.nva.scrapers.LicenseMapper.NvaLicenseIdentifier;
 import no.sikt.nva.scrapers.TypeMapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
@@ -30,7 +33,7 @@ public class RecordsWriterTest {
         record.setId(randomUri());
         List<String> types = Collections.singletonList("Research report");
         record.setType(new Type(types, TypeMapper.convertBrageTypeToNvaType(types)));
-        record.setLicense(randomString());
+        record.setLicense(new License(randomString(), new NvaLicense(NvaLicenseIdentifier.DEFAULT_LICENSE)));
         record.setLanguage(new Language("as", randomUri()));
         record.setLanguage(new Language("nob", randomUri()));
 

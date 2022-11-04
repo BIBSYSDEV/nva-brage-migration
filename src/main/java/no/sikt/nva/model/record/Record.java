@@ -21,7 +21,7 @@ public class Record {
     private Type type;
     private Date date;
     private Language language;
-    private String license;
+    private License license;
     private String embargo;
     private Boolean publisherAuthority;
     private String rightsholder;
@@ -30,8 +30,8 @@ public class Record {
 
     @Override
     public int hashCode() {
-        return Objects.hash(entityDescription, customerId, id, doi, origin, type, date, language, license, embargo,
-                            publisherAuthority, rightsholder, spatialCoverage, publication);
+        return Objects.hash(entityDescription, customerId, id, doi, origin, type, date, language, embargo,
+                            publisherAuthority, rightsholder, spatialCoverage, publication, license);
     }
 
     @Override
@@ -44,6 +44,7 @@ public class Record {
         }
         Record record = (Record) o;
         return Objects.equals(entityDescription, record.entityDescription)
+               && Objects.equals(license, record.license)
                && Objects.equals(customerId, record.customerId)
                && Objects.equals(id, record.id)
                && Objects.equals(doi, record.doi)
@@ -51,7 +52,6 @@ public class Record {
                && Objects.equals(type, record.type)
                && Objects.equals(date, record.date)
                && Objects.equals(language, record.language)
-               && Objects.equals(license, record.license)
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(publisherAuthority, record.publisherAuthority)
                && Objects.equals(rightsholder, record.rightsholder)
@@ -135,13 +135,11 @@ public class Record {
         this.language = language;
     }
 
-    @JacocoGenerated
-    @JsonProperty("license")
-    public String getLicense() {
-        return this.license;
+    public License getLicense() {
+        return license;
     }
 
-    public void setLicense(String license) {
+    public void setLicense(License license) {
         this.license = license;
     }
 
