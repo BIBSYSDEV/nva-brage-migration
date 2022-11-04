@@ -6,10 +6,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Objects;
+import no.sikt.nva.model.content.ResourceContent;
 import nva.commons.core.JacocoGenerated;
 
 @JsonPropertyOrder({"customerId", "bareOrigin", "id", "doi", "license", "publisherAuthority", "rightsholder", "type",
-    "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription"})
+    "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
+    "recordContent"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
 
@@ -27,6 +29,16 @@ public class Record {
     private String rightsholder;
     private String spatialCoverage;
     private Publication publication;
+    private ResourceContent contentBundle;
+
+    @JsonProperty("recordContent")
+    public ResourceContent getContentBundle() {
+        return contentBundle;
+    }
+
+    public void setContentBundle(ResourceContent contentBundle) {
+        this.contentBundle = contentBundle;
+    }
 
     @Override
     public int hashCode() {
@@ -56,7 +68,8 @@ public class Record {
                && Objects.equals(publisherAuthority, record.publisherAuthority)
                && Objects.equals(rightsholder, record.rightsholder)
                && Objects.equals(spatialCoverage, record.spatialCoverage)
-               && Objects.equals(publication, record.publication);
+               && Objects.equals(publication, record.publication)
+               && Objects.equals(contentBundle, record.contentBundle);
     }
 
     @JsonProperty("spatialCoverage")

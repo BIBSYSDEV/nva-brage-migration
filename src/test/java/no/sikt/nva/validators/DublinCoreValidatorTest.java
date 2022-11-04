@@ -1,4 +1,4 @@
-package no.sikt.nva.scrapers;
+package no.sikt.nva.validators;
 
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
@@ -7,9 +7,7 @@ import static no.sikt.nva.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import java.io.File;
 import java.nio.file.Path;
@@ -24,7 +22,8 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.unit.nva.doi.models.Doi;
+import no.sikt.nva.scrapers.DublinCoreFactory;
+import no.sikt.nva.scrapers.TypeMapper.BrageType;
 import org.junit.jupiter.api.Test;
 
 public class DublinCoreValidatorTest {
@@ -121,7 +120,8 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.TYPE, null, "Book"));
 
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DoiValidator.getDoiErrorDetailsOnline(dublinCore).get();
+        var actualErrors = new ArrayList<>();
+        DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(actualErrors::addAll);
         assertThat(actualErrors, hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of())));
     }
 
@@ -133,11 +133,11 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.TYPE, null, "Book"));
 
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DoiValidator.getDoiErrorDetailsOnline(dublinCore).get();
+        var actualErrors = new ArrayList<>();
+        DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(actualErrors::addAll);
 
         assertThat(actualErrors, hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of())));
     }
-
 
     @Test
     void shouldNotReturnDoiErrorWhenDoiHasValidStructureButUriIsInvalid() {
@@ -152,4 +152,38 @@ public class DublinCoreValidatorTest {
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of()))));
     }
+
+    @Test
+    void shouldReturnErrorDetailWhenJournalIsNotInChannelRegister() {
+        var dcValues = List.of(
+            new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-0678"),
+            new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
+
+        assertThat(actualErrors, hasItems(new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of())));
+    }
+
+    @Test
+    void shouldNotReturnChannelRegisterErrorDetailWhenJournalIssnIsInChannelRegister() {
+        var dcValues = List.of(
+            new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "2038-324X"),
+            new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
+
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of()))));
+    }
+
+    @Test
+    void shouldNotReturnChannelRegisterErrorDetailWhenJournalTitleIsInChannelRegister() {
+        var dcValues = List.of(
+            new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Fisheries management and ecology"),
+            new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
+
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of()))));
+    }
+
 }

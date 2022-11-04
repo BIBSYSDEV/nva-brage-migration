@@ -7,10 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.content.ResourceContent;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.record.Record;
+import no.sikt.nva.scrapers.ContentScraper;
 import no.sikt.nva.scrapers.DublinCoreFactory;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.HandleScraper;
@@ -27,6 +30,7 @@ public class BrageProcessor implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
     private static final String HANDLE_DEFAULT_NAME = "handle";
     private static final String DUBLIN_CORE_XML_DEFAULT_NAME = "dublin_core.xml";
+    private static final String CONTENT_FILE_DEFAULT_NAME = "contents";
 
     private final String zipfile;
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
@@ -77,6 +81,11 @@ public class BrageProcessor implements Runnable {
         return Path.of(bundlePath, HANDLE_DEFAULT_NAME);
     }
 
+    public static Path getContentFilePath(File entryDirectory) {
+        var bundlePath = entryDirectory.getPath();
+        return Path.of(bundlePath, CONTENT_FILE_DEFAULT_NAME);
+    }
+
     private static File getDublinCoreFile(File entryDirectory) {
         return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
     }
@@ -106,6 +115,7 @@ public class BrageProcessor implements Runnable {
                                                                       brageLocation);
             record.setLicense(licenseScraper.extractOrCreateLicense(entryDirectory));
             record.setCustomerId(customerId);
+            record.setContentBundle(getContent(entryDirectory, brageLocation));
             return Optional.of(record);
         } catch (Exception e) {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
@@ -113,11 +123,16 @@ public class BrageProcessor implements Runnable {
         }
     }
 
+    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation) throws ContentException {
+        return ContentScraper.scrapeContent(getContentFilePath(entryDirectory), brageLocation);
+    }
+
     private URI getHandle(File entryDirectory, DublinCore dublinCore) throws HandleException {
-        return noHandleCheck ?
-                   getHandleAndIgnoreErrors(entryDirectory, dublinCore)
+        return noHandleCheck
+                   ? getHandleAndIgnoreErrors(entryDirectory, dublinCore)
                    : handleScraper.scrapeHandle(getHandlePath(entryDirectory), dublinCore);
     }
+
 
     private URI getHandleAndIgnoreErrors(File entryDirectory, DublinCore dublinCore) {
         try {
