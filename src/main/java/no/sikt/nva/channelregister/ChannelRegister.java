@@ -18,11 +18,11 @@ import org.slf4j.LoggerFactory;
 public final class ChannelRegister {
 
     public static final String KANALREGISTER_READING_ERROR_MESSAGE = "Fatal error, could not read kanalregister";
+    public static final String NOT_FOUND_IN_CHANNEL_REGISTER = "NOT_FOUND_IN_CHANNEL_REGISTER";
     private static final String JOURNAL_PATH = "journals.csv";
     private static final String PUBLISHERS_PATH = "publishers.csv";
     private static final char SEPARATOR = ';';
     private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
-    public static final String NOT_FOUND_IN_CHANNEL_REGISTER = "NOT_FOUND_IN_CHANNEL_REGISTER";
     /*volatile*/ private static ChannelRegister register;
     private final List<ChannelRegisterJournal> channelRegisterJournals;
     private final List<ChannelRegisterPublisher> channelRegisterPublishers;
@@ -62,18 +62,12 @@ public final class ChannelRegister {
     public String lookUpInChannelRegister(Record record) {
         var publisher = record.getPublication().getPublisher();
         var issn = record.getPublication().getIssn();
-        if (isNotNullOrEmpty(publisher) && isNotNullOrEmpty(issn)) {
-            var identifierFromJournal = lookUpInJournalByIssn(issn);
-            if (isNotNullOrEmpty(identifierFromJournal)) {
-                return identifierFromJournal;
-            }
+        if (extractedIdentifierFromJournalsIsPresent(publisher, issn)) {
+            return lookUpInJournalByIssn(issn);
         }
         var isbn = record.getPublication().getIsbn();
-        if (isNotNullOrEmpty(publisher) && isNotNullOrEmpty(isbn)) {
-            var identifierFromPublisher = lookUpInPublisherByIsbn(isbn);
-            if (isNotNullOrEmpty(identifierFromPublisher)) {
-                return identifierFromPublisher;
-            }
+        if (extractedIdentifierFromPublishersIsPresent(publisher, isbn)) {
+            return lookUpInPublisherByIsbn(isbn);
         }
         logger.warn(NOT_FOUND_IN_CHANNEL_REGISTER);
         return null;
@@ -126,6 +120,22 @@ public final class ChannelRegister {
             logger.error(KANALREGISTER_READING_ERROR_MESSAGE);
             throw new RuntimeException(e);
         }
+    }
+
+    private boolean extractedIdentifierFromPublishersIsPresent(String publisher, String isbn) {
+        if (isNotNullOrEmpty(publisher) && isNotNullOrEmpty(isbn)) {
+            var identifierFromPublisher = lookUpInPublisherByIsbn(isbn);
+            return isNotNullOrEmpty(identifierFromPublisher);
+        }
+        return false;
+    }
+
+    private boolean extractedIdentifierFromJournalsIsPresent(String publisher, String issn) {
+        if (isNotNullOrEmpty(publisher) && isNotNullOrEmpty(issn)) {
+            var identifierFromJournal = lookUpInJournalByIssn(issn);
+            return isNotNullOrEmpty(identifierFromJournal);
+        }
+        return false;
     }
 
     @SuppressWarnings("PMD.InefficientEmptyStringCheck")
