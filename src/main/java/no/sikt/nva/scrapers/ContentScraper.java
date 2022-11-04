@@ -87,13 +87,13 @@ public final class ContentScraper {
                                                                                StringUtils.EMPTY_STRING);
         var contentFilesFromListAsString = contentFileAsString.split("\n");
         var contentFileList = Arrays.stream(contentFilesFromListAsString)
-                                  .map(this::convertToFile2)
+                                  .map(this::convertToFile)
                                   .flatMap(Optional::stream)
                                   .collect(Collectors.toList());
         return new ResourceContent(contentFileList);
     }
 
-    private Optional<ContentFile> convertToFile2(String fileInfo) {
+    private Optional<ContentFile> convertToFile(String fileInfo) {
         var fileInformationList = Arrays.asList(fileInfo.split("\t"));
         if (isKnownFileType(fileInformationList)) {
             return Optional.of(extractFileContent(fileInformationList));

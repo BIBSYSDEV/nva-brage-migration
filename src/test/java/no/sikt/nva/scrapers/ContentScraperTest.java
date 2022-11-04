@@ -22,8 +22,10 @@ public class ContentScraperTest {
     public static final String THUMBNAIL_FILENAME = "rapport2022_25.pdf.jpg";
 
     private static final License someLicense = new License(null, null);
-    private final ContentScraper contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH), new BrageLocation(null),
-                                                                     someLicense);
+    private final ContentScraper contentScraper =
+        new ContentScraper(Path.of(CONTENT_FILE_PATH),
+                           new BrageLocation(null),
+                           someLicense);
 
     @Test
     void shouldCreateResourceContentCorrectly() throws ContentException {
