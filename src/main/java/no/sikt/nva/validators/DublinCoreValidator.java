@@ -75,7 +75,6 @@ public final class DublinCoreValidator {
         return date.matches("\\d{4}");
     }
 
-    @SuppressWarnings("PMD.UnnecessaryFullyQualifiedName")
     private static Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         if (typeIsPresentInDublinCore(dublinCore) && isJournalArticle(dublinCore)) {
             var journalIssn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
@@ -95,7 +94,6 @@ public final class DublinCoreValidator {
         return Optional.empty();
     }
 
-    @SuppressWarnings("PMD.UnnecessaryFullyQualifiedName")
     private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         if (hasIssn(dublinCore)) {
             var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
