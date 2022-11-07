@@ -1,5 +1,7 @@
 package no.sikt.nva.scrapers;
 
+import static java.util.Objects.isNull;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -9,6 +11,7 @@ import no.sikt.nva.exceptions.DublinCoreException;
 
 public final class TypeMapper {
 
+    public static final String COULD_NOT_CONVERT_TO_TYPE = "Could not convert types: ";
     private static final Map<Set<BrageType>, NvaType> TYPE_MAP = Map.of(
         Set.of(BrageType.BOOK, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_MONOGRAPH,
         Set.of(BrageType.CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER,
@@ -21,11 +24,21 @@ public final class TypeMapper {
         Set.of(BrageType.REPORT), NvaType.REPORT,
         Set.of(BrageType.RESEARCH_REPORT), NvaType.RESEARCH_REPORT
     );
-    public static final String COULD_NOT_CONVERT_TO_TYPE = "Could not convert types: ";
 
     public static String convertBrageTypeToNvaType(List<String> brageTypesAsString) {
-        var brageTypes = convertToBrageType(brageTypesAsString);
-        var nvaType = TYPE_MAP.get(brageTypes);
+        var brageTypes = brageTypesAsString
+                             .stream()
+                             .map(BrageType::fromValue)
+                             .collect(Collectors.toList());
+        var nvaType = TYPE_MAP.get(Set.copyOf(brageTypes));
+
+        if (isNull(nvaType) && brageTypes.size() >= 2) {
+            for (TypeMapper.BrageType type : brageTypes) {
+                if (hasValidType(type.toString())) {
+                    return TYPE_MAP.get(Collections.singleton(type)).getValue();
+                }
+            }
+        }
         if (Objects.nonNull(nvaType)) {
             return nvaType.getValue();
         } else {
@@ -33,15 +46,13 @@ public final class TypeMapper {
         }
     }
 
-    public static boolean hasValidTypes(List<String> brageTypesAsStrings) {
-        var brageTypes = convertToBrageType(brageTypesAsStrings);
-        return TYPE_MAP.containsKey(brageTypes);
+    public static boolean hasValidType(String brageType) {
+        var typeFromMap = convertToBrageType(brageType);
+        return TYPE_MAP.containsKey(Collections.singleton(typeFromMap));
     }
 
-    private static Set<BrageType> convertToBrageType(List<String> brageTypesAsStrings) {
-        return brageTypesAsStrings
-                   .stream().map(BrageType::fromValue).collect(
-                Collectors.toSet());
+    private static BrageType convertToBrageType(String brageType) {
+        return BrageType.fromValue(brageType);
     }
 
     public enum BrageType {
