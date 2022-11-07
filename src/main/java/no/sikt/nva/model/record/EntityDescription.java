@@ -7,6 +7,7 @@ import nva.commons.core.JacocoGenerated;
 
 public class EntityDescription {
 
+    private PublicationDate publicationDate;
     private List<String> descriptions;
     private List<String> abstracts;
     private String mainTitle;
@@ -14,6 +15,15 @@ public class EntityDescription {
     private List<Contributor> contributors;
     private List<String> tags;
     private PublicationInstance publicationInstance;
+
+    @JsonProperty("publicationDate")
+    public PublicationDate getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(PublicationDate publicationDate) {
+        this.publicationDate = publicationDate;
+    }
 
     @JsonProperty("publicationInstance")
     public PublicationInstance getPublicationInstance() {
@@ -85,7 +95,7 @@ public class EntityDescription {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(descriptions, abstracts, mainTitle, alternativeTitles, contributors, tags,
+        return Objects.hash(publicationDate, descriptions, abstracts, mainTitle, alternativeTitles, contributors, tags,
                             publicationInstance);
     }
 
@@ -99,7 +109,8 @@ public class EntityDescription {
             return false;
         }
         EntityDescription that = (EntityDescription) o;
-        return Objects.equals(descriptions, that.descriptions)
+        return Objects.equals(publicationDate, that.publicationDate)
+               && Objects.equals(descriptions, that.descriptions)
                && Objects.equals(abstracts, that.abstracts)
                && Objects.equals(mainTitle, that.mainTitle)
                && Objects.equals(alternativeTitles, that.alternativeTitles)

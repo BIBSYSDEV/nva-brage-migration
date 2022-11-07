@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public final class ChannelRegister {
 
     public static final String KANALREGISTER_READING_ERROR_MESSAGE = "Fatal error, could not read kanalregister";
-    public static final String NOT_FOUND_IN_CHANNEL_REGISTER = "NOT_FOUND_IN_CHANNEL_REGISTER";
+    public static final String NOT_FOUND_IN_CHANNEL_REGISTER = "NOT_FOUND_IN_CHANNEL_REGISTER: ";
     private static final String JOURNAL_PATH = "journals.csv";
     private static final String PUBLISHERS_PATH = "publishers.csv";
     private static final char SEPARATOR = ';';
@@ -69,7 +69,7 @@ public final class ChannelRegister {
         if (extractedIdentifierFromPublishersIsPresent(publisher, isbn)) {
             return lookUpInPublisherByIsbn(isbn);
         }
-        logger.warn(NOT_FOUND_IN_CHANNEL_REGISTER);
+        logger.warn(NOT_FOUND_IN_CHANNEL_REGISTER + record.getId());
         return null;
     }
 
