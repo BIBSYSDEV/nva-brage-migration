@@ -3,9 +3,9 @@
   <dcvalue element="contributor" qualifier="author">Navnesen1,&#x20;Fornavn1&#x20;Mellomnavn1</dcvalue>
   <dcvalue element="contributor" qualifier="author">Navnesen2,&#x20;Fornavn2&#x20;Mellomnavna2&#x20;Mellomnavnb2</dcvalue>
   <dcvalue element="contributor" qualifier="author">Navnesen3,&#x20;Fornavn3&#x20;Mellomnavn3</dcvalue>
-  <dcvalue element="date" qualifier="accessioned">2020-10-22T06:06:39Z</dcvalue>
-  <dcvalue element="date" qualifier="available">2020-10-22T06:06:39Z</dcvalue>
-  <dcvalue element="date" qualifier="issued">2020</dcvalue>
+  <dcvalue element="publicationDate" qualifier="accessioned">2020-10-22T06:06:39Z</dcvalue>
+  <dcvalue element="publicationDate" qualifier="available">2020-10-22T06:06:39Z</dcvalue>
+  <dcvalue element="publicationDate" qualifier="issued">2020</dcvalue>
   <dcvalue element="identifier" qualifier="isbn">978-82-502-0583-3</dcvalue>
   <dcvalue element="identifier" qualifier="uri">https:&#x2F;&#x2F;hdl.handle.net&#x2F;12&#x2F;3567</dcvalue>
   <dcvalue element="identifier" qualifier="issn">1501-2832</dcvalue>

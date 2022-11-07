@@ -42,7 +42,7 @@ public class DublinCoreScraperTest {
     void shouldLogDcValuesThatAreNotUsedForScraping() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var typeDcValue = new DcValue(Element.TYPE, null, "Book");
-        var expectedDcValuedLogged = new DcValue(Element.DESCRIPTION, Qualifier.PROVENANCE,
+        var expectedDcValuedLogged = new DcValue(null, null,
                                                  "Gurba Gurba gurba gurba gurba gurba "
                                                  + "gurba gurba gurba gurba gurba gurba gurba "
                                                  + "gurba gurba gurba gurba gurba (øæsdfadfåp)");

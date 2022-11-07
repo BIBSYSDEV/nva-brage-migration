@@ -9,8 +9,8 @@ import java.util.Objects;
 import no.sikt.nva.model.content.ResourceContent;
 import nva.commons.core.JacocoGenerated;
 
-@JsonPropertyOrder({"customerId", "bareOrigin", "id", "doi", "publisherAuthority", "rightsholder", "type",
-    "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
+@JsonPropertyOrder({"customerId", "bareOrigin", "id", "doi", "publishedDate", "publisherAuthority", "rightsholder",
+    "type", "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
     "recordContent"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
@@ -21,7 +21,6 @@ public class Record {
     private URI doi;
     private Path origin;
     private Type type;
-    private Date date;
     private Language language;
     private String embargo;
     private Boolean publisherAuthority;
@@ -29,6 +28,16 @@ public class Record {
     private String spatialCoverage;
     private Publication publication;
     private ResourceContent contentBundle;
+    private String publishedDate;
+
+    @JsonProperty("publishedDate")
+    public String getPublishedDate() {
+        return publishedDate;
+    }
+
+    public void setPublishedDate(String publishedDate) {
+        this.publishedDate = publishedDate;
+    }
 
     @JsonProperty("recordContent")
     public ResourceContent getContentBundle() {
@@ -39,23 +48,14 @@ public class Record {
         this.contentBundle = contentBundle;
     }
 
+    @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(entityDescription,
-                            customerId,
-                            id,
-                            doi,
-                            origin,
-                            type,
-                            date,
-                            language,
-                            embargo,
-                            publisherAuthority,
-                            rightsholder,
-                            spatialCoverage,
-                            publication);
+        return Objects.hash(entityDescription, customerId, id, doi, origin, type, language, embargo, publisherAuthority,
+                            rightsholder, spatialCoverage, publication, contentBundle, publishedDate);
     }
 
+    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -71,14 +71,14 @@ public class Record {
                && Objects.equals(doi, record.doi)
                && Objects.equals(origin, record.origin)
                && Objects.equals(type, record.type)
-               && Objects.equals(date, record.date)
                && Objects.equals(language, record.language)
                && Objects.equals(embargo, record.embargo)
                && Objects.equals(publisherAuthority, record.publisherAuthority)
                && Objects.equals(rightsholder, record.rightsholder)
                && Objects.equals(spatialCoverage, record.spatialCoverage)
                && Objects.equals(publication, record.publication)
-               && Objects.equals(contentBundle, record.contentBundle);
+               && Objects.equals(contentBundle, record.contentBundle)
+               && Objects.equals(publishedDate, record.publishedDate);
     }
 
     @JsonProperty("spatialCoverage")
@@ -88,15 +88,6 @@ public class Record {
 
     public void setSpatialCoverage(String spatialCoverage) {
         this.spatialCoverage = spatialCoverage;
-    }
-
-    @JsonProperty("date")
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
     }
 
     @JsonInclude

@@ -189,7 +189,7 @@ public final class DublinCoreValidator {
         if (hasDate(dublinCore)) {
             var date = dublinCore.getDcValues()
                            .stream()
-                           .filter(DcValue::isDate)
+                           .filter(DcValue::isPublicationDate)
                            .findAny()
                            .orElse(new DcValue())
                            .getValue();
@@ -206,7 +206,7 @@ public final class DublinCoreValidator {
     }
 
     private static boolean hasDate(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream().anyMatch(DcValue::isDate);
+        return dublinCore.getDcValues().stream().anyMatch(DcValue::isPublicationDate);
     }
 
     private static List<String> getCristinIdentifierErrors(DublinCore dublinCore) {

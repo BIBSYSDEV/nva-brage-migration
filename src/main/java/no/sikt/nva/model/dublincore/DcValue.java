@@ -110,8 +110,16 @@ public class DcValue {
         return Element.RIGHTS.equals(this.element) && Qualifier.HOLDER.equals(this.qualifier);
     }
 
-    public boolean isDate() {
+    public boolean isPublicationDate() {
         return Element.DATE.equals(this.element) && Qualifier.ISSUED.equals(this.qualifier);
+    }
+
+    public boolean isAvailableDate() {
+        return Element.DATE.equals(this.element) && Qualifier.AVAILABLE.equals(this.qualifier);
+    }
+
+    public boolean isAccessionedDate() {
+        return Element.DATE.equals(this.element) && Qualifier.ACCESSIONED.equals(this.qualifier);
     }
 
     public boolean isContributor() {
@@ -190,6 +198,10 @@ public class DcValue {
 
     public boolean isProjectRelation() {
         return Element.RELATION.equals(this.element) && Qualifier.PROJECT.equals(this.qualifier);
+    }
+
+    public boolean isProvenanceDescription() {
+        return Element.DESCRIPTION.equals(this.element) && Qualifier.PROVENANCE.equals(this.qualifier);
     }
 
     public String toXmlString() {

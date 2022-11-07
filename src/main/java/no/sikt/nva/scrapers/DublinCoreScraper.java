@@ -20,11 +20,11 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.record.Contributor;
-import no.sikt.nva.model.record.Date;
 import no.sikt.nva.model.record.EntityDescription;
 import no.sikt.nva.model.record.Identity;
 import no.sikt.nva.model.record.Language;
 import no.sikt.nva.model.record.Publication;
+import no.sikt.nva.model.record.PublicationDate;
 import no.sikt.nva.model.record.PublicationInstance;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
@@ -74,6 +74,7 @@ public final class DublinCoreScraper {
         List<DcValue> dcValues = new ArrayList<>();
         dcValues.add(new DcValue(Element.DATE, Qualifier.COPYRIGHT, null));
         dcValues.add(new DcValue(Element.RELATION, Qualifier.PROJECT, null));
+        dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.PROVENANCE, null));
         return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(DELIMITER));
     }
 
@@ -151,7 +152,6 @@ public final class DublinCoreScraper {
     private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
                                                                      BrageLocation brageLocation) {
         var record = new Record();
-        record.setDate(extractDate(dublinCore));
         record.setId(brageLocation.getHandle());
         record.setOrigin(brageLocation.getBrageBundlePath());
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
@@ -162,7 +162,7 @@ public final class DublinCoreScraper {
         record.setEntityDescription(extractEntityDescription(dublinCore));
         record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
         record.setPublication(createPublicationWithIdentifier(dublinCore, brageLocation, record));
-
+        record.setPublishedDate(extractAvailableDate(dublinCore));
         return record;
     }
 
@@ -185,7 +185,7 @@ public final class DublinCoreScraper {
 
     @NotNull
     private static String createPublicationIdForNonJournal(Record record, String identifier) {
-        return identifier + "/" + createValidDateForNvaUri(record.getDate());
+        return identifier + "/" + createValidDateForNvaUri(record.getEntityDescription().getPublicationDate());
     }
 
     private static String createPublicationIdUriForJournal(DublinCore dublinCore, BrageLocation brageLocation,
@@ -193,19 +193,19 @@ public final class DublinCoreScraper {
         return createPublicationIdForNonJournal(record, channelRegister.extractIdentifier(dublinCore, brageLocation));
     }
 
-    private static String createValidDateForNvaUri(Date date) {
-        if (nonNull(date) && containsMonthOrYear(date)) {
-            return date.getNva().split("-")[0];
+    private static String createValidDateForNvaUri(PublicationDate publicationDate) {
+        if (nonNull(publicationDate) && containsMonthOrYear(publicationDate)) {
+            return publicationDate.getNva().split("-")[0];
         }
-        if (nonNull(date)) {
-            return date.getNva();
+        if (nonNull(publicationDate)) {
+            return publicationDate.getNva();
         }
         return StringUtils.EMPTY_STRING;
     }
 
-    private static boolean containsMonthOrYear(Date date) {
-        return Arrays.stream(date.getNva().split("-")).count() == 2
-               || Arrays.stream(date.getNva().split("-")).count() == 3;
+    private static boolean containsMonthOrYear(PublicationDate publicationDate) {
+        return Arrays.stream(publicationDate.getNva().split("-")).count() == 2
+               || Arrays.stream(publicationDate.getNva().split("-")).count() == 3;
     }
 
     private static EntityDescription extractEntityDescription(DublinCore dublinCore) {
@@ -217,6 +217,7 @@ public final class DublinCoreScraper {
         entityDescription.setContributors(extractContributors(dublinCore));
         entityDescription.setTags(SubjectScraper.extractTags(dublinCore));
         entityDescription.setPublicationInstance(extractPublicationInstance(dublinCore));
+        entityDescription.setPublicationDate(extractPublicationDate(dublinCore));
         return entityDescription;
     }
 
@@ -297,7 +298,7 @@ public final class DublinCoreScraper {
     }
 
     private static boolean shouldBeIgnored(DcValue dcValue) {
-        return dcValue.isCopyrightDate() || dcValue.isProjectRelation();
+        return dcValue.isCopyrightDate() || dcValue.isProjectRelation() || dcValue.isProvenanceDescription();
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
@@ -359,21 +360,39 @@ public final class DublinCoreScraper {
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
-    private static Date extractDate(DublinCore dublinCore) {
+    private static PublicationDate extractPublicationDate(DublinCore dublinCore) {
         var date = dublinCore.getDcValues().stream()
-                       .filter(DcValue::isDate)
+                       .filter(DcValue::isPublicationDate)
                        .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
 
         if (isNull(date)) {
             return null;
         }
         if (DublinCoreValidator.containsYearOnly(date)) {
-            return new Date(date, date);
+            return new PublicationDate(date, date);
         }
         if (DublinCoreValidator.containsYearAndMonth(date)) {
-            return new Date(date, date + FIRST_DAY_OF_A_MONTH);
+            return new PublicationDate(date, date + FIRST_DAY_OF_A_MONTH);
         }
-        return new Date(date, date);
+        return new PublicationDate(date, date);
+    }
+
+    @SuppressWarnings("PMD.PrematureDeclaration")
+    private static String extractAvailableDate(DublinCore dublinCore) {
+        var availableDate = dublinCore.getDcValues().stream()
+                                .filter(DcValue::isAvailableDate)
+                                .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+        var accessionedDate = dublinCore.getDcValues().stream()
+                                  .filter(DcValue::isAccessionedDate)
+                                  .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+        if (nonNull(availableDate)) {
+            return availableDate;
+        }
+        if (nonNull(accessionedDate)) {
+            return accessionedDate;
+        } else {
+            return null;
+        }
     }
 
     private static boolean isNull(String date) {
