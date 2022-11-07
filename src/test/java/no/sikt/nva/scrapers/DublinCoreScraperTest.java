@@ -1,8 +1,8 @@
 package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.scrapers.DublinCoreScraper.ADVISOR;
-import static no.sikt.nva.scrapers.DublinCoreScraper.CONTRIBUTOR;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
+import static no.sikt.nva.scrapers.EntityDescriptionExtractor.ADVISOR;
+import static no.sikt.nva.scrapers.EntityDescriptionExtractor.CONTRIBUTOR;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
