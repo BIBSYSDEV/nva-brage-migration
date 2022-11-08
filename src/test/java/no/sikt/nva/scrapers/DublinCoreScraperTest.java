@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.scrapers.DublinCoreScraper.ADVISOR;
 import static no.sikt.nva.scrapers.DublinCoreScraper.CONTRIBUTOR;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
@@ -9,6 +10,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.file.Path;
@@ -177,5 +179,50 @@ public class DublinCoreScraperTest {
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(record.getPublication().getId(), is(equalTo("450187/2020")));
+    }
+
+    @Test
+    void shouldLogResourceWithMultipleTypes() {
+        var typeDcValue1 = new DcValue(Element.TYPE, null, "Journal Article");
+        var typeDcValue2 = new DcValue(Element.TYPE, null, "Book");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue1, typeDcValue2));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), containsString(MULTIPLE_UNMAPPABLE_TYPES.toString()));
+        assertThat(record.getType(), is(notNullValue()));
+    }
+
+    @Test
+    void shouldNotLogSingleTypeValues() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), not(containsString(MULTIPLE_UNMAPPABLE_TYPES.toString())));
+        assertThat(record.getType(), is(notNullValue()));
+    }
+
+    @Test
+    void shouldNotLogConvertiblePeerReviewedValues() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, peerReviewed));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), not(containsString(MULTIPLE_UNMAPPABLE_TYPES.toString())));
+        assertThat(record.getType(), is(notNullValue()));
     }
 }
