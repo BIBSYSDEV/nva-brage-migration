@@ -259,7 +259,7 @@ public final class DublinCoreScraper {
     private static PublicationInstance extractPublicationInstance(DublinCore dublinCore) {
         var publicationInstance = new PublicationInstance();
         publicationInstance.setIssue(extractIssue(dublinCore));
-        publicationInstance.setPageNumber(extractPageNumber(dublinCore));
+        publicationInstance.setPageNumber(PageConverter.extractPages(dublinCore));
         publicationInstance.setVolume(extractVolume(dublinCore));
         return publicationInstance;
     }
@@ -351,12 +351,6 @@ public final class DublinCoreScraper {
     private static String extractIssue(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isIssue)
-                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
-    }
-
-    private static String extractPageNumber(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isPageNumber)
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
