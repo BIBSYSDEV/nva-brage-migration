@@ -29,4 +29,11 @@ public class TypeMapperTest {
         var actualType = TypeMapper.convertBrageTypeToNvaType(List.of("Bachelor thesis"));
         assertThat(actualType, is(equalTo(expectedNvaType)));
     }
+
+    @Test
+    void shouldMapStudentPaperOthers() {
+        var expectedNvaType = NvaType.STUDENT_PAPER_OTHERS.getValue();
+        var actualType = TypeMapper.convertBrageTypeToNvaType(List.of("Student paper, others"));
+        assertThat(actualType, is(equalTo(expectedNvaType)));
+    }
 }
