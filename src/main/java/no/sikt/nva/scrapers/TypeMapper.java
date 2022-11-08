@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static java.util.Map.entry;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -9,19 +10,23 @@ import no.sikt.nva.exceptions.DublinCoreException;
 
 public final class TypeMapper {
 
-    private static final Map<Set<BrageType>, NvaType> TYPE_MAP = Map.of(
-        Set.of(BrageType.BOOK, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_MONOGRAPH,
-        Set.of(BrageType.CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER,
-        Set.of(BrageType.JOURNAL_ARTICLE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE,
-        Set.of(BrageType.BOOK), NvaType.BOOK,
-        Set.of(BrageType.CHAPTER), NvaType.CHAPTER,
-        Set.of(BrageType.JOURNAL_ARTICLE), NvaType.JOURNAL_ARTICLE,
-        Set.of(BrageType.DATASET), NvaType.DATASET,
-        Set.of(BrageType.OTHERS), NvaType.OTHERS,
-        Set.of(BrageType.REPORT), NvaType.REPORT,
-        Set.of(BrageType.RESEARCH_REPORT), NvaType.RESEARCH_REPORT
-    );
     public static final String COULD_NOT_CONVERT_TO_TYPE = "Could not convert types: ";
+    private static final Map<Set<BrageType>, NvaType> TYPE_MAP = Map.ofEntries(
+        entry(Set.of(BrageType.BOOK, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_MONOGRAPH),
+        entry(Set.of(BrageType.CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER),
+        entry(Set.of(BrageType.JOURNAL_ARTICLE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE),
+        entry(Set.of(BrageType.BOOK), NvaType.BOOK),
+        entry(Set.of(BrageType.CHAPTER), NvaType.CHAPTER),
+        entry(Set.of(BrageType.JOURNAL_ARTICLE), NvaType.JOURNAL_ARTICLE),
+        entry(Set.of(BrageType.DATASET), NvaType.DATASET),
+        entry(Set.of(BrageType.OTHERS), NvaType.OTHERS),
+        entry(Set.of(BrageType.REPORT), NvaType.REPORT),
+        entry(Set.of(BrageType.RESEARCH_REPORT), NvaType.RESEARCH_REPORT),
+        entry(Set.of(BrageType.BACHELOR_THESIS), NvaType.BACHELOR_THESIS),
+        entry(Set.of(BrageType.MASTER_THESIS), NvaType.MASTER_THESIS),
+        entry(Set.of(BrageType.STUDENT_PAPER), NvaType.STUDENT_PAPER),
+        entry(Set.of(BrageType.WORKING_PAPER), NvaType.WORKING_PAPER)
+    );
 
     public static String convertBrageTypeToNvaType(List<String> brageTypesAsString) {
         var brageTypes = convertToBrageType(brageTypesAsString);
@@ -53,6 +58,10 @@ public final class TypeMapper {
         OTHERS("Others"),
         REPORT("Report"),
         RESEARCH_REPORT("Research report"),
+        BACHELOR_THESIS("Bachelor thesis"),
+        WORKING_PAPER("Working paper"),
+        STUDENT_PAPER("Student paper"),
+        MASTER_THESIS("Master thesis"),
         PEER_REVIEWED("Peer Reviewed");
 
         private final String value;
@@ -86,6 +95,10 @@ public final class TypeMapper {
         JOURNAL_ARTICLE("Fagartikkel"),
         OTHERS("Annen rapport"),
         REPORT("Rapport"),
+        BACHELOR_THESIS("DegreeBachelor"),
+        WORKING_PAPER("ReportWorkingPaper"),
+        STUDENT_PAPER("OtherStudentWork"),
+        MASTER_THESIS("DegreeMaster"),
         RESEARCH_REPORT("Forskningsrapport"),
         SCIENTIFIC_MONOGRAPH("Vitenskapelig monografi"),
         SCIENTIFIC_CHAPTER("Vitenskapelig kapittel"),
