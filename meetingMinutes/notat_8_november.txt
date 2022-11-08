@@ -1,0 +1,20 @@
+Not scraped fields:
+
+identifier.citation kan skippes konsekvent.
+date.none kan skippes konsekvent.
+
+
+Få bort \n fra xml printing.
+
+Error:
+* håndtere empty doi.
+* prosesserer poster videre til records selv med errors.
+* INVALID_TYPE = [Peer reviewed, Journal article], INVALID_TYPE = [Student paper, others] Bundle location: 218072/92, Handle: https://hdl.handle.net/11250/160645
+* NOT_IN_CHANNEL_REGISTER = [Missing issn and/or title] Bundle location: 192819/17, Handle: https://hdl.handle.net/11250/160423 endre tekst til "missing issn AND journal"
+* INVALID_TYPE = [Doctoral thesis] Bundle location: 219619/33, Handle: https://hdl.handle.net/11250/160678
+
+
+Warnings:
+* logges bedre: NOT_FOUND_IN_CHANNEL_REGISTER: https://hdl.handle.net/11250/2992908
+* [INVALID_DATE_WARNING = [2014-05-21]] Bundle location: 219616/9, Handle: https://hdl.handle.net/11250/195274, skal være en error.
+* Unknown file in contents: CC-LICENSE in bundle: no.sikt.nva.model.BrageLocation@6c208957
