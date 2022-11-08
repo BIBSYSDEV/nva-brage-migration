@@ -33,8 +33,12 @@ public final class TypeMapper {
         entry(Set.of(BrageType.DESIGN_PRODUCT), NvaType.DESIGN_PRODUCT),
         entry(Set.of(BrageType.CHRONICLE), NvaType.CHRONICLE),
         entry(Set.of(BrageType.SOFTWARE), NvaType.SOFTWARE),
-        entry(Set.of(BrageType.LECTURE), NvaType.LECTURE)
-        );
+        entry(Set.of(BrageType.LECTURE), NvaType.LECTURE),
+        entry(Set.of(BrageType.RECORDING_MUSICAL), NvaType.RECORDING_MUSICAL),
+        entry(Set.of(BrageType.RECORDING_ORAL), NvaType.RECORDING_ORAL),
+        entry(Set.of(BrageType.PLAN_OR_BLUEPRINT), NvaType.PLAN_OR_BLUEPRINT),
+        entry(Set.of(BrageType.MAP), NvaType.MAP)
+    );
 
     public static String convertBrageTypeToNvaType(List<String> brageTypesAsString) {
         var brageTypes = brageTypesAsString
@@ -85,6 +89,10 @@ public final class TypeMapper {
         CHRONICLE("Chronicle"),
         SOFTWARE("Software"),
         LECTURE("Lecture"),
+        RECORDING_MUSICAL("Recording, musical"),
+        RECORDING_ORAL("Recording, oral"),
+        PLAN_OR_BLUEPRINT("Plan or blueprint"),
+        MAP("Map"),
         PEER_REVIEWED("Peer Reviewed");
 
         private final String value;
@@ -129,6 +137,10 @@ public final class TypeMapper {
         CHRONICLE("Feature article"),
         SOFTWARE("Programvare"),
         LECTURE("Lecture"),
+        RECORDING_MUSICAL("Music"),
+        RECORDING_ORAL("Lydopptak, verbalt"),
+        PLAN_OR_BLUEPRINT("Architecture"),
+        MAP("Map"),
         SCIENTIFIC_MONOGRAPH("Vitenskapelig monografi"),
         SCIENTIFIC_CHAPTER("Vitenskapelig kapittel"),
         SCIENTIFIC_ARTICLE("Vitenskapelig artikkel");
