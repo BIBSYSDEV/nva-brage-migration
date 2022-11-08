@@ -64,13 +64,15 @@ public final class DublinCoreScraper {
         dcValues.add(new DcValue(Element.DATE, Qualifier.COPYRIGHT, null));
         dcValues.add(new DcValue(Element.RELATION, Qualifier.PROJECT, null));
         dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.PROVENANCE, null));
+        dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.SPONSORSHIP, null));
+        dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.CITATION, null));
         return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(DELIMITER));
     }
 
     public static String extractIsbn(DublinCore dublinCore, BrageLocation brageLocation) {
         var isbnList = dublinCore.getDcValues()
                            .stream()
-                           .filter(DublinCoreScraper::dcValueIsIsbnAndNotEmpty)
+                           .filter(DcValue::isIsbnAndNotEmptyValue)
                            .map(DcValue::scrapeValueAndSetToScraped)
                            .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
                            .collect(Collectors.toList());
@@ -122,13 +124,6 @@ public final class DublinCoreScraper {
 
     public boolean onlineValidationIsEnabled() {
         return enableOnlineValidation;
-    }
-
-    private static boolean dcValueIsIsbnAndNotEmpty(DcValue dcValue) {
-        if (dcValue.isIsbnValue() && StringUtils.isEmpty(dcValue.getValue())) {
-            dcValue.scrapeValueAndSetToScraped();
-        }
-        return dcValue.isIsbnValue() && StringUtils.isNotEmpty(dcValue.getValue());
     }
 
     private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings) {
@@ -249,7 +244,11 @@ public final class DublinCoreScraper {
     }
 
     private static boolean shouldBeIgnored(DcValue dcValue) {
-        return dcValue.isCopyrightDate() || dcValue.isProjectRelation() || dcValue.isProvenanceDescription();
+        return dcValue.isCopyrightDate()
+               || dcValue.isProjectRelation()
+               || dcValue.isProvenanceDescription()
+               || dcValue.isSponsorShipDescription()
+               || dcValue.isCitationIdentifier();
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
@@ -317,7 +316,7 @@ public final class DublinCoreScraper {
             logger.warn("Following resource contains many issn values" + brageLocation.getOriginInformation());
         }
         if (issnList.isEmpty()) {
-            return StringUtils.EMPTY_STRING;
+            return null;
         }
         return issnList.get(0);
     }
@@ -328,7 +327,7 @@ public final class DublinCoreScraper {
             logger.warn("Following resource contains many isbn values: " + brageLocation.getOriginInformation());
         }
         if (isbnList.isEmpty()) {
-            return StringUtils.EMPTY_STRING;
+            return null;
         }
         return isbnList.get(0);
     }
