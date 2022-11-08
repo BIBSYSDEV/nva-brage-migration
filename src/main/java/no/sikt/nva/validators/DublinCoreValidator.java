@@ -1,6 +1,7 @@
 package no.sikt.nva.validators;
 
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.model.ErrorDetails.Error.NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.DublinCoreScraper.channelRegister;
 import java.net.URI;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("PMD.GodClass")
 public final class DublinCoreValidator {
@@ -30,6 +32,7 @@ public final class DublinCoreValidator {
     public static final String VERSION_STRING_NVE = "publishedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final URI LEXVO_URI_UNDEFINED = URI.create("http://lexvo.org/id/iso639-3/und");
+    public static final String MISSING_ISSN_AND_OR_TITLE = "Missing issn and/or title";
     private static final int ONE_DESCRIPTION = 1;
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -87,11 +90,23 @@ public final class DublinCoreValidator {
             if (nonNull(journalTitle) && nonNull(possibleChannelRegisterIdentifierByJournal)) {
                 return Optional.empty();
             } else {
-                return Optional.of(
-                    new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of(journalIssn)));
+                return getErrorDetailsWhenNotInChannelRegister(journalIssn, journalTitle);
             }
         }
         return Optional.empty();
+    }
+
+    @NotNull
+    private static Optional<ErrorDetails> getErrorDetailsWhenNotInChannelRegister(String journalIssn,
+                                                                                  String journalTitle) {
+        if (nonNull(journalIssn)) {
+            return Optional.of(new ErrorDetails(NOT_IN_CHANNEL_REGISTER, List.of(journalIssn)));
+        }
+        if (nonNull(journalTitle)) {
+            return Optional.of(new ErrorDetails(NOT_IN_CHANNEL_REGISTER, List.of(journalTitle)));
+        } else {
+            return Optional.of(new ErrorDetails(NOT_IN_CHANNEL_REGISTER, List.of(MISSING_ISSN_AND_OR_TITLE)));
+        }
     }
 
     private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
