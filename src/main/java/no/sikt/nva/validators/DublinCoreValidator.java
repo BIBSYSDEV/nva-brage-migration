@@ -66,6 +66,7 @@ public final class DublinCoreValidator {
         getVolumeWarning(dublinCore).ifPresent(warnings::add);
         getIssueWarning(dublinCore).ifPresent(warnings::add);
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
+        getMultipleUnmappableTypeWarning(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -231,17 +232,50 @@ public final class DublinCoreValidator {
                 Collectors.toList());
     }
 
+    @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     private static Optional<ErrorDetails> getInvalidTypes(DublinCore dublinCore) {
         var types = dublinCore.getDcValues().stream()
                         .filter(DcValue::isType)
                         .map(DcValue::getValue)
                         .collect(Collectors.toList());
-
-        if (TypeMapper.hasValidTypes(types)) {
+        if (types.isEmpty()) {
+            return Optional.of(new ErrorDetails(Error.INVALID_TYPE, types));
+        }
+        if (types.size() >= 2) {
+            return mapMultipleTypes(types);
+        }
+        if (TypeMapper.hasValidType(types.get(0))) {
             return Optional.empty();
         } else {
             return Optional.of(new ErrorDetails(Error.INVALID_TYPE, types));
         }
+    }
+
+    @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
+    private static Optional<WarningDetails> getMultipleUnmappableTypeWarning(DublinCore dublinCore) {
+        var types = DublinCoreScraper.extractType(dublinCore);
+        if (types.size() >= 2
+            && !getInvalidTypes(dublinCore).isPresent()
+            && !types.contains(BrageType.PEER_REVIEWED.getType())) {
+            return Optional.of(new WarningDetails(Warning.MULTIPLE_UNMAPPABLE_TYPES, types));
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<ErrorDetails> mapMultipleTypes(List<String> types) {
+        var firstTypeToMap = types.get(0);
+        if (firstTypeToMap.equals(BrageType.PEER_REVIEWED.getValue())) {
+            var nextTypeToMap = types.get(1);
+            if (TypeMapper.hasValidType(nextTypeToMap)) {
+                return Optional.empty();
+            } else {
+                return Optional.of(new ErrorDetails(Error.INVALID_TYPE, types));
+            }
+        }
+        if (TypeMapper.hasValidType(firstTypeToMap)) {
+            return Optional.empty();
+        }
+        return Optional.of(new ErrorDetails(Error.INVALID_TYPE, types));
     }
 
     private static boolean isJournalArticle(DublinCore dublinCore) {
