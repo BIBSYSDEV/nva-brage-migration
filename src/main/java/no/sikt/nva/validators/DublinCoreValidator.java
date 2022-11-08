@@ -263,8 +263,16 @@ public final class DublinCoreValidator {
     }
 
     private static Optional<ErrorDetails> mapMultipleTypes(List<String> types) {
-        var typeToMap = types.get(0);
-        if (TypeMapper.hasValidType(typeToMap)) {
+        var firstTypeToMap = types.get(0);
+        if (firstTypeToMap.equals(BrageType.PEER_REVIEWED.getValue())) {
+            var nextTypeToMap = types.get(1);
+            if (TypeMapper.hasValidType(nextTypeToMap)) {
+                return Optional.empty();
+            } else {
+                return Optional.of(new ErrorDetails(Error.INVALID_TYPE, types));
+            }
+        }
+        if (TypeMapper.hasValidType(firstTypeToMap)) {
             return Optional.empty();
         }
         return Optional.of(new ErrorDetails(Error.INVALID_TYPE, types));

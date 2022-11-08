@@ -14,7 +14,8 @@ import nva.commons.doi.UnitHttpClient;
 public class DoiValidator {
 
     public static final String HTTP_STRING = "http";
-    public static final String HTTPS_STRING_FOR_DOI = "https://";
+    public static final String HTTPS_STRING = "https://";
+    public static final String DOI_DOMAIN_NAME = "doi.org/";
 
     public static Optional<ArrayList<ErrorDetails>> getDoiErrorDetailsOnline(DublinCore dublinCore) {
         var doiList = extractDoiList(dublinCore);
@@ -79,8 +80,11 @@ public class DoiValidator {
     private static String addHttpStringIfNotPresent(String doi) {
         if (doi.contains(HTTP_STRING)) {
             return doi;
+        }
+        if (doi.contains(DOI_DOMAIN_NAME)) {
+            return HTTPS_STRING + doi;
         } else {
-            return HTTPS_STRING_FOR_DOI + doi;
+            return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
         }
     }
 

@@ -225,4 +225,19 @@ public class DublinCoreScraperTest {
         assertThat(appender.getMessages(), not(containsString(MULTIPLE_UNMAPPABLE_TYPES.toString())));
         assertThat(record.getType(), is(notNullValue()));
     }
+
+    @Test
+    void shouldNotLogConvertiblePeerReviewedValuesV2() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(peerReviewed, typeDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), not(containsString(MULTIPLE_UNMAPPABLE_TYPES.toString())));
+        assertThat(record.getType(), is(notNullValue()));
+    }
 }
