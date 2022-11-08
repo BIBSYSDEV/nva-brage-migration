@@ -317,7 +317,7 @@ public final class DublinCoreScraper {
             logger.warn("Following resource contains many issn values" + brageLocation.getOriginInformation());
         }
         if (issnList.isEmpty()) {
-            return new DcValue().getValue();
+            return StringUtils.EMPTY_STRING;
         }
         return issnList.get(0);
     }
@@ -328,7 +328,7 @@ public final class DublinCoreScraper {
             logger.warn("Following resource contains many isbn values: " + brageLocation.getOriginInformation());
         }
         if (isbnList.isEmpty()) {
-            return new DcValue().getValue();
+            return StringUtils.EMPTY_STRING;
         }
         return isbnList.get(0);
     }
