@@ -12,7 +12,7 @@ import no.sikt.nva.exceptions.DublinCoreException;
 
 public final class TypeMapper {
 
-    public static final String COULD_NOT_CONVERT_TO_TYPE = "Could not convert types: ";
+    private static final String COULD_NOT_CONVERT_TO_TYPE = "Could not convert types: ";
     private static final Map<Set<BrageType>, NvaType> TYPE_MAP = Map.ofEntries(
         entry(Set.of(BrageType.BOOK, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_MONOGRAPH),
         entry(Set.of(BrageType.CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER),
@@ -26,9 +26,15 @@ public final class TypeMapper {
         entry(Set.of(BrageType.RESEARCH_REPORT), NvaType.RESEARCH_REPORT),
         entry(Set.of(BrageType.BACHELOR_THESIS), NvaType.BACHELOR_THESIS),
         entry(Set.of(BrageType.MASTER_THESIS), NvaType.MASTER_THESIS),
+        entry(Set.of(BrageType.DOCTORAL_THESIS), NvaType.DOCTORAL_THESIS),
         entry(Set.of(BrageType.STUDENT_PAPER), NvaType.STUDENT_PAPER),
-        entry(Set.of(BrageType.WORKING_PAPER), NvaType.WORKING_PAPER)
-    );
+        entry(Set.of(BrageType.WORKING_PAPER), NvaType.WORKING_PAPER),
+        entry(Set.of(BrageType.STUDENT_PAPER_OTHERS), NvaType.STUDENT_PAPER_OTHERS),
+        entry(Set.of(BrageType.DESIGN_PRODUCT), NvaType.DESIGN_PRODUCT),
+        entry(Set.of(BrageType.CHRONICLE), NvaType.CHRONICLE),
+        entry(Set.of(BrageType.SOFTWARE), NvaType.SOFTWARE),
+        entry(Set.of(BrageType.LECTURE), NvaType.LECTURE)
+        );
 
     public static String convertBrageTypeToNvaType(List<String> brageTypesAsString) {
         var brageTypes = brageTypesAsString
@@ -70,9 +76,15 @@ public final class TypeMapper {
         REPORT("Report"),
         RESEARCH_REPORT("Research report"),
         BACHELOR_THESIS("Bachelor thesis"),
+        MASTER_THESIS("Master thesis"),
+        DOCTORAL_THESIS("Doctoral thesis"),
         WORKING_PAPER("Working paper"),
         STUDENT_PAPER("Student paper"),
-        MASTER_THESIS("Master thesis"),
+        STUDENT_PAPER_OTHERS("Student paper, others"),
+        DESIGN_PRODUCT("Design product"),
+        CHRONICLE("Chronicle"),
+        SOFTWARE("Software"),
+        LECTURE("Lecture"),
         PEER_REVIEWED("Peer Reviewed");
 
         private final String value;
@@ -107,10 +119,16 @@ public final class TypeMapper {
         OTHERS("Annen rapport"),
         REPORT("Rapport"),
         BACHELOR_THESIS("DegreeBachelor"),
+        MASTER_THESIS("DegreeMaster"),
+        DOCTORAL_THESIS("Doctoral thesis"),
         WORKING_PAPER("ReportWorkingPaper"),
         STUDENT_PAPER("OtherStudentWork"),
-        MASTER_THESIS("DegreeMaster"),
+        STUDENT_PAPER_OTHERS("Other student thesis"),
         RESEARCH_REPORT("Forskningsrapport"),
+        DESIGN_PRODUCT("Design"),
+        CHRONICLE("Feature article"),
+        SOFTWARE("Programvare"),
+        LECTURE("Lecture"),
         SCIENTIFIC_MONOGRAPH("Vitenskapelig monografi"),
         SCIENTIFIC_CHAPTER("Vitenskapelig kapittel"),
         SCIENTIFIC_ARTICLE("Vitenskapelig artikkel");
