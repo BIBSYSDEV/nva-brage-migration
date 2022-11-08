@@ -185,5 +185,4 @@ public class DublinCoreValidatorTest {
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of()))));
     }
-
 }
