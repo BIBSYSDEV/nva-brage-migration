@@ -38,6 +38,14 @@ public class DublinCoreValidatorTest {
     }
 
     @Test
+    void shouldNotAppendEmptyIsbnXmlTagsInDublinCoreToProblemList() {
+        var emtpyIsbnTag = new DcValue(Element.IDENTIFIER, Qualifier.ISBN, null);
+        var dublinCore = new DublinCore(List.of(emtpyIsbnTag));
+        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, null);
+        assertThat(actualProblemsList, not(contains(new ErrorDetails(INVALID_ISBN, List.of()))));
+    }
+
+    @Test
     void shouldReturnProblemListContainingInvalidIssnAndInvalidIsbnMessage() {
 
         var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "invalid_issn"),
