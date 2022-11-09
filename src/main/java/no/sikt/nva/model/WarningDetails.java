@@ -6,11 +6,15 @@ import java.util.Objects;
 public class WarningDetails {
 
     private final Warning warningCode;
-    private final List<String> details;
+    private List<String> details;
 
     public WarningDetails(Warning warningCode, List<String> details) {
         this.warningCode = warningCode;
         this.details = details;
+    }
+
+    public WarningDetails(Warning warningCode) {
+        this.warningCode = warningCode;
     }
 
     public WarningDetails(Warning warningCode, String detail) {
@@ -50,7 +54,8 @@ public class WarningDetails {
         VOLUME_NOT_NUMBER_WARNING,
         ISSUE_NOT_NUMBER_WARNING,
         PAGE_NUMBER_NOT_NUMBER_WARNING,
-        MULTIPLE_UNMAPPABLE_TYPES
+        MULTIPLE_UNMAPPABLE_TYPES,
+        INVALID_CC_LICENSE
     }
 
 }

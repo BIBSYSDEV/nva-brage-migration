@@ -93,7 +93,7 @@ public final class TypeMapper {
         RECORDING_ORAL("Recording, oral"),
         PLAN_OR_BLUEPRINT("Plan or blueprint"),
         MAP("Map"),
-        PEER_REVIEWED("Peer Reviewed");
+        PEER_REVIEWED("Peer reviewed");
 
         private final String value;
 

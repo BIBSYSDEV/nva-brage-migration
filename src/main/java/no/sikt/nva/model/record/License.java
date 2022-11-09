@@ -49,4 +49,9 @@ public class License {
         return Objects.equals(brageLicense, license.brageLicense)
                && Objects.equals(nvaLicense, license.nvaLicense);
     }
+
+    @Override
+    public String toString() {
+        return brageLicense;
+    }
 }

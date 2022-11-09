@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.ResourceNameConstants.EMPTY_LICENSE_RDF_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.INVALID_LICENSE_RDF_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.VALID_LICENSE_RDF_FILE_NAME;
 import static no.sikt.nva.scrapers.LicenseMapper.NvaLicenseIdentifier.DEFAULT_LICENSE;
@@ -35,6 +36,15 @@ public class LicenseScraperTest {
         var expectedLicense = new License(null, new NvaLicense(DEFAULT_LICENSE));
         var actualLicense = licenseScraper.extractOrCreateLicense(new File(PATH_TO_FILES));
         assertThat(actualLicense, is(equalTo(expectedLicense)));
+    }
+
+    @Test
+    void shouldDetectInvalidLicense() {
+
+        LicenseScraper licenseScraper = new LicenseScraper(EMPTY_LICENSE_RDF_FILE_NAME);
+        var license = licenseScraper.extractOrCreateLicense(new File(PATH_TO_FILES));
+        var expectedResult = false;
+        assertThat(licenseScraper.isValidCCLicense(license), is(equalTo(expectedResult)));
     }
 
 }

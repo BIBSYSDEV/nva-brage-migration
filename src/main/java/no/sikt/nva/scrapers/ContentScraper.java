@@ -28,7 +28,6 @@ public final class ContentScraper {
                                                                         BundleType.ORIGINAL.name(),
                                                                         BundleType.TEXT.name(),
                                                                         BundleType.THUMBNAIL.name());
-    public static final String IN_BUNDLE = " in bundle: ";
     public static final String EMPTY_LINE_REGEX = "(?m)(^\\s*$\\r?\\n)+";
     private static final Logger logger = LoggerFactory.getLogger(ContentScraper.class);
 
@@ -116,7 +115,10 @@ public final class ContentScraper {
     private void logWhenUnknownType(List<String> fileInformationList) {
         var type = getBundleType(fileInformationList);
         if (!KNOWN_CONTENT_FILE_TYPES.contains(type)) {
-            logger.warn(UNKNOWN_FILE_LOG_MESSAGE + getBundleType(fileInformationList) + IN_BUNDLE + brageLocation);
+            logger.warn(UNKNOWN_FILE_LOG_MESSAGE
+                        + getBundleType(fileInformationList)
+                        + StringUtils.SPACE
+                        + brageLocation.getOriginInformation());
         }
     }
 }
