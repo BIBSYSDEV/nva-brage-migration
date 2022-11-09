@@ -94,6 +94,13 @@ public class DcValue {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.ISSN.equals(this.qualifier);
     }
 
+    public boolean isIsbnAndNotEmptyValue() {
+        if (StringUtils.isEmpty(value)) {
+            scraped = true;
+        }
+        return isIsbnValue() && StringUtils.isNotEmpty(value);
+    }
+
     public boolean isIsbnValue() {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.ISBN.equals(this.qualifier);
     }
@@ -202,6 +209,14 @@ public class DcValue {
 
     public boolean isProvenanceDescription() {
         return Element.DESCRIPTION.equals(this.element) && Qualifier.PROVENANCE.equals(this.qualifier);
+    }
+
+    public boolean isSponsorShipDescription() {
+        return Element.DESCRIPTION.equals(this.element) && Qualifier.SPONSORSHIP.equals(this.qualifier);
+    }
+
+    public boolean isCitationIdentifier() {
+        return Element.IDENTIFIER.equals(this.element) && Qualifier.CITATION.equals(this.qualifier);
     }
 
     public String toXmlString() {

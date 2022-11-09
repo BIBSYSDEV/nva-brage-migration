@@ -4,6 +4,11 @@
 
 This repository contains code for extracting metadata from Brage bundles.
 
+## Documentation
+
+Documentation of this application exits
+on [Jira]( https://unit.atlassian.net/wiki/spaces/NVAP/pages/2571501733/Brage-NVA+migrerings+Applikasjon)
+
 ## This tool will not convert publications containing cristin-id or publications that are clausuled
 
 If the dublin_core.xml contains dcvalue with element="identifier" qualifier="cristin", it will be
@@ -20,11 +25,13 @@ java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -h
 Sample import:
 
 With specified zipfiles:
+
 ```shell
 java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar zipfile1.zip zipfile2.zip -c custommer-id
 ```
 
 With all zipfiles specified by the samlingsfil.txt:
+
 ```shell
 java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -c custommer-id
 ```

@@ -308,7 +308,7 @@ public final class DublinCoreValidator {
 
     private static boolean hasIsbn(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
-                   .anyMatch(DcValue::isIsbnValue);
+                   .anyMatch(DcValue::isIsbnAndNotEmptyValue);
     }
 
     private static boolean hasVolume(DublinCore dublinCore) {

@@ -19,13 +19,9 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.sikt.nva.model.record.Contributor;
-import no.sikt.nva.model.record.EntityDescription;
-import no.sikt.nva.model.record.Identity;
 import no.sikt.nva.model.record.Language;
 import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.PublicationDate;
-import no.sikt.nva.model.record.PublicationInstance;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
 import no.sikt.nva.scrapers.TypeMapper.NvaType;
@@ -44,13 +40,6 @@ public final class DublinCoreScraper {
 
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
     public static final String DELIMITER = "\n";
-    public static final String CONTRIBUTOR = "Contributor";
-    public static final String ADVISOR = "Advisor";
-    public static final String AUTHOR = "Author";
-    public static final String EDITOR = "Editor";
-    public static final String ILLUSTRATOR = "Illustrator";
-    public static final String OTHER_CONTRIBUTOR = "Other";
-    public static final String FIRST_DAY_OF_A_MONTH = "-01";
     public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
@@ -75,13 +64,15 @@ public final class DublinCoreScraper {
         dcValues.add(new DcValue(Element.DATE, Qualifier.COPYRIGHT, null));
         dcValues.add(new DcValue(Element.RELATION, Qualifier.PROJECT, null));
         dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.PROVENANCE, null));
+        dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.SPONSORSHIP, null));
+        dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.CITATION, null));
         return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(DELIMITER));
     }
 
     public static String extractIsbn(DublinCore dublinCore, BrageLocation brageLocation) {
         var isbnList = dublinCore.getDcValues()
                            .stream()
-                           .filter(DcValue::isIsbnValue)
+                           .filter(DcValue::isIsbnAndNotEmptyValue)
                            .map(DcValue::scrapeValueAndSetToScraped)
                            .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
                            .collect(Collectors.toList());
@@ -96,14 +87,6 @@ public final class DublinCoreScraper {
                    .findAny()
                    .orElse(new DcValue())
                    .scrapeValueAndSetToScraped();
-    }
-
-    public static List<String> extractAlternativeTitles(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isAlternativeTitle)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
     }
 
     public static String extractJournal(DublinCore dublinCore) {
@@ -159,7 +142,7 @@ public final class DublinCoreScraper {
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore));
         record.setDoi(extractDoi(dublinCore));
-        record.setEntityDescription(extractEntityDescription(dublinCore));
+        record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore));
         record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
         record.setPublication(createPublicationWithIdentifier(dublinCore, brageLocation, record));
         record.setPublishedDate(extractAvailableDate(dublinCore));
@@ -208,35 +191,6 @@ public final class DublinCoreScraper {
                || Arrays.stream(publicationDate.getNva().split("-")).count() == 3;
     }
 
-    private static EntityDescription extractEntityDescription(DublinCore dublinCore) {
-        var entityDescription = new EntityDescription();
-        entityDescription.setAbstracts(extractAbstracts(dublinCore));
-        entityDescription.setDescriptions(extractDescriptions(dublinCore));
-        entityDescription.setMainTitle(extractMainTitle(dublinCore));
-        entityDescription.setAlternativeTitles(extractAlternativeTitles(dublinCore));
-        entityDescription.setContributors(extractContributors(dublinCore));
-        entityDescription.setTags(SubjectScraper.extractTags(dublinCore));
-        entityDescription.setPublicationInstance(extractPublicationInstance(dublinCore));
-        entityDescription.setPublicationDate(extractPublicationDate(dublinCore));
-        return entityDescription;
-    }
-
-    private static List<String> extractDescriptions(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isDescription)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
-    }
-
-    private static List<String> extractAbstracts(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isAbstract)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
-    }
-
     private static URI extractDoi(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
@@ -254,14 +208,6 @@ public final class DublinCoreScraper {
         publication.setPublisher(extractPublisher(dublinCore));
         publication.setPartOfSeries(extractPartOfSeries(dublinCore));
         return publication;
-    }
-
-    private static PublicationInstance extractPublicationInstance(DublinCore dublinCore) {
-        var publicationInstance = new PublicationInstance();
-        publicationInstance.setIssue(extractIssue(dublinCore));
-        publicationInstance.setPageNumber(PageConverter.extractPages(dublinCore));
-        publicationInstance.setVolume(extractVolume(dublinCore));
-        return publicationInstance;
     }
 
     private static void logUnscrapedValues(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -298,7 +244,11 @@ public final class DublinCoreScraper {
     }
 
     private static boolean shouldBeIgnored(DcValue dcValue) {
-        return dcValue.isCopyrightDate() || dcValue.isProjectRelation() || dcValue.isProvenanceDescription();
+        return dcValue.isCopyrightDate()
+               || dcValue.isProjectRelation()
+               || dcValue.isProvenanceDescription()
+               || dcValue.isSponsorShipDescription()
+               || dcValue.isCitationIdentifier();
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
@@ -342,35 +292,6 @@ public final class DublinCoreScraper {
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
-    private static String extractVolume(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isVolume)
-                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
-    }
-
-    private static String extractIssue(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isIssue)
-                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
-    }
-
-    private static PublicationDate extractPublicationDate(DublinCore dublinCore) {
-        var date = dublinCore.getDcValues().stream()
-                       .filter(DcValue::isPublicationDate)
-                       .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
-
-        if (isNull(date)) {
-            return null;
-        }
-        if (DublinCoreValidator.containsYearOnly(date)) {
-            return new PublicationDate(date, date);
-        }
-        if (DublinCoreValidator.containsYearAndMonth(date)) {
-            return new PublicationDate(date, date + FIRST_DAY_OF_A_MONTH);
-        }
-        return new PublicationDate(date, date);
-    }
-
     @SuppressWarnings("PMD.PrematureDeclaration")
     private static String extractAvailableDate(DublinCore dublinCore) {
         var availableDate = dublinCore.getDcValues().stream()
@@ -389,46 +310,13 @@ public final class DublinCoreScraper {
         }
     }
 
-    private static boolean isNull(String date) {
-        return date == null;
-    }
-
-    private static List<Contributor> extractContributors(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isContributor)
-                   .map(DublinCoreScraper::createContributorFromDcValue)
-                   .flatMap(Optional::stream)
-                   .collect(Collectors.toList());
-    }
-
-    private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
-        Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped());
-        String brageRole = dcValue.getQualifier().getValue();
-        if (dcValue.isAuthor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, AUTHOR, brageRole));
-        }
-        if (dcValue.isAdvisor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, ADVISOR, brageRole));
-        }
-        if (dcValue.isEditor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, EDITOR, brageRole));
-        }
-        if (dcValue.isIllustrator()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, ILLUSTRATOR, brageRole));
-        }
-        if (dcValue.isOtherContributor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, OTHER_CONTRIBUTOR, brageRole));
-        }
-        return Optional.empty();
-    }
-
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     private static String handleIssnList(List<String> issnList, BrageLocation brageLocation) {
         if (issnList.size() > 1) {
             logger.warn("Following resource contains many issn values" + brageLocation.getOriginInformation());
         }
         if (issnList.isEmpty()) {
-            return new DcValue().getValue();
+            return null;
         }
         return issnList.get(0);
     }
@@ -439,7 +327,7 @@ public final class DublinCoreScraper {
             logger.warn("Following resource contains many isbn values: " + brageLocation.getOriginInformation());
         }
         if (isbnList.isEmpty()) {
-            return new DcValue().getValue();
+            return null;
         }
         return isbnList.get(0);
     }
