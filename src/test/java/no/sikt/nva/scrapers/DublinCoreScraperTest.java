@@ -1,7 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
-import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_NOT_NUMBER_WARNING;
+import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.scrapers.DublinCoreScraper.ADVISOR;
 import static no.sikt.nva.scrapers.DublinCoreScraper.CONTRIBUTOR;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
@@ -262,7 +262,7 @@ public class DublinCoreScraperTest {
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(record.getEntityDescription().getPublicationInstance().getPages(), is(equalTo(expectedPages)));
-        assertThat(appender.getMessages(), not(containsString(PAGE_NUMBER_NOT_NUMBER_WARNING.toString())));
+        assertThat(appender.getMessages(), not(containsString(PAGE_NUMBER_FORMAT_NOT_RECOGNIZED.toString())));
     }
 
     @Test
@@ -281,7 +281,7 @@ public class DublinCoreScraperTest {
         assertThat(record.getEntityDescription().getPublicationInstance().getPages(),
                    is(equalTo(new Pages(unrecognizedPagenumber,
                                         null, null))));
-        assertThat(appender.getMessages(), containsString(PAGE_NUMBER_NOT_NUMBER_WARNING.toString()));
+        assertThat(appender.getMessages(), containsString(PAGE_NUMBER_FORMAT_NOT_RECOGNIZED.toString()));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

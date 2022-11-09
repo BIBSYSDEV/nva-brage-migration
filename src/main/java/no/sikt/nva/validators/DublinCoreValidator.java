@@ -175,7 +175,7 @@ public final class DublinCoreValidator {
                                  .orElse(StringUtils.EMPTY_STRING);
             return PageConverter.isValidPageNumber(pageNumber)
                        ? Optional.empty()
-                       : Optional.of(new WarningDetails(Warning.PAGE_NUMBER_NOT_NUMBER_WARNING, pageNumber));
+                       : Optional.of(new WarningDetails(Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED, pageNumber));
         }
         return Optional.empty();
     }
