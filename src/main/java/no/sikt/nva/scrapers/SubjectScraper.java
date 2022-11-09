@@ -33,10 +33,18 @@ public final class SubjectScraper {
     public static List<String> extractTags(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
-                   .filter(DcValue::isSubject)
+                   .filter(SubjectScraper::isSubjectAndNotSpecificallyIgnored)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .collect(
                        Collectors.toList());
+    }
+
+    private static boolean isSubjectAndNotSpecificallyIgnored(DcValue dcValue) {
+        return dcValue.isSubject() && !specificallyIgnored(dcValue);
+    }
+
+    private static boolean specificallyIgnored(DcValue dcValue) {
+        return Qualifier.NORWEGIAN_SCIENCE_INDEX.equals(dcValue.getQualifier());
     }
 
     private static boolean isUnrecognizedSubjectType(DcValue dcValue) {
@@ -44,6 +52,8 @@ public final class SubjectScraper {
     }
 
     private static boolean isNotRecognized(DcValue dcValue) {
-        return !Qualifier.NONE.equals(dcValue.getQualifier()) && !Qualifier.KEYWORD.equals(dcValue.getQualifier());
+        return !specificallyIgnored(dcValue)
+               && !Qualifier.NONE.equals(dcValue.getQualifier())
+               && !Qualifier.KEYWORD.equals(dcValue.getQualifier());
     }
 }

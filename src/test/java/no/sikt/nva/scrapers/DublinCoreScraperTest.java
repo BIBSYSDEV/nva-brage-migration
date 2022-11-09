@@ -2,12 +2,14 @@ package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
+import static no.sikt.nva.model.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.ADVISOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.CONTRIBUTOR;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -282,6 +284,48 @@ public class DublinCoreScraperTest {
                    is(equalTo(new Pages(unrecognizedPagenumber,
                                         null, null))));
         assertThat(appender.getMessages(), containsString(PAGE_NUMBER_FORMAT_NOT_RECOGNIZED.toString()));
+    }
+
+    @Test
+    void shouldScrapeNormalSubjectsToRecordAndIgnoreNsiTagsSilently() {
+        var tag1 = randomString();
+        var tag2 = randomString();
+        var tag3 = randomString();
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var normalTagWithQualifierNone = new DcValue(Element.SUBJECT, Qualifier.NONE, tag1);
+        var normalTagWithQualifierKeyword = new DcValue(Element.SUBJECT, Qualifier.KEYWORD, tag2);
+        var nsiTag = new DcValue(Element.SUBJECT, Qualifier.NORWEGIAN_SCIENCE_INDEX, tag3);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(normalTagWithQualifierNone,
+                    normalTagWithQualifierKeyword,
+                    nsiTag, typeDcValue,
+                    peerReviewed));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getEntityDescription().getTags(), containsInAnyOrder(tag1, tag2));
+        assertThat(record.getEntityDescription().getTags(), not(contains(tag3)));
+        assertThat(appender.getMessages(), not(containsString(SUBJECT_WARNING.toString())));
+    }
+
+    @Test
+    void shouldScrapeUnrecognizedSubjectsAndWarnAboutUnrecognizedSubject() {
+        var tag = randomString();
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var normalTagWithUnrecognizedQualifier = new DcValue(Element.SUBJECT, Qualifier.AGROVOC, tag);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(normalTagWithUnrecognizedQualifier, typeDcValue, peerReviewed));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getEntityDescription().getTags(), contains(tag));
+        assertThat(appender.getMessages(), containsString(SUBJECT_WARNING.toString()));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
