@@ -1,9 +1,11 @@
 package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
+import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.ADVISOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.CONTRIBUTOR;
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -15,6 +17,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Stream;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
@@ -22,8 +25,13 @@ import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.record.Contributor;
 import no.sikt.nva.model.record.Identity;
+import no.sikt.nva.model.record.Pages;
+import no.sikt.nva.model.record.Range;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class DublinCoreScraperTest {
 
@@ -239,5 +247,51 @@ public class DublinCoreScraperTest {
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(appender.getMessages(), not(containsString(MULTIPLE_UNMAPPABLE_TYPES.toString())));
         assertThat(record.getType(), is(notNullValue()));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideDcValueAndExpectedPages")
+    void shouldExtractPagesWithDifferentFormats(DcValue pageNumber, Pages expectedPages) {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(peerReviewed, typeDcValue, pageNumber));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getEntityDescription().getPublicationInstance().getPages(), is(equalTo(expectedPages)));
+        assertThat(appender.getMessages(), not(containsString(PAGE_NUMBER_FORMAT_NOT_RECOGNIZED.toString())));
+    }
+
+    @Test
+    void shouldLogWarningIfPageNumberIsNotRecognized() {
+        var unrecognizedPagenumber = randomString();
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var unrecognizedPageNumber = new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, unrecognizedPagenumber);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(unrecognizedPageNumber, typeDcValue, peerReviewed));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getEntityDescription().getPublicationInstance().getPages(),
+                   is(equalTo(new Pages(unrecognizedPagenumber,
+                                        null, null))));
+        assertThat(appender.getMessages(), containsString(PAGE_NUMBER_FORMAT_NOT_RECOGNIZED.toString()));
+    }
+
+    private static Stream<Arguments> provideDcValueAndExpectedPages() {
+        return Stream.of(
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96"), new Pages("96", null, "96")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96 s."), new Pages("96 s.", null, "96")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "s. 96"), new Pages("s. 96", new Range(
+                "96", "96"), "1")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34-89"), new Pages("34-89", new Range(
+                "34", "89"), "55"))
+        );
     }
 }

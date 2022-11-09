@@ -7,7 +7,7 @@ public class PublicationInstance {
 
     private String volume;
     private String issue;
-    private String pageNumber;
+    private Pages pages;
 
     @JacocoGenerated
     @JsonProperty("volume")
@@ -30,12 +30,12 @@ public class PublicationInstance {
     }
 
     @JacocoGenerated
-    @JsonProperty("pageNumber")
-    public String getPageNumber() {
-        return pageNumber;
+    @JsonProperty("pages")
+    public Pages getPages() {
+        return pages;
     }
 
-    public void setPageNumber(String pageNumber) {
-        this.pageNumber = pageNumber;
+    public void setPageNumber(Pages pages) {
+        this.pages = pages;
     }
 }
