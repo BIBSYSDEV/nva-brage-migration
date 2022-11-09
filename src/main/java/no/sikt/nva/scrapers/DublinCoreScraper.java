@@ -159,7 +159,11 @@ public final class DublinCoreScraper {
         var recordType = record.getType().getNva();
         if (NvaType.JOURNAL_ARTICLE.getValue().equals(recordType)) {
             publication.setId(createPublicationIdUriForJournal(dublinCore, brageLocation, record));
-        } else {
+        }
+        var type = record.getType().getNva();
+        if (nonNull(publication.getPublisher())
+            && NvaType.REPORT.getValue().equals(type)
+            || NvaType.BOOK.getValue().equals(type)) {
             var identifier = channelRegister.lookUpInChannelRegister(record);
             if (nonNull(identifier)) {
                 publication.setId(createPublicationIdForNonJournal(record, identifier));

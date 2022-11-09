@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.model.WarningDetails.Warning.SUBJECT_WARNING;
@@ -168,7 +169,7 @@ public class DublinCoreScraperTest {
     void shouldReturnIdFromChannelRegisterForResourceWithValidIssn() {
         var publisherDcValue = new DcValue(Element.PUBLISHER, null, "somePublisher");
         var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
-        var typeDcValue = new DcValue(Element.TYPE, null, "Research Report");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Report");
         var dateDcValue = new DcValue(Element.DATE, Qualifier.ISSUED, "2020");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(publisherDcValue, issnDcValue, typeDcValue, dateDcValue));
@@ -314,6 +315,35 @@ public class DublinCoreScraperTest {
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(record.getEntityDescription().getTags(), contains(tag));
         assertThat(appender.getMessages(), containsString(SUBJECT_WARNING.toString()));
+    }
+
+    @Test
+    void shouldNotLookInChannelRegisterForOtherType() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var publisherDcValue = new DcValue(Element.PUBLISHER, null, "Publisher");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, publisherDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), not(containsString(NOT_FOUND_IN_CHANNEL_REGISTER)));
+    }
+
+    @Test
+    void shouldLookInChannelRegisterForReportType() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Report");
+        var publisherDcValue = new DcValue(Element.PUBLISHER, null, "Publisher");
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, publisherDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), containsString(NOT_FOUND_IN_CHANNEL_REGISTER));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
