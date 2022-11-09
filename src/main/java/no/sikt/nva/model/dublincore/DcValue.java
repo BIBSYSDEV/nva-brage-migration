@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 
+@SuppressWarnings("PMD.GodClass")
 public class DcValue {
 
     public static final String XML_PREFIX = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
@@ -222,6 +223,8 @@ public class DcValue {
     public String toXmlString() {
         StringWriter sw = new StringWriter();
         JAXB.marshal(this, sw);
-        return sw.toString().replace(XML_PREFIX, StringUtils.EMPTY_STRING);
+        return sw.toString()
+                   .replace(XML_PREFIX, StringUtils.EMPTY_STRING)
+                   .replace("\n", StringUtils.EMPTY_STRING);
     }
 }
