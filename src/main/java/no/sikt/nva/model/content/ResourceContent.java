@@ -42,10 +42,20 @@ public class ResourceContent {
     }
 
     public enum BundleType {
-        ORIGINAL,
-        TEXT,
-        THUMBNAIL,
-        LICENSE,
-        CCLICENSE
+        ORIGINAL("ORIGINAL"),
+        TEXT("TEXT"),
+        THUMBNAIL("THUMBNAIL"),
+        LICENSE("LICENSE"),
+        CCLICENSE("CC-LICENSE");
+
+        private final String value;
+
+        BundleType(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

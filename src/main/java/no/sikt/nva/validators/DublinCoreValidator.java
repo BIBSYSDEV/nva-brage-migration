@@ -17,6 +17,7 @@ import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.PageConverter;
 import no.sikt.nva.scrapers.SubjectScraper;
 import no.sikt.nva.scrapers.TypeMapper;
 import no.sikt.nva.scrapers.TypeMapper.BrageType;
@@ -167,15 +168,14 @@ public final class DublinCoreValidator {
 
     private static Optional<WarningDetails> getPageNumberWarning(DublinCore dublinCore) {
         if (hasPageNumber(dublinCore)) {
+
             var pageNumber = dublinCore.getDcValues().stream()
                                  .filter(DcValue::isPageNumber)
-                                 .findAny().orElse(new DcValue()).getValue();
-            try {
-                Integer.parseInt(pageNumber);
-                return Optional.empty();
-            } catch (Exception e) {
-                return Optional.of(new WarningDetails(Warning.PAGE_NUMBER_NOT_NUMBER_WARNING, pageNumber));
-            }
+                                 .findAny().map(DcValue::getValue)
+                                 .orElse(StringUtils.EMPTY_STRING);
+            return PageConverter.isValidPageNumber(pageNumber)
+                       ? Optional.empty()
+                       : Optional.of(new WarningDetails(Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED, pageNumber));
         }
         return Optional.empty();
     }

@@ -66,6 +66,7 @@ public final class DublinCoreScraper {
         dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.PROVENANCE, null));
         dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.SPONSORSHIP, null));
         dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.CITATION, null));
+        dcValues.add(new DcValue(Element.SUBJECT, Qualifier.NORWEGIAN_SCIENCE_INDEX, null));
         return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(DELIMITER));
     }
 
