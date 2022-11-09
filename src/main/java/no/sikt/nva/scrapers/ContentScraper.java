@@ -118,7 +118,7 @@ public final class ContentScraper {
         if (!KNOWN_CONTENT_FILE_TYPES.contains(type)) {
             logger.warn(UNKNOWN_FILE_LOG_MESSAGE
                         + getBundleType(fileInformationList)
-                        + IN_BUNDLE
+                        + StringUtils.SPACE
                         + brageLocation.getOriginInformation());
         }
     }
