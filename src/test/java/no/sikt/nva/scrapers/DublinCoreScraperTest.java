@@ -37,18 +37,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class DublinCoreScraperTest {
 
-    @Test
-    void shouldReturnExceptionIfResourceIsInCristin() {
-        var brageLocation = new BrageLocation(Path.of("somebundle/someindex"));
-        var typeDcValue = new DcValue(Element.TYPE, null, "Book");
-        var cristinDcValue = new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN, "cristinIdentifier");
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, cristinDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
-        assertThrows(DublinCoreException.class,
-                     () -> dublinCoreScraper
-                               .validateAndParseDublinCore(dublinCore, brageLocation));
-    }
 
     @Test
     void shouldLogDcValuesThatAreNotUsedForScraping() {

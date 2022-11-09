@@ -193,4 +193,15 @@ public class DublinCoreValidatorTest {
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of()))));
     }
+
+    @Test
+    void shouldReturnCristinWarningWhenResourceHasCristinId() {
+        var dcValues = List.of(
+            new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN,"someCristinId"),
+            new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
+
+        assertThat(actualErrors, hasItems(new WarningDetails(Warning.CRISTIN_ID_PRESENT, "someCristinId")));
+    }
 }

@@ -40,7 +40,6 @@ public final class DublinCoreValidator {
 
         var errors = new ArrayList<ErrorDetails>();
         DoiValidator.getDoiErrorDetailsOffline(dublinCore).ifPresent(errors::addAll);
-        geCristinidErrorDetails(dublinCore).ifPresent(errors::add);
         getInvalidTypes(dublinCore).ifPresent(errors::add);
         getIssnErrors(dublinCore, brageLocation).ifPresent(errors::add);
         getIsbnErrors(dublinCore, brageLocation).ifPresent(errors::add);
@@ -48,12 +47,12 @@ public final class DublinCoreValidator {
         return errors;
     }
 
-    public static Optional<ErrorDetails> geCristinidErrorDetails(DublinCore dublinCore) {
-        var errorList = getCristinIdentifierErrors(dublinCore);
-        if (errorList.isEmpty()) {
+    public static Optional<WarningDetails> geCristinIdWarningDetails(DublinCore dublinCore) {
+        var warningList = getCristinIdentifierWarnings(dublinCore);
+        if (warningList.isEmpty()) {
             return Optional.empty();
         } else {
-            return Optional.of(new ErrorDetails(Error.CRISTIN_ID_PRESENT, errorList));
+            return Optional.of(new WarningDetails(Warning.CRISTIN_ID_PRESENT, warningList));
         }
     }
 
@@ -68,6 +67,7 @@ public final class DublinCoreValidator {
         getIssueWarning(dublinCore).ifPresent(warnings::add);
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
         getMultipleUnmappableTypeWarning(dublinCore).ifPresent(warnings::add);
+        geCristinIdWarningDetails(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -225,7 +225,7 @@ public final class DublinCoreValidator {
         return dublinCore.getDcValues().stream().anyMatch(DcValue::isPublicationDate);
     }
 
-    private static List<String> getCristinIdentifierErrors(DublinCore dublinCore) {
+    private static List<String> getCristinIdentifierWarnings(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isCristinDcValue).map(DcValue::toXmlString).collect(
