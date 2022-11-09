@@ -23,11 +23,11 @@ public final class ContentScraper {
     public static final int SIZE_3 = 3;
     public static final String CONTENT_FILE_PARSING_ERROR_MESSAGE = "could not parse content file";
     public static final String UNKNOWN_FILE_LOG_MESSAGE = "Unknown file in contents: ";
-    public static final List<String> KNOWN_CONTENT_FILE_TYPES = List.of(BundleType.CCLICENSE.name(),
-                                                                        BundleType.LICENSE.name(),
-                                                                        BundleType.ORIGINAL.name(),
-                                                                        BundleType.TEXT.name(),
-                                                                        BundleType.THUMBNAIL.name());
+    public static final List<String> KNOWN_CONTENT_FILE_TYPES = List.of(BundleType.CCLICENSE.getValue(),
+                                                                        BundleType.LICENSE.getValue(),
+                                                                        BundleType.ORIGINAL.getValue(),
+                                                                        BundleType.TEXT.getValue(),
+                                                                        BundleType.THUMBNAIL.getValue());
     public static final String IN_BUNDLE = " in bundle: ";
     public static final String EMPTY_LINE_REGEX = "(?m)(^\\s*$\\r?\\n)+";
     private static final Logger logger = LoggerFactory.getLogger(ContentScraper.class);
@@ -116,7 +116,10 @@ public final class ContentScraper {
     private void logWhenUnknownType(List<String> fileInformationList) {
         var type = getBundleType(fileInformationList);
         if (!KNOWN_CONTENT_FILE_TYPES.contains(type)) {
-            logger.warn(UNKNOWN_FILE_LOG_MESSAGE + getBundleType(fileInformationList) + IN_BUNDLE + brageLocation);
+            logger.warn(UNKNOWN_FILE_LOG_MESSAGE
+                        + getBundleType(fileInformationList)
+                        + IN_BUNDLE
+                        + brageLocation.getOriginInformation());
         }
     }
 }
