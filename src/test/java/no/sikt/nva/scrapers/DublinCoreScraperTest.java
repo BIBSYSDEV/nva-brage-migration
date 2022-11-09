@@ -287,8 +287,8 @@ public class DublinCoreScraperTest {
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
         return Stream.of(
             Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96"), new Pages("96", null, "96")),
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96 .s"), new Pages("96 .s", null, "96")),
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, ".s 96"), new Pages(".s 96", new Range(
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96 s."), new Pages("96 s.", null, "96")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "s. 96"), new Pages("s. 96", new Range(
                 "96", "96"), "1")),
             Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34-89"), new Pages("34-89", new Range(
                 "34", "89"), "55"))

@@ -9,16 +9,16 @@ import nva.commons.core.StringUtils;
 
 public class PageConverter {
 
-    public static final String PAGE_POSTFIX = " .s";
-    public static final String PAGE_PREFIX = ".s ";
+    public static final String PAGE_POSTFIX = " s.";
+    public static final String PAGE_PREFIX = "s. ";
     public static final String PAGE_INTERVAL_DELIMITER = "-";
     private static final String intervalRegex = "^[0-9]+-[0-9]+$";
     private static final Pattern intervalPattern = Pattern.compile(intervalRegex);
     private static final String numberRegex = "^[0-9]+$";
     private static final Pattern numberPattern = Pattern.compile(numberRegex);
-    private static final String singleSpecificPage = "^\\.s [0-9]+$";
+    private static final String singleSpecificPage = "^s\\. [0-9]+$";
     private static final Pattern singleSpecificPagePattern = Pattern.compile(singleSpecificPage);
-    private static final String multiplePagesWithPostfix = "^[0-9]+ \\.s$";
+    private static final String multiplePagesWithPostfix = "^[0-9]+ s\\.$";
     private static final Pattern multiplePagesWithPostfixPattern = Pattern.compile(multiplePagesWithPostfix);
     private static final String SINGLE_PAGE = "1";
     private static final int START_PAGE = 0;
