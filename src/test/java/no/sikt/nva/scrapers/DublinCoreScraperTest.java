@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.model.WarningDetails.Warning.SUBJECT_WARNING;
@@ -326,6 +327,23 @@ public class DublinCoreScraperTest {
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(record.getEntityDescription().getTags(), contains(tag));
         assertThat(appender.getMessages(), containsString(SUBJECT_WARNING.toString()));
+    }
+
+    @Test
+    void nonIsoLanguageShouldBeLoggedAsError() {
+        var nonIsoLanguage = randomString();
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var nonIsoLanguageDcValue = new DcValue(Element.LANGUAGE, Qualifier.ISO, nonIsoLanguage);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(nonIsoLanguageDcValue, typeDcValue, peerReviewed));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var exception = assertThrows(
+            DublinCoreException.class,
+            () -> dublinCoreScraper
+                      .validateAndParseDublinCore(dublinCore, new BrageLocation(null)));
+        assertThat(exception.getMessage(), containsString(INVALID_LANGUAGE.toString()));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

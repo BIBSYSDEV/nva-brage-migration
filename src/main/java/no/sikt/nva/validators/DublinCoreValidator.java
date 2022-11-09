@@ -3,7 +3,6 @@ package no.sikt.nva.validators;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.model.ErrorDetails.Error.NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.DublinCoreScraper.channelRegister;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,12 +16,12 @@ import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.BrageNvaLanguageMapper;
 import no.sikt.nva.scrapers.PageConverter;
 import no.sikt.nva.scrapers.SubjectScraper;
 import no.sikt.nva.scrapers.TypeMapper;
 import no.sikt.nva.scrapers.TypeMapper.BrageType;
 import nva.commons.core.StringUtils;
-import nva.commons.core.language.LanguageMapper;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +31,6 @@ public final class DublinCoreValidator {
 
     public static final String VERSION_STRING_NVE = "publishedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
-    public static final URI LEXVO_URI_UNDEFINED = URI.create("http://lexvo.org/id/iso639-3/und");
     public static final String MISSING_ISSN_AND_OR_TITLE = "Missing issn and/or title";
     private static final int ONE_DESCRIPTION = 1;
 
@@ -45,6 +43,7 @@ public final class DublinCoreValidator {
         getIssnErrors(dublinCore, brageLocation).ifPresent(errors::add);
         getIsbnErrors(dublinCore, brageLocation).ifPresent(errors::add);
         getChannelRegisterErrors(dublinCore, brageLocation).ifPresent(errors::add);
+        BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
         return errors;
     }
 
@@ -62,7 +61,7 @@ public final class DublinCoreValidator {
         getVersionWarnings(dublinCore).ifPresent(warnings::add);
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
         getDateWarning(dublinCore).ifPresent(warnings::add);
-        getLanguageWarning(dublinCore).ifPresent(warnings::add);
+        BrageNvaLanguageMapper.getLanguageWarning(dublinCore).ifPresent(warnings::add);
         getDescriptionsWarning(dublinCore).ifPresent(warnings::add);
         getVolumeWarning(dublinCore).ifPresent(warnings::add);
         getIssueWarning(dublinCore).ifPresent(warnings::add);
@@ -185,20 +184,6 @@ public final class DublinCoreValidator {
             return Optional.empty();
         }
         return getVersionWarning(dublinCore);
-    }
-
-    private static Optional<WarningDetails> getLanguageWarning(DublinCore dublinCore) {
-        var language =
-            dublinCore.getDcValues()
-                .stream()
-                .filter(DcValue::isLanguage).findAny().orElse(new DcValue()).getValue();
-        var mappedToNvaLanguage = LanguageMapper.toUri(language);
-        if (!LEXVO_URI_UNDEFINED.equals(mappedToNvaLanguage)) {
-            return Optional.empty();
-        } else {
-            return Optional.of(new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED,
-                                                  List.of(String.valueOf(language))));
-        }
     }
 
     private static Optional<WarningDetails> getDateWarning(DublinCore dublinCore) {
