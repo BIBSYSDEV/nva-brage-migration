@@ -1,5 +1,6 @@
 package no.sikt.nva.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,6 +23,25 @@ public class WarningDetails {
         this.details = List.of(detail);
     }
 
+    @JsonProperty("warningCode")
+    public Warning getWarningCode() {
+        return warningCode;
+    }
+
+    @JsonProperty("details")
+    public List<String> getDetails() {
+        return details;
+    }
+
+    public void setDetails(List<String> details) {
+        this.details = details;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(warningCode);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -39,11 +59,6 @@ public class WarningDetails {
         return warningCode + " = " + details;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(warningCode);
-    }
-
     public enum Warning {
         VERSION_WARNING,
         SUBJECT_WARNING,
@@ -59,6 +74,4 @@ public class WarningDetails {
         PAGE_NUMBER_FORMAT_NOT_RECOGNIZED,
         CRISTIN_ID_PRESENT
     }
-
-
 }

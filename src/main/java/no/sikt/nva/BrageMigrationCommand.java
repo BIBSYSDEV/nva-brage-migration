@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static java.util.Objects.nonNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -92,11 +93,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
             var counterWithoutErrors = 0;
             var totalCounter = 0;
             for (BrageProcessor brageProcessor : brageProcessors) {
-                for (Record record : brageProcessor.getRecords()) {
-                    if (record.getErrors().isEmpty()) {
-                        counterWithoutErrors++;
+                if (nonNull(brageProcessor.getRecords())) {
+                    for (Record record : brageProcessor.getRecords()) {
+                        if (record.getErrors().isEmpty()) {
+                            counterWithoutErrors++;
+                        }
+                        totalCounter++;
                     }
-                    totalCounter++;
                 }
             }
             logger.info("Records without errors: " + counterWithoutErrors + "/" + totalCounter);
@@ -128,7 +131,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void checkForIllegalArguments() {
-        if (Objects.nonNull(zipFiles) && zipFiles.length > 0 && StringUtils.isNotEmpty(startingDirectory)) {
+        if (nonNull(zipFiles) && zipFiles.length > 0 && StringUtils.isNotEmpty(startingDirectory)) {
             throw new IllegalArgumentException(INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY);
         }
     }
