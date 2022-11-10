@@ -69,7 +69,6 @@ public final class ChannelRegister {
         if (extractedIdentifierFromPublishersIsPresent(publisher, isbn)) {
             return lookUpInPublisherByIsbn(isbn);
         }
-        logger.warn(NOT_FOUND_IN_CHANNEL_REGISTER + record.getId());
         return null;
     }
 

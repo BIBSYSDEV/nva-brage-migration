@@ -57,6 +57,8 @@ public class WarningDetails {
         MULTIPLE_UNMAPPABLE_TYPES,
         INVALID_CC_LICENSE,
         PAGE_NUMBER_FORMAT_NOT_RECOGNIZED,
+        CRISTIN_ID_PRESENT
     }
+
 
 }
