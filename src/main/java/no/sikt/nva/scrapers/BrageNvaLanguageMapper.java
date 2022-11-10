@@ -1,8 +1,8 @@
 package no.sikt.nva.scrapers;
 
 import static nva.commons.core.language.LanguageMapper.LEXVO_URI_UNDEFINED;
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.ErrorDetails.Error;
 import no.sikt.nva.model.WarningDetails;
@@ -15,41 +15,56 @@ import nva.commons.core.language.LanguageMapper;
 
 public class BrageNvaLanguageMapper {
 
+    public static final int ONE_ELEMENT = 1;
+
     public static Language extractLanguage(DublinCore dublinCore) {
-        var brageLanguage = dublinCore.getDcValues()
-                                .stream()
-                                .filter(DcValue::isLanguage)
-                                .findAny()
-                                .orElse(new DcValue())
-                                .scrapeValueAndSetToScraped();
-        var nvaLanguage = LanguageMapper.toUri(brageLanguage);
-        return new Language(brageLanguage, nvaLanguage);
+        var brageLanguages = dublinCore.getDcValues()
+                                 .stream()
+                                 .filter(DcValue::isLanguage)
+                                 .map(DcValue::scrapeValueAndSetToScraped)
+                                 .collect(
+                                     Collectors.toList());
+        if (!brageLanguages.isEmpty()) {
+            var nvaLanguage = LanguageMapper.toUri(brageLanguages.get(0));
+            return new Language(brageLanguages, nvaLanguage);
+        } else {
+            return new Language(brageLanguages, LEXVO_URI_UNDEFINED);
+        }
     }
 
     public static Optional<WarningDetails> getLanguageWarning(DublinCore dublinCore) {
-        var language =
+        var invalidLanguages =
             dublinCore.getDcValues()
                 .stream()
-                .filter(DcValue::isLanguage).findAny().orElse(new DcValue()).getValue();
-        var mappedToNvaLanguage = LanguageMapper.toUri(language);
-        if (!LEXVO_URI_UNDEFINED.equals(mappedToNvaLanguage)) {
+                .filter(BrageNvaLanguageMapper::isLanguageAndLexVoUriUndefined)
+                .collect(Collectors.toList());
+        if (invalidLanguages.isEmpty()) {
             return Optional.empty();
         } else {
-            return Optional.of(new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED,
-                                                  List.of(String.valueOf(language))));
+            var invalidLanguagesValues =
+                invalidLanguages.stream().map(DcValue::getValue).collect(Collectors.toList());
+            return Optional.of(new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED, invalidLanguagesValues));
         }
     }
 
     public static Optional<ErrorDetails> getLanguageError(DublinCore dublinCore) {
-        var language =
+        var languages =
             dublinCore.getDcValues()
                 .stream()
-                .filter(DcValue::isLanguage).findAny().orElse(new DcValue()).getValue();
-        var mappedToNvaLanguage = LanguageMapper.toUri(language);
-        if (LEXVO_URI_UNDEFINED.equals(mappedToNvaLanguage) && StringUtils.isNotEmpty(language)) {
-            return Optional.of(new ErrorDetails(Error.INVALID_LANGUAGE, List.of(language)));
-        } else {
-            return Optional.empty();
+                .filter(DcValue::isLanguage).map(DcValue::getValue).collect(Collectors.toList());
+        if (languages.size() > ONE_ELEMENT) {
+            return Optional.of(new ErrorDetails(Error.INVALID_LANGUAGE, languages));
         }
+        if (languages.size() == ONE_ELEMENT) {
+            var mappedToNvaLanguage = LanguageMapper.toUri(languages.get(0));
+            if (LEXVO_URI_UNDEFINED.equals(mappedToNvaLanguage) && StringUtils.isNotEmpty(languages.get(0))) {
+                return Optional.of(new ErrorDetails(Error.INVALID_LANGUAGE, languages));
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static boolean isLanguageAndLexVoUriUndefined(DcValue dcValue) {
+        return dcValue.isLanguage() && LEXVO_URI_UNDEFINED.equals(LanguageMapper.toUri(dcValue.getValue()));
     }
 }
