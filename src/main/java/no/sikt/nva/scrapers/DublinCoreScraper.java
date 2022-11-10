@@ -130,7 +130,7 @@ public final class DublinCoreScraper {
 
     private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> error) {
         if (!error.isEmpty()) {
-            logger.warn(error + StringUtils.SPACE + brageLocation.getOriginInformation());
+            logger.error(error + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
 
