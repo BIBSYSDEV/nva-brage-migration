@@ -169,7 +169,7 @@ public class DublinCoreValidatorTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
 
-        assertThat(actualErrors, hasItems(new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of())));
+        assertThat(actualErrors, hasItems(new ErrorDetails(Error.JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of())));
     }
 
     @Test
@@ -180,7 +180,7 @@ public class DublinCoreValidatorTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
 
-        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of()))));
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of()))));
     }
 
     @Test
@@ -191,7 +191,7 @@ public class DublinCoreValidatorTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
 
-        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.NOT_IN_CHANNEL_REGISTER, List.of()))));
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of()))));
     }
 
     @Test

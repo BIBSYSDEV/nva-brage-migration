@@ -1,7 +1,8 @@
 package no.sikt.nva.validators;
 
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.model.ErrorDetails.Error.NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.model.ErrorDetails.Error.JOURNAL_NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.model.ErrorDetails.Error.PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.DublinCoreScraper.channelRegister;
 import java.net.URI;
 import java.util.ArrayList;
@@ -33,7 +34,8 @@ public final class DublinCoreValidator {
     public static final String VERSION_STRING_NVE = "publishedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final URI LEXVO_URI_UNDEFINED = URI.create("http://lexvo.org/id/iso639-3/und");
-    public static final String MISSING_ISSN_AND_OR_TITLE = "Missing issn AND title";
+    public static final String MISSING_ISSN_AND_TITLE = "Missing issn AND title";
+    public static final String MISSING_ISBN = "Missing isbn";
     private static final int ONE_DESCRIPTION = 1;
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -80,34 +82,67 @@ public final class DublinCoreValidator {
         return date.matches("\\d{4}");
     }
 
+    @SuppressWarnings("PMD.PrematureDeclaration")
     private static Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore, BrageLocation brageLocation) {
-        if (typeIsPresentInDublinCore(dublinCore) && isJournalArticle(dublinCore)) {
-            var journalIssn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
-            var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(journalIssn);
-            if (nonNull(journalIssn) && nonNull(possibleChannelRegisterIdentifierByIssn)) {
-                return Optional.empty();
+        if (typeIsPresentInDublinCore(dublinCore)) {
+            if (isJournalArticle(dublinCore)) {
+                return getErrorDetailsForJournalArticle(dublinCore, brageLocation);
             }
-            var journalTitle = DublinCoreScraper.extractJournal(dublinCore);
-            var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(journalTitle);
-            if (nonNull(journalTitle) && nonNull(possibleChannelRegisterIdentifierByJournal)) {
-                return Optional.empty();
-            } else {
-                return getErrorDetailsWhenNotInChannelRegister(journalIssn, journalTitle);
+            if (isReport(dublinCore) || isBook(dublinCore)) {
+                return getErrorDetailsForReport(dublinCore, brageLocation);
             }
         }
         return Optional.empty();
     }
 
+    @SuppressWarnings("PMD.PrematureDeclaration")
+    private static Optional<ErrorDetails> getErrorDetailsForJournalArticle(DublinCore dublinCore,
+                                                                           BrageLocation brageLocation) {
+        var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
+        var title = DublinCoreScraper.extractJournal(dublinCore);
+        var isbn = DublinCoreScraper.extractIsbn(dublinCore, brageLocation);
+        var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(issn);
+        var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(title);
+        if (nonNull(possibleChannelRegisterIdentifierByIssn)) {
+            return Optional.empty();
+        }
+        if (nonNull(possibleChannelRegisterIdentifierByJournal)) {
+            return Optional.empty();
+        } else {
+            return getErrorDetailsWhenNotInChannelRegister(JOURNAL_NOT_IN_CHANNEL_REGISTER, issn, title, isbn);
+        }
+    }
+
+    @SuppressWarnings("PMD.PrematureDeclaration")
+    private static Optional<ErrorDetails> getErrorDetailsForReport(DublinCore dublinCore, BrageLocation brageLocation) {
+        var isbn = DublinCoreScraper.extractIsbn(dublinCore, brageLocation);
+        var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
+        var title = DublinCoreScraper.extractJournal(dublinCore);
+        var possibleChannelRegisterIdentifierByIsbn = channelRegister.lookUpInPublisherByIsbn(isbn);
+        var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(issn);
+        var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(title);
+        if (nonNull(possibleChannelRegisterIdentifierByIsbn)
+            || nonNull(possibleChannelRegisterIdentifierByIssn)
+            || nonNull(possibleChannelRegisterIdentifierByJournal)) {
+            return Optional.empty();
+        } else {
+            return getErrorDetailsWhenNotInChannelRegister(PUBLISHER_NOT_IN_CHANNEL_REGISTER, issn, title, isbn);
+        }
+    }
+
     @NotNull
-    private static Optional<ErrorDetails> getErrorDetailsWhenNotInChannelRegister(String journalIssn,
-                                                                                  String journalTitle) {
+    private static Optional<ErrorDetails> getErrorDetailsWhenNotInChannelRegister(Error error, String journalIssn,
+                                                                                  String journalTitle, String isbn) {
         if (nonNull(journalIssn)) {
-            return Optional.of(new ErrorDetails(NOT_IN_CHANNEL_REGISTER, List.of(journalIssn)));
+            return Optional.of(new ErrorDetails(error, List.of(journalIssn)));
         }
         if (nonNull(journalTitle)) {
-            return Optional.of(new ErrorDetails(NOT_IN_CHANNEL_REGISTER, List.of(journalTitle)));
+            return Optional.of(new ErrorDetails(error, List.of(journalTitle)));
+        }
+        if (nonNull(isbn)) {
+            return Optional.of(new ErrorDetails(error, List.of(isbn)));
         } else {
-            return Optional.of(new ErrorDetails(NOT_IN_CHANNEL_REGISTER, List.of(MISSING_ISSN_AND_OR_TITLE)));
+            return Optional.of(new ErrorDetails(error, List.of(MISSING_ISSN_AND_TITLE)));
         }
     }
 
@@ -280,6 +315,14 @@ public final class DublinCoreValidator {
 
     private static boolean isJournalArticle(DublinCore dublinCore) {
         return DublinCoreScraper.extractType(dublinCore).get(0).equals(BrageType.JOURNAL_ARTICLE.getValue());
+    }
+
+    private static boolean isReport(DublinCore dublinCore) {
+        return DublinCoreScraper.extractType(dublinCore).get(0).equals(BrageType.REPORT.getValue());
+    }
+
+    private static boolean isBook(DublinCore dublinCore) {
+        return DublinCoreScraper.extractType(dublinCore).get(0).equals(BrageType.BOOK.getValue());
     }
 
     private static boolean typeIsPresentInDublinCore(DublinCore dublinCore) {
