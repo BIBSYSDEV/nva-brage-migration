@@ -46,6 +46,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
         "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
+    public static final String RECORDS_WITHOUT_ERRORS = "Records without errors: ";
+    public static final String SLASH = "/";
     @Option(names = {"-c", "--customer"},
         defaultValue = NVE_DEV_CUSTOMER_ID,
         description = "customer id in NVA")
@@ -90,24 +92,28 @@ public class BrageMigrationCommand implements Callable<Integer> {
             startProcessors(brageProcessorThreads);
             waitForAllProcesses(brageProcessorThreads);
             writeRecordsToFiles(brageProcessors);
-            var counterWithoutErrors = 0;
-            var totalCounter = 0;
-            for (BrageProcessor brageProcessor : brageProcessors) {
-                if (nonNull(brageProcessor.getRecords())) {
-                    for (Record record : brageProcessor.getRecords()) {
-                        if (record.getErrors().isEmpty()) {
-                            counterWithoutErrors++;
-                        }
-                        totalCounter++;
-                    }
-                }
-            }
-            logger.info("Records without errors: " + counterWithoutErrors + "/" + totalCounter);
+            logRecordCounter(brageProcessors);
             return NORMAL_EXIT_CODE;
         } catch (Exception e) {
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
         }
+    }
+
+    private void logRecordCounter(List<BrageProcessor> brageProcessors) {
+        var counterWithoutErrors = 0;
+        var totalCounter = 0;
+        for (BrageProcessor brageProcessor : brageProcessors) {
+            if (nonNull(brageProcessor.getRecords())) {
+                for (Record record : brageProcessor.getRecords()) {
+                    if (record.getErrors().isEmpty()) {
+                        counterWithoutErrors++;
+                    }
+                    totalCounter++;
+                }
+            }
+        }
+        logger.info(RECORDS_WITHOUT_ERRORS + counterWithoutErrors + SLASH + totalCounter);
     }
 
     private static String[] readZipFileNamesFromCollectionFile(String startingDirectory) {
