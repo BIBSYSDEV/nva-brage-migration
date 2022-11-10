@@ -208,11 +208,12 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldNotLogConvertiblePeerReviewedValues() {
-        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
-        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
 
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(typeDcValue, peerReviewed));
+            List.of(typeDcValue, peerReviewed, issnDcValue));
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var appender = LogUtils.getTestingAppenderForRootLogger();
@@ -224,10 +225,11 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldNotLogConvertiblePeerReviewedValuesV2() {
-        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
-        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(peerReviewed, typeDcValue));
+            List.of(peerReviewed, typeDcValue, issnDcValue));
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var appender = LogUtils.getTestingAppenderForRootLogger();
@@ -241,7 +243,7 @@ public class DublinCoreScraperTest {
     @MethodSource("provideDcValueAndExpectedPages")
     void shouldExtractPagesWithDifferentFormats(DcValue pageNumber, Pages expectedPages) {
         var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
-        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(peerReviewed, typeDcValue, pageNumber));
         var onlineValidationDisabled = false;

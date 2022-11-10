@@ -22,14 +22,13 @@ public class ContentScraperTest {
     public static final String THUMBNAIL_FILENAME = "rapport2022_25.pdf.jpg";
 
     private static final License someLicense = new License(null, null);
-    private final ContentScraper contentScraper =
-        new ContentScraper(Path.of(CONTENT_FILE_PATH),
-                           new BrageLocation(null),
-                           someLicense);
+
+    private final ContentScraper contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
+                                                                     new BrageLocation(null),
+                                                                     someLicense);
 
     @Test
     void shouldCreateResourceContentCorrectly() throws ContentException {
-
         var actualContentFilenameList = contentScraper.scrapeContent()
                                             .getContentFiles()
                                             .stream()
@@ -46,5 +45,8 @@ public class ContentScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         contentScraper.scrapeContent();
         assertThat(appender.getMessages(), containsString(UNKNOWN_FILE_LOG_MESSAGE));
+        assertThat(appender.getMessages(), containsString("METADATA"));
+        assertThat(appender.getMessages(), containsString("ORE"));
+        assertThat(appender.getMessages(), containsString("UnknownType"));
     }
 }
