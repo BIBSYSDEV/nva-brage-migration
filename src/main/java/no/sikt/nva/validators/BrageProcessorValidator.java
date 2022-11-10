@@ -3,7 +3,9 @@ package no.sikt.nva.validators;
 import static no.sikt.nva.BrageProcessor.DEFAULT_LICENSE_FILE_NAME;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.WarningDetails.Warning;
@@ -18,12 +20,21 @@ public class BrageProcessorValidator {
     }
 
     private static Optional<WarningDetails> getCCLicenseWarnings(File entryDirectory) {
-        LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
-        var license = licenseScraper.extractOrCreateLicense(entryDirectory);
-        if (licenseScraper.isValidCCLicense(license)) {
-            return Optional.empty();
+        if (containsCCLicenseFile(entryDirectory)) {
+            LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
+            var license = licenseScraper.extractOrCreateLicense(entryDirectory);
+            if (licenseScraper.isValidCCLicense(license)) {
+                return Optional.empty();
+            } else {
+                return Optional.of(new WarningDetails(Warning.INVALID_CC_LICENSE));
+            }
         } else {
-            return Optional.of(new WarningDetails(Warning.INVALID_CC_LICENSE));
+            return Optional.empty();
         }
+    }
+
+    private static boolean containsCCLicenseFile(File entry) {
+        return Arrays.stream(Objects.requireNonNull(entry.listFiles()))
+                   .anyMatch(file -> file.getName().equals(DEFAULT_LICENSE_FILE_NAME));
     }
 }

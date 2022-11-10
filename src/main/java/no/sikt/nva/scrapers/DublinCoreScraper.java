@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.channelregister.ChannelRegister;
-import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.WarningDetails;
@@ -105,20 +104,18 @@ public final class DublinCoreScraper {
     }
 
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
-        var errors = new ArrayList<ErrorDetails>();
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
         if (onlineValidationIsEnabled()) {
             DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
         }
-        errors.addAll(DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation));
         var warnings = getDublinCoreWarnings(dublinCore);
-        if (errors.isEmpty()) {
-            var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
-            logUnscrapedValues(dublinCore, brageLocation);
-            logWarningsIfNotEmpty(brageLocation, warnings);
-            return record;
-        } else {
-            throw new DublinCoreException(errors);
-        }
+        var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
+        record.setErrors(errors);
+        record.setWarnings(warnings);
+        logUnscrapedValues(dublinCore, brageLocation);
+        logWarningsIfNotEmpty(brageLocation, warnings);
+        logErrorsIfNotEmpty(brageLocation, errors);
+        return record;
     }
 
     public boolean onlineValidationIsEnabled() {
@@ -128,6 +125,12 @@ public final class DublinCoreScraper {
     private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings) {
         if (!warnings.isEmpty()) {
             logger.warn(warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
+        }
+    }
+
+    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> error) {
+        if (!error.isEmpty()) {
+            logger.warn(error + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
 

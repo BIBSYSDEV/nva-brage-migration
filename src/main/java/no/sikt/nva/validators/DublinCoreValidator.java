@@ -35,7 +35,6 @@ public final class DublinCoreValidator {
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final URI LEXVO_URI_UNDEFINED = URI.create("http://lexvo.org/id/iso639-3/und");
     public static final String MISSING_ISSN_AND_TITLE = "Missing issn AND title";
-    public static final String MISSING_ISBN = "Missing isbn";
     private static final int ONE_DESCRIPTION = 1;
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {

@@ -5,14 +5,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
+import no.sikt.nva.model.ErrorDetails;
+import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.content.ResourceContent;
 import nva.commons.core.JacocoGenerated;
 
 @JsonPropertyOrder({"customerId", "bareOrigin", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
     "rightsholder",
     "type", "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
-    "recordContent"})
+    "recordContent", "errors", "warnings"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
 
@@ -31,6 +34,26 @@ public class Record {
     private ResourceContent contentBundle;
     private String publishedDate;
     private String cristinId;
+    private List<ErrorDetails> errors;
+    private List<WarningDetails> warnings;
+
+    @JsonProperty("warnings")
+    public List<WarningDetails> getWarnings() {
+        return warnings;
+    }
+
+    public void setWarnings(List<WarningDetails> warnings) {
+        this.warnings = warnings;
+    }
+
+    @JsonProperty("errors")
+    public List<ErrorDetails> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(List<ErrorDetails> errors) {
+        this.errors = errors;
+    }
 
     @JsonProperty("cristinId")
     public String getCristinId() {
@@ -59,40 +82,6 @@ public class Record {
         this.contentBundle = contentBundle;
     }
 
-    @JacocoGenerated
-    @Override
-    public int hashCode() {
-        return Objects.hash(entityDescription, customerId, id, doi, origin, type, language, embargo, publisherAuthority,
-                            rightsholder, spatialCoverage, publication, contentBundle, publishedDate, cristinId);
-    }
-
-    @JacocoGenerated
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Record record = (Record) o;
-        return Objects.equals(entityDescription, record.entityDescription)
-               && Objects.equals(customerId, record.customerId)
-               && Objects.equals(id, record.id)
-               && Objects.equals(doi, record.doi)
-               && Objects.equals(origin, record.origin)
-               && Objects.equals(type, record.type)
-               && Objects.equals(language, record.language)
-               && Objects.equals(embargo, record.embargo)
-               && Objects.equals(publisherAuthority, record.publisherAuthority)
-               && Objects.equals(rightsholder, record.rightsholder)
-               && Objects.equals(spatialCoverage, record.spatialCoverage)
-               && Objects.equals(publication, record.publication)
-               && Objects.equals(contentBundle, record.contentBundle)
-               && Objects.equals(publishedDate, record.publishedDate)
-               && Objects.equals(cristinId, record.cristinId);
-    }
-
     @JsonProperty("spatialCoverage")
     public String getSpatialCoverage() {
         return spatialCoverage;
@@ -119,6 +108,43 @@ public class Record {
 
     public void setPublication(Publication publication) {
         this.publication = publication;
+    }
+
+    @JacocoGenerated
+    @Override
+    public int hashCode() {
+        return Objects.hash(entityDescription, customerId, id, doi, origin, type, language, embargo, publisherAuthority,
+                            rightsholder, spatialCoverage, publication, contentBundle, publishedDate, cristinId, errors,
+                            warnings);
+    }
+
+    @JacocoGenerated
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Record record = (Record) o;
+        return Objects.equals(entityDescription, record.entityDescription)
+               && Objects.equals(customerId, record.customerId)
+               && Objects.equals(id, record.id)
+               && Objects.equals(doi, record.doi)
+               && Objects.equals(origin, record.origin)
+               && Objects.equals(type, record.type)
+               && Objects.equals(language, record.language)
+               && Objects.equals(embargo, record.embargo)
+               && Objects.equals(publisherAuthority, record.publisherAuthority)
+               && Objects.equals(rightsholder, record.rightsholder)
+               && Objects.equals(spatialCoverage, record.spatialCoverage)
+               && Objects.equals(publication, record.publication)
+               && Objects.equals(contentBundle, record.contentBundle)
+               && Objects.equals(publishedDate, record.publishedDate)
+               && Objects.equals(cristinId, record.cristinId)
+               && Objects.equals(errors, record.errors)
+               && Objects.equals(warnings, record.warnings);
     }
 
     @JacocoGenerated

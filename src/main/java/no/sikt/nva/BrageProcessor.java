@@ -100,15 +100,11 @@ public class BrageProcessor implements Runnable {
 
     private List<Record> processBundles(List<File> resourceDirectories) {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
-        return resourceDirectories
-                   .stream()
+        return resourceDirectories.stream()
                    .filter(BrageProcessor::isBundle)
-                   .map(bundleDirectory -> processBundle(
-                       licenseScraper,
-                       bundleDirectory))
+                   .map(bundleDirectory -> processBundle(licenseScraper, bundleDirectory))
                    .flatMap(Optional::stream)
-                   .collect(
-                       Collectors.toList());
+                   .collect(Collectors.toList());
     }
 
     private Optional<Record> processBundle(LicenseScraper licenseScraper,
@@ -122,7 +118,9 @@ public class BrageProcessor implements Runnable {
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setCustomerId(customerId);
             record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper));
-            logWarningsIfNotEmpty(brageLocation, BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory));
+            var warnings = BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory);
+            record.getWarnings().addAll(warnings);
+            logWarningsIfNotEmpty(brageLocation,warnings);
             return Optional.of(record);
         } catch (Exception e) {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
