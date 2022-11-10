@@ -92,4 +92,11 @@ public class BrageMigrationCommandTest {
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(String.valueOf(Error.INVALID_DOI_ONLINE_CHECK)));
     }
+
+    @Test
+    void shouldBePossibleToSpecifySubDirectoryWith() throws Exception {
+        var arguments = new String[]{"-D", TEST_RESOURCE_PATH};
+        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        assertThat(status, equalTo(NORMAL_EXIT_CODE));
+    }
 }
