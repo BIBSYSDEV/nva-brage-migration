@@ -1,8 +1,10 @@
 rapport2022_25_1.pdf	bundle:ORIGINAL	description:Datagrunnlag_1
 rapport2022_25_2.pdf	bundle:ORIGINAL	description:Datagrunnlag_2
 
+cristin-1825416.xml	bundle:METADATA
 license_rdf	bundle:CC-LICENSE
 license.txt	bundle:LICENSE
+ORE.xml	bundle:ORE
 rapport2022_25.pdf.txt	bundle:TEXT	description:Extracted text
 rapport2022_25.pdf.jpg	bundle:THUMBNAIL	description:Generated Thumbnail
 unknownType	bundle:UnknownType	description:unknown Type

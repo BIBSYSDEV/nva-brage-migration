@@ -1,6 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.model.ErrorDetails.Error.INVALID_LANGUAGE;
+import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.model.WarningDetails.Warning.SUBJECT_WARNING;
@@ -39,22 +40,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class DublinCoreScraperTest {
 
     @Test
-    void shouldReturnExceptionIfResourceIsInCristin() {
-        var brageLocation = new BrageLocation(Path.of("somebundle/someindex"));
-        var typeDcValue = new DcValue(Element.TYPE, null, "Book");
-        var cristinDcValue = new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN, "cristinIdentifier");
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, cristinDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
-        assertThrows(DublinCoreException.class,
-                     () -> dublinCoreScraper
-                               .validateAndParseDublinCore(dublinCore, brageLocation));
-    }
-
-    @Test
     void shouldLogDcValuesThatAreNotUsedForScraping() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var typeDcValue = new DcValue(Element.TYPE, null, "Book");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var expectedDcValuedLogged = new DcValue(null, null,
                                                  "Gurba Gurba gurba gurba gurba gurba "
                                                  + "gurba gurba gurba gurba gurba gurba gurba "
@@ -71,7 +59,7 @@ public class DublinCoreScraperTest {
     void shouldConvertValidVersionToPublisherAuthority() {
         var expectedPublisherAuthority = true;
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
-        var typeDcValue = new DcValue(Element.TYPE, null, "Book");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
@@ -83,7 +71,7 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldCreatePublisherAuthorityIfVersionIsNotPresent() {
-        var typeDcValue = new DcValue(Element.TYPE, null, "Book");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var dublinCoreWithoutVersion = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
@@ -98,7 +86,7 @@ public class DublinCoreScraperTest {
 
         List<Contributor> expectedContributors = List.of(
             new Contributor(CONTRIBUTOR, new Identity("Some Person"), ADVISOR, Qualifier.ADVISOR.getValue()));
-        var typeDcValue = new DcValue(Element.TYPE, null, "Book");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Some Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
         var onlineValidationDisabled = false;
@@ -115,7 +103,7 @@ public class DublinCoreScraperTest {
         var dcValues = List.of(
             new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1016/j.scitotenv.2021.151958"),
             new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1016/j.scitotenv.2021.151958"),
-            new DcValue(Element.TYPE, null, "Book"));
+            new DcValue(Element.TYPE, null, "Others"));
         var brageLocation = new BrageLocation(Path.of("some", "ignoredPath"));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var appender = LogUtils.getTestingAppenderForRootLogger();
@@ -137,7 +125,7 @@ public class DublinCoreScraperTest {
             new DcValue(Element.TITLE, Qualifier.NONE, expectedMainTitle),
             new DcValue(Element.TITLE, Qualifier.ALTERNATIVE, expectedAlternativeTitle1),
             new DcValue(Element.TITLE, Qualifier.ALTERNATIVE, expectedAlternativeTitle2),
-            new DcValue(Element.TYPE, null, "Book"));
+            new DcValue(Element.TYPE, null, "Others"));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
@@ -152,7 +140,7 @@ public class DublinCoreScraperTest {
     void shouldScrapePartOfSeriesDcValue() {
         var partOfSeries = "Part of some series";
         var partOfSeriesDcValue = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, partOfSeries);
-        var typeDcValue = new DcValue(Element.TYPE, null, "Book");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(partOfSeriesDcValue, typeDcValue));
         var onlineValidationDisabled = false;
@@ -174,14 +162,14 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getPublication().getId(), is(equalTo("503077/2020")));
+        assertThat(record.getPublication().getId(), is(equalTo("503077")));
     }
 
     @Test
     void shouldReturnIdFromChannelRegisterForResourceWithValidIssn() {
         var publisherDcValue = new DcValue(Element.PUBLISHER, null, "somePublisher");
         var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
-        var typeDcValue = new DcValue(Element.TYPE, null, "Research Report");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Report");
         var dateDcValue = new DcValue(Element.DATE, Qualifier.ISSUED, "2020");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(publisherDcValue, issnDcValue, typeDcValue, dateDcValue));
@@ -189,7 +177,7 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getPublication().getId(), is(equalTo("450187/2020")));
+        assertThat(record.getPublication().getId(), is(equalTo("450187")));
     }
 
     @Test
@@ -223,11 +211,12 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldNotLogConvertiblePeerReviewedValues() {
-        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
-        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
 
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(typeDcValue, peerReviewed));
+            List.of(typeDcValue, peerReviewed, issnDcValue));
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var appender = LogUtils.getTestingAppenderForRootLogger();
@@ -239,10 +228,11 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldNotLogConvertiblePeerReviewedValuesV2() {
-        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
-        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(peerReviewed, typeDcValue));
+            List.of(peerReviewed, typeDcValue, issnDcValue));
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var appender = LogUtils.getTestingAppenderForRootLogger();
@@ -256,7 +246,7 @@ public class DublinCoreScraperTest {
     @MethodSource("provideDcValueAndExpectedPages")
     void shouldExtractPagesWithDifferentFormats(DcValue pageNumber, Pages expectedPages) {
         var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
-        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(peerReviewed, typeDcValue, pageNumber));
         var onlineValidationDisabled = false;
@@ -333,7 +323,7 @@ public class DublinCoreScraperTest {
     void nonIsoLanguageShouldBeLoggedAsError() {
         var nonIsoLanguage = randomString();
         var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
-        var peerReviewed = new DcValue(Element.TYPE, null, "Peer Reviewed");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
         var nonIsoLanguageDcValue = new DcValue(Element.LANGUAGE, Qualifier.ISO, nonIsoLanguage);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(nonIsoLanguageDcValue, typeDcValue, peerReviewed));
@@ -344,6 +334,19 @@ public class DublinCoreScraperTest {
             () -> dublinCoreScraper
                       .validateAndParseDublinCore(dublinCore, new BrageLocation(null)));
         assertThat(exception.getMessage(), containsString(INVALID_LANGUAGE.toString()));
+    }
+    @Test
+    void shouldNotLookInChannelRegisterForOtherType() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var publisherDcValue = new DcValue(Element.PUBLISHER, null, "Publisher");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, publisherDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), not(containsString(NOT_FOUND_IN_CHANNEL_REGISTER)));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

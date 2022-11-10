@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static java.util.Objects.isNull;
 import static no.sikt.nva.scrapers.LicenseMapper.NvaLicenseIdentifier.DEFAULT_LICENSE;
 import java.io.File;
 import java.io.InputStream;
@@ -30,11 +31,22 @@ public class LicenseScraper {
     public static final RDFNode ANY_OBJECT = null;
     public static final String LICENSE_EXCEPTION_MESSAGE = "Extraction of license failed";
     public static final String READING_LICENSE_FILE_EXCEPTION_MESSAGE = "Reading license file has failed";
+    public static final String CC_BASE_URL = "creativecommons.org";
 
     private final String customLicenseFilename;
 
     public LicenseScraper(String customLicenseFilename) {
         this.customLicenseFilename = customLicenseFilename;
+    }
+
+    public boolean isValidCCLicense(License license) {
+        if (isNull(license)) {
+            return false;
+        }
+        if (isNull(license.getBrageLicense())) {
+            return false;
+        }
+        return license.getBrageLicense().contains(CC_BASE_URL);
     }
 
     public License extractOrCreateLicense(File bundleDirectory) {

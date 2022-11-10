@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.content.ResourceContent;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.record.Record;
@@ -18,6 +19,7 @@ import no.sikt.nva.scrapers.DublinCoreFactory;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.HandleScraper;
 import no.sikt.nva.scrapers.LicenseScraper;
+import no.sikt.nva.validators.BrageProcessorValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
@@ -90,6 +92,12 @@ public class BrageProcessor implements Runnable {
         return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
     }
 
+    private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings) {
+        if (!warnings.isEmpty()) {
+            logger.warn(warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
+        }
+    }
+
     private List<Record> processBundles(List<File> resourceDirectories) {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories
@@ -111,10 +119,10 @@ public class BrageProcessor implements Runnable {
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
             var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation);
-            var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore,
-                                                                      brageLocation);
+            var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setCustomerId(customerId);
             record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper));
+            logWarningsIfNotEmpty(brageLocation, BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory));
             return Optional.of(record);
         } catch (Exception e) {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());

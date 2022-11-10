@@ -9,7 +9,8 @@ import java.util.Objects;
 import no.sikt.nva.model.content.ResourceContent;
 import nva.commons.core.JacocoGenerated;
 
-@JsonPropertyOrder({"customerId", "bareOrigin", "id", "doi", "publishedDate", "publisherAuthority", "rightsholder",
+@JsonPropertyOrder({"customerId", "bareOrigin", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
+    "rightsholder",
     "type", "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
     "recordContent"})
 @SuppressWarnings("PMD.TooManyFields")
@@ -29,6 +30,16 @@ public class Record {
     private Publication publication;
     private ResourceContent contentBundle;
     private String publishedDate;
+    private String cristinId;
+
+    @JsonProperty("cristinId")
+    public String getCristinId() {
+        return cristinId;
+    }
+
+    public void setCristinId(String cristinId) {
+        this.cristinId = cristinId;
+    }
 
     @JsonProperty("publishedDate")
     public String getPublishedDate() {
@@ -52,7 +63,7 @@ public class Record {
     @Override
     public int hashCode() {
         return Objects.hash(entityDescription, customerId, id, doi, origin, type, language, embargo, publisherAuthority,
-                            rightsholder, spatialCoverage, publication, contentBundle, publishedDate);
+                            rightsholder, spatialCoverage, publication, contentBundle, publishedDate, cristinId);
     }
 
     @JacocoGenerated
@@ -78,7 +89,8 @@ public class Record {
                && Objects.equals(spatialCoverage, record.spatialCoverage)
                && Objects.equals(publication, record.publication)
                && Objects.equals(contentBundle, record.contentBundle)
-               && Objects.equals(publishedDate, record.publishedDate);
+               && Objects.equals(publishedDate, record.publishedDate)
+               && Objects.equals(cristinId, record.cristinId);
     }
 
     @JsonProperty("spatialCoverage")

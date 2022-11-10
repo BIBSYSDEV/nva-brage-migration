@@ -6,7 +6,6 @@ import static no.sikt.nva.validators.DublinCoreValidator.VERSION_STRING_NVE;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,7 +19,6 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.record.Publication;
-import no.sikt.nva.model.record.PublicationDate;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
 import no.sikt.nva.scrapers.TypeMapper.NvaType;
@@ -145,6 +143,7 @@ public final class DublinCoreScraper {
         record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
         record.setPublication(createPublicationWithIdentifier(dublinCore, brageLocation, record));
         record.setPublishedDate(extractAvailableDate(dublinCore));
+        record.setCristinId(extractCristinId(dublinCore));
         return record;
     }
 
@@ -155,39 +154,17 @@ public final class DublinCoreScraper {
         record.setPublication(publication);
         var recordType = record.getType().getNva();
         if (NvaType.JOURNAL_ARTICLE.getValue().equals(recordType)) {
-            publication.setId(createPublicationIdUriForJournal(dublinCore, brageLocation, record));
-        } else {
+            publication.setId(channelRegister.extractIdentifier(dublinCore, brageLocation));
+        }
+        if (nonNull(publication.getPublisher())
+            && NvaType.REPORT.getValue().equals(recordType)
+            || NvaType.BOOK.getValue().equals(recordType)) {
             var identifier = channelRegister.lookUpInChannelRegister(record);
             if (nonNull(identifier)) {
-                publication.setId(createPublicationIdForNonJournal(record, identifier));
+                publication.setId(identifier);
             }
         }
         return publication;
-    }
-
-    @NotNull
-    private static String createPublicationIdForNonJournal(Record record, String identifier) {
-        return identifier + "/" + createValidDateForNvaUri(record.getEntityDescription().getPublicationDate());
-    }
-
-    private static String createPublicationIdUriForJournal(DublinCore dublinCore, BrageLocation brageLocation,
-                                                           Record record) {
-        return createPublicationIdForNonJournal(record, channelRegister.extractIdentifier(dublinCore, brageLocation));
-    }
-
-    private static String createValidDateForNvaUri(PublicationDate publicationDate) {
-        if (nonNull(publicationDate) && containsMonthOrYear(publicationDate)) {
-            return publicationDate.getNva().split("-")[0];
-        }
-        if (nonNull(publicationDate)) {
-            return publicationDate.getNva();
-        }
-        return StringUtils.EMPTY_STRING;
-    }
-
-    private static boolean containsMonthOrYear(PublicationDate publicationDate) {
-        return Arrays.stream(publicationDate.getNva().split("-")).count() == 2
-               || Arrays.stream(publicationDate.getNva().split("-")).count() == 3;
     }
 
     private static URI extractDoi(DublinCore dublinCore) {
@@ -255,6 +232,15 @@ public final class DublinCoreScraper {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isPublisher)
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
+    }
+
+    private static String extractCristinId(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isCristinDcValue)
                    .findAny()
                    .orElse(new DcValue())
                    .scrapeValueAndSetToScraped();
