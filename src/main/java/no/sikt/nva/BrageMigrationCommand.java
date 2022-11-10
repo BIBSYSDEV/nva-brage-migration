@@ -35,10 +35,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String FAILURE_IN_BRAGE_MIGRATION_COMMAND = "Failure in BrageMigration command";
 
     public static final String FOLLOWING_FIELDS_ARE_IGNORED = "The following fields are ignored: \n";
+    public static final String INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY =
+        "Both specified zipfiles and starting directory cannot be set at "
+        + "the same time";
     private static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
-
     private static final String NVE_DEV_CUSTOMER_ID =
         "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
@@ -48,12 +50,16 @@ public class BrageMigrationCommand implements Callable<Integer> {
         description = "customer id in NVA")
     private String customer;
 
-    @Option(names = {"-o", "--online-validator"}, description = "enable online validator, disabled if not present")
+    @Option(names = {"-ov", "--online-validator"}, description = "enable online validator, disabled if not present")
     private boolean enableOnlineValidation;
 
     @Parameters(description = "input zipfiles containing brage bundles, if none specified "
                               + "all zipfiles will be read based on samlingsfil.txt")
     private String[] zipFiles;
+
+    @Option(names = {"-D", "--directory"}, description = "Directory to search for samlingsfil.txt. This option cannot"
+                                                         + " be set at the same time as specified zipfiles")
+    private String startingDirectory;
 
     @SuppressWarnings("PMD.UnusedPrivateField")
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
@@ -73,8 +79,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
         try {
             printIgnoredDcValuesFieldsInInfoLog();
             var customerUri = UriWrapper.fromUri(customer).getUri();
+            checkForIllegalArguments();
             if (Objects.isNull(zipFiles)) {
-                this.zipFiles = readZipFileNamesFromCollectionFile();
+                this.zipFiles = readZipFileNamesFromCollectionFile(startingDirectory);
             }
             var brageProcessors = createBrageProcessorThread(zipFiles, customerUri, enableOnlineValidation,
                                                              noHandleCheck);
@@ -89,20 +96,30 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
     }
 
-    private static String[] readZipFileNamesFromCollectionFile() {
+    private static String[] readZipFileNamesFromCollectionFile(String startingDirectory) {
         var zipfiles = new ArrayList<String>();
-        File samlingsfil = new File(COLLECTION_FILENAME);
-        try (var scanner = new Scanner(samlingsfil)) {
+        var directory = StringUtils.isNotEmpty(startingDirectory)
+                            ? startingDirectory + "/"
+                            : StringUtils.EMPTY_STRING;
+        var filenameWithPath = directory + COLLECTION_FILENAME;
+        File collectionsInformationFile = new File(filenameWithPath);
+        try (var scanner = new Scanner(collectionsInformationFile)) {
             while (scanner.hasNextLine()) {
                 var fileNamePartial = scanner.nextLine();
                 if (StringUtils.isNotEmpty(fileNamePartial)) {
-                    zipfiles.add(fileNamePartial + ZIP_FILE_ENDING);
+                    zipfiles.add(directory + fileNamePartial + ZIP_FILE_ENDING);
                 }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return zipfiles.toArray(new String[0]);
+    }
+
+    private void checkForIllegalArguments() {
+        if (Objects.nonNull(zipFiles) && zipFiles.length > 0 && StringUtils.isNotEmpty(startingDirectory)) {
+            throw new IllegalArgumentException(INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY);
+        }
     }
 
     private void printIgnoredDcValuesFieldsInInfoLog() {
