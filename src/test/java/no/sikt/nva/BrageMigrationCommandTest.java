@@ -1,10 +1,12 @@
 package no.sikt.nva;
 
+import static no.sikt.nva.BrageMigrationCommand.INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_CRISTIN_ID_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_EMPTY_LICENSE_FILE;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_LICENSE_ZIP_FILE_NAME;
+import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.model.ErrorDetails.Error.CRISTIN_ID_PRESENT;
 import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,8 +33,17 @@ public class BrageMigrationCommandTest {
     }
 
     @Test
+    void shouldThrowExceptionWhenBothInputDirectoryAndZipfileIsSpecified() throws Exception {
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var arguments = new String[]{"someZipfile.zip", "-D", "some/directory/path"};
+        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
+        assertThat(appender.getMessages(), containsString(INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY));
+    }
+
+    @Test
     void shouldProcessZipFileWithLicenseCorrectly() throws Exception {
-        var arguments = new String[]{INPUT_WITH_LICENSE_ZIP_FILE_NAME};
+        var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITH_LICENSE_ZIP_FILE_NAME};
         var exit = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(exit, is(equalTo(NORMAL_EXIT_CODE)));
     }
@@ -40,7 +51,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessAndLogFileWithCristinId() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var arguments = new String[]{INPUT_WITH_CRISTIN_ID_FILE_NAME};
+        var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITH_CRISTIN_ID_FILE_NAME};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(String.valueOf(CRISTIN_ID_PRESENT)));
     }
@@ -48,7 +59,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessFileWithoutHandleInDublinCoreFile() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var arguments = new String[]{INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
+        var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(),
                    containsString(COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV));
@@ -56,14 +67,14 @@ public class BrageMigrationCommandTest {
 
     @Test
     void shouldProcessFileWithoutHandleInHandleFile() throws Exception {
-        var arguments = new String[]{INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
+        var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
         var exitCode = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(exitCode, is(equalTo(NORMAL_EXIT_CODE)));
     }
 
     @Test
     void shouldProcessFileWithOnlineValidator() throws Exception {
-        var arguments = new String[]{INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME, "-o"};
+        var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME, "-ov"};
         var exitCode = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(exitCode, is(equalTo(NORMAL_EXIT_CODE)));
     }
@@ -71,7 +82,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldNotLoggDoiOfflineErrorWhenBundleContainsInvalidDoiWithValidDoiStructure() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var arguments = new String[]{INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI};
+        var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), not(containsString(String.valueOf(Error.INVALID_DOI_OFFLINE_CHECK))));
     }
@@ -79,8 +90,16 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldLoggInvalidDoiErrorOnlineWhenDoiUriIsInvalid() throws Exception {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var arguments = new String[]{INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI, "-o"};
+        var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI,
+            "-ov"};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(String.valueOf(Error.INVALID_DOI_ONLINE_CHECK)));
+    }
+
+    @Test
+    void shouldBePossibleToSpecifySubDirectoryWith() throws Exception {
+        var arguments = new String[]{"-D", TEST_RESOURCE_PATH};
+        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        assertThat(status, equalTo(NORMAL_EXIT_CODE));
     }
 }

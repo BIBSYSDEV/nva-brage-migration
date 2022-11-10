@@ -38,7 +38,7 @@ public final class UnZipper {
             ZipEntry entry = inputStream.getNextEntry();
             writeToFile(inputStream, entry, destinationDirectory);
             inputStream.closeEntry();
-            return new File(destinationDirectory.getName());
+            return destinationDirectory;
         } catch (IOException e) {
             throw new RuntimeException(UNZIPPING_WENT_WRONG_WITH_EXCEPTION, e);
         }
