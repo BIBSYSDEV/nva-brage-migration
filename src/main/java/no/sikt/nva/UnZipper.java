@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public final class UnZipper {
 
     private static final String UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE =
-        "Failed to extract Brage post from collection with handle: %s";
+        "Failed to extract Brage posts from collection with handle: %s";
     private static final String HANDLE_FORMAT =
         "https://hdl.handle.net/11250/%s";
     private static final String UNZIPPING_WENT_WRONG_WITH_EXCEPTION =
