@@ -29,9 +29,8 @@ public class RecordsWriterTest {
         record.setId(randomUri());
         List<String> types = Collections.singletonList("Research report");
         record.setType(new Type(types, TypeMapper.convertBrageTypeToNvaType(types)));
-        record.setLanguage(new Language("as", randomUri()));
-        record.setLanguage(new Language("nob", randomUri()));
-
+        record.setLanguage(new Language(List.of("as"), randomUri()));
+        record.setLanguage(new Language(List.of("nob"), randomUri()));
 
         return record;
     }

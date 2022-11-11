@@ -1,5 +1,6 @@
 package no.sikt.nva.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
 
@@ -11,6 +12,16 @@ public class ErrorDetails {
     public ErrorDetails(Error errorCode, List<String> details) {
         this.errorCode = errorCode;
         this.details = details;
+    }
+
+    @JsonProperty("errorCode")
+    public Error getErrorCode() {
+        return errorCode;
+    }
+
+    @JsonProperty("details")
+    public List<String> getDetails() {
+        return details;
     }
 
     @Override
@@ -44,6 +55,7 @@ public class ErrorDetails {
         PUBLISHER_NOT_IN_CHANNEL_REGISTER,
         INVALID_ISBN,
         INVALID_DOI_OFFLINE_CHECK,
-        INVALID_DOI_ONLINE_CHECK
+        INVALID_DOI_ONLINE_CHECK,
+        INVALID_LANGUAGE
     }
 }

@@ -18,7 +18,6 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.sikt.nva.model.record.Language;
 import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
@@ -27,7 +26,6 @@ import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import nva.commons.core.language.LanguageMapper;
 import nva.commons.core.paths.UriWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -39,6 +37,7 @@ public final class DublinCoreScraper {
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
     public static final String DELIMITER = "\n";
     public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
+    public static final String SCRAPING_HAS_FAILED = "Scraping has failed";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
 
@@ -105,19 +104,21 @@ public final class DublinCoreScraper {
     }
 
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
-        var errors = new ArrayList<ErrorDetails>();
-        if (onlineValidationIsEnabled()) {
-            DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
-        }
-        errors.addAll(DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation));
-        var warnings = getDublinCoreWarnings(dublinCore);
-        if (errors.isEmpty()) {
+        try {
+            var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+            if (onlineValidationIsEnabled()) {
+                DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
+            }
+            var warnings = getDublinCoreWarnings(dublinCore);
             var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
+            record.setErrors(errors);
+            record.setWarnings(warnings);
             logUnscrapedValues(dublinCore, brageLocation);
             logWarningsIfNotEmpty(brageLocation, warnings);
+            logErrorsIfNotEmpty(brageLocation, errors);
             return record;
-        } else {
-            throw new DublinCoreException(errors);
+        } catch (Exception e) {
+            throw new DublinCoreException(SCRAPING_HAS_FAILED);
         }
     }
 
@@ -131,13 +132,19 @@ public final class DublinCoreScraper {
         }
     }
 
+    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> error) {
+        if (!error.isEmpty()) {
+            logger.error(error + StringUtils.SPACE + brageLocation.getOriginInformation());
+        }
+    }
+
     private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
                                                                      BrageLocation brageLocation) {
         var record = new Record();
         record.setId(brageLocation.getHandle());
         record.setOrigin(brageLocation.getBrageBundlePath());
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
-        record.setLanguage(extractLanguage(dublinCore));
+        record.setLanguage(BrageNvaLanguageMapper.extractLanguage(dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore));
         record.setDoi(extractDoi(dublinCore));
@@ -226,7 +233,8 @@ public final class DublinCoreScraper {
                || dcValue.isProjectRelation()
                || dcValue.isProvenanceDescription()
                || dcValue.isSponsorShipDescription()
-               || dcValue.isCitationIdentifier();
+               || dcValue.isCitationIdentifier()
+               || dcValue.isNsiSubject();
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
@@ -254,17 +262,6 @@ public final class DublinCoreScraper {
                    .findAny()
                    .orElse(new DcValue())
                    .scrapeValueAndSetToScraped();
-    }
-
-    private static Language extractLanguage(DublinCore dublinCore) {
-        var brageLanguage = dublinCore.getDcValues()
-                                .stream()
-                                .filter(DcValue::isLanguage)
-                                .findAny()
-                                .orElse(new DcValue())
-                                .scrapeValueAndSetToScraped();
-        var nvaLanguage = LanguageMapper.toUri(brageLanguage);
-        return new Language(brageLanguage, nvaLanguage);
     }
 
     private static String extractRightsholder(DublinCore dublinCore) {
