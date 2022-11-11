@@ -18,7 +18,6 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.sikt.nva.model.record.Language;
 import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
@@ -27,7 +26,6 @@ import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import nva.commons.core.language.LanguageMapper;
 import nva.commons.core.paths.UriWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -146,7 +144,7 @@ public final class DublinCoreScraper {
         record.setId(brageLocation.getHandle());
         record.setOrigin(brageLocation.getBrageBundlePath());
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
-        record.setLanguage(extractLanguage(dublinCore));
+        record.setLanguage(BrageNvaLanguageMapper.extractLanguage(dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore));
         record.setDoi(extractDoi(dublinCore));
@@ -235,7 +233,8 @@ public final class DublinCoreScraper {
                || dcValue.isProjectRelation()
                || dcValue.isProvenanceDescription()
                || dcValue.isSponsorShipDescription()
-               || dcValue.isCitationIdentifier();
+               || dcValue.isCitationIdentifier()
+               || dcValue.isNsiSubject();
     }
 
     private static String extractPublisher(DublinCore dublinCore) {
@@ -263,17 +262,6 @@ public final class DublinCoreScraper {
                    .findAny()
                    .orElse(new DcValue())
                    .scrapeValueAndSetToScraped();
-    }
-
-    private static Language extractLanguage(DublinCore dublinCore) {
-        var brageLanguage = dublinCore.getDcValues()
-                                .stream()
-                                .filter(DcValue::isLanguage)
-                                .findAny()
-                                .orElse(new DcValue())
-                                .scrapeValueAndSetToScraped();
-        var nvaLanguage = LanguageMapper.toUri(brageLanguage);
-        return new Language(brageLanguage, nvaLanguage);
     }
 
     private static String extractRightsholder(DublinCore dublinCore) {

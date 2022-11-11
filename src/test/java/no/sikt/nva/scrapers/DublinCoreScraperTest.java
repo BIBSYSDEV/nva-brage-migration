@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
@@ -17,9 +18,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
+import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
@@ -316,6 +319,22 @@ public class DublinCoreScraperTest {
         assertThat(appender.getMessages(), containsString(SUBJECT_WARNING.toString()));
     }
 
+    @Test
+    void nonIsoLanguageShouldBeLoggedAsError() {
+        var nonIsoLanguage = randomString();
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var nonIsoLanguageDcValue = new DcValue(Element.LANGUAGE, Qualifier.ISO, nonIsoLanguage);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(nonIsoLanguageDcValue, typeDcValue, peerReviewed));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var exception = assertThrows(
+            DublinCoreException.class,
+            () -> dublinCoreScraper
+                      .validateAndParseDublinCore(dublinCore, new BrageLocation(null)));
+        assertThat(exception.getMessage(), containsString(INVALID_LANGUAGE.toString()));
+    }
     @Test
     void shouldNotLookInChannelRegisterForOtherType() {
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
