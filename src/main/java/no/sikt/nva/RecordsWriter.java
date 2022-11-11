@@ -1,12 +1,14 @@
 package no.sikt.nva;
 
+import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.FileWriter;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
 import no.sikt.nva.exceptions.RecordsWriterException;
 import no.sikt.nva.model.record.Record;
 import no.unit.nva.commons.json.JsonUtils;
+import org.apache.jena.ext.com.google.common.io.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,13 +34,29 @@ public final class RecordsWriter {
         return JsonUtils.dtoObjectMapper.writeValueAsString(records);
     }
 
-    @SuppressWarnings("PMD.AvoidFileStream")
     private static void createFileWithRecords(String fileName, List<Record> records) {
-        Optional<String> brageLocation = Optional.ofNullable(records.get(0).getBrageLocation());
-        try (FileWriter fileWriter = new FileWriter(fileName)) {
-            fileWriter.write(convertRecordsToJsonString(records));
+        String brageLocation;
+        if (nonNull(records) && !records.isEmpty()) {
+            brageLocation = records.get(0).getBrageLocation();
+            writeRecordsWithLocationInLogg(fileName, records, brageLocation);
+        } else {
+            writeRecords(fileName, records);
+        }
+    }
+
+    private static void writeRecordsWithLocationInLogg(String fileName, List<Record> records, String location) {
+        try (var fileWrite = Files.newWriter(new File(fileName), StandardCharsets.UTF_8)) {
+            fileWrite.write(convertRecordsToJsonString(records));
         } catch (Exception e) {
-            throw new RecordsWriterException(WRITING_RECORDS_HAS_FAILED + brageLocation, e);
+            throw new RecordsWriterException(WRITING_RECORDS_HAS_FAILED + location, e);
+        }
+    }
+
+    private static void writeRecords(String fileName, List<Record> records) {
+        try (var fileWrite = Files.newWriter(new File(fileName), StandardCharsets.UTF_8)) {
+            fileWrite.write(convertRecordsToJsonString(records));
+        } catch (Exception e) {
+            throw new RecordsWriterException(WRITING_RECORDS_HAS_FAILED, e);
         }
     }
 }
