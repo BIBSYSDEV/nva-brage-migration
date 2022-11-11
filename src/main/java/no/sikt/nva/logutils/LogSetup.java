@@ -6,7 +6,6 @@ import static no.sikt.nva.logutils.LogConstants.MAX_LEVEL;
 import static no.sikt.nva.logutils.LogConstants.MIN_LEVEL;
 import static no.sikt.nva.logutils.LogConstants.PATTERN_LAYOUT;
 import static no.sikt.nva.logutils.LogConstants.ROLLING_FILE;
-import java.io.IOException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
