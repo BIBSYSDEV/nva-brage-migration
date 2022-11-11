@@ -38,7 +38,7 @@ public final class DublinCoreScraper {
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
     public static final String DELIMITER = "\n";
     public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
-    public static final String SCRAPING_HAS_FAILED = "Scraping has failed";
+    public static final String SCRAPING_HAS_FAILED = "Scraping has failed: ";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
 
@@ -130,7 +130,7 @@ public final class DublinCoreScraper {
             logErrorsIfNotEmpty(brageLocation, errors);
             return record;
         } catch (Exception e) {
-            throw new DublinCoreException(SCRAPING_HAS_FAILED);
+            throw new DublinCoreException(SCRAPING_HAS_FAILED + e);
         }
     }
 
@@ -293,12 +293,12 @@ public final class DublinCoreScraper {
                                   .collect(Collectors.toList());
 
         var publishedDate = new PublishedDate();
-        if (nonNull(availableDates) && !availableDates.isEmpty()) {
+        if (!availableDates.isEmpty()) {
             publishedDate.setBrageDates(availableDates);
             publishedDate.setNvaDate(availableDates.get(0));
             return publishedDate;
         }
-        if (nonNull(accessionedDate) && !accessionedDate.isEmpty()) {
+        if (!accessionedDate.isEmpty()) {
             publishedDate.setBrageDates(accessionedDate);
             publishedDate.setNvaDate(accessionedDate.get(0));
             return publishedDate;

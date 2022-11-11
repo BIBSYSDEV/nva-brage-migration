@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import no.sikt.nva.exceptions.DublinCoreException;
+import no.sikt.nva.model.ErrorDetails;
+import no.sikt.nva.model.ErrorDetails.Error;
 
 public final class TypeMapper {
 
-    private static final String COULD_NOT_CONVERT_TO_TYPE = "Could not convert types: ";
     private static final Map<Set<BrageType>, NvaType> TYPE_MAP = Map.ofEntries(
         entry(Set.of(BrageType.BOOK, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_MONOGRAPH),
         entry(Set.of(BrageType.CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER),
@@ -57,7 +57,7 @@ public final class TypeMapper {
         if (Objects.nonNull(nvaType)) {
             return nvaType.getValue();
         } else {
-            throw new DublinCoreException(COULD_NOT_CONVERT_TO_TYPE + String.join(", ", brageTypesAsString));
+            return new ErrorDetails(Error.INVALID_TYPE, brageTypesAsString).toString();
         }
     }
 
