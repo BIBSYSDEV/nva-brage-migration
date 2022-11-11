@@ -33,7 +33,7 @@ public class Record {
     private String spatialCoverage;
     private Publication publication;
     private ResourceContent contentBundle;
-    private String publishedDate;
+    private PublishedDate publishedDate;
     private String cristinId;
     private List<ErrorDetails> errors;
     private List<WarningDetails> warnings;
@@ -70,11 +70,11 @@ public class Record {
     }
 
     @JsonProperty("publishedDate")
-    public String getPublishedDate() {
+    public PublishedDate getPublishedDate() {
         return publishedDate;
     }
 
-    public void setPublishedDate(String publishedDate) {
+    public void setPublishedDate(PublishedDate publishedDate) {
         this.publishedDate = publishedDate;
     }
 

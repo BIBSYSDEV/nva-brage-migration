@@ -19,6 +19,7 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.record.Publication;
+import no.sikt.nva.model.record.PublishedDate;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
 import no.sikt.nva.scrapers.TypeMapper.NvaType;
@@ -64,6 +65,8 @@ public final class DublinCoreScraper {
         dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.SPONSORSHIP, null));
         dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.CITATION, null));
         dcValues.add(new DcValue(Element.SUBJECT, Qualifier.NORWEGIAN_SCIENCE_INDEX, null));
+        dcValues.add(new DcValue(Element.DATE, Qualifier.CREATED, null));
+        dcValues.add(new DcValue(Element.DATE, Qualifier.UPDATED, null));
         return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(DELIMITER));
     }
 
@@ -279,18 +282,26 @@ public final class DublinCoreScraper {
     }
 
     @SuppressWarnings("PMD.PrematureDeclaration")
-    private static String extractAvailableDate(DublinCore dublinCore) {
-        var availableDate = dublinCore.getDcValues().stream()
-                                .filter(DcValue::isAvailableDate)
-                                .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    private static PublishedDate extractAvailableDate(DublinCore dublinCore) {
+        var availableDates = dublinCore.getDcValues().stream()
+                                 .filter(DcValue::isAvailableDate)
+                                 .map(DcValue::scrapeValueAndSetToScraped)
+                                 .collect(Collectors.toList());
         var accessionedDate = dublinCore.getDcValues().stream()
                                   .filter(DcValue::isAccessionedDate)
-                                  .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
-        if (nonNull(availableDate)) {
-            return availableDate;
+                                  .map(DcValue::scrapeValueAndSetToScraped)
+                                  .collect(Collectors.toList());
+
+        var publishedDate = new PublishedDate();
+        if (nonNull(availableDates) && !availableDates.isEmpty()) {
+            publishedDate.setBrageDates(availableDates);
+            publishedDate.setNvaDate(availableDates.get(0));
+            return publishedDate;
         }
-        if (nonNull(accessionedDate)) {
-            return accessionedDate;
+        if (nonNull(accessionedDate) && !accessionedDate.isEmpty()) {
+            publishedDate.setBrageDates(accessionedDate);
+            publishedDate.setNvaDate(accessionedDate.get(0));
+            return publishedDate;
         } else {
             return null;
         }

@@ -92,6 +92,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             startProcessors(brageProcessorThreads);
             waitForAllProcesses(brageProcessorThreads);
             writeRecordsToFiles(brageProcessors);
+            var numberOfResourceBundles = Arrays.asList(zipFiles).stream().count;
             logRecordCounter(brageProcessors);
             return NORMAL_EXIT_CODE;
         } catch (Exception e) {
