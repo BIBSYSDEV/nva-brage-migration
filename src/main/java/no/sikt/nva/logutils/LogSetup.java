@@ -1,5 +1,7 @@
 package no.sikt.nva.logutils;
 
+//Followed this guide: https://www.baeldung.com/log4j2-programmatic-config
+
 import static no.sikt.nva.logutils.LogConstants.FILE_NAME;
 import static no.sikt.nva.logutils.LogConstants.FILE_PATTERN;
 import static no.sikt.nva.logutils.LogConstants.MAX_LEVEL;
