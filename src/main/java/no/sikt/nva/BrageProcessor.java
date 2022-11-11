@@ -68,11 +68,8 @@ public class BrageProcessor implements Runnable {
 
     @Override
     public void run() {
-
         List<File> resourceDirectories = UnZipper.extractResourceDirectories(zipfile, destinationDirectory);
         records = processBundles(resourceDirectories);
-
-        System.out.println(records);
     }
 
     public List<Record> getRecords() {

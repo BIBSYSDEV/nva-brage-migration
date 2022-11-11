@@ -1,6 +1,5 @@
 package no.sikt.nva;
 
-import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -35,28 +34,14 @@ public final class RecordsWriter {
     }
 
     private static void createFileWithRecords(String fileName, List<Record> records) {
-        String brageLocation;
-        if (nonNull(records) && !records.isEmpty()) {
-            brageLocation = records.get(0).getBrageLocation();
-            writeRecordsWithLocationInLogg(fileName, records, brageLocation);
-        } else {
-            writeRecords(fileName, records);
-        }
-    }
-
-    private static void writeRecordsWithLocationInLogg(String fileName, List<Record> records, String location) {
-        try (var fileWrite = Files.newWriter(new File(fileName), StandardCharsets.UTF_8)) {
-            fileWrite.write(convertRecordsToJsonString(records));
-        } catch (Exception e) {
-            throw new RecordsWriterException(WRITING_RECORDS_HAS_FAILED + location, e);
-        }
+        writeRecords(fileName, records);
     }
 
     private static void writeRecords(String fileName, List<Record> records) {
-        try (var fileWrite = Files.newWriter(new File(fileName), StandardCharsets.UTF_8)) {
-            fileWrite.write(convertRecordsToJsonString(records));
+        try (var fileWriter = Files.newWriter(new File(fileName), StandardCharsets.UTF_8)) {
+            fileWriter.write(convertRecordsToJsonString(records));
         } catch (Exception e) {
-            throw new RecordsWriterException(WRITING_RECORDS_HAS_FAILED, e);
+            throw new RecordsWriterException(WRITING_RECORDS_HAS_FAILED + fileName, e);
         }
     }
 }
