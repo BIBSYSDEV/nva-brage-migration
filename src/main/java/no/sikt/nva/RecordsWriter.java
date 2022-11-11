@@ -23,7 +23,7 @@ public final class RecordsWriter {
         try {
             createFileWithRecords(fileName, records);
         } catch (RecordsWriterException e) {
-            logger.warn(e.getMessage());
+            logger.warn(e.getMessage(), e);
         }
     }
 

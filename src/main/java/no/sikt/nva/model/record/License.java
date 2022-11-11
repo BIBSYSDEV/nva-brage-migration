@@ -14,6 +14,10 @@ public class License {
         this.nvaLicense = nvaLicense;
     }
 
+    public License() {
+
+    }
+
     public String getBrageLicense() {
         return brageLicense;
     }
