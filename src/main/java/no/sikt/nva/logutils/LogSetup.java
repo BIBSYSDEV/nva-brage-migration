@@ -20,6 +20,7 @@ import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuild
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
 public final class LogSetup {
+
     private final static String CONSOLE_APPENDER_NAME = "console";
     private final static String WARN_APPENDER_NAME = "warnLog";
     private final static String ERROR_APPENDER_NAME = "errorLog";
@@ -34,12 +35,7 @@ public final class LogSetup {
             = ConfigurationBuilderFactory.newConfigurationBuilder();
         builder.addProperty("status", Level.INFO.toString());
         createAppenders(outputDirectory, builder);
-        try {
-            builder.writeXmlConfiguration(System.out);
-            Configurator.initialize(builder.build());
-        } catch (IOException e) {
-            System.out.println("Could not setup logs properly: " + e.getMessage());
-        }
+        Configurator.initialize(builder.build());
     }
 
     private static void createAppenders(String outputDirectory, ConfigurationBuilder<BuiltConfiguration> builder) {
@@ -47,7 +43,7 @@ public final class LogSetup {
             builder.newLayout(PATTERN_LAYOUT)
                 .addAttribute("pattern", "%m%n");
         ComponentBuilder defaultRolloverStrategy =
-            builder.newComponent(  "DefaultRolloverStrategy")
+            builder.newComponent("DefaultRolloverStrategy")
                 .addAttribute("max", "10");
         ComponentBuilder policies =
             builder.newComponent("Policies")
