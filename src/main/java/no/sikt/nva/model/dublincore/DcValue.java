@@ -220,6 +220,10 @@ public class DcValue {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.CITATION.equals(this.qualifier);
     }
 
+    public boolean isNsiSubject() {
+        return Element.SUBJECT.equals(this.element) && Qualifier.NORWEGIAN_SCIENCE_INDEX.equals(this.qualifier);
+    }
+
     public String toXmlString() {
         StringWriter sw = new StringWriter();
         JAXB.marshal(this, sw);

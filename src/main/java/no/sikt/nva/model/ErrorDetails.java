@@ -44,6 +44,7 @@ public class ErrorDetails {
         PUBLISHER_NOT_IN_CHANNEL_REGISTER,
         INVALID_ISBN,
         INVALID_DOI_OFFLINE_CHECK,
-        INVALID_DOI_ONLINE_CHECK
+        INVALID_DOI_ONLINE_CHECK,
+        INVALID_LANGUAGE
     }
 }
