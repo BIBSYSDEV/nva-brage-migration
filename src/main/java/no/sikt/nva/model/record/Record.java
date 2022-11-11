@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import no.sikt.nva.model.ErrorDetails;
@@ -36,6 +37,10 @@ public class Record {
     private String cristinId;
     private List<ErrorDetails> errors;
     private List<WarningDetails> warnings;
+
+    public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
+        return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
 
     @JsonProperty("warnings")
     public List<WarningDetails> getWarnings() {
@@ -143,8 +148,8 @@ public class Record {
                && Objects.equals(contentBundle, record.contentBundle)
                && Objects.equals(publishedDate, record.publishedDate)
                && Objects.equals(cristinId, record.cristinId)
-               && Objects.equals(errors, record.errors)
-               && Objects.equals(warnings, record.warnings);
+               && listEqualsIgnoreOrder(errors, record.errors)
+               && listEqualsIgnoreOrder(warnings, record.warnings);
     }
 
     @JacocoGenerated

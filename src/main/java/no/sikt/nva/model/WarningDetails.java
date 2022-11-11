@@ -1,6 +1,7 @@
 package no.sikt.nva.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,7 +21,7 @@ public class WarningDetails {
 
     public WarningDetails(Warning warningCode, String detail) {
         this.warningCode = warningCode;
-        this.details = List.of(detail);
+        this.details = Collections.singletonList(detail);
     }
 
     @JsonProperty("warningCode")

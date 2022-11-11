@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.WarningDetails.Warning;
+import no.sikt.nva.model.record.License;
 import no.sikt.nva.scrapers.LicenseScraper;
 
 public class BrageProcessorValidator {
@@ -22,11 +23,12 @@ public class BrageProcessorValidator {
     private static Optional<WarningDetails> getCCLicenseWarnings(File entryDirectory) {
         if (containsCCLicenseFile(entryDirectory)) {
             LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
-            var license = licenseScraper.extractOrCreateLicense(entryDirectory);
-            if (licenseScraper.isValidCCLicense(license)) {
+            Optional<License> license = Optional.ofNullable(licenseScraper.extractOrCreateLicense(entryDirectory));
+            if (licenseScraper.isValidCCLicense(license.get())) {
                 return Optional.empty();
             } else {
-                return Optional.of(new WarningDetails(Warning.INVALID_CC_LICENSE));
+                return Optional.of(new WarningDetails(Warning.INVALID_CC_LICENSE,
+                                                      license.orElse(new License()).toString()));
             }
         } else {
             return Optional.empty();
