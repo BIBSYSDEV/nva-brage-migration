@@ -102,6 +102,15 @@ public final class DublinCoreScraper {
                    .collect(Collectors.toList());
     }
 
+    public static String extractPublisher(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isPublisher)
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
+    }
+
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         var errors = new ArrayList<ErrorDetails>();
         if (onlineValidationIsEnabled()) {
@@ -225,16 +234,9 @@ public final class DublinCoreScraper {
                || dcValue.isProvenanceDescription()
                || dcValue.isSponsorShipDescription()
                || dcValue.isCitationIdentifier()
-               || dcValue.isNsiSubject();
-    }
-
-    private static String extractPublisher(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isPublisher)
-                   .findAny()
-                   .orElse(new DcValue())
-                   .scrapeValueAndSetToScraped();
+               || dcValue.isNsiSubject()
+               || dcValue.isCreatedDate()
+               || dcValue.isUpdatedDate();
     }
 
     private static String extractCristinId(DublinCore dublinCore) {
