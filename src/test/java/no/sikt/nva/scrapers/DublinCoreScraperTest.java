@@ -1,7 +1,7 @@
 package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.model.WarningDetails.Warning.SUBJECT_WARNING;
@@ -18,12 +18,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
@@ -329,12 +329,12 @@ public class DublinCoreScraperTest {
             List.of(nonIsoLanguageDcValue, typeDcValue, peerReviewed));
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
-        var exception = assertThrows(
-            DublinCoreException.class,
-            () -> dublinCoreScraper
-                      .validateAndParseDublinCore(dublinCore, new BrageLocation(null)));
-        assertThat(exception.getMessage(), containsString(INVALID_LANGUAGE.toString()));
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getErrors(),
+                   is(equalTo(Arrays.asList(new ErrorDetails(INVALID_LANGUAGE, List.of(nonIsoLanguage))))));
     }
+
     @Test
     void shouldNotLookInChannelRegisterForOtherType() {
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");

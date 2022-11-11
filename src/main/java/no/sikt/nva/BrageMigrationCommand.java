@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static java.util.Objects.nonNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -10,6 +11,7 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import no.sikt.nva.model.record.Record;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.HandleTitleMapReader;
 import nva.commons.core.JacocoGenerated;
@@ -33,7 +35,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String PATH_DELIMITER = "/";
     public static final String OUTPUT_JSON_FILENAME = "records.json";
     public static final String FAILURE_IN_BRAGE_MIGRATION_COMMAND = "Failure in BrageMigration command";
-
     public static final String FOLLOWING_FIELDS_ARE_IGNORED = "The following fields are ignored: \n";
     public static final String INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY =
         "Both specified zipfiles and starting directory cannot be set at "
@@ -45,6 +46,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
         "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
+    public static final String RECORDS_WITHOUT_ERRORS = "Records without errors: ";
+    public static final String SLASH = "/";
     @Option(names = {"-c", "--customer"},
         defaultValue = NVE_DEV_CUSTOMER_ID,
         description = "customer id in NVA")
@@ -89,11 +92,28 @@ public class BrageMigrationCommand implements Callable<Integer> {
             startProcessors(brageProcessorThreads);
             waitForAllProcesses(brageProcessorThreads);
             writeRecordsToFiles(brageProcessors);
+            logRecordCounter(brageProcessors);
             return NORMAL_EXIT_CODE;
         } catch (Exception e) {
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
         }
+    }
+
+    private void logRecordCounter(List<BrageProcessor> brageProcessors) {
+        var counterWithoutErrors = 0;
+        var totalCounter = 0;
+        for (BrageProcessor brageProcessor : brageProcessors) {
+            if (nonNull(brageProcessor.getRecords())) {
+                for (Record record : brageProcessor.getRecords()) {
+                    if (record.getErrors().isEmpty()) {
+                        counterWithoutErrors++;
+                    }
+                    totalCounter++;
+                }
+            }
+        }
+        logger.info(RECORDS_WITHOUT_ERRORS + counterWithoutErrors + SLASH + totalCounter);
     }
 
     private static String[] readZipFileNamesFromCollectionFile(String startingDirectory) {
@@ -117,7 +137,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void checkForIllegalArguments() {
-        if (Objects.nonNull(zipFiles) && zipFiles.length > 0 && StringUtils.isNotEmpty(startingDirectory)) {
+        if (nonNull(zipFiles) && zipFiles.length > 0 && StringUtils.isNotEmpty(startingDirectory)) {
             throw new IllegalArgumentException(INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY);
         }
     }
