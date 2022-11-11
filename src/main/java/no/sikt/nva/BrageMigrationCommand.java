@@ -11,13 +11,13 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import no.sikt.nva.logutils.LogSetup;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.HandleTitleMapReader;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import nva.commons.core.paths.UriWrapper;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -39,15 +39,14 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY =
         "Both specified zipfiles and starting directory cannot be set at "
         + "the same time";
-    private static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+    public static final String RECORDS_WITHOUT_ERRORS = "Records without errors: ";
+    public static final String SLASH = "/";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
     private static final String NVE_DEV_CUSTOMER_ID =
         "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
-    public static final String RECORDS_WITHOUT_ERRORS = "Records without errors: ";
-    public static final String SLASH = "/";
     @Option(names = {"-c", "--customer"},
         defaultValue = NVE_DEV_CUSTOMER_ID,
         description = "customer id in NVA")
@@ -68,6 +67,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
     private boolean usageHelpRequested;
 
+    @Option(names = {"-O", "--output-directory"}, description = "result outputdirectory.")
+    private String userSpecifiedOutputDirectory;
+
     @Option(names = {"-no-handle-erros"}, description = "turn off handle errors. Invalid and missing handles does not"
                                                         + " get checked")
     private boolean noHandleCheck;
@@ -80,14 +82,27 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
-            printIgnoredDcValuesFieldsInInfoLog();
-            var customerUri = UriWrapper.fromUri(customer).getUri();
+
             checkForIllegalArguments();
+            var inputDirectory = StringUtils.isNotEmpty(startingDirectory)
+                                     ? startingDirectory + "/"
+                                     : StringUtils.EMPTY_STRING;
+            var outputDirectory = StringUtils.isNotEmpty(userSpecifiedOutputDirectory)
+                                      ? userSpecifiedOutputDirectory + "/"
+                                      : inputDirectory;
+            var logOutPutDirectory = getLogOutputDirectory(inputDirectory, outputDirectory);
+            /* IMPORTANT: DO NOT USE LOGGER BEFORE THIS METHOD HAS RUN: */
+            LogSetup.setupLogging(logOutPutDirectory);
             if (Objects.isNull(zipFiles)) {
-                this.zipFiles = readZipFileNamesFromCollectionFile(startingDirectory);
+                this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
             }
-            var brageProcessors = createBrageProcessorThread(zipFiles, customerUri, enableOnlineValidation,
-                                                             noHandleCheck);
+            var customerUri = UriWrapper.fromUri(customer).getUri();
+            printIgnoredDcValuesFieldsInInfoLog();
+            var brageProcessors = createBrageProcessorThread(zipFiles,
+                                                             customerUri,
+                                                             enableOnlineValidation,
+                                                             noHandleCheck,
+                                                             outputDirectory);
             var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
             startProcessors(brageProcessorThreads);
             waitForAllProcesses(brageProcessorThreads);
@@ -95,9 +110,34 @@ public class BrageMigrationCommand implements Callable<Integer> {
             logRecordCounter(brageProcessors);
             return NORMAL_EXIT_CODE;
         } catch (Exception e) {
+            var logger = LoggerFactory.getLogger(BrageProcessor.class);
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
         }
+    }
+
+    private static String getLogOutputDirectory(String inputDirectory, String outputDirectory) {
+        if (inputDirectory.equals(outputDirectory)) {
+            return outputDirectory;
+        }
+        return outputDirectory + inputDirectory;
+    }
+
+    private static String[] readZipFileNamesFromCollectionFile(String inputDirectory) {
+        var zipfiles = new ArrayList<String>();
+        var filenameWithPath = inputDirectory + COLLECTION_FILENAME;
+        File collectionsInformationFile = new File(filenameWithPath);
+        try (var scanner = new Scanner(collectionsInformationFile)) {
+            while (scanner.hasNextLine()) {
+                var fileNamePartial = scanner.nextLine();
+                if (StringUtils.isNotEmpty(fileNamePartial)) {
+                    zipfiles.add(inputDirectory + fileNamePartial + ZIP_FILE_ENDING);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return zipfiles.toArray(new String[0]);
     }
 
     private void logRecordCounter(List<BrageProcessor> brageProcessors) {
@@ -113,27 +153,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 }
             }
         }
+        var logger = LoggerFactory.getLogger(BrageProcessor.class);
         logger.info(RECORDS_WITHOUT_ERRORS + counterWithoutErrors + SLASH + totalCounter);
-    }
-
-    private static String[] readZipFileNamesFromCollectionFile(String startingDirectory) {
-        var zipfiles = new ArrayList<String>();
-        var directory = StringUtils.isNotEmpty(startingDirectory)
-                            ? startingDirectory + "/"
-                            : StringUtils.EMPTY_STRING;
-        var filenameWithPath = directory + COLLECTION_FILENAME;
-        File collectionsInformationFile = new File(filenameWithPath);
-        try (var scanner = new Scanner(collectionsInformationFile)) {
-            while (scanner.hasNextLine()) {
-                var fileNamePartial = scanner.nextLine();
-                if (StringUtils.isNotEmpty(fileNamePartial)) {
-                    zipfiles.add(directory + fileNamePartial + ZIP_FILE_ENDING);
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return zipfiles.toArray(new String[0]);
     }
 
     private void checkForIllegalArguments() {
@@ -143,6 +164,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void printIgnoredDcValuesFieldsInInfoLog() {
+        var logger = LoggerFactory.getLogger(BrageProcessor.class);
         logger.info(FOLLOWING_FIELDS_ARE_IGNORED + DublinCoreScraper.getIgnoredFieldNames());
     }
 
@@ -170,13 +192,14 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, URI customer,
-                                                            boolean enableOnlineValidation, boolean noHandleCheck) {
+                                                            boolean enableOnlineValidation, boolean noHandleCheck,
+                                                            String outputDirectory) {
         var handleTitleMapReader = new HandleTitleMapReader();
         var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch());
         return
             Arrays.stream(zipFiles)
                 .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,
-                                                                           noHandleCheck))
+                                                                           noHandleCheck, outputDirectory))
                 .collect(Collectors.toList());
     }
 }

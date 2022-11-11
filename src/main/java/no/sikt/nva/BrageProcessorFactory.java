@@ -16,8 +16,8 @@ public class BrageProcessorFactory {
     }
 
     public BrageProcessor createBrageProcessor(String zipfile, URI customerId, boolean enableOnlineValidation,
-                                               boolean noHandleCheck) {
-        var destinationDirectory = zipfile.replace(ZIP_EXTENSION, StringUtils.EMPTY_STRING);
+                                               boolean noHandleCheck, String outputDirectory) {
+        var destinationDirectory = outputDirectory + zipfile.replace(ZIP_EXTENSION, StringUtils.EMPTY_STRING);
         if (StringUtils.isEmpty(destinationDirectory)) {
             throw new RuntimeException(INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE);
         }
