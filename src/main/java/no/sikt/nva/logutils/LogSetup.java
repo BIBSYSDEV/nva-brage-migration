@@ -1,5 +1,11 @@
-package no.sikt.nva;
+package no.sikt.nva.logutils;
 
+import static no.sikt.nva.logutils.LogConstants.FILE_NAME;
+import static no.sikt.nva.logutils.LogConstants.FILE_PATTERN;
+import static no.sikt.nva.logutils.LogConstants.MAX_LEVEL;
+import static no.sikt.nva.logutils.LogConstants.MIN_LEVEL;
+import static no.sikt.nva.logutils.LogConstants.PATTERN_LAYOUT;
+import static no.sikt.nva.logutils.LogConstants.ROLLING_FILE;
 import java.io.IOException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -14,6 +20,10 @@ import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuild
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
 public final class LogSetup {
+    private final static String CONSOLE_APPENDER_NAME = "console";
+    private final static String WARN_APPENDER_NAME = "warnLog";
+    private final static String ERROR_APPENDER_NAME = "errorLog";
+    private final static String HTML_APPENDER_NAME = "htmlLogger";
 
     private LogSetup() {
 
@@ -22,7 +32,7 @@ public final class LogSetup {
     public static void setupLogging(String outputDirectory) {
         ConfigurationBuilder<BuiltConfiguration> builder
             = ConfigurationBuilderFactory.newConfigurationBuilder();
-        builder.addProperty("status", "INFO");
+        builder.addProperty("status", Level.INFO.toString());
         createAppenders(outputDirectory, builder);
         try {
             builder.writeXmlConfiguration(System.out);
@@ -34,10 +44,10 @@ public final class LogSetup {
 
     private static void createAppenders(String outputDirectory, ConfigurationBuilder<BuiltConfiguration> builder) {
         LayoutComponentBuilder standardPattern =
-            builder.newLayout("PatternLayout")
+            builder.newLayout(PATTERN_LAYOUT)
                 .addAttribute("pattern", "%m%n");
         ComponentBuilder defaultRolloverStrategy =
-            builder.newComponent("DefaultRolloverStrategy")
+            builder.newComponent(  "DefaultRolloverStrategy")
                 .addAttribute("max", "10");
         ComponentBuilder policies =
             builder.newComponent("Policies")
@@ -61,14 +71,14 @@ public final class LogSetup {
 
         RootLoggerComponentBuilder rootLogger =
             builder.newRootLogger(Level.INFO);
-        rootLogger.add(builder.newAppenderRef("console"));
+        rootLogger.add(builder.newAppenderRef(CONSOLE_APPENDER_NAME));
 
         LoggerComponentBuilder logger = builder
                                             .newLogger("no.sikt.nva")
                                             .addAttribute("additivity", "true")
-                                            .add(builder.newAppenderRef("htmlLogger"))
-                                            .add(builder.newAppenderRef("warnLog"))
-                                            .add(builder.newAppenderRef("errorLog"));
+                                            .add(builder.newAppenderRef(ERROR_APPENDER_NAME))
+                                            .add(builder.newAppenderRef(WARN_APPENDER_NAME))
+                                            .add(builder.newAppenderRef(HTML_APPENDER_NAME));
 
         builder.add(errorAppender);
         builder.add(logWarnAppender);
@@ -82,7 +92,7 @@ public final class LogSetup {
         ConfigurationBuilder<BuiltConfiguration> builder, LayoutComponentBuilder standardPattern) {
 
         return builder
-                   .newAppender("console", "Console")
+                   .newAppender(CONSOLE_APPENDER_NAME, "Console")
                    .addComponent(standardPattern);
     }
 
@@ -107,13 +117,13 @@ public final class LogSetup {
                 .addAttribute("title", "Brage migration results");
         ComponentBuilder infoFilter =
             builder.newFilter("LevelRangeFilter", "ACCEPT", "DENY")
-                .addAttribute("minLevel", "INFO")
-                .addAttribute("maxLevel", "INFO");
+                .addAttribute(MIN_LEVEL, Level.INFO)
+                .addAttribute(MAX_LEVEL, Level.INFO);
 
         AppenderComponentBuilder rollingFile =
-            builder.newAppender("htmlLogger", "RollingFile");
-        rollingFile.addAttribute("fileName", outputDirectory + "app-info2.html");
-        rollingFile.addAttribute("filePattern", "app-info2-%d{yyyy-MM-dd}.html");
+            builder.newAppender(HTML_APPENDER_NAME, ROLLING_FILE);
+        rollingFile.addAttribute(FILE_NAME, outputDirectory + "app-info2.html");
+        rollingFile.addAttribute(FILE_PATTERN, "app-info2-%d{yyyy-MM-dd}.html");
         rollingFile.addComponent(infoFilter);
         rollingFile.addComponent(triggeringPolicy);
         rollingFile.addComponent(htmlLayout);
@@ -128,13 +138,13 @@ public final class LogSetup {
 
         ComponentBuilder<FilterComponentBuilder> warnFilter =
             builder.newFilter("LevelRangeFilter", "ACCEPT", "DENY")
-                .addAttribute("minLevel", "WARN")
-                .addAttribute("maxLevel", "WARN");
+                .addAttribute(MIN_LEVEL, Level.WARN)
+                .addAttribute(MAX_LEVEL, Level.WARN);
 
         AppenderComponentBuilder warnAppender =
-            builder.newAppender("warnLog", "RollingFile");
-        warnAppender.addAttribute("fileName", outputDirectory + "application-warn.log");
-        warnAppender.addAttribute("filePattern", "application-warn-%d{yyyy-MM-dd}-%i.log");
+            builder.newAppender(WARN_APPENDER_NAME, ROLLING_FILE);
+        warnAppender.addAttribute(FILE_NAME, outputDirectory + "application-warn.log");
+        warnAppender.addAttribute(FILE_PATTERN, "application-warn-%d{yyyy-MM-dd}-%i.log");
         warnAppender.addComponent(warnFilter);
         warnAppender.addComponent(policies);
         warnAppender.addComponent(standardPattern);
@@ -149,13 +159,13 @@ public final class LogSetup {
                                                                 ComponentBuilder policies) {
         ComponentBuilder<FilterComponentBuilder> errorFilter =
             builder.newFilter("LevelRangeFilter", "ACCEPT", "DENY")
-                .addAttribute("minLevel", "ERROR")
-                .addAttribute("maxLevel", "ERROR");
+                .addAttribute(MIN_LEVEL, Level.ERROR)
+                .addAttribute(MAX_LEVEL, Level.ERROR);
 
         AppenderComponentBuilder warnAppender =
-            builder.newAppender("errorLog", "RollingFile");
-        warnAppender.addAttribute("fileName", outputDirectory + "application-error.log");
-        warnAppender.addAttribute("filePattern", "application-error-%d{yyyy-MM-dd}-%i.log");
+            builder.newAppender(ERROR_APPENDER_NAME, ROLLING_FILE);
+        warnAppender.addAttribute(FILE_NAME, outputDirectory + "application-error.log");
+        warnAppender.addAttribute(FILE_PATTERN, "application-error-%d{yyyy-MM-dd}-%i.log");
         warnAppender.addComponent(errorFilter);
         warnAppender.addComponent(policies);
         warnAppender.addComponent(standardPattern);

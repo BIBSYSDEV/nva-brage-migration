@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import no.sikt.nva.logutils.LogSetup;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.HandleTitleMapReader;
 import nva.commons.core.JacocoGenerated;
@@ -86,7 +87,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
             var outputDirectory = StringUtils.isNotEmpty(userSpecifiedOutputDirectory)
                                       ? userSpecifiedOutputDirectory + "/"
                                       : inputDirectory;
-            LogSetup.setupLogging(outputDirectory);
+            var logOutPutDirectory = getLogOutputDirectory(inputDirectory, outputDirectory);
+            LogSetup.setupLogging(logOutPutDirectory);
             if (Objects.isNull(zipFiles)) {
                 this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
             }
@@ -107,6 +109,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
         }
+    }
+
+    private static String getLogOutputDirectory(String inputDirectory, String outputDirectory) {
+        if (inputDirectory.equals(outputDirectory)) {
+            return outputDirectory;
+        }
+        return outputDirectory + inputDirectory;
     }
 
     private static String[] readZipFileNamesFromCollectionFile(String inputDirectory) {
