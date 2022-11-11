@@ -10,9 +10,8 @@ import no.sikt.nva.model.content.ResourceContent;
 import nva.commons.core.JacocoGenerated;
 
 @JsonPropertyOrder({"customerId", "bareOrigin", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
-    "rightsholder",
-    "type", "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
-    "recordContent"})
+    "rightsholder", "type", "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication",
+    "entityDescription", "recordContent", "brageLocation"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
 
@@ -31,6 +30,16 @@ public class Record {
     private ResourceContent contentBundle;
     private String publishedDate;
     private String cristinId;
+    private String brageLocation;
+
+    @JsonProperty("brageLocation")
+    public String getBrageLocation() {
+        return brageLocation;
+    }
+
+    public void setBrageLocation(String brageLocation) {
+        this.brageLocation = brageLocation;
+    }
 
     @JsonProperty("cristinId")
     public String getCristinId() {
@@ -59,11 +68,11 @@ public class Record {
         this.contentBundle = contentBundle;
     }
 
-    @JacocoGenerated
     @Override
     public int hashCode() {
         return Objects.hash(entityDescription, customerId, id, doi, origin, type, language, embargo, publisherAuthority,
-                            rightsholder, spatialCoverage, publication, contentBundle, publishedDate, cristinId);
+                            rightsholder, spatialCoverage, publication, contentBundle, publishedDate, cristinId,
+                            brageLocation);
     }
 
     @JacocoGenerated
@@ -90,9 +99,11 @@ public class Record {
                && Objects.equals(publication, record.publication)
                && Objects.equals(contentBundle, record.contentBundle)
                && Objects.equals(publishedDate, record.publishedDate)
-               && Objects.equals(cristinId, record.cristinId);
+               && Objects.equals(cristinId, record.cristinId)
+               && Objects.equals(brageLocation, record.brageLocation);
     }
 
+    @JacocoGenerated
     @JsonProperty("spatialCoverage")
     public String getSpatialCoverage() {
         return spatialCoverage;

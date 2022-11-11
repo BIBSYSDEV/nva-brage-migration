@@ -122,6 +122,7 @@ public class BrageProcessor implements Runnable {
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setCustomerId(customerId);
             record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper));
+            record.setBrageLocation(brageLocation.getOriginInformation());
             logWarningsIfNotEmpty(brageLocation, BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory));
             return Optional.of(record);
         } catch (Exception e) {
