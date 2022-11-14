@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -330,8 +331,7 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getErrors(),
-                   is(equalTo(List.of(new ErrorDetails(INVALID_LANGUAGE, List.of(nonIsoLanguage))))));
+        assertThat(record.getErrors(), hasItem(new ErrorDetails(INVALID_LANGUAGE, List.of(nonIsoLanguage))));
     }
 
     @Test
@@ -343,8 +343,7 @@ public class DublinCoreScraperTest {
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper
-                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(appender.getMessages(), not(containsString(NOT_FOUND_IN_CHANNEL_REGISTER)));
     }
 
@@ -358,7 +357,8 @@ public class DublinCoreScraperTest {
         var accessDateDcValue2 = new DcValue(Element.DATE, Qualifier.ACCESSIONED, "date2");
 
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(typeDcValue, publisherDcValue, accessDateDcValue, availableDateDcValue, cristinDcValue, accessDateDcValue2));
+            List.of(typeDcValue, publisherDcValue, accessDateDcValue, availableDateDcValue, cristinDcValue,
+                    accessDateDcValue2));
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var appender = LogUtils.getTestingAppenderForRootLogger();

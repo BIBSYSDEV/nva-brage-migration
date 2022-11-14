@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ import no.sikt.nva.scrapers.SubjectScraper;
 import no.sikt.nva.scrapers.TypeMapper;
 import no.sikt.nva.scrapers.TypeMapper.BrageType;
 import nva.commons.core.StringUtils;
+import org.apache.commons.validator.routines.DateValidator;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
 import org.jetbrains.annotations.NotNull;
@@ -45,6 +47,7 @@ public final class DublinCoreValidator {
         getInvalidTypes(dublinCore).ifPresent(errors::add);
         getIssnErrors(dublinCore, brageLocation).ifPresent(errors::add);
         getIsbnErrors(dublinCore, brageLocation).ifPresent(errors::add);
+        getDateError(dublinCore).ifPresent(errors::add);
         getChannelRegisterErrors(dublinCore, brageLocation).ifPresent(errors::add);
         BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
         return errors;
@@ -63,7 +66,6 @@ public final class DublinCoreValidator {
         var warnings = new ArrayList<WarningDetails>();
         getVersionWarnings(dublinCore).ifPresent(warnings::add);
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
-        getDateWarning(dublinCore).ifPresent(warnings::add);
         BrageNvaLanguageMapper.getLanguageWarning(dublinCore).ifPresent(warnings::add);
         getDescriptionsWarning(dublinCore).ifPresent(warnings::add);
         getVolumeWarning(dublinCore).ifPresent(warnings::add);
@@ -125,7 +127,7 @@ public final class DublinCoreValidator {
             || nonNull(possibleChannelRegisterIdentifierByJournal)) {
             return Optional.empty();
         } else {
-            return getErrorDetailsWhenNotInChannelRegister(PUBLISHER_NOT_IN_CHANNEL_REGISTER, issn, title,publisher);
+            return getErrorDetailsWhenNotInChannelRegister(PUBLISHER_NOT_IN_CHANNEL_REGISTER, issn, title, publisher);
         }
     }
 
@@ -222,7 +224,7 @@ public final class DublinCoreValidator {
         return getVersionWarning(dublinCore);
     }
 
-    private static Optional<WarningDetails> getDateWarning(DublinCore dublinCore) {
+    private static Optional<ErrorDetails> getDateError(DublinCore dublinCore) {
         if (hasDate(dublinCore)) {
             var date = dublinCore.getDcValues()
                            .stream()
@@ -237,9 +239,17 @@ public final class DublinCoreValidator {
             if (containsYearAndMonth(date)) {
                 return Optional.empty();
             }
-            return Optional.of(new WarningDetails(Warning.INVALID_DATE_WARNING, List.of(date)));
+            if (containsYearAndMonthAndDate(date)) {
+                return Optional.empty();
+            }
+            return Optional.of(new ErrorDetails(Error.INVALID_DATE_ERROR, List.of(date)));
         }
-        return Optional.of(new WarningDetails(Warning.DATE_NOT_PRESENT_WARNING, List.of()));
+        return Optional.of(new ErrorDetails(Error.DATE_NOT_PRESENT_ERROR, List.of()));
+    }
+
+    private static boolean containsYearAndMonthAndDate(String date) {
+        DateValidator validator = DateValidator.getInstance();
+        return validator.isValid(date, Locale.CANADA);
     }
 
     private static boolean hasDate(DublinCore dublinCore) {
