@@ -8,7 +8,7 @@ import java.io.StringWriter;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 
-@SuppressWarnings("PMD.GodClass")
+@SuppressWarnings({"PMD.GodClass", "PMD.ExcessivePublicCount"})
 public class DcValue {
 
     public static final String XML_PREFIX = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
@@ -202,6 +202,10 @@ public class DcValue {
 
     public boolean isPageNumber() {
         return Element.SOURCE.equals(this.element) && Qualifier.PAGE_NUMBER.equals(this.qualifier);
+    }
+
+    public boolean isArticleNumber() {
+        return Element.SOURCE.equals(this.element) && Qualifier.ARTICLE_NUMBER.equals(this.qualifier);
     }
 
     public boolean isProjectRelation() {

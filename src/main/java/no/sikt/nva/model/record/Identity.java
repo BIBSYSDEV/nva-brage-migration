@@ -2,11 +2,10 @@ package no.sikt.nva.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import nva.commons.core.JacocoGenerated;
 
 public class Identity {
 
-    private static final  String IDENTITY_TYPE = "Identity";
+    private static final String IDENTITY_TYPE = "Identity";
     private final String type;
     private String name;
 
@@ -29,13 +28,11 @@ public class Identity {
         this.name = name;
     }
 
-    @JacocoGenerated
     @Override
     public int hashCode() {
         return Objects.hash(name, type);
     }
 
-    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {

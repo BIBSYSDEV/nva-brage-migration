@@ -83,6 +83,19 @@ public final class EntityDescriptionExtractor {
                    .collect(Collectors.toList());
     }
 
+    private static String extractArticleNumber(DublinCore dublinCore) {
+        var articleNumbers = dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isArticleNumber)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
+        if(articleNumbers.isEmpty()) {
+            return null;
+        } else {
+            return articleNumbers.get(0);
+        }
+    }
+
     private static List<String> extractDescriptions(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
@@ -104,6 +117,7 @@ public final class EntityDescriptionExtractor {
         publicationInstance.setIssue(extractIssue(dublinCore));
         publicationInstance.setPageNumber(PageConverter.extractPages(dublinCore));
         publicationInstance.setVolume(extractVolume(dublinCore));
+        publicationInstance.setArticleNumber(extractArticleNumber(dublinCore));
         return publicationInstance;
     }
 
