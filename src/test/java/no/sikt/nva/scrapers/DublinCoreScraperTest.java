@@ -1,6 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.model.WarningDetails.Warning.SUBJECT_WARNING;
@@ -21,6 +22,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
@@ -317,6 +319,22 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void nonIsoLanguageShouldBeLoggedAsError() {
+        var nonIsoLanguage = randomString();
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var nonIsoLanguageDcValue = new DcValue(Element.LANGUAGE, Qualifier.ISO, nonIsoLanguage);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(nonIsoLanguageDcValue, typeDcValue, peerReviewed));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getErrors(),
+                   is(equalTo(List.of(new ErrorDetails(INVALID_LANGUAGE, List.of(nonIsoLanguage))))));
+    }
+
+    @Test
     void shouldNotLookInChannelRegisterForOtherType() {
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var publisherDcValue = new DcValue(Element.PUBLISHER, null, "Publisher");
@@ -328,6 +346,25 @@ public class DublinCoreScraperTest {
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(appender.getMessages(), not(containsString(NOT_FOUND_IN_CHANNEL_REGISTER)));
+    }
+
+    @Test
+    void shouldSetAccessionedDateAsScraped() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var publisherDcValue = new DcValue(Element.PUBLISHER, null, "Publisher");
+        var cristinDcValue = new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN, "cristin");
+        var availableDateDcValue = new DcValue(Element.DATE, Qualifier.AVAILABLE, "date");
+        var accessDateDcValue = new DcValue(Element.DATE, Qualifier.ACCESSIONED, "date");
+        var accessDateDcValue2 = new DcValue(Element.DATE, Qualifier.ACCESSIONED, "date2");
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, publisherDcValue, accessDateDcValue, availableDateDcValue, cristinDcValue, accessDateDcValue2));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        dublinCoreScraper
+            .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), not(containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE)));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

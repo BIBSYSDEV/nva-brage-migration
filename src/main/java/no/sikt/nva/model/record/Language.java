@@ -3,25 +3,26 @@ package no.sikt.nva.model.record;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
+import java.util.List;
 
 public class Language {
 
-    private String brage;
+    private List<String> brage;
     private URI nva;
 
     @JsonCreator
-    public Language(@JsonProperty("brage") String brage,
+    public Language(@JsonProperty("brage") List<String> brage,
                     @JsonProperty("nva") URI nva) {
         this.brage = brage;
         this.nva = nva;
     }
 
     @JsonProperty("brage")
-    public String getBrage() {
+    public List<String> getBrage() {
         return brage;
     }
 
-    public void setBrage(String brage) {
+    public void setBrage(List<String> brage) {
         this.brage = brage;
     }
 

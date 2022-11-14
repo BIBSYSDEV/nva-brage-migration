@@ -3,7 +3,6 @@ package no.sikt.nva.model.record;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
-import nva.commons.core.JacocoGenerated;
 
 public class EntityDescription {
 
@@ -30,12 +29,10 @@ public class EntityDescription {
         return publicationInstance;
     }
 
-    @JacocoGenerated
     public void setPublicationInstance(PublicationInstance publicationInstance) {
         this.publicationInstance = publicationInstance;
     }
 
-    @JacocoGenerated
     @JsonProperty("tags")
     public List<String> getTags() {
         return this.tags;
@@ -63,7 +60,6 @@ public class EntityDescription {
         this.mainTitle = mainTitle;
     }
 
-    @JacocoGenerated
     @JsonProperty
     public List<String> getDescriptions() {
         return descriptions;
@@ -73,7 +69,6 @@ public class EntityDescription {
         this.descriptions = descriptions;
     }
 
-    @JacocoGenerated
     @JsonProperty
     public List<String> getAbstracts() {
         return abstracts;
@@ -92,14 +87,12 @@ public class EntityDescription {
         this.alternativeTitles = alternativeTitles;
     }
 
-    @JacocoGenerated
     @Override
     public int hashCode() {
         return Objects.hash(publicationDate, descriptions, abstracts, mainTitle, alternativeTitles, contributors, tags,
                             publicationInstance);
     }
 
-    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {

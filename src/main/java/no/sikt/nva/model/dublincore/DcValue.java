@@ -8,7 +8,7 @@ import java.io.StringWriter;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 
-@SuppressWarnings("PMD.GodClass")
+@SuppressWarnings({"PMD.GodClass", "PMD.ExcessivePublicCount"})
 public class DcValue {
 
     public static final String XML_PREFIX = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
@@ -130,6 +130,14 @@ public class DcValue {
         return Element.DATE.equals(this.element) && Qualifier.ACCESSIONED.equals(this.qualifier);
     }
 
+    public boolean isCreatedDate() {
+        return Element.DATE.equals(this.element) && Qualifier.CREATED.equals(this.qualifier);
+    }
+
+    public boolean isUpdatedDate() {
+        return Element.DATE.equals(this.element) && Qualifier.UPDATED.equals(this.qualifier);
+    }
+
     public boolean isContributor() {
         return Element.CONTRIBUTOR.equals(this.element);
     }
@@ -204,6 +212,10 @@ public class DcValue {
         return Element.SOURCE.equals(this.element) && Qualifier.PAGE_NUMBER.equals(this.qualifier);
     }
 
+    public boolean isArticleNumber() {
+        return Element.SOURCE.equals(this.element) && Qualifier.ARTICLE_NUMBER.equals(this.qualifier);
+    }
+
     public boolean isProjectRelation() {
         return Element.RELATION.equals(this.element) && Qualifier.PROJECT.equals(this.qualifier);
     }
@@ -219,6 +231,12 @@ public class DcValue {
     public boolean isCitationIdentifier() {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.CITATION.equals(this.qualifier);
     }
+
+    public boolean isNsiSubject() {
+        return Element.SUBJECT.equals(this.element) && Qualifier.NORWEGIAN_SCIENCE_INDEX.equals(this.qualifier);
+    }
+
+
 
     public String toXmlString() {
         StringWriter sw = new StringWriter();

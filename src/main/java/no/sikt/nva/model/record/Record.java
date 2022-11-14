@@ -5,13 +5,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import no.sikt.nva.model.ErrorDetails;
+import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.content.ResourceContent;
 import nva.commons.core.JacocoGenerated;
 
 @JsonPropertyOrder({"customerId", "bareOrigin", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
-    "rightsholder", "type", "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication",
-    "entityDescription", "recordContent", "brageLocation"})
+    "rightsholder",
+    "type", "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
+    "recordContent", "errors", "warnings"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
 
@@ -28,9 +33,15 @@ public class Record {
     private String spatialCoverage;
     private Publication publication;
     private ResourceContent contentBundle;
-    private String publishedDate;
+    private PublishedDate publishedDate;
     private String cristinId;
     private String brageLocation;
+    private List<ErrorDetails> errors;
+    private List<WarningDetails> warnings;
+
+    public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
+        return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
 
     @JsonProperty("brageLocation")
     public String getBrageLocation() {
@@ -39,6 +50,24 @@ public class Record {
 
     public void setBrageLocation(String brageLocation) {
         this.brageLocation = brageLocation;
+    }
+
+    @JsonProperty("warnings")
+    public List<WarningDetails> getWarnings() {
+        return warnings;
+    }
+
+    public void setWarnings(List<WarningDetails> warnings) {
+        this.warnings = warnings;
+    }
+
+    @JsonProperty("errors")
+    public List<ErrorDetails> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(List<ErrorDetails> errors) {
+        this.errors = errors;
     }
 
     @JsonProperty("cristinId")
@@ -51,11 +80,11 @@ public class Record {
     }
 
     @JsonProperty("publishedDate")
-    public String getPublishedDate() {
+    public PublishedDate getPublishedDate() {
         return publishedDate;
     }
 
-    public void setPublishedDate(String publishedDate) {
+    public void setPublishedDate(PublishedDate publishedDate) {
         this.publishedDate = publishedDate;
     }
 
@@ -68,11 +97,12 @@ public class Record {
         this.contentBundle = contentBundle;
     }
 
+    @JacocoGenerated
     @Override
     public int hashCode() {
         return Objects.hash(entityDescription, customerId, id, doi, origin, type, language, embargo, publisherAuthority,
-                            rightsholder, spatialCoverage, publication, contentBundle, publishedDate, cristinId,
-                            brageLocation);
+                            rightsholder, spatialCoverage, publication, contentBundle, publishedDate, cristinId, errors,
+                            warnings, brageLocation);
     }
 
     @JacocoGenerated
@@ -100,7 +130,9 @@ public class Record {
                && Objects.equals(contentBundle, record.contentBundle)
                && Objects.equals(publishedDate, record.publishedDate)
                && Objects.equals(cristinId, record.cristinId)
-               && Objects.equals(brageLocation, record.brageLocation);
+               && Objects.equals(brageLocation, record.brageLocation)
+               && listEqualsIgnoreOrder(errors, record.errors)
+               && listEqualsIgnoreOrder(warnings, record.warnings);
     }
 
     @JacocoGenerated

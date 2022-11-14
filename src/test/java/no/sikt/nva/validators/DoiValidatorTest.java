@@ -46,4 +46,17 @@ public class DoiValidatorTest {
         assertThat(actualDoiErrors, is(equalTo(expectedDoiErrors)));
     }
 
+    @Test
+    void shouldReturnEmptyErrorListWhenDoiIsEmpty() {
+        var doi = "";
+        var dcType = new DcValue(Element.TYPE, null, "Book");
+        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doi);
+        var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
+        var expectedDoiErrors = Optional.empty();
+        var actualDoiErrorsOffline = DoiValidator.getDoiErrorDetailsOffline(dublinCoreWithDoi);
+        var actualDoiErrorsOnline = DoiValidator.getDoiErrorDetailsOnline(dublinCoreWithDoi);
+
+        assertThat(actualDoiErrorsOffline, is(equalTo(expectedDoiErrors)));
+        assertThat(actualDoiErrorsOnline, is(equalTo(expectedDoiErrors)));
+    }
 }

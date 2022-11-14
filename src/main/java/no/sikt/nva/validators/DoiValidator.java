@@ -19,12 +19,28 @@ public class DoiValidator {
 
     public static Optional<ArrayList<ErrorDetails>> getDoiErrorDetailsOnline(DublinCore dublinCore) {
         var doiList = extractDoiList(dublinCore);
-        return validateDoiListOnline(doiList);
+        var filteredDoiList = doiList.stream().filter(doi -> !doi.isEmpty()).collect(Collectors.toList());
+        if (filteredDoiList.isEmpty()) {
+            return Optional.empty();
+        } else {
+            var updatedUriDoiList = filteredDoiList.stream()
+                                        .map(DoiValidator::addHttpStringIfNotPresent)
+                                        .collect(Collectors.toList());
+            return validateDoiListOnline(updatedUriDoiList);
+        }
     }
 
     public static Optional<ArrayList<ErrorDetails>> getDoiErrorDetailsOffline(DublinCore dublinCore) {
         var doiList = extractDoiList(dublinCore);
-        return validateDoiListOffline(doiList);
+        var filteredDoiList = doiList.stream().filter(doi -> !doi.isEmpty()).collect(Collectors.toList());
+        if (filteredDoiList.isEmpty()) {
+            return Optional.empty();
+        } else {
+            var updatedUriDoiList = filteredDoiList.stream()
+                                        .map(DoiValidator::addHttpStringIfNotPresent)
+                                        .collect(Collectors.toList());
+            return validateDoiListOffline(updatedUriDoiList);
+        }
     }
 
     private static Optional<ArrayList<ErrorDetails>> validateDoiListOnline(List<String> doiList) {
@@ -93,7 +109,6 @@ public class DoiValidator {
                    .stream()
                    .filter(DcValue::isDoi)
                    .map(DcValue::getValue)
-                   .map(DoiValidator::addHttpStringIfNotPresent)
                    .collect(Collectors.toList());
     }
 
