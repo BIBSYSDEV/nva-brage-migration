@@ -18,11 +18,7 @@ public class ContentScraperTest {
 
     public static final String ORIGINAL_FILENAME_1 = "rapport2022_25_1.pdf";
     public static final String ORIGINAL_FILENAME_2 = "rapport2022_25_2.pdf";
-    public static final String TEXT_FILE_NAME = "rapport2022_25.pdf.txt";
-    public static final String THUMBNAIL_FILENAME = "rapport2022_25.pdf.jpg";
-
     private static final License someLicense = new License(null, null);
-
     private final ContentScraper contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
                                                                      new BrageLocation(null),
                                                                      someLicense);
@@ -34,19 +30,13 @@ public class ContentScraperTest {
                                             .stream()
                                             .map(ContentFile::getFilename)
                                             .collect(Collectors.toList());
-        assertThat(actualContentFilenameList, containsInAnyOrder(ORIGINAL_FILENAME_1,
-                                                                 ORIGINAL_FILENAME_2,
-                                                                 TEXT_FILE_NAME,
-                                                                 THUMBNAIL_FILENAME));
+        assertThat(actualContentFilenameList, containsInAnyOrder(ORIGINAL_FILENAME_1, ORIGINAL_FILENAME_2));
     }
 
     @Test
-    void shouldLogUnknownContentFile() throws ContentException {
+    void shouldNotLogKnownContentFile() throws ContentException {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         contentScraper.scrapeContent();
         assertThat(appender.getMessages(), containsString(UNKNOWN_FILE_LOG_MESSAGE));
-        assertThat(appender.getMessages(), containsString("METADATA"));
-        assertThat(appender.getMessages(), containsString("ORE"));
-        assertThat(appender.getMessages(), containsString("UnknownType"));
     }
 }
