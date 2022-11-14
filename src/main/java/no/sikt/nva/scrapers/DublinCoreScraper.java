@@ -248,7 +248,8 @@ public final class DublinCoreScraper {
                || dcValue.isCitationIdentifier()
                || dcValue.isNsiSubject()
                || dcValue.isCreatedDate()
-               || dcValue.isUpdatedDate();
+               || dcValue.isUpdatedDate()
+               || dcValue.isRelationUri();
     }
 
     private static String extractCristinId(DublinCore dublinCore) {

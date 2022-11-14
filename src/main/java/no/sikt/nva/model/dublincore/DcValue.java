@@ -71,6 +71,10 @@ public class DcValue {
         return Element.PUBLISHER.equals(this.element);
     }
 
+    public boolean isRelationUri() {
+        return Element.RELATION.equals(this.element) && Qualifier.URI.equals(this.qualifier);
+    }
+
     public boolean isLanguage() {
         return Element.LANGUAGE.equals(this.element);
     }
