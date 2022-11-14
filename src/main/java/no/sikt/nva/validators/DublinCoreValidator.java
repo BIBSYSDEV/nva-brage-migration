@@ -54,15 +54,6 @@ public final class DublinCoreValidator {
         return errors;
     }
 
-    public static Optional<WarningDetails> geCristinIdWarningDetails(DublinCore dublinCore) {
-        var warningList = getCristinIdentifierWarnings(dublinCore);
-        if (warningList.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(new WarningDetails(Warning.CRISTIN_ID_PRESENT, warningList));
-        }
-    }
-
     public static List<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore) {
         var warnings = new ArrayList<WarningDetails>();
         getVersionWarnings(dublinCore).ifPresent(warnings::add);
@@ -73,7 +64,6 @@ public final class DublinCoreValidator {
         getIssueWarning(dublinCore).ifPresent(warnings::add);
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
         getMultipleUnmappableTypeWarning(dublinCore).ifPresent(warnings::add);
-        geCristinIdWarningDetails(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -268,13 +258,6 @@ public final class DublinCoreValidator {
 
     private static boolean hasDate(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream().anyMatch(DcValue::isPublicationDate);
-    }
-
-    private static List<String> getCristinIdentifierWarnings(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isCristinDcValue).map(DcValue::toXmlString).collect(
-                Collectors.toList());
     }
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
