@@ -20,14 +20,16 @@ import org.slf4j.LoggerFactory;
 
 public final class ContentScraper {
 
-    public static final int SIZE_3 = 3;
     public static final String CONTENT_FILE_PARSING_ERROR_MESSAGE = "could not parse content file";
     public static final String UNKNOWN_FILE_LOG_MESSAGE = "Unknown file in contents: ";
     public static final List<String> KNOWN_CONTENT_FILE_TYPES = List.of(BundleType.CCLICENSE.getValue(),
                                                                         BundleType.LICENSE.getValue(),
                                                                         BundleType.ORIGINAL.getValue(),
                                                                         BundleType.TEXT.getValue(),
-                                                                        BundleType.THUMBNAIL.getValue());
+                                                                        BundleType.THUMBNAIL.getValue(),
+                                                                        BundleType.SWORD.getValue(),
+                                                                        BundleType.ORE.getValue(),
+                                                                        BundleType.METADATA.getValue());
     public static final String EMPTY_LINE_REGEX = "(?m)(^\\s*$\\r?\\n)+";
     private static final Logger logger = LoggerFactory.getLogger(ContentScraper.class);
     private final Path contentFilePath;
@@ -49,14 +51,8 @@ public final class ContentScraper {
         }
     }
 
-    private static boolean isKnownFileType(List<String> fileInformationList) {
-        return hasFilenameBundleAndDescription(fileInformationList) && bundleIsOfKnownType(fileInformationList);
-    }
-
-    private static boolean bundleIsOfKnownType(List<String> fileInformationList) {
-        return BundleType.ORIGINAL.name().equals(getBundleType(fileInformationList))
-               || BundleType.TEXT.name().equals(getBundleType(fileInformationList))
-               || BundleType.THUMBNAIL.name().equals(getBundleType(fileInformationList));
+    private static boolean isOriginalFileBundle(List<String> fileInformationList) {
+        return BundleType.ORIGINAL.name().equals(getBundleType(fileInformationList));
     }
 
     private static BundleType extractBundleType(List<String> fileInformationList) {
@@ -75,10 +71,6 @@ public final class ContentScraper {
         return Arrays.asList(list.get(1).split(":")).get(1);
     }
 
-    private static boolean hasFilenameBundleAndDescription(List<String> fileInformationList) {
-        return fileInformationList.size() == SIZE_3;
-    }
-
     private ResourceContent createResourceContent()
         throws IOException {
         var contentFileAsString = Files.readString(contentFilePath).replaceAll(EMPTY_LINE_REGEX,
@@ -93,7 +85,7 @@ public final class ContentScraper {
 
     private Optional<ContentFile> convertToFile(String fileInfo) {
         var fileInformationList = Arrays.asList(fileInfo.split("\t"));
-        if (isKnownFileType(fileInformationList)) {
+        if (isOriginalFileBundle(fileInformationList)) {
             return Optional.of(extractFileContent(fileInformationList));
         } else {
             logWhenUnknownType(fileInformationList);

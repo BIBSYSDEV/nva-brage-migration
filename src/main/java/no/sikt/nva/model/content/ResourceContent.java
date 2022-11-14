@@ -46,7 +46,10 @@ public class ResourceContent {
         TEXT("TEXT"),
         THUMBNAIL("THUMBNAIL"),
         LICENSE("LICENSE"),
-        CCLICENSE("CC-LICENSE");
+        CCLICENSE("CC-LICENSE"),
+        ORE("ORE"),
+        SWORD("SWORD"),
+        METADATA("METADATA");
 
         private final String value;
 
