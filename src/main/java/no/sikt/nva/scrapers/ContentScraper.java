@@ -28,10 +28,8 @@ public final class ContentScraper {
                                                                         BundleType.ORIGINAL.getValue(),
                                                                         BundleType.TEXT.getValue(),
                                                                         BundleType.THUMBNAIL.getValue());
-    public static final String IN_BUNDLE = " in bundle: ";
     public static final String EMPTY_LINE_REGEX = "(?m)(^\\s*$\\r?\\n)+";
     private static final Logger logger = LoggerFactory.getLogger(ContentScraper.class);
-
     private final Path contentFilePath;
     private final BrageLocation brageLocation;
     private final License license;

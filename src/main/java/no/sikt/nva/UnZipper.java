@@ -12,12 +12,22 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.StringUtils;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @JacocoGenerated
 public final class UnZipper {
 
-    public static final String UNZIPPING_WENT_WRONG_WITH_EXCEPTION = "Unzipping went wrong with exception :";
+    public static final String UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE =
+        "Failed to extract Brage posts from collection with handle: %s";
+    public static final String HANDLE_FORMAT =
+        "https://hdl.handle.net/11250/%s";
+    private static final String UNZIPPING_WENT_WRONG_WITH_EXCEPTION =
+        "Unzipping went wrong with exception :";
+    private static final Logger logger = LoggerFactory.getLogger(UnZipper.class);
+    private static final String ZIP_FILE_ENDING = ".zip";
 
     private UnZipper() {
     }
@@ -28,9 +38,17 @@ public final class UnZipper {
             var destinationFile = new File(destinationDirectory);
             var unzippedFile = unzip(fileToUnzip, destinationFile);
             return Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles())).collect(Collectors.toList());
-        } catch (IOException e) {
+        } catch (Exception e) {
+            String collectionHandle = getCollectionHandle(pathToZip);
+            logger.error(String.format(UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE, collectionHandle));
             throw new RuntimeException(e);
         }
+    }
+
+    private static String getCollectionHandle(String pathToZip) {
+        var path = Path.of(pathToZip);
+        var fileName = path.getFileName().toString();
+        return String.format(HANDLE_FORMAT, fileName.replace(ZIP_FILE_ENDING, StringUtils.EMPTY_STRING));
     }
 
     private static File unzip(InputStream fileToUnzip, File destinationDirectory) {
@@ -39,7 +57,7 @@ public final class UnZipper {
             writeToFile(inputStream, entry, destinationDirectory);
             inputStream.closeEntry();
             return destinationDirectory;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(UNZIPPING_WENT_WRONG_WITH_EXCEPTION, e);
         }
     }
@@ -80,7 +98,7 @@ public final class UnZipper {
         }
     }
 
-    private static ZipInputStream createInputStream(InputStream fileToUnzip) throws IOException {
+    private static ZipInputStream createInputStream(InputStream fileToUnzip) {
         return new ZipInputStream(fileToUnzip);
     }
 

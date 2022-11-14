@@ -35,11 +35,21 @@ public class Record {
     private ResourceContent contentBundle;
     private PublishedDate publishedDate;
     private String cristinId;
+    private String brageLocation;
     private List<ErrorDetails> errors;
     private List<WarningDetails> warnings;
 
     public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
+
+    @JsonProperty("brageLocation")
+    public String getBrageLocation() {
+        return brageLocation;
+    }
+
+    public void setBrageLocation(String brageLocation) {
+        this.brageLocation = brageLocation;
     }
 
     @JsonProperty("warnings")
@@ -87,40 +97,12 @@ public class Record {
         this.contentBundle = contentBundle;
     }
 
-    @JsonProperty("spatialCoverage")
-    public String getSpatialCoverage() {
-        return spatialCoverage;
-    }
-
-    public void setSpatialCoverage(String spatialCoverage) {
-        this.spatialCoverage = spatialCoverage;
-    }
-
-    @JsonInclude
-    @JsonProperty("publisherAuthority")
-    public Boolean getPublisherAuthority() {
-        return publisherAuthority;
-    }
-
-    public void setPublisherAuthority(Boolean publisherAuthority) {
-        this.publisherAuthority = publisherAuthority;
-    }
-
-    @JsonProperty("publication")
-    public Publication getPublication() {
-        return publication;
-    }
-
-    public void setPublication(Publication publication) {
-        this.publication = publication;
-    }
-
     @JacocoGenerated
     @Override
     public int hashCode() {
         return Objects.hash(entityDescription, customerId, id, doi, origin, type, language, embargo, publisherAuthority,
                             rightsholder, spatialCoverage, publication, contentBundle, publishedDate, cristinId, errors,
-                            warnings);
+                            warnings, brageLocation);
     }
 
     @JacocoGenerated
@@ -148,8 +130,38 @@ public class Record {
                && Objects.equals(contentBundle, record.contentBundle)
                && Objects.equals(publishedDate, record.publishedDate)
                && Objects.equals(cristinId, record.cristinId)
+               && Objects.equals(brageLocation, record.brageLocation)
                && listEqualsIgnoreOrder(errors, record.errors)
                && listEqualsIgnoreOrder(warnings, record.warnings);
+    }
+
+    @JacocoGenerated
+    @JsonProperty("spatialCoverage")
+    public String getSpatialCoverage() {
+        return spatialCoverage;
+    }
+
+    public void setSpatialCoverage(String spatialCoverage) {
+        this.spatialCoverage = spatialCoverage;
+    }
+
+    @JsonInclude
+    @JsonProperty("publisherAuthority")
+    public Boolean getPublisherAuthority() {
+        return publisherAuthority;
+    }
+
+    public void setPublisherAuthority(Boolean publisherAuthority) {
+        this.publisherAuthority = publisherAuthority;
+    }
+
+    @JsonProperty("publication")
+    public Publication getPublication() {
+        return publication;
+    }
+
+    public void setPublication(Publication publication) {
+        this.publication = publication;
     }
 
     @JacocoGenerated

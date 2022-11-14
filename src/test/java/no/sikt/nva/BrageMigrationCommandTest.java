@@ -1,12 +1,14 @@
 package no.sikt.nva;
 
 import static no.sikt.nva.BrageMigrationCommand.INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY;
+import static no.sikt.nva.ResourceNameConstants.EMPTY_ZIP_FILE_NAME;
+import static no.sikt.nva.ResourceNameConstants.INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_CRISTIN_ID_FILE_NAME;
-import static no.sikt.nva.ResourceNameConstants.INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI;
-import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_EMPTY_LICENSE_FILE;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_LICENSE_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
+import static no.sikt.nva.UnZipper.HANDLE_FORMAT;
+import static no.sikt.nva.UnZipper.UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE;
 import static no.sikt.nva.model.ErrorDetails.Error.CRISTIN_ID_PRESENT;
 import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -16,8 +18,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import com.github.stefanbirkner.systemlambda.SystemLambda;
 import no.sikt.nva.model.ErrorDetails.Error;
-import no.sikt.nva.model.WarningDetails;
-import no.sikt.nva.model.WarningDetails.Warning;
+import nva.commons.core.StringUtils;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 
@@ -94,6 +95,20 @@ public class BrageMigrationCommandTest {
             "-ov"};
         SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
         assertThat(appender.getMessages(), containsString(String.valueOf(Error.INVALID_DOI_ONLINE_CHECK)));
+    }
+
+    @Test
+    void shouldLoggZipThatIsEmpty() throws Exception {
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var arguments = new String[]{TEST_RESOURCE_PATH + EMPTY_ZIP_FILE_NAME};
+        var expectedCollectionHandle = String.format(HANDLE_FORMAT, EMPTY_ZIP_FILE_NAME.replace(".zip",
+                                                                                                StringUtils.EMPTY_STRING));
+        var exitCode = SystemLambda.catchSystemExit(
+            () -> BrageMigrationCommand.main(arguments));
+        assertThat(exitCode, equalTo(NORMAL_EXIT_CODE));
+        assertThat(appender.getMessages(),
+                   containsString(String.format(UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE, expectedCollectionHandle
+                   )));
     }
 
     @Test
