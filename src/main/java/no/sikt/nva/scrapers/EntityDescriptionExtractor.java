@@ -85,11 +85,11 @@ public final class EntityDescriptionExtractor {
 
     private static String extractArticleNumber(DublinCore dublinCore) {
         var articleNumbers = dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isArticleNumber)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
-        if(articleNumbers.isEmpty()) {
+                                 .stream()
+                                 .filter(DcValue::isArticleNumber)
+                                 .map(DcValue::scrapeValueAndSetToScraped)
+                                 .collect(Collectors.toList());
+        if (articleNumbers.isEmpty()) {
             return null;
         } else {
             return articleNumbers.get(0);
