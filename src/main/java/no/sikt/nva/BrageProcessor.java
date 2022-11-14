@@ -70,7 +70,6 @@ public class BrageProcessor implements Runnable {
     public void run() {
         List<File> resourceDirectories = UnZipper.extractResourceDirectories(zipfile, destinationDirectory);
         records = processBundles(resourceDirectories);
-        System.out.println(records);
     }
 
     public List<Record> getRecords() {
@@ -116,6 +115,7 @@ public class BrageProcessor implements Runnable {
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setCustomerId(customerId);
             record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper));
+            record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
             var warnings = BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory);
             record.getWarnings().addAll(warnings);
             logWarningsIfNotEmpty(brageLocation,warnings);
