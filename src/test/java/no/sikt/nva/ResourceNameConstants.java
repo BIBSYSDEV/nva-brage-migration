@@ -16,6 +16,8 @@ public class ResourceNameConstants {
     public static final String INPUT_WITH_EMPTY_LICENSE_FILE = "inputWithEmptyCCLicense.zip";
     public static final String CONTENT_FILE_PATH = "src/test/resources/contents";
 
+    public static final String EMPTY_ZIP_FILE_NAME = "empty.zip";
+
 
     private ResourceNameConstants() {
 

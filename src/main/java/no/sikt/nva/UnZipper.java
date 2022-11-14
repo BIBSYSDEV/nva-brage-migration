@@ -20,9 +20,9 @@ import org.slf4j.LoggerFactory;
 @JacocoGenerated
 public final class UnZipper {
 
-    private static final String UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE =
+    public static final String UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE =
         "Failed to extract Brage posts from collection with handle: %s";
-    private static final String HANDLE_FORMAT =
+    public static final String HANDLE_FORMAT =
         "https://hdl.handle.net/11250/%s";
     private static final String UNZIPPING_WENT_WRONG_WITH_EXCEPTION =
         "Unzipping went wrong with exception :";
@@ -46,7 +46,9 @@ public final class UnZipper {
     }
 
     private static String getCollectionHandle(String pathToZip) {
-        return String.format(HANDLE_FORMAT, pathToZip.replace(ZIP_FILE_ENDING, StringUtils.EMPTY_STRING));
+        var path = Path.of(pathToZip);
+        var fileName = path.getFileName().toString();
+        return String.format(HANDLE_FORMAT, fileName.replace(ZIP_FILE_ENDING, StringUtils.EMPTY_STRING));
     }
 
     private static File unzip(InputStream fileToUnzip, File destinationDirectory) {
