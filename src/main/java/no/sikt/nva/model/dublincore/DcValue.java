@@ -212,6 +212,10 @@ public class DcValue {
         return Element.SOURCE.equals(this.element) && Qualifier.PAGE_NUMBER.equals(this.qualifier);
     }
 
+    public boolean isArticleNumber() {
+        return Element.SOURCE.equals(this.element) && Qualifier.ARTICLE_NUMBER.equals(this.qualifier);
+    }
+
     public boolean isProjectRelation() {
         return Element.RELATION.equals(this.element) && Qualifier.PROJECT.equals(this.qualifier);
     }
