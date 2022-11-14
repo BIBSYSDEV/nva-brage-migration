@@ -16,105 +16,106 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import com.github.stefanbirkner.systemlambda.SystemLambda;
 import no.sikt.nva.model.ErrorDetails.Error;
+import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.core.StringUtils;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
+import picocli.CommandLine;
 
 public class BrageMigrationCommandTest {
 
     private static final int NORMAL_EXIT_CODE = 0;
 
     @Test
-    void shouldRunWhenZipFileOptionIsNotSet() throws Exception {
+    void shouldRunWhenZipFileOptionIsNotSet() {
         var arguments = new String[]{};
-        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
     }
 
     @Test
-    void shouldThrowExceptionWhenBothInputDirectoryAndZipfileIsSpecified() throws Exception {
+    void shouldThrowExceptionWhenBothInputDirectoryAndZipfileIsSpecified() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{"someZipfile.zip", "-D", "some/directory/path"};
-        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
         assertThat(appender.getMessages(), containsString(INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY));
     }
 
     @Test
-    void shouldProcessZipFileWithLicenseCorrectly() throws Exception {
+    void shouldProcessZipFileWithLicenseCorrectly() {
         var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITH_LICENSE_ZIP_FILE_NAME};
-        var exit = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        assertThat(exit, is(equalTo(NORMAL_EXIT_CODE)));
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
+        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
     }
 
     @Test
-    void shouldProcessAndLogFileWithCristinId() throws Exception {
+    void shouldProcessAndLogFileWithCristinId() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITH_CRISTIN_ID_FILE_NAME};
-        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(appender.getMessages(), containsString(String.valueOf(CRISTIN_ID_PRESENT)));
     }
 
     @Test
-    void shouldProcessFileWithoutHandleInDublinCoreFile() throws Exception {
+    void shouldProcessFileWithoutHandleInDublinCoreFile() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
-        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(appender.getMessages(),
                    containsString(COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV));
     }
 
     @Test
-    void shouldProcessFileWithoutHandleInHandleFile() throws Exception {
+    void shouldProcessFileWithoutHandleInHandleFile() {
         var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
-        var exitCode = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        assertThat(exitCode, is(equalTo(NORMAL_EXIT_CODE)));
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
+        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
     }
 
     @Test
-    void shouldProcessFileWithOnlineValidator() throws Exception {
+    void shouldProcessFileWithOnlineValidator() {
         var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME, "-ov"};
-        var exitCode = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
-        assertThat(exitCode, is(equalTo(NORMAL_EXIT_CODE)));
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
+        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
     }
 
     @Test
-    void shouldNotLoggDoiOfflineErrorWhenBundleContainsInvalidDoiWithValidDoiStructure() throws Exception {
+    void shouldNotLoggDoiOfflineErrorWhenBundleContainsInvalidDoiWithValidDoiStructure() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI};
-        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(appender.getMessages(), not(containsString(String.valueOf(Error.INVALID_DOI_OFFLINE_CHECK))));
     }
 
     @Test
-    void shouldLoggInvalidDoiErrorOnlineWhenDoiUriIsInvalid() throws Exception {
+    void shouldLoggInvalidDoiErrorOnlineWhenDoiUriIsInvalid() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI,
             "-ov"};
-        SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(appender.getMessages(), containsString(String.valueOf(Error.INVALID_DOI_ONLINE_CHECK)));
     }
 
     @Test
-    void shouldLoggZipThatIsEmpty() throws Exception {
+    void shouldLoggZipThatIsEmpty() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{TEST_RESOURCE_PATH + EMPTY_ZIP_FILE_NAME};
-        var expectedCollectionHandle = String.format(HANDLE_FORMAT, EMPTY_ZIP_FILE_NAME.replace(".zip",
-                                                                                                StringUtils.EMPTY_STRING));
-        var exitCode = SystemLambda.catchSystemExit(
-            () -> BrageMigrationCommand.main(arguments));
-        assertThat(exitCode, equalTo(NORMAL_EXIT_CODE));
+        var expectedCollectionHandle =
+            String.format(HANDLE_FORMAT,
+                          EMPTY_ZIP_FILE_NAME.replace(".zip", StringUtils.EMPTY_STRING));
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
+        assertThat(status, equalTo(NORMAL_EXIT_CODE));
         assertThat(appender.getMessages(),
                    containsString(String.format(UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE, expectedCollectionHandle
                    )));
     }
 
     @Test
-    void shouldBePossibleToSpecifySubDirectoryWith() throws Exception {
+    void shouldBePossibleToSpecifySubDirectoryWith() {
         var arguments = new String[]{"-D", TEST_RESOURCE_PATH};
-        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
     }
 }
