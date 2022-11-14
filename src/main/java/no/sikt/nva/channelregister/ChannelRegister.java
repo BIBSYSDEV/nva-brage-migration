@@ -20,16 +20,13 @@ public final class ChannelRegister {
     public static final String KANALREGISTER_READING_ERROR_MESSAGE = "Fatal error, could not read kanalregister";
     public static final String NOT_FOUND_IN_CHANNEL_REGISTER = "NOT_FOUND_IN_CHANNEL_REGISTER: ";
     private static final String JOURNAL_PATH = "journals.csv";
-    private static final String PUBLISHERS_PATH = "publishers.csv";
     private static final char SEPARATOR = ';';
     private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
     /*volatile*/ private static ChannelRegister register;
     private final List<ChannelRegisterJournal> channelRegisterJournals;
-    private final List<ChannelRegisterPublisher> channelRegisterPublishers;
 
     private ChannelRegister() {
         this.channelRegisterJournals = getJournalsFromCsv();
-        this.channelRegisterPublishers = getPublishersFromCsv();
     }
 
     public static ChannelRegister getRegister() {
@@ -44,39 +41,13 @@ public final class ChannelRegister {
         return register;
     }
 
-    public static List<ChannelRegisterPublisher> getPublishersFromCsv() {
-        try (var inputStream = Thread.currentThread().getContextClassLoader()
-                                   .getResourceAsStream(PUBLISHERS_PATH);
-            var bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-            var microJournal = new CsvToBeanBuilder<ChannelRegisterPublisher>(bufferedReader)
-                                   .withSeparator(SEPARATOR)
-                                   .withType(ChannelRegisterPublisher.class)
-                                   .build();
-            return microJournal.parse();
-        } catch (IOException e) {
-            logger.error(KANALREGISTER_READING_ERROR_MESSAGE);
-            throw new RuntimeException(e);
-        }
-    }
-
     public String lookUpInChannelRegister(Record record) {
         var publisher = record.getPublication().getPublisher();
         var issn = record.getPublication().getIssn();
         if (extractedIdentifierFromJournalsIsPresent(publisher, issn)) {
             return lookUpInJournalByIssn(issn);
         }
-        var isbn = record.getPublication().getIsbn();
-        if (extractedIdentifierFromPublishersIsPresent(publisher, isbn)) {
-            return lookUpInPublisherByIsbn(isbn);
-        }
         return null;
-    }
-
-    public String lookUpInPublisherByIsbn(String isbn) {
-        return isNotNullOrEmpty(isbn) ? channelRegisterPublishers.stream()
-                                            .filter(item -> item.hasIsbn(isbn))
-                                            .map(ChannelRegisterPublisher::getIdentifier)
-                                            .collect(SingletonCollector.collectOrElse(null)) : null;
     }
 
     public String lookUpInJournalByIssn(String issn) {
@@ -119,14 +90,6 @@ public final class ChannelRegister {
             logger.error(KANALREGISTER_READING_ERROR_MESSAGE);
             throw new RuntimeException(e);
         }
-    }
-
-    private boolean extractedIdentifierFromPublishersIsPresent(String publisher, String isbn) {
-        if (isNotNullOrEmpty(publisher) && isNotNullOrEmpty(isbn)) {
-            var identifierFromPublisher = lookUpInPublisherByIsbn(isbn);
-            return isNotNullOrEmpty(identifierFromPublisher);
-        }
-        return false;
     }
 
     private boolean extractedIdentifierFromJournalsIsPresent(String publisher, String issn) {

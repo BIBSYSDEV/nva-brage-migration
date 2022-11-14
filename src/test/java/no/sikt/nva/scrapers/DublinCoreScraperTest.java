@@ -19,7 +19,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import no.sikt.nva.model.BrageLocation;
@@ -332,7 +331,7 @@ public class DublinCoreScraperTest {
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(record.getErrors(),
-                   is(equalTo(Arrays.asList(new ErrorDetails(INVALID_LANGUAGE, List.of(nonIsoLanguage))))));
+                   is(equalTo(List.of(new ErrorDetails(INVALID_LANGUAGE, List.of(nonIsoLanguage))))));
     }
 
     @Test
@@ -347,6 +346,25 @@ public class DublinCoreScraperTest {
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(appender.getMessages(), not(containsString(NOT_FOUND_IN_CHANNEL_REGISTER)));
+    }
+
+    @Test
+    void shouldSetAccessionedDateAsScraped() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var publisherDcValue = new DcValue(Element.PUBLISHER, null, "Publisher");
+        var cristinDcValue = new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN, "cristin");
+        var availableDateDcValue = new DcValue(Element.DATE, Qualifier.AVAILABLE, "date");
+        var accessDateDcValue = new DcValue(Element.DATE, Qualifier.ACCESSIONED, "date");
+        var accessDateDcValue2 = new DcValue(Element.DATE, Qualifier.ACCESSIONED, "date2");
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, publisherDcValue, accessDateDcValue, availableDateDcValue, cristinDcValue, accessDateDcValue2));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        dublinCoreScraper
+            .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), not(containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE)));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

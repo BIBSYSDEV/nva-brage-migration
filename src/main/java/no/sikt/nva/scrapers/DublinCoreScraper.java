@@ -19,6 +19,7 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.model.record.Publication;
+import no.sikt.nva.model.record.PublishedDate;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
 import no.sikt.nva.scrapers.TypeMapper.NvaType;
@@ -37,7 +38,7 @@ public final class DublinCoreScraper {
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
     public static final String DELIMITER = "\n";
     public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
-    public static final String SCRAPING_HAS_FAILED = "Scraping has failed";
+    public static final String SCRAPING_HAS_FAILED = "Scraping has failed: ";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
 
@@ -64,6 +65,8 @@ public final class DublinCoreScraper {
         dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.SPONSORSHIP, null));
         dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.CITATION, null));
         dcValues.add(new DcValue(Element.SUBJECT, Qualifier.NORWEGIAN_SCIENCE_INDEX, null));
+        dcValues.add(new DcValue(Element.DATE, Qualifier.CREATED, null));
+        dcValues.add(new DcValue(Element.DATE, Qualifier.UPDATED, null));
         return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(DELIMITER));
     }
 
@@ -103,6 +106,15 @@ public final class DublinCoreScraper {
                    .collect(Collectors.toList());
     }
 
+    public static String extractPublisher(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isPublisher)
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
+    }
+
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         try {
             var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
@@ -118,7 +130,7 @@ public final class DublinCoreScraper {
             logErrorsIfNotEmpty(brageLocation, errors);
             return record;
         } catch (Exception e) {
-            throw new DublinCoreException(SCRAPING_HAS_FAILED);
+            throw new DublinCoreException(SCRAPING_HAS_FAILED + e);
         }
     }
 
@@ -234,16 +246,9 @@ public final class DublinCoreScraper {
                || dcValue.isProvenanceDescription()
                || dcValue.isSponsorShipDescription()
                || dcValue.isCitationIdentifier()
-               || dcValue.isNsiSubject();
-    }
-
-    private static String extractPublisher(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isPublisher)
-                   .findAny()
-                   .orElse(new DcValue())
-                   .scrapeValueAndSetToScraped();
+               || dcValue.isNsiSubject()
+               || dcValue.isCreatedDate()
+               || dcValue.isUpdatedDate();
     }
 
     private static String extractCristinId(DublinCore dublinCore) {
@@ -277,18 +282,26 @@ public final class DublinCoreScraper {
     }
 
     @SuppressWarnings("PMD.PrematureDeclaration")
-    private static String extractAvailableDate(DublinCore dublinCore) {
-        var availableDate = dublinCore.getDcValues().stream()
-                                .filter(DcValue::isAvailableDate)
-                                .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    private static PublishedDate extractAvailableDate(DublinCore dublinCore) {
+        var availableDates = dublinCore.getDcValues().stream()
+                                 .filter(DcValue::isAvailableDate)
+                                 .map(DcValue::scrapeValueAndSetToScraped)
+                                 .collect(Collectors.toList());
         var accessionedDate = dublinCore.getDcValues().stream()
                                   .filter(DcValue::isAccessionedDate)
-                                  .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
-        if (nonNull(availableDate)) {
-            return availableDate;
+                                  .map(DcValue::scrapeValueAndSetToScraped)
+                                  .collect(Collectors.toList());
+
+        var publishedDate = new PublishedDate();
+        if (!availableDates.isEmpty()) {
+            publishedDate.setBrageDates(availableDates);
+            publishedDate.setNvaDate(availableDates.get(0));
+            return publishedDate;
         }
-        if (nonNull(accessionedDate)) {
-            return accessionedDate;
+        if (!accessionedDate.isEmpty()) {
+            publishedDate.setBrageDates(accessionedDate);
+            publishedDate.setNvaDate(accessionedDate.get(0));
+            return publishedDate;
         } else {
             return null;
         }
