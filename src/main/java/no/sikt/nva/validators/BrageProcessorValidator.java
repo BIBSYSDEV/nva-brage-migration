@@ -25,7 +25,7 @@ public class BrageProcessorValidator {
         if (containsCCLicenseFile(entryDirectory)) {
             LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
             Optional<License> license = Optional.ofNullable(licenseScraper.extractOrCreateLicense(entryDirectory, dublinCore));
-            if (licenseScraper.isValidCCLicense(license.get())) {
+            if (LicenseScraper.isValidCCLicense(license.get())) {
                 return Optional.empty();
             } else {
                 return Optional.of(new WarningDetails(Warning.INVALID_CC_LICENSE,
