@@ -49,6 +49,7 @@ public class ErrorDetails {
     public enum Error {
         CRISTIN_ID_PRESENT,
         INVALID_TYPE,
+        MANY_UNMAPPABLE_TYPES,
         INVALID_ISSN,
         INVALID_DATE_ERROR,
         DATE_NOT_PRESENT_ERROR,

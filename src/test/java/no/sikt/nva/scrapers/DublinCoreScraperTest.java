@@ -2,6 +2,8 @@ package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.model.ErrorDetails.Error.INVALID_LANGUAGE;
+import static no.sikt.nva.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.model.ErrorDetails.Error.MANY_UNMAPPABLE_TYPES;
 import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.model.WarningDetails.Warning.SUBJECT_WARNING;
@@ -365,6 +367,23 @@ public class DublinCoreScraperTest {
         dublinCoreScraper
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(appender.getMessages(), not(containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE)));
+    }
+
+    @Test
+    void shouldMapToFirstMappableTypeWhenManyTypesAreUnmappable() {
+        var type1DcValue = new DcValue(Element.TYPE, null, "Others");
+        var type2DcValue = new DcValue(Element.TYPE, null, "Conference object");
+        var type3DcValue = new DcValue(Element.TYPE, null, "Book");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(type1DcValue, type2DcValue, type3DcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        dublinCoreScraper
+            .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), not(containsString(INVALID_TYPE.toString())));
+        assertThat(appender.getMessages(), containsString(MANY_UNMAPPABLE_TYPES.toString()));
+
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
