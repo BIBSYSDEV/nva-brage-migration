@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.BrageType;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.ErrorDetails.Error;
 import no.sikt.nva.model.WarningDetails;
@@ -25,7 +26,6 @@ import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.PageConverter;
 import no.sikt.nva.scrapers.SubjectScraper;
 import no.sikt.nva.scrapers.TypeMapper;
-import no.sikt.nva.scrapers.TypeMapper.BrageType;
 import nva.commons.core.StringUtils;
 import org.apache.commons.validator.routines.DateValidator;
 import org.apache.commons.validator.routines.ISBNValidator;
@@ -54,15 +54,6 @@ public final class DublinCoreValidator {
         return errors;
     }
 
-    public static Optional<WarningDetails> geCristinIdWarningDetails(DublinCore dublinCore) {
-        var warningList = getCristinIdentifierWarnings(dublinCore);
-        if (warningList.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(new WarningDetails(Warning.CRISTIN_ID_PRESENT, warningList));
-        }
-    }
-
     public static List<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore) {
         var warnings = new ArrayList<WarningDetails>();
         getVersionWarnings(dublinCore).ifPresent(warnings::add);
@@ -73,7 +64,6 @@ public final class DublinCoreValidator {
         getIssueWarning(dublinCore).ifPresent(warnings::add);
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
         getMultipleUnmappableTypeWarning(dublinCore).ifPresent(warnings::add);
-        geCristinIdWarningDetails(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -268,13 +258,6 @@ public final class DublinCoreValidator {
 
     private static boolean hasDate(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream().anyMatch(DcValue::isPublicationDate);
-    }
-
-    private static List<String> getCristinIdentifierWarnings(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isCristinDcValue).map(DcValue::toXmlString).collect(
-                Collectors.toList());
     }
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")

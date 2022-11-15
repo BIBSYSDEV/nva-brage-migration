@@ -8,11 +8,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import no.sikt.nva.model.BrageType;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.ErrorDetails.Error;
+import no.sikt.nva.model.NvaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class TypeMapper {
 
+    private static final Logger logger = LoggerFactory.getLogger(TypeMapper.class);
     private static final Map<Set<BrageType>, NvaType> TYPE_MAP = Map.ofEntries(
         entry(Set.of(BrageType.BOOK, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_MONOGRAPH),
         entry(Set.of(BrageType.CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER),
@@ -41,23 +46,11 @@ public final class TypeMapper {
     );
 
     public static String convertBrageTypeToNvaType(List<String> brageTypesAsString) {
-        var brageTypes = brageTypesAsString
-                             .stream()
-                             .map(BrageType::fromValue)
-                             .collect(Collectors.toList());
-        var nvaType = TYPE_MAP.get(Set.copyOf(brageTypes));
-
-        if (isNull(nvaType) && brageTypes.size() >= 2) {
-            for (TypeMapper.BrageType type : brageTypes) {
-                if (hasValidType(type.toString())) {
-                    return TYPE_MAP.get(Collections.singleton(type)).getValue();
-                }
-            }
-        }
-        if (Objects.nonNull(nvaType)) {
-            return nvaType.getValue();
-        } else {
-            return new ErrorDetails(Error.INVALID_TYPE, brageTypesAsString).toString();
+        List<BrageType> brageTypes = convertToBrageTypes(brageTypesAsString);
+        try {
+            return mapToNvaTypeIfMappable(brageTypesAsString, brageTypes);
+        } catch (Exception e) {
+            return mapToAnyMappableNvaTypeWhenUnmappableTypePair(brageTypesAsString, brageTypes);
         }
     }
 
@@ -66,93 +59,47 @@ public final class TypeMapper {
         return TYPE_MAP.containsKey(Collections.singleton(typeFromMap));
     }
 
-    private static BrageType convertToBrageType(String brageType) {
-        return BrageType.fromValue(brageType);
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    private static String mapToAnyMappableNvaTypeWhenUnmappableTypePair(List<String> brageTypesAsString,
+                                                                        List<BrageType> brageTypes) {
+        for (BrageType type : brageTypes) {
+            if (hasValidType(type.toString())) {
+                logger.error(String.valueOf(new ErrorDetails(Error.MANY_UNMAPPABLE_TYPES, brageTypesAsString)));
+                return TYPE_MAP.get(Collections.singleton(type)).getValue();
+            } else {
+                logger.error(String.valueOf(new ErrorDetails(Error.INVALID_TYPE, brageTypesAsString)));
+                return null;
+            }
+        }
+        logger.error(String.valueOf(new ErrorDetails(Error.INVALID_TYPE, brageTypesAsString)));
+        return null;
     }
 
-    public enum BrageType {
+    private static List<BrageType> convertToBrageTypes(List<String> brageTypesAsString) {
+        return brageTypesAsString
+                   .stream()
+                   .map(BrageType::fromValue)
+                   .collect(Collectors.toList());
+    }
 
-        BOOK("Book"),
-        CHAPTER("Chapter"),
-        DATASET("Dataset"),
-        JOURNAL_ARTICLE("Journal article"),
-        OTHERS("Others"),
-        REPORT("Report"),
-        RESEARCH_REPORT("Research report"),
-        BACHELOR_THESIS("Bachelor thesis"),
-        MASTER_THESIS("Master thesis"),
-        DOCTORAL_THESIS("Doctoral thesis"),
-        WORKING_PAPER("Working paper"),
-        STUDENT_PAPER("Student paper"),
-        STUDENT_PAPER_OTHERS("Student paper, others"),
-        DESIGN_PRODUCT("Design product"),
-        CHRONICLE("Chronicle"),
-        SOFTWARE("Software"),
-        LECTURE("Lecture"),
-        RECORDING_MUSICAL("Recording, musical"),
-        RECORDING_ORAL("Recording, oral"),
-        PLAN_OR_BLUEPRINT("Plan or blueprint"),
-        MAP("Map"),
-        PEER_REVIEWED("Peer reviewed");
-
-        private final String value;
-
-        BrageType(String type) {
-            this.value = type;
-        }
-
-        public static BrageType fromValue(String v) {
-            for (BrageType c : BrageType.values()) {
-                if (c.getValue().equalsIgnoreCase(v)) {
-                    return c;
+    private static String mapToNvaTypeIfMappable(List<String> brageTypesAsString, List<BrageType> brageTypes) {
+        var nvaType = TYPE_MAP.get(Set.copyOf(brageTypes));
+        if (isNull(nvaType) && brageTypes.size() >= 2) {
+            for (BrageType type : brageTypes) {
+                if (hasValidType(type.toString())) {
+                    return TYPE_MAP.get(Collections.singleton(type)).getValue();
                 }
             }
+        }
+        if (Objects.nonNull(nvaType)) {
+            return nvaType.getValue();
+        } else {
+            logger.error(String.valueOf(new ErrorDetails(Error.INVALID_TYPE, brageTypesAsString)));
             return null;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public String getType() {
-            return value;
         }
     }
 
-    public enum NvaType {
-        BOOK("Faglig monografi"),
-        CHAPTER("Faglig kapittel"),
-        DATASET("Datasett"),
-        JOURNAL_ARTICLE("Fagartikkel"),
-        OTHERS("Annen rapport"),
-        REPORT("Rapport"),
-        BACHELOR_THESIS("DegreeBachelor"),
-        MASTER_THESIS("DegreeMaster"),
-        DOCTORAL_THESIS("Doctoral thesis"),
-        WORKING_PAPER("ReportWorkingPaper"),
-        STUDENT_PAPER("OtherStudentWork"),
-        STUDENT_PAPER_OTHERS("Other student thesis"),
-        RESEARCH_REPORT("Forskningsrapport"),
-        DESIGN_PRODUCT("Design"),
-        CHRONICLE("Feature article"),
-        SOFTWARE("Programvare"),
-        LECTURE("Lecture"),
-        RECORDING_MUSICAL("Music"),
-        RECORDING_ORAL("Lydopptak, verbalt"),
-        PLAN_OR_BLUEPRINT("Architecture"),
-        MAP("Map"),
-        SCIENTIFIC_MONOGRAPH("Vitenskapelig monografi"),
-        SCIENTIFIC_CHAPTER("Vitenskapelig kapittel"),
-        SCIENTIFIC_ARTICLE("Vitenskapelig artikkel");
-
-        private final String value;
-
-        NvaType(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
+    private static BrageType convertToBrageType(String brageType) {
+        return BrageType.fromValue(brageType);
     }
 }

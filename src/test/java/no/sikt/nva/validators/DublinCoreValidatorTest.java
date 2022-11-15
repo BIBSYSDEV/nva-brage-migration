@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.BrageType;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.ErrorDetails.Error;
 import no.sikt.nva.model.WarningDetails;
@@ -23,7 +24,6 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.scrapers.DublinCoreFactory;
-import no.sikt.nva.scrapers.TypeMapper.BrageType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -206,16 +206,5 @@ public class DublinCoreValidatorTest {
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of()))));
-    }
-
-    @Test
-    void shouldReturnCristinWarningWhenResourceHasCristinId() {
-        var dcValues = List.of(
-            new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN, "someCristinId"),
-            new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
-
-        assertThat(actualErrors, hasItems(new WarningDetails(Warning.CRISTIN_ID_PRESENT, "someCristinId")));
     }
 }
