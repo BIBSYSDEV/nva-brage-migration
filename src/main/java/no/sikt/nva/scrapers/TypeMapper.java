@@ -12,8 +12,6 @@ import no.sikt.nva.model.BrageType;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.ErrorDetails.Error;
 import no.sikt.nva.model.NvaType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +75,6 @@ public final class TypeMapper {
         return null;
     }
 
-    @NotNull
     private static List<BrageType> convertToBrageTypes(List<String> brageTypesAsString) {
         return brageTypesAsString
                    .stream()
@@ -85,7 +82,6 @@ public final class TypeMapper {
                    .collect(Collectors.toList());
     }
 
-    @Nullable
     private static String mapToNvaTypeIfMappable(List<String> brageTypesAsString, List<BrageType> brageTypes) {
         var nvaType = TYPE_MAP.get(Set.copyOf(brageTypes));
         if (isNull(nvaType) && brageTypes.size() >= 2) {
