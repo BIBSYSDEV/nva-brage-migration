@@ -6,13 +6,14 @@ import static org.hamcrest.Matchers.contains;
 import java.io.File;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.WarningDetails.Warning;
+import no.sikt.nva.model.dublincore.DublinCore;
 import org.junit.jupiter.api.Test;
 
 public class BrageProcessorValidatorTest {
 
     @Test
     void shouldLogWhenInvalidCCLicense() {
-        var actualWarnings = BrageProcessorValidator.getBrageProcessorWarnings(new File(PATH_TO_FILES));
+        var actualWarnings = BrageProcessorValidator.getBrageProcessorWarnings(new File(PATH_TO_FILES), new DublinCore());
         assertThat(actualWarnings, contains(new WarningDetails(Warning.INVALID_CC_LICENSE)));
     }
 }

@@ -186,6 +186,10 @@ public class DcValue {
                    || Qualifier.URI.equals(this.qualifier));
     }
 
+    public boolean isLicense() {
+        return Element.RIGHTS.equals(this.element) && Qualifier.URI.equals(this.qualifier);
+    }
+
     public boolean isAbstract() {
         return Element.DESCRIPTION.equals(this.element)
                && Qualifier.ABSTRACT.equals(this.qualifier);

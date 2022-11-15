@@ -114,11 +114,11 @@ public class BrageProcessor implements Runnable {
             var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation);
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setCustomerId(customerId);
-            record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper));
+            record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper, dublinCore));
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
-            var warnings = BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory);
+            var warnings = BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory, dublinCore);
             record.getWarnings().addAll(warnings);
-            logWarningsIfNotEmpty(brageLocation,warnings);
+            logWarningsIfNotEmpty(brageLocation, warnings);
             return Optional.of(record);
         } catch (Exception e) {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
@@ -126,9 +126,10 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation, LicenseScraper licenseScraper)
+    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,
+                                       LicenseScraper licenseScraper, DublinCore dublinCore)
         throws ContentException {
-        var license = licenseScraper.extractOrCreateLicense(entryDirectory);
+        var license = licenseScraper.extractOrCreateLicense(entryDirectory, dublinCore);
         var contentScraper = new ContentScraper(getContentFilePath(entryDirectory), brageLocation, license);
         return contentScraper.scrapeContent();
     }

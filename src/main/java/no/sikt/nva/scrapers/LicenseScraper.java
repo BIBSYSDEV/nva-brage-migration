@@ -8,8 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 import no.sikt.nva.exceptions.LicenseExtractingException;
+import no.sikt.nva.model.dublincore.DcValue;
+import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.record.License;
 import no.sikt.nva.model.record.NvaLicense;
+import no.sikt.nva.scrapers.LicenseMapper.NvaLicenseIdentifier;
 import nva.commons.core.SingletonCollector;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -22,6 +25,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDF;
+import org.jetbrains.annotations.NotNull;
 
 public class LicenseScraper {
 
@@ -39,7 +43,7 @@ public class LicenseScraper {
         this.customLicenseFilename = customLicenseFilename;
     }
 
-    public boolean isValidCCLicense(License license) {
+    public static boolean isValidCCLicense(License license) {
         if (isNull(license)) {
             return false;
         }
@@ -49,17 +53,17 @@ public class LicenseScraper {
         return license.getBrageLicense().contains(CC_BASE_URL);
     }
 
-    public License extractOrCreateLicense(File bundleDirectory) {
+    public License extractOrCreateLicense(File bundleDirectory, DublinCore dublinCore) {
         try {
             var licenseFile = new File(bundleDirectory, customLicenseFilename);
-            var license = extractLicenseFromFile(licenseFile);
-            return new License(license, new NvaLicense(LicenseMapper.mapLicenseToNva(license)));
+            var license = extractLicenseFromFile(licenseFile, dublinCore);
+            return mapValidLicenseUriToNvaLicense(license, LicenseMapper.mapLicenseToNva(license));
         } catch (Exception e) {
-            return new License(null, new NvaLicense(DEFAULT_LICENSE));
+            return mapValidLicenseUriToNvaLicense(null, DEFAULT_LICENSE);
         }
     }
 
-    private static String extractLicenseFromFile(File file) {
+    private static String extractLicenseFromFile(File file, DublinCore dublinCore) {
         try {
             Model model = createModel(file);
             var work = new SimpleSelector(ANY_SUBJECT, RDF.type, WORK).getSubject();
@@ -71,8 +75,25 @@ public class LicenseScraper {
                                       .map(Statement::getObject)
                                       .filter(RDFNode::isResource));
         } catch (Exception e) {
-            throw new LicenseExtractingException(LICENSE_EXCEPTION_MESSAGE, e);
+            var licenseStringFromDublinCore = dublinCore.getDcValues().stream()
+                                                  .filter(DcValue::isLicense)
+                                                  .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+            var licenseFromDublinCore = mapValidLicenseUriToNvaLicense(licenseStringFromDublinCore,
+                                                                       LicenseMapper.mapLicenseToNva(
+                                                                           licenseStringFromDublinCore));
+            if (isValidCCLicense(licenseFromDublinCore)) {
+                return licenseFromDublinCore.getBrageLicense();
+            } else {
+                throw new LicenseExtractingException(LICENSE_EXCEPTION_MESSAGE, e);
+            }
         }
+    }
+
+    @NotNull
+    private static License mapValidLicenseUriToNvaLicense(String licenseStringFromDublinCore,
+                                                          NvaLicenseIdentifier licenseStringFromDublinCore1) {
+        return new License(licenseStringFromDublinCore,
+                           new NvaLicense(licenseStringFromDublinCore1));
     }
 
     private static String extractLicense(Stream<RDFNode> model) {
