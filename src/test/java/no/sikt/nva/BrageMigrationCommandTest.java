@@ -1,6 +1,7 @@
 package no.sikt.nva;
 
 import static no.sikt.nva.BrageMigrationCommand.INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY;
+import static no.sikt.nva.ResourceNameConstants.EMBARGO_TEST_DIRECTORY;
 import static no.sikt.nva.ResourceNameConstants.EMPTY_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Test;
 
 public class BrageMigrationCommandTest {
 
+    public static final String EXPECTED_EMBARGO_LOGG_MESSAGE = "FOLLOWING COLLECTION CONTAINS 1 EMBARGO";
     private static final int NORMAL_EXIT_CODE = 0;
 
     @Test
@@ -105,6 +107,15 @@ public class BrageMigrationCommandTest {
     void shouldBePossibleToSpecifySubDirectoryWith() throws Exception {
         var arguments = new String[]{"-D", TEST_RESOURCE_PATH};
         int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        assertThat(status, equalTo(NORMAL_EXIT_CODE));
+    }
+
+    @Test
+    void shouldCreateRecordWithEmbargo() throws Exception {
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var arguments = new String[]{"-D", EMBARGO_TEST_DIRECTORY};
+        int status = SystemLambda.catchSystemExit(() -> BrageMigrationCommand.main(arguments));
+        assertThat(appender.getMessages(), containsString(EXPECTED_EMBARGO_LOGG_MESSAGE));
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
     }
 }

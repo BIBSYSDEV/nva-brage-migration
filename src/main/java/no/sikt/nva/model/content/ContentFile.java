@@ -14,19 +14,20 @@ public class ContentFile {
     private String description;
     private String unknownType;
     private UUID identifier;
-
     private License license;
+    private String embargoDate;
 
     public ContentFile() {
 
     }
 
-    public ContentFile(String filename, BundleType bundleType, String description, UUID identifier, License license) {
-        this.filename = filename;
-        this.bundleType = bundleType;
-        this.description = description;
-        this.identifier = identifier;
-        this.license = license;
+    @JsonProperty("embargoDate")
+    public String getEmbargoDate() {
+        return embargoDate;
+    }
+
+    public void setEmbargoDate(String embargoDate) {
+        this.embargoDate = embargoDate;
     }
 
     @JsonProperty("identifier")
@@ -50,12 +51,7 @@ public class ContentFile {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(filename,
-                            bundleType,
-                            description,
-                            unknownType,
-                            license,
-                            identifier);
+        return Objects.hash(filename, bundleType, description, unknownType, identifier, license, embargoDate);
     }
 
     @JacocoGenerated
@@ -70,10 +66,11 @@ public class ContentFile {
         ContentFile that = (ContentFile) o;
         return Objects.equals(filename, that.filename)
                && bundleType == that.bundleType
-               && Objects.equals(license, that.license)
                && Objects.equals(description, that.description)
                && Objects.equals(unknownType, that.unknownType)
-               && Objects.equals(identifier, that.identifier);
+               && Objects.equals(identifier, that.identifier)
+               && Objects.equals(license, that.license)
+               && Objects.equals(embargoDate, that.embargoDate);
     }
 
     @JsonProperty("filename")

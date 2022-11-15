@@ -1,16 +1,20 @@
 package no.sikt.nva;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.Embargo;
 import no.sikt.nva.model.WarningDetails;
+import no.sikt.nva.model.content.ContentFile;
 import no.sikt.nva.model.content.ResourceContent;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.record.Record;
@@ -41,6 +45,7 @@ public class BrageProcessor implements Runnable {
     private final HandleScraper handleScraper;
     private final boolean enableOnlineValidation;
     private final boolean noHandleCheck;
+    private final List<Embargo> embargoes;
     private List<Record> records;
 
     public BrageProcessor(String zipfile,
@@ -48,13 +53,15 @@ public class BrageProcessor implements Runnable {
                           String destinationDirectory,
                           final Map<String, String> rescueTitleAndHandleMap,
                           boolean enableOnlineValidation,
-                          boolean noHandleCheck) {
+                          boolean noHandleCheck,
+                          List<Embargo> embargoes) {
         this.customerId = customerId;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
         this.destinationDirectory = destinationDirectory;
         this.handleScraper = new HandleScraper(rescueTitleAndHandleMap);
         this.noHandleCheck = noHandleCheck;
+        this.embargoes = embargoes;
     }
 
     public static Path getContentFilePath(File entryDirectory) {
@@ -69,7 +76,11 @@ public class BrageProcessor implements Runnable {
     @Override
     public void run() {
         List<File> resourceDirectories = UnZipper.extractResourceDirectories(zipfile, destinationDirectory);
-        records = processBundles(resourceDirectories);
+        try {
+            records = processBundles(resourceDirectories);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public List<Record> getRecords() {
@@ -95,7 +106,14 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private List<Record> processBundles(List<File> resourceDirectories) {
+    private static boolean recordContainsEmbargoFile(Record record, Embargo potentialEmbargo) {
+        return record.getContentBundle().getContentFiles().stream()
+                   .map(ContentFile::getFilename)
+                   .collect(Collectors.toList())
+                   .contains(potentialEmbargo.getFilename());
+    }
+
+    private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories.stream()
                    .filter(BrageProcessor::isBundle)
@@ -118,11 +136,27 @@ public class BrageProcessor implements Runnable {
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
             var warnings = BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory);
             record.getWarnings().addAll(warnings);
-            logWarningsIfNotEmpty(brageLocation,warnings);
+            checkForEmbargo(record);
+            logWarningsIfNotEmpty(brageLocation, warnings);
             return Optional.of(record);
         } catch (Exception e) {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
             return Optional.empty();
+        }
+    }
+
+    private void checkForEmbargo(Record record) {
+        var handle = record.getId().toString();
+        if (EmbargoScraper.containsHandle(embargoes, handle)) {
+            var potentialEmbargo = embargoes.stream()
+                                       .filter(embargo -> embargo.getHandle().equals(handle))
+                                       .findAny().orElse(null);
+            if (recordContainsEmbargoFile(record, Objects.requireNonNull(potentialEmbargo))) {
+                record.getContentBundle()
+                    .getContentFileByFilename(potentialEmbargo.getFilename())
+                    .setEmbargoDate(potentialEmbargo.getDate());
+                logger.info(potentialEmbargo.getDate());
+            }
         }
     }
 

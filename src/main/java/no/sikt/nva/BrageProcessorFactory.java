@@ -1,7 +1,9 @@
 package no.sikt.nva;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
+import no.sikt.nva.model.Embargo;
 import nva.commons.core.StringUtils;
 
 public class BrageProcessorFactory {
@@ -10,9 +12,11 @@ public class BrageProcessorFactory {
     private static final String INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE = "invalid zipfile name";
 
     private final Map<String, String> rescueTitleAndHandleMap;
+    private final List<Embargo> embargoes;
 
-    public BrageProcessorFactory(Map<String, String> rescueTitleAndHandleMap) {
+    public BrageProcessorFactory(Map<String, String> rescueTitleAndHandleMap, List<Embargo> embargoes) {
         this.rescueTitleAndHandleMap = rescueTitleAndHandleMap;
+        this.embargoes = embargoes;
     }
 
     public BrageProcessor createBrageProcessor(String zipfile, URI customerId, boolean enableOnlineValidation,
@@ -22,6 +26,6 @@ public class BrageProcessorFactory {
             throw new RuntimeException(INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE);
         }
         return new BrageProcessor(zipfile, customerId, destinationDirectory, rescueTitleAndHandleMap,
-                                  enableOnlineValidation, noHandleCheck);
+                                  enableOnlineValidation, noHandleCheck, embargoes);
     }
 }

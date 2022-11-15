@@ -59,4 +59,5 @@ application-warn.log
 **/invalidFileInput/**
 **/inputWithInvalidDoi/**
 **/inputWithEmptyCCLicense/**
+**/resourceWithEmbargo/**
 
