@@ -66,6 +66,7 @@ public final class TypeMapper {
                                                                         List<BrageType> brageTypes) {
         for (BrageType type : brageTypes) {
             if (hasValidType(type.toString())) {
+                logger.error(String.valueOf(new ErrorDetails(Error.MANY_UNMAPPABLE_TYPES, brageTypesAsString)));
                 return TYPE_MAP.get(Collections.singleton(type)).getValue();
             } else {
                 logger.error(String.valueOf(new ErrorDetails(Error.INVALID_TYPE, brageTypesAsString)));
