@@ -2,8 +2,13 @@ package no.sikt.nva.validators;
 
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
-import static no.sikt.nva.model.ErrorDetails.Error.INVALID_ISBN;
-import static no.sikt.nva.model.ErrorDetails.Error.INVALID_ISSN;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_NOT_PRESENT_ERROR;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DATE_ERROR;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISBN;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.JOURNAL_NOT_IN_CHANNEL_REGISTER;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -13,12 +18,11 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import no.sikt.nva.model.BrageLocation;
-import no.sikt.nva.model.BrageType;
-import no.sikt.nva.model.ErrorDetails;
-import no.sikt.nva.model.ErrorDetails.Error;
-import no.sikt.nva.model.WarningDetails;
-import no.sikt.nva.model.WarningDetails.Warning;
+import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.BrageType;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
@@ -74,7 +78,7 @@ public class DublinCoreValidatorTest {
         var dublinCore = new DublinCore(dcValues);
         var brageLocation = new BrageLocation(Path.of("some", "ignored"));
         var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
-        assertThat(actualErrorList, hasItems(new ErrorDetails(Error.INVALID_DOI_OFFLINE_CHECK, List.of())));
+        assertThat(actualErrorList, hasItems(new ErrorDetails(INVALID_DOI_OFFLINE_CHECK, List.of())));
     }
 
     @Test
@@ -84,7 +88,7 @@ public class DublinCoreValidatorTest {
         var dublinCore = new DublinCore(dcValues);
         var brageLocation = new BrageLocation(Path.of("some", "ignored"));
         var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
-        assertThat(actualErrorList, not(hasItems(new ErrorDetails(Error.INVALID_DOI_OFFLINE_CHECK, List.of()))));
+        assertThat(actualErrorList, not(hasItems(new ErrorDetails(INVALID_DOI_OFFLINE_CHECK, List.of()))));
     }
 
     @Test
@@ -93,7 +97,7 @@ public class DublinCoreValidatorTest {
         var dublinCore = new DublinCore(dcValues);
         var brageLocation = new BrageLocation(null);
         var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
-        assertThat(actualErrorList, hasItems(new ErrorDetails(Error.INVALID_DATE_ERROR, List.of())));
+        assertThat(actualErrorList, hasItems(new ErrorDetails(INVALID_DATE_ERROR, List.of())));
     }
 
     @ParameterizedTest()
@@ -103,7 +107,7 @@ public class DublinCoreValidatorTest {
         var dublinCore = new DublinCore(dcValues);
         var brageLocation = new BrageLocation(null);
         var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
-        assertThat(actualErrorList, not(hasItems(new ErrorDetails(Error.INVALID_DATE_ERROR, List.of()))));
+        assertThat(actualErrorList, not(hasItems(new ErrorDetails(INVALID_DATE_ERROR, List.of()))));
     }
 
     @Test
@@ -112,7 +116,7 @@ public class DublinCoreValidatorTest {
         var dublinCore = new DublinCore(dcValues);
         var brageLocation = new BrageLocation(null);
         var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
-        assertThat(actualErrorList, hasItems(new ErrorDetails(Error.DATE_NOT_PRESENT_ERROR, List.of())));
+        assertThat(actualErrorList, hasItems(new ErrorDetails(DATE_NOT_PRESENT_ERROR, List.of())));
     }
 
     @Test
@@ -144,7 +148,7 @@ public class DublinCoreValidatorTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var actualErrors = new ArrayList<>();
         DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(actualErrors::addAll);
-        assertThat(actualErrors, hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of())));
+        assertThat(actualErrors, hasItems(new ErrorDetails(INVALID_DOI_ONLINE_CHECK, List.of())));
     }
 
     @Test
@@ -158,7 +162,7 @@ public class DublinCoreValidatorTest {
         var actualErrors = new ArrayList<>();
         DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(actualErrors::addAll);
 
-        assertThat(actualErrors, hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of())));
+        assertThat(actualErrors, hasItems(new ErrorDetails(INVALID_DOI_ONLINE_CHECK, List.of())));
     }
 
     @Test
@@ -172,7 +176,7 @@ public class DublinCoreValidatorTest {
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore,
                                                                    new BrageLocation(null));
 
-        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of()))));
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(INVALID_DOI_ONLINE_CHECK, List.of()))));
     }
 
     @Test
@@ -183,7 +187,7 @@ public class DublinCoreValidatorTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
 
-        assertThat(actualErrors, hasItems(new ErrorDetails(Error.JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of())));
+        assertThat(actualErrors, hasItems(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of())));
     }
 
     @Test
@@ -194,7 +198,7 @@ public class DublinCoreValidatorTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
 
-        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of()))));
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of()))));
     }
 
     @Test
@@ -205,6 +209,6 @@ public class DublinCoreValidatorTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
 
-        assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of()))));
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of()))));
     }
 }

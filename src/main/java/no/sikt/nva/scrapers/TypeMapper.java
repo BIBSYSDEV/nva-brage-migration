@@ -2,16 +2,17 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Map.entry;
 import static java.util.Objects.isNull;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MANY_UNMAPPABLE_TYPES;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import no.sikt.nva.model.BrageType;
-import no.sikt.nva.model.ErrorDetails;
-import no.sikt.nva.model.ErrorDetails.Error;
-import no.sikt.nva.model.NvaType;
+import no.sikt.nva.brage.migration.common.model.BrageType;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.NvaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,14 +65,14 @@ public final class TypeMapper {
                                                                         List<BrageType> brageTypes) {
         for (BrageType type : brageTypes) {
             if (hasValidType(type.toString())) {
-                logger.error(String.valueOf(new ErrorDetails(Error.MANY_UNMAPPABLE_TYPES, brageTypesAsString)));
+                logger.error(String.valueOf(new ErrorDetails(MANY_UNMAPPABLE_TYPES, brageTypesAsString)));
                 return TYPE_MAP.get(Collections.singleton(type)).getValue();
             } else {
-                logger.error(String.valueOf(new ErrorDetails(Error.INVALID_TYPE, brageTypesAsString)));
+                logger.error(String.valueOf(new ErrorDetails(INVALID_TYPE, brageTypesAsString)));
                 return null;
             }
         }
-        logger.error(String.valueOf(new ErrorDetails(Error.INVALID_TYPE, brageTypesAsString)));
+        logger.error(String.valueOf(new ErrorDetails(INVALID_TYPE, brageTypesAsString)));
         return null;
     }
 
@@ -94,7 +95,7 @@ public final class TypeMapper {
         if (Objects.nonNull(nvaType)) {
             return nvaType.getValue();
         } else {
-            logger.error(String.valueOf(new ErrorDetails(Error.INVALID_TYPE, brageTypesAsString)));
+            logger.error(String.valueOf(new ErrorDetails(INVALID_TYPE, brageTypesAsString)));
             return null;
         }
     }

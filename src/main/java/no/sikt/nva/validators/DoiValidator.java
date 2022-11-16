@@ -1,12 +1,13 @@
 package no.sikt.nva.validators;
 
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.model.ErrorDetails;
-import no.sikt.nva.model.ErrorDetails.Error;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.doi.UnitHttpClient;
@@ -70,14 +71,14 @@ public class DoiValidator {
 
     private static Optional<ErrorDetails> validateDoiOnline(String doi) {
         if (!isValidDoiOnline(doi)) {
-            return Optional.of(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of(doi)));
+            return Optional.of(new ErrorDetails(INVALID_DOI_ONLINE_CHECK, List.of(doi)));
         }
         return Optional.empty();
     }
 
     private static Optional<ErrorDetails> validateDoiOffline(String doi) {
         if (!isValidDoiOffline(doi)) {
-            return Optional.of(new ErrorDetails(Error.INVALID_DOI_OFFLINE_CHECK, List.of(doi)));
+            return Optional.of(new ErrorDetails(INVALID_DOI_OFFLINE_CHECK, List.of(doi)));
         }
         return Optional.empty();
     }

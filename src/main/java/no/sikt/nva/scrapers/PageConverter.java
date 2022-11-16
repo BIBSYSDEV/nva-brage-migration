@@ -1,10 +1,10 @@
 package no.sikt.nva.scrapers;
 
 import java.util.regex.Pattern;
+import no.sikt.nva.brage.migration.common.model.record.Pages;
+import no.sikt.nva.brage.migration.common.model.record.Range;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.model.record.Pages;
-import no.sikt.nva.model.record.Range;
 import nva.commons.core.StringUtils;
 
 public class PageConverter {

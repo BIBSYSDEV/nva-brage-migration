@@ -3,7 +3,7 @@ package no.sikt.nva.scrapers;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import no.sikt.nva.scrapers.LicenseMapper.NvaLicenseIdentifier;
+import no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentifier;
 import org.junit.jupiter.api.Test;
 
 public class LicenseMapperTest {
