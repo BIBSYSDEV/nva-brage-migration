@@ -90,8 +90,7 @@ public final class EmbargoScraper {
 
     private static boolean isNotTextFileOrThumbnail(String filename) {
         return !filename.contains(PDF_TXT)
-               && !filename.contains(PDF_JPG)
-               && filename.split("\\.").length == 2;
+               && !filename.contains(PDF_JPG);
     }
 
     private static boolean recordContainsEmbargoFile(Record record, Embargo potentialEmbargo) {

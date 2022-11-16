@@ -11,6 +11,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import no.sikt.nva.model.WarningDetails;
+import no.sikt.nva.model.WarningDetails.Warning;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import org.apache.commons.io.FileUtils;
@@ -20,8 +22,7 @@ import org.slf4j.LoggerFactory;
 @JacocoGenerated
 public final class UnZipper {
 
-    public static final String UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE =
-        "Failed to extract Brage posts from collection with handle: %s";
+
     public static final String HANDLE_FORMAT =
         "https://hdl.handle.net/11250/%s";
     private static final String UNZIPPING_WENT_WRONG_WITH_EXCEPTION =
@@ -40,7 +41,7 @@ public final class UnZipper {
             return Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles())).collect(Collectors.toList());
         } catch (Exception e) {
             String collectionHandle = getCollectionHandle(pathToZip);
-            logger.error(String.format(UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE, collectionHandle));
+            logger.warn(new WarningDetails(Warning.EMPTY_COLLECTION, collectionHandle).toString());
             throw new RuntimeException(e);
         }
     }

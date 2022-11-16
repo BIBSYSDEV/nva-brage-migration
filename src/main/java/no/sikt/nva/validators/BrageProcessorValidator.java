@@ -9,22 +9,23 @@ import java.util.Objects;
 import java.util.Optional;
 import no.sikt.nva.model.WarningDetails;
 import no.sikt.nva.model.WarningDetails.Warning;
+import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.record.License;
 import no.sikt.nva.scrapers.LicenseScraper;
 
 public class BrageProcessorValidator {
 
-    public static List<WarningDetails> getBrageProcessorWarnings(File entryDirectory) {
+    public static List<WarningDetails> getBrageProcessorWarnings(File entryDirectory, DublinCore dublinCore) {
         var warnings = new ArrayList<WarningDetails>();
-        getCCLicenseWarnings(entryDirectory).ifPresent(warnings::add);
+        getCCLicenseWarnings(entryDirectory, dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
-    private static Optional<WarningDetails> getCCLicenseWarnings(File entryDirectory) {
+    private static Optional<WarningDetails> getCCLicenseWarnings(File entryDirectory, DublinCore dublinCore) {
         if (containsCCLicenseFile(entryDirectory)) {
             LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
-            Optional<License> license = Optional.ofNullable(licenseScraper.extractOrCreateLicense(entryDirectory));
-            if (licenseScraper.isValidCCLicense(license.get())) {
+            Optional<License> license = Optional.ofNullable(licenseScraper.extractOrCreateLicense(entryDirectory, dublinCore));
+            if (LicenseScraper.isValidCCLicense(license.get())) {
                 return Optional.empty();
             } else {
                 return Optional.of(new WarningDetails(Warning.INVALID_CC_LICENSE,
