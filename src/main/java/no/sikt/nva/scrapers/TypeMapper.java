@@ -2,7 +2,7 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Map.entry;
 import static java.util.Objects.isNull;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MANY_UNMAPPABLE_TYPES;
 import java.util.Collections;
 import java.util.List;
@@ -46,44 +46,50 @@ public final class TypeMapper {
         entry(Set.of(BrageType.MAP), NvaType.MAP)
     );
 
-    public static String convertBrageTypeToNvaType(List<String> brageTypesAsString) {
-        List<BrageType> brageTypes = convertToBrageTypes(brageTypesAsString);
+    public static String convertBrageTypeToNvaType(List<String> inputTypes) {
         try {
-            return mapToNvaTypeIfMappable(brageTypesAsString, brageTypes);
+            return mapToNvaTypeIfMappable(inputTypes);
         } catch (Exception e) {
-            return mapToAnyMappableNvaTypeWhenUnmappableTypePair(brageTypesAsString, brageTypes);
+            return mapToAnyMappableNvaTypeWhenUnmappableTypePair(inputTypes);
         }
     }
 
-    public static boolean hasValidType(String brageType) {
-        var typeFromMap = convertToBrageType(brageType);
-        return TYPE_MAP.containsKey(Collections.singleton(typeFromMap));
+    public static boolean hasValidType(String inputType) {
+        var brageType = convertToBrageType(inputType);
+        if (nonNull(brageType)) {
+            return TYPE_MAP.containsKey(Collections.singleton(brageType));
+        } else {
+            return false;
+        }
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    private static String mapToAnyMappableNvaTypeWhenUnmappableTypePair(List<String> brageTypesAsString,
-                                                                        List<BrageType> brageTypes) {
-        for (BrageType type : brageTypes) {
-            if (hasValidType(type.toString())) {
-                logger.error(String.valueOf(new ErrorDetails(MANY_UNMAPPABLE_TYPES, brageTypesAsString)));
-                return TYPE_MAP.get(Collections.singleton(type)).getValue();
-            } else {
-                logger.error(String.valueOf(new ErrorDetails(INVALID_TYPE, brageTypesAsString)));
-                return null;
+    private static String mapToAnyMappableNvaTypeWhenUnmappableTypePair(List<String> inputTypes) {
+        List<BrageType> brageTypes = convertToBrageTypes(inputTypes);
+        if (brageTypes.isEmpty()) {
+            return null;
+        } else {
+            for (BrageType type : brageTypes) {
+                if (hasValidType(type.toString())) {
+                    logger.error(String.valueOf(new ErrorDetails(MANY_UNMAPPABLE_TYPES, inputTypes)));
+                    return TYPE_MAP.get(Collections.singleton(type)).getValue();
+                } else {
+                    return null;
+                }
             }
         }
-        logger.error(String.valueOf(new ErrorDetails(INVALID_TYPE, brageTypesAsString)));
         return null;
     }
 
-    private static List<BrageType> convertToBrageTypes(List<String> brageTypesAsString) {
-        return brageTypesAsString
-                   .stream()
+    private static List<BrageType> convertToBrageTypes(List<String> inputTypes) {
+        return inputTypes.stream()
                    .map(BrageType::fromValue)
+                   .filter(Objects::nonNull)
                    .collect(Collectors.toList());
     }
 
-    private static String mapToNvaTypeIfMappable(List<String> brageTypesAsString, List<BrageType> brageTypes) {
+    private static String mapToNvaTypeIfMappable(List<String> inputTypes) {
+        List<BrageType> brageTypes = convertToBrageTypes(inputTypes);
         var nvaType = TYPE_MAP.get(Set.copyOf(brageTypes));
         if (isNull(nvaType) && brageTypes.size() >= 2) {
             for (BrageType type : brageTypes) {
@@ -92,10 +98,9 @@ public final class TypeMapper {
                 }
             }
         }
-        if (Objects.nonNull(nvaType)) {
+        if (nonNull(nvaType)) {
             return nvaType.getValue();
         } else {
-            logger.error(String.valueOf(new ErrorDetails(INVALID_TYPE, brageTypesAsString)));
             return null;
         }
     }

@@ -1,8 +1,9 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.validators.DublinCoreValidator.ACCEPTED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
-import static no.sikt.nva.validators.DublinCoreValidator.VERSION_STRING_NVE;
+import static no.sikt.nva.validators.DublinCoreValidator.PUBLISHED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
@@ -341,9 +342,14 @@ public final class DublinCoreScraper {
     }
 
     private static Optional<Boolean> mapToNvaVersion(DcValue version) {
-        return VERSION_STRING_NVE.equals(version.scrapeValueAndSetToScraped())
-                   ? Optional.of(true)
-                   : Optional.empty();
+        if (PUBLISHED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
+            return Optional.of(true);
+        }
+        if (ACCEPTED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
+            return Optional.of(false);
+        } else {
+            return Optional.empty();
+        }
     }
 
     private static Type mapOriginTypeToNvaType(List<String> types) {
