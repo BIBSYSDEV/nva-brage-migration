@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import no.sikt.nva.model.Embargo;
+import no.sikt.nva.model.content.ContentFile;
+import no.sikt.nva.model.record.Record;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +40,21 @@ public final class EmbargoScraper {
         }
     }
 
-    public static boolean containsHandle(List<Embargo> embargoes, String handle) {
+    public static void checkForEmbargo(Record record, List<Embargo> embargoes) {
+        var handle = record.getId().toString();
+        if (containsHandle(embargoes, handle)) {
+            var potentialEmbargo = embargoes.stream()
+                                       .filter(embargo -> embargo.getHandle().equals(handle))
+                                       .findAny().orElse(null);
+            if (recordContainsEmbargoFile(record, Objects.requireNonNull(potentialEmbargo))) {
+                record.getContentBundle()
+                    .getContentFileByFilename(potentialEmbargo.getFilename())
+                    .setEmbargoDate(potentialEmbargo.getDate());
+            }
+        }
+    }
+
+    private static boolean containsHandle(List<Embargo> embargoes, String handle) {
         return embargoes.stream().map(Embargo::getHandle).collect(Collectors.toList()).contains(handle);
     }
 
@@ -64,17 +81,23 @@ public final class EmbargoScraper {
             var handlesList = uniqueEmbargoesList.stream()
                                   .map(Embargo::getHandle)
                                   .collect(Collectors.toList());
-            if (!handlesList.contains(embargo.getHandle()) && isPdfFile(embargo.getFilename())) {
+            if (!handlesList.contains(embargo.getHandle()) && isNotTextFileOrThumbnail(embargo.getFilename())) {
                 uniqueEmbargoesList.add(embargo);
             }
         }
         return uniqueEmbargoesList;
     }
 
-    private static boolean isPdfFile(String filename) {
+    private static boolean isNotTextFileOrThumbnail(String filename) {
         return !filename.contains(PDF_TXT)
                && !filename.contains(PDF_JPG)
-               && filename.contains(PDF)
                && filename.split("\\.").length == 2;
+    }
+
+    private static boolean recordContainsEmbargoFile(Record record, Embargo potentialEmbargo) {
+        return record.getContentBundle().getContentFiles().stream()
+                   .map(ContentFile::getFilename)
+                   .collect(Collectors.toList())
+                   .contains(potentialEmbargo.getFilename());
     }
 }

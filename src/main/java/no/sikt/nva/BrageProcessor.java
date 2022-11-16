@@ -6,7 +6,6 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.ContentException;
@@ -14,7 +13,6 @@ import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.Embargo;
 import no.sikt.nva.model.WarningDetails;
-import no.sikt.nva.model.content.ContentFile;
 import no.sikt.nva.model.content.ResourceContent;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.record.Record;
@@ -106,13 +104,6 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private static boolean recordContainsEmbargoFile(Record record, Embargo potentialEmbargo) {
-        return record.getContentBundle().getContentFiles().stream()
-                   .map(ContentFile::getFilename)
-                   .collect(Collectors.toList())
-                   .contains(potentialEmbargo.getFilename());
-    }
-
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories.stream()
@@ -136,27 +127,12 @@ public class BrageProcessor implements Runnable {
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
             var warnings = BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory);
             record.getWarnings().addAll(warnings);
-            checkForEmbargo(record);
+            EmbargoScraper.checkForEmbargo(record, embargoes);
             logWarningsIfNotEmpty(brageLocation, warnings);
             return Optional.of(record);
         } catch (Exception e) {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
             return Optional.empty();
-        }
-    }
-
-    private void checkForEmbargo(Record record) {
-        var handle = record.getId().toString();
-        if (EmbargoScraper.containsHandle(embargoes, handle)) {
-            var potentialEmbargo = embargoes.stream()
-                                       .filter(embargo -> embargo.getHandle().equals(handle))
-                                       .findAny().orElse(null);
-            if (recordContainsEmbargoFile(record, Objects.requireNonNull(potentialEmbargo))) {
-                record.getContentBundle()
-                    .getContentFileByFilename(potentialEmbargo.getFilename())
-                    .setEmbargoDate(potentialEmbargo.getDate());
-                logger.info(potentialEmbargo.getDate());
-            }
         }
     }
 
