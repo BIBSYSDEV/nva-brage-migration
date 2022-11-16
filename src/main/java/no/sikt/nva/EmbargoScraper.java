@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import no.sikt.nva.model.Embargo;
@@ -32,7 +33,7 @@ public final class EmbargoScraper {
             return embargoes;
         } catch (Exception e) {
             logger.error(ERROR_OCCURRED_EXTRACTING_EMBARGOES);
-            return null;
+            return Collections.emptyList();
         }
     }
 
