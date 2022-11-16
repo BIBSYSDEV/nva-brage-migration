@@ -3,13 +3,13 @@ package no.sikt.nva.scrapers;
 import static nva.commons.core.language.LanguageMapper.LEXVO_URI_UNDEFINED;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.model.ErrorDetails;
-import no.sikt.nva.model.ErrorDetails.Error;
-import no.sikt.nva.model.WarningDetails;
-import no.sikt.nva.model.WarningDetails.Warning;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.record.Language;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails.Error;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.model.record.Language;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
 

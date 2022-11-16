@@ -1,8 +1,13 @@
 package no.sikt.nva.validators;
 
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.model.ErrorDetails.Error.JOURNAL_NOT_IN_CHANNEL_REGISTER;
-import static no.sikt.nva.model.ErrorDetails.Error.PUBLISHER_NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_NOT_PRESENT_ERROR;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DATE_ERROR;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISBN;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.JOURNAL_NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.DublinCoreScraper.channelRegister;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,12 +17,11 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.model.BrageLocation;
-import no.sikt.nva.model.BrageType;
-import no.sikt.nva.model.ErrorDetails;
-import no.sikt.nva.model.ErrorDetails.Error;
-import no.sikt.nva.model.WarningDetails;
-import no.sikt.nva.model.WarningDetails.Warning;
+import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.BrageType;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
@@ -35,7 +39,8 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("PMD.GodClass")
 public final class DublinCoreValidator {
 
-    public static final String VERSION_STRING_NVE = "publishedVersion";
+    public static final String PUBLISHED_VERSION_STRING = "publishedVersion";
+    public static final String ACCEPTED_VERSION_STRING = "acceptedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final String MISSING_ISSN_AND_TITLE = "Missing issn and title";
     public static final String MISSING_ISSN_AND_PUBLISHER = "Missing issn AND publisher";
@@ -157,7 +162,7 @@ public final class DublinCoreValidator {
             var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
             ISSNValidator validator = new ISSNValidator();
             if (!validator.isValid(issn)) {
-                return Optional.of(new ErrorDetails(Error.INVALID_ISSN, List.of(issn)));
+                return Optional.of(new ErrorDetails(INVALID_ISSN, List.of(issn)));
             }
         }
         return Optional.empty();
@@ -246,9 +251,9 @@ public final class DublinCoreValidator {
             if (containsYearAndMonthAndDate(date)) {
                 return Optional.empty();
             }
-            return Optional.of(new ErrorDetails(Error.INVALID_DATE_ERROR, List.of(date)));
+            return Optional.of(new ErrorDetails(INVALID_DATE_ERROR, List.of(date)));
         }
-        return Optional.of(new ErrorDetails(Error.DATE_NOT_PRESENT_ERROR, List.of()));
+        return Optional.of(new ErrorDetails(DATE_NOT_PRESENT_ERROR, List.of()));
     }
 
     private static boolean containsYearAndMonthAndDate(String date) {
@@ -267,7 +272,7 @@ public final class DublinCoreValidator {
                         .map(DcValue::getValue)
                         .collect(Collectors.toList());
         if (types.isEmpty()) {
-            return Optional.of(new ErrorDetails(Error.INVALID_TYPE, types));
+            return Optional.of(new ErrorDetails(INVALID_TYPE, types));
         }
         if (types.size() >= 2) {
             return mapMultipleTypes(types);
@@ -275,7 +280,7 @@ public final class DublinCoreValidator {
         if (TypeMapper.hasValidType(types.get(0))) {
             return Optional.empty();
         } else {
-            return Optional.of(new ErrorDetails(Error.INVALID_TYPE, types));
+            return Optional.of(new ErrorDetails(INVALID_TYPE, types));
         }
     }
 
@@ -297,13 +302,13 @@ public final class DublinCoreValidator {
             if (TypeMapper.hasValidType(nextTypeToMap)) {
                 return Optional.empty();
             } else {
-                return Optional.of(new ErrorDetails(Error.INVALID_TYPE, types));
+                return Optional.of(new ErrorDetails(INVALID_TYPE, types));
             }
         }
         if (TypeMapper.hasValidType(firstTypeToMap)) {
             return Optional.empty();
         }
-        return Optional.of(new ErrorDetails(Error.INVALID_TYPE, types));
+        return Optional.of(new ErrorDetails(INVALID_TYPE, types));
     }
 
     private static boolean isJournalArticle(DublinCore dublinCore) {
@@ -336,7 +341,7 @@ public final class DublinCoreValidator {
 
             ISBNValidator validator = new ISBNValidator();
             if (!validator.isValid(isbn)) {
-                return Optional.of(new ErrorDetails(Error.INVALID_ISBN, List.of(isbn)));
+                return Optional.of(new ErrorDetails(INVALID_ISBN, List.of(isbn)));
             }
         }
         return Optional.empty();
@@ -386,6 +391,7 @@ public final class DublinCoreValidator {
     }
 
     private static boolean isValidVersion(DcValue version) {
-        return VERSION_STRING_NVE.equals(version.getValue());
+        return PUBLISHED_VERSION_STRING.equals(version.getValue())
+               || ACCEPTED_VERSION_STRING.equals(version.getValue());
     }
 }

@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import java.util.List;
-import no.sikt.nva.model.NvaType;
+import no.sikt.nva.brage.migration.common.model.NvaType;
 import org.junit.jupiter.api.Test;
 
 public class TypeMapperTest {

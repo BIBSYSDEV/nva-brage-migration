@@ -1,13 +1,12 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_LANGUAGE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
-import static no.sikt.nva.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
-import static no.sikt.nva.model.ErrorDetails.Error.INVALID_LANGUAGE;
-import static no.sikt.nva.model.ErrorDetails.Error.INVALID_TYPE;
-import static no.sikt.nva.model.ErrorDetails.Error.MANY_UNMAPPABLE_TYPES;
-import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
-import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
-import static no.sikt.nva.model.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.ADVISOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.CONTRIBUTOR;
@@ -22,18 +21,21 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
-import no.sikt.nva.model.BrageLocation;
-import no.sikt.nva.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.record.Contributor;
+import no.sikt.nva.brage.migration.common.model.record.Identity;
+import no.sikt.nva.brage.migration.common.model.record.Pages;
+import no.sikt.nva.brage.migration.common.model.record.Range;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.sikt.nva.model.record.Contributor;
-import no.sikt.nva.model.record.Identity;
-import no.sikt.nva.model.record.Pages;
-import no.sikt.nva.model.record.Range;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -382,8 +384,20 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         dublinCoreScraper
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(appender.getMessages(), not(containsString(INVALID_TYPE.toString())));
-        assertThat(appender.getMessages(), containsString(MANY_UNMAPPABLE_TYPES.toString()));
+        assertThat(appender.getMessages(), containsString(MULTIPLE_UNMAPPABLE_TYPES.toString()));
+    }
+
+    @Test
+    void shouldLogUnmappableType() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Conference object");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        dublinCoreScraper
+            .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), containsString(INVALID_TYPE.toString()));
     }
 
     @Test
@@ -398,14 +412,43 @@ public class DublinCoreScraperTest {
         assertThat(appender.getMessages(), containsString(INVALID_DOI_OFFLINE_CHECK.toString()));
     }
 
+    @Test
+    void shouldSetPublisherAuthorityToFalseWhenVersionIsAcceptedVersion() {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "acceptedVersion");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, versionDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getPublisherAuthority(), is(false));
+    }
+
+    @Test
+    void shouldLogUnknownVersionsAndApplyNullValue() {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "submittedVersion");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, versionDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getPublisherAuthority(), is(nullValue()));
+        assertThat(record.getWarnings(),
+                   contains(new WarningDetails(Warning.VERSION_WARNING, versionDcValue.getValue())));
+    }
+
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
         return Stream.of(
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96"), new Pages("96", null, "96")),
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96 s."), new Pages("96 s.", null, "96")),
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "s. 96"), new Pages("s. 96", new Range(
-                "96", "96"), "1")),
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34-89"), new Pages("34-89", new Range(
-                "34", "89"), "55"))
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96"),
+                         new Pages("96", null, "96")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96 s."),
+                         new Pages("96 s.", null, "96")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "s. 96"),
+                         new Pages("s. 96", new Range("96", "96"), "1")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34-89"),
+                         new Pages("34-89", new Range("34", "89"), "55"))
         );
     }
 }

@@ -1,8 +1,9 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.validators.DublinCoreValidator.ACCEPTED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
-import static no.sikt.nva.validators.DublinCoreValidator.VERSION_STRING_NVE;
+import static no.sikt.nva.validators.DublinCoreValidator.PUBLISHED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
@@ -10,21 +11,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.NvaType;
+import no.sikt.nva.brage.migration.common.model.record.Publication;
+import no.sikt.nva.brage.migration.common.model.record.PublishedDate;
+import no.sikt.nva.brage.migration.common.model.record.Record;
+import no.sikt.nva.brage.migration.common.model.record.Type;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.exceptions.DublinCoreException;
-import no.sikt.nva.model.BrageLocation;
-import no.sikt.nva.model.ErrorDetails;
-import no.sikt.nva.model.NvaType;
-import no.sikt.nva.model.WarningDetails;
-import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.sikt.nva.model.record.Publication;
-import no.sikt.nva.model.record.PublishedDate;
-import no.sikt.nva.model.record.Record;
-import no.sikt.nva.model.record.Type;
 import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.JacocoGenerated;
@@ -351,9 +352,14 @@ public final class DublinCoreScraper {
     }
 
     private static Optional<Boolean> mapToNvaVersion(DcValue version) {
-        return VERSION_STRING_NVE.equals(version.scrapeValueAndSetToScraped())
-                   ? Optional.of(true)
-                   : Optional.empty();
+        if (PUBLISHED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
+            return Optional.of(true);
+        }
+        if (ACCEPTED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
+            return Optional.of(false);
+        } else {
+            return Optional.empty();
+        }
     }
 
     private static Type mapOriginTypeToNvaType(List<String> types) {

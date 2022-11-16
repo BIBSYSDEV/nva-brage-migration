@@ -2,7 +2,7 @@ package no.sikt.nva.exceptions;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import no.sikt.nva.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 
 public class DublinCoreException extends RuntimeException {
 
