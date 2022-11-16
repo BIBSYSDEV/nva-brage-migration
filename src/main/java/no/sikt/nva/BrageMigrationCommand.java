@@ -163,7 +163,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private void writeFileToS3() {
         var awsFileWriter = new WriteFileTos3(s3Client);
         var testFile = new File("samlingsfil.txt");
-        awsFileWriter.writeFileToS3(testFile, "wohoo/fra brage maskina");
+        awsFileWriter.writeFileToS3(testFile, "wohoo/pushet fil");
     }
 
     private void logRecordCounter(List<BrageProcessor> brageProcessors) {
