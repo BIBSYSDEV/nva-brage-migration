@@ -22,10 +22,10 @@ import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
 public final class LogSetup {
 
-    private final static String CONSOLE_APPENDER_NAME = "console";
-    private final static String WARN_APPENDER_NAME = "warnLog";
-    private final static String ERROR_APPENDER_NAME = "errorLog";
-    private final static String HTML_APPENDER_NAME = "htmlLogger";
+    private static final String CONSOLE_APPENDER_NAME = "console";
+    private static final String WARN_APPENDER_NAME = "warnLog";
+    private static final String ERROR_APPENDER_NAME = "errorLog";
+    private static final String HTML_APPENDER_NAME = "htmlLogger";
 
     private LogSetup() {
 
@@ -51,10 +51,7 @@ public final class LogSetup {
                 .addComponent(builder
                                   .newComponent("SizeBasedTriggeringPolicy")
                                   .addAttribute("size", "19500KB"));
-        AppenderComponentBuilder console = createConsoleAppender(
-            builder, standardPattern);
-        AppenderComponentBuilder htmlInfoAppender = createHtmlInfoAppender(
-            outputDirectory, builder);
+
         AppenderComponentBuilder logWarnAppender = createLogWarnAppender(outputDirectory,
                                                                          builder,
                                                                          standardPattern,
@@ -76,6 +73,11 @@ public final class LogSetup {
                                             .add(builder.newAppenderRef(ERROR_APPENDER_NAME))
                                             .add(builder.newAppenderRef(WARN_APPENDER_NAME))
                                             .add(builder.newAppenderRef(HTML_APPENDER_NAME));
+
+        AppenderComponentBuilder htmlInfoAppender = createHtmlInfoAppender(
+            outputDirectory, builder);
+        AppenderComponentBuilder console = createConsoleAppender(
+            builder, standardPattern);
 
         builder.add(errorAppender);
         builder.add(logWarnAppender);

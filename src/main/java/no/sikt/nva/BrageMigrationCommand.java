@@ -11,10 +11,12 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import no.sikt.nva.brage.migration.awsconnection.WriteFileTos3;
 import no.sikt.nva.logutils.LogSetup;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.HandleTitleMapReader;
+import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import nva.commons.core.paths.UriWrapper;
@@ -23,6 +25,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @SuppressWarnings({"PMD.DoNotUseThreads"})
 @JacocoGenerated
@@ -47,6 +50,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
         "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
+
+    private final S3Client s3Client;
     @Option(names = {"-c", "--customer"},
         defaultValue = NVE_DEV_CUSTOMER_ID,
         description = "customer id in NVA")
@@ -70,9 +75,22 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Option(names = {"-O", "--output-directory"}, description = "result outputdirectory.")
     private String userSpecifiedOutputDirectory;
 
+    @Option(names = {"-a", "--do-not-write-to-aws"}, description = "If this flag is set, result will not "
+                                                                   + "be pushed "
+                                                                   + "to S3")
+    private boolean shouldNotWriteToAws;
+
     @Option(names = {"-no-handle-erros"}, description = "turn off handle errors. Invalid and missing handles does not"
                                                         + " get checked")
     private boolean noHandleCheck;
+
+    public BrageMigrationCommand() {
+        this.s3Client = S3Driver.defaultS3Client().build();
+    }
+
+    public BrageMigrationCommand(S3Client s3Client) {
+        this.s3Client = s3Client;
+    }
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
@@ -82,7 +100,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
-
             checkForIllegalArguments();
             var inputDirectory = StringUtils.isNotEmpty(startingDirectory)
                                      ? startingDirectory + "/"
@@ -108,6 +125,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
             waitForAllProcesses(brageProcessorThreads);
             writeRecordsToFiles(brageProcessors);
             logRecordCounter(brageProcessors);
+            if (!shouldNotWriteToAws) {
+                writeFileToS3();
+            }
             return NORMAL_EXIT_CODE;
         } catch (Exception e) {
             var logger = LoggerFactory.getLogger(BrageProcessor.class);
@@ -138,6 +158,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
             throw new RuntimeException(e);
         }
         return zipfiles.toArray(new String[0]);
+    }
+
+    private void writeFileToS3() {
+        var awsFileWriter = new WriteFileTos3(s3Client);
+        var testFile = new File("samlingsfil.txt");
+        awsFileWriter.writeFileToS3(testFile, "wohoo/pushet fil");
     }
 
     private void logRecordCounter(List<BrageProcessor> brageProcessors) {
