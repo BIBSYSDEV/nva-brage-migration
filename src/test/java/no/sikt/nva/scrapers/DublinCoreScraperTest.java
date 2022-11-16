@@ -3,7 +3,6 @@ package no.sikt.nva.scrapers;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.model.ErrorDetails.Error.INVALID_TYPE;
-import static no.sikt.nva.model.ErrorDetails.Error.MANY_UNMAPPABLE_TYPES;
 import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.model.WarningDetails.Warning.SUBJECT_WARNING;
@@ -384,8 +383,20 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         dublinCoreScraper
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(appender.getMessages(), not(containsString(INVALID_TYPE.toString())));
-        assertThat(appender.getMessages(), containsString(MANY_UNMAPPABLE_TYPES.toString()));
+        assertThat(appender.getMessages(), containsString(MULTIPLE_UNMAPPABLE_TYPES.toString()));
+    }
+
+    @Test
+    void shouldLogUnmappableType() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Conference object");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        dublinCoreScraper
+            .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), containsString(INVALID_TYPE.toString()));
     }
 
     @Test
@@ -417,12 +428,14 @@ public class DublinCoreScraperTest {
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
         return Stream.of(
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96"), new Pages("96", null, "96")),
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96 s."), new Pages("96 s.", null, "96")),
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "s. 96"), new Pages("s. 96", new Range(
-                "96", "96"), "1")),
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34-89"), new Pages("34-89", new Range(
-                "34", "89"), "55"))
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96"),
+                         new Pages("96", null, "96")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96 s."),
+                         new Pages("96 s.", null, "96")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "s. 96"),
+                         new Pages("s. 96", new Range("96", "96"), "1")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34-89"),
+                         new Pages("34-89", new Range("34", "89"), "55"))
         );
     }
 }

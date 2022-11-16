@@ -7,7 +7,6 @@ import static no.sikt.nva.ResourceNameConstants.INPUT_WITHOUT_HANDLE_ZIP_FILE_NA
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_LICENSE_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.UnZipper.HANDLE_FORMAT;
-import static no.sikt.nva.UnZipper.UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE;
 import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -16,6 +15,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import no.sikt.nva.model.ErrorDetails.Error;
 import no.unit.nva.stubs.FakeS3Client;
+import no.sikt.nva.model.WarningDetails.Warning;
 import nva.commons.core.StringUtils;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
@@ -98,7 +98,7 @@ public class BrageMigrationCommandTest {
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
         assertThat(appender.getMessages(),
-                   containsString(String.format(UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE, expectedCollectionHandle
+                   containsString(String.format(String.valueOf(Warning.EMPTY_COLLECTION), expectedCollectionHandle
                    )));
     }
 
