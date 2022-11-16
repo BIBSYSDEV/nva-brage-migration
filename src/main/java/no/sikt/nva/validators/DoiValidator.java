@@ -119,7 +119,6 @@ public class DoiValidator {
     }
 
     private static String removeEmptySpaces(String doi) {
-        return doi.replace(StringUtils.SPACE, StringUtils.EMPTY_STRING)
-                   .replace(StringUtils.DOUBLE_WHITESPACE, StringUtils.EMPTY_STRING);
+        return doi.replaceAll("\\s", StringUtils.EMPTY_STRING);
     }
 }

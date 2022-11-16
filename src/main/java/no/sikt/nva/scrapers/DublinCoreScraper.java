@@ -29,7 +29,6 @@ import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,7 +168,6 @@ public final class DublinCoreScraper {
         return record;
     }
 
-    @NotNull
     private static Publication createPublicationWithIdentifier(DublinCore dublinCore, BrageLocation brageLocation,
                                                                Record record) {
         var publication = extractPublication(dublinCore, brageLocation);
@@ -200,7 +198,6 @@ public final class DublinCoreScraper {
                    .orElse(null);
     }
 
-    @NotNull
     private static Function<String, URI> convertToUriAttempt() {
         return doi -> {
             try {
