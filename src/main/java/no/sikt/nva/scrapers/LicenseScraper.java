@@ -1,18 +1,18 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
-import static no.sikt.nva.scrapers.LicenseMapper.NvaLicenseIdentifier.DEFAULT_LICENSE;
+import static no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentifier.DEFAULT_LICENSE;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
+import no.sikt.nva.brage.migration.common.model.record.license.License;
+import no.sikt.nva.brage.migration.common.model.record.license.NvaLicense;
+import no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentifier;
 import no.sikt.nva.exceptions.LicenseExtractingException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.model.record.License;
-import no.sikt.nva.model.record.NvaLicense;
-import no.sikt.nva.scrapers.LicenseMapper.NvaLicenseIdentifier;
 import nva.commons.core.SingletonCollector;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;

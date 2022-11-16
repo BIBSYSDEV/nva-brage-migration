@@ -7,10 +7,10 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
+import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
+import no.sikt.nva.brage.migration.common.model.record.license.License;
 import no.sikt.nva.exceptions.ContentException;
-import no.sikt.nva.model.BrageLocation;
-import no.sikt.nva.model.content.ContentFile;
-import no.sikt.nva.model.record.License;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 

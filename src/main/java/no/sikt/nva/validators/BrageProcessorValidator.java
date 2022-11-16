@@ -7,10 +7,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import no.sikt.nva.model.WarningDetails;
-import no.sikt.nva.model.WarningDetails.Warning;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
+import no.sikt.nva.brage.migration.common.model.record.license.License;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.model.record.License;
 import no.sikt.nva.scrapers.LicenseScraper;
 
 public class BrageProcessorValidator {

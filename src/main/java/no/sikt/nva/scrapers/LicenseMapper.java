@@ -1,8 +1,9 @@
 package no.sikt.nva.scrapers;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import java.net.URI;
 import java.util.Map;
+import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
+import no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentifier;
 import no.sikt.nva.exceptions.DublinCoreException;
 import org.apache.commons.validator.routines.UrlValidator;
 
@@ -50,53 +51,4 @@ public class LicenseMapper {
         return URI.create(licenseUri).getPath().split("/")[2];
     }
 
-    public enum NvaLicenseIdentifier {
-        CC_BY("CC BY"),
-        CC_BY_NC("CC BY-NC"),
-        CC_BY_NC_ND("CC BY-NC-ND"),
-        CC_BY_NC_SA("CC BY-NC-SA"),
-        CC_BY_ND("CC BY-ND"),
-        CC_BY_SA("CC BY-SA"),
-
-        DEFAULT_LICENSE("Rights Reserved");
-        private final String value;
-
-        NvaLicenseIdentifier(String value) {
-            this.value = value;
-        }
-
-        @JsonValue
-        public String getValue() {
-            return value;
-        }
-    }
-
-    public enum BrageLicense {
-        CC_BY("by"),
-        CC_BY_NC("by-nc"),
-        CC_BY_NC_ND("by-nc-nd"),
-        CC_BY_NC_SA("by-nc-sa"),
-        CC_BY_ND("by-nd"),
-        CC_BY_SA("by-sa");
-
-        private final String value;
-
-        BrageLicense(String value) {
-            this.value = value;
-        }
-
-        public static BrageLicense fromValue(String value) {
-            for (BrageLicense license : BrageLicense.values()) {
-                if (license.getValue().equalsIgnoreCase(value)) {
-                    return license;
-                }
-            }
-            return null;
-        }
-
-        @JsonValue
-        public String getValue() {
-            return value;
-        }
-    }
 }
