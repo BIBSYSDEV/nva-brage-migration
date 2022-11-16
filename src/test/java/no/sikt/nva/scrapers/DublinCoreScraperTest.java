@@ -381,9 +381,20 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         dublinCoreScraper
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(appender.getMessages(), not(containsString(INVALID_TYPE.toString())));
-        assertThat(appender.getMessages(), containsString(MANY_UNMAPPABLE_TYPES.toString()));
+        assertThat(appender.getMessages(), containsString(MULTIPLE_UNMAPPABLE_TYPES.toString()));
+    }
 
+    @Test
+    void shouldLogUnmappableType() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Conference object");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        dublinCoreScraper
+            .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), containsString(INVALID_TYPE.toString()));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

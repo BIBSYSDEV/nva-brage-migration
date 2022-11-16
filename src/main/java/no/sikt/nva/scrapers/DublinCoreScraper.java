@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.channelregister.ChannelRegister;
-import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.NvaType;
@@ -117,22 +116,18 @@ public final class DublinCoreScraper {
     }
 
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
-        try {
-            var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
-            if (onlineValidationIsEnabled()) {
-                DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
-            }
-            var warnings = getDublinCoreWarnings(dublinCore);
-            var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
-            record.setErrors(errors);
-            record.setWarnings(warnings);
-            logUnscrapedValues(dublinCore, brageLocation);
-            logWarningsIfNotEmpty(brageLocation, warnings);
-            logErrorsIfNotEmpty(brageLocation, errors);
-            return record;
-        } catch (Exception e) {
-            throw new DublinCoreException(SCRAPING_HAS_FAILED + e);
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        if (onlineValidationIsEnabled()) {
+            DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
         }
+        var warnings = getDublinCoreWarnings(dublinCore);
+        var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
+        record.setErrors(errors);
+        record.setWarnings(warnings);
+        logUnscrapedValues(dublinCore, brageLocation);
+        logWarningsIfNotEmpty(brageLocation, warnings);
+        logErrorsIfNotEmpty(brageLocation, errors);
+        return record;
     }
 
     public boolean onlineValidationIsEnabled() {
