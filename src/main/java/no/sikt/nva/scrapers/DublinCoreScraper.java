@@ -13,7 +13,9 @@ import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
+import no.sikt.nva.model.NvaType;
 import no.sikt.nva.model.WarningDetails;
+import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
@@ -22,7 +24,6 @@ import no.sikt.nva.model.record.Publication;
 import no.sikt.nva.model.record.PublishedDate;
 import no.sikt.nva.model.record.Record;
 import no.sikt.nva.model.record.Type;
-import no.sikt.nva.scrapers.TypeMapper.NvaType;
 import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.JacocoGenerated;
@@ -322,7 +323,9 @@ public final class DublinCoreScraper {
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     private static String handleIsbnList(List<String> isbnList, BrageLocation brageLocation) {
         if (isbnList.size() > 1) {
-            logger.warn("Following resource contains many isbn values: " + brageLocation.getOriginInformation());
+            logger.warn(new WarningDetails(Warning.MULTIPLE_ISBN_VALUES_WARNING, isbnList)
+                        + StringUtils.SPACE
+                        + brageLocation.getOriginInformation());
         }
         if (isbnList.isEmpty()) {
             return null;

@@ -63,8 +63,6 @@ public class WarningDetails {
     public enum Warning {
         VERSION_WARNING,
         SUBJECT_WARNING,
-        INVALID_DATE_WARNING,
-        DATE_NOT_PRESENT_WARNING,
         LANGUAGE_MAPPED_TO_UNDEFINED,
         MULTIPLE_DESCRIPTION_PRESENT,
         VOLUME_NOT_NUMBER_WARNING,
@@ -73,6 +71,6 @@ public class WarningDetails {
         MULTIPLE_UNMAPPABLE_TYPES,
         INVALID_CC_LICENSE,
         PAGE_NUMBER_FORMAT_NOT_RECOGNIZED,
-        CRISTIN_ID_PRESENT
+        MULTIPLE_ISBN_VALUES_WARNING
     }
 }

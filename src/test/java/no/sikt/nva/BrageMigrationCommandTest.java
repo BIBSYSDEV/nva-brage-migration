@@ -4,12 +4,10 @@ import static no.sikt.nva.BrageMigrationCommand.INCOMPATIBLE_ARGUMENTS_ZIPFILE_A
 import static no.sikt.nva.ResourceNameConstants.EMPTY_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME;
-import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_CRISTIN_ID_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_LICENSE_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.UnZipper.HANDLE_FORMAT;
 import static no.sikt.nva.UnZipper.UNZIPPING_FAILED_FOR_COLLECTION_WITH_HANDLE;
-import static no.sikt.nva.model.ErrorDetails.Error.CRISTIN_ID_PRESENT;
 import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -48,14 +46,6 @@ public class BrageMigrationCommandTest {
         var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITH_LICENSE_ZIP_FILE_NAME};
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
-    }
-
-    @Test
-    void shouldProcessAndLogFileWithCristinId() {
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITH_CRISTIN_ID_FILE_NAME};
-        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
-        assertThat(appender.getMessages(), containsString(String.valueOf(CRISTIN_ID_PRESENT)));
     }
 
     @Test

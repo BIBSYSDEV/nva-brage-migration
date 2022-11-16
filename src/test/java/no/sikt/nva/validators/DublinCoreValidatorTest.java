@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import no.sikt.nva.model.BrageLocation;
+import no.sikt.nva.model.BrageType;
 import no.sikt.nva.model.ErrorDetails;
 import no.sikt.nva.model.ErrorDetails.Error;
 import no.sikt.nva.model.WarningDetails;
@@ -23,8 +24,9 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.scrapers.DublinCoreFactory;
-import no.sikt.nva.scrapers.TypeMapper.BrageType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class DublinCoreValidatorTest {
 
@@ -86,19 +88,31 @@ public class DublinCoreValidatorTest {
     }
 
     @Test
-    void shouldReturnWarningWhenInvalidDate() {
+    void shouldReturnErrorWhenInvalidDate() {
         var dcValues = List.of(new DcValue(Element.DATE, Qualifier.ISSUED, "someDate"));
         var dublinCore = new DublinCore(dcValues);
-        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
-        assertThat(actualWarningList, hasItems(new WarningDetails(Warning.INVALID_DATE_WARNING, List.of())));
+        var brageLocation = new BrageLocation(null);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        assertThat(actualErrorList, hasItems(new ErrorDetails(Error.INVALID_DATE_ERROR, List.of())));
+    }
+
+    @ParameterizedTest()
+    @ValueSource(strings = {"1991-02-14", "2008-12-31", "2021-10-16"})
+    void shouldNotReturnDateErrorWhenDateIsValid(String date) {
+        var dcValues = List.of(new DcValue(Element.DATE, Qualifier.ISSUED, date));
+        var dublinCore = new DublinCore(dcValues);
+        var brageLocation = new BrageLocation(null);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        assertThat(actualErrorList, not(hasItems(new ErrorDetails(Error.INVALID_DATE_ERROR, List.of()))));
     }
 
     @Test
-    void shouldReturnWarningDateNotPresent() {
+    void shouldReturnErrorDateNotPresent() {
         var dcValues = List.of(new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "some advisor"));
         var dublinCore = new DublinCore(dcValues);
-        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
-        assertThat(actualWarningList, hasItems(new WarningDetails(Warning.DATE_NOT_PRESENT_WARNING, List.of())));
+        var brageLocation = new BrageLocation(null);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        assertThat(actualErrorList, hasItems(new ErrorDetails(Error.DATE_NOT_PRESENT_ERROR, List.of())));
     }
 
     @Test
@@ -192,16 +206,5 @@ public class DublinCoreValidatorTest {
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(Error.JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of()))));
-    }
-
-    @Test
-    void shouldReturnCristinWarningWhenResourceHasCristinId() {
-        var dcValues = List.of(
-            new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN,"someCristinId"),
-            new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
-
-        assertThat(actualErrors, hasItems(new WarningDetails(Warning.CRISTIN_ID_PRESENT, "someCristinId")));
     }
 }
