@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
@@ -397,6 +398,18 @@ public class DublinCoreScraperTest {
         dublinCoreScraper
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(appender.getMessages(), containsString(INVALID_TYPE.toString()));
+    }
+
+    @Test
+    void shouldLoggInvalidDoi() {
+        var doi = "10.1016/ S0140-6736wefwfg.(20)30045-#%wt3";
+        var dcType = new DcValue(Element.TYPE, null, "Book");
+        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doi);
+        var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        new DublinCoreScraper(false).validateAndParseDublinCore(dublinCoreWithDoi,
+                                                                new BrageLocation(null));
+        assertThat(appender.getMessages(), containsString(INVALID_DOI_OFFLINE_CHECK.toString()));
     }
 
     @Test
