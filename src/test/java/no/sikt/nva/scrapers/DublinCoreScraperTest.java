@@ -1,6 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.model.ErrorDetails.Error.INVALID_TYPE;
 import static no.sikt.nva.model.ErrorDetails.Error.MANY_UNMAPPABLE_TYPES;
@@ -383,7 +384,18 @@ public class DublinCoreScraperTest {
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(appender.getMessages(), not(containsString(INVALID_TYPE.toString())));
         assertThat(appender.getMessages(), containsString(MANY_UNMAPPABLE_TYPES.toString()));
+    }
 
+    @Test
+    void shouldLoggInvalidDoi() {
+        var doi = "10.1016/ S0140-6736wefwfg.(20)30045-#%wt3";
+        var dcType = new DcValue(Element.TYPE, null, "Book");
+        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doi);
+        var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        new DublinCoreScraper(false).validateAndParseDublinCore(dublinCoreWithDoi,
+                                                                new BrageLocation(null));
+        assertThat(appender.getMessages(), containsString(INVALID_DOI_OFFLINE_CHECK.toString()));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
