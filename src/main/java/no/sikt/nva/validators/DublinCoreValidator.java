@@ -35,7 +35,8 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("PMD.GodClass")
 public final class DublinCoreValidator {
 
-    public static final String VERSION_STRING_NVE = "publishedVersion";
+    public static final String PUBLISHED_VERSION_STRING = "publishedVersion";
+    public static final String ACCEPTED_VERSION_STRING = "acceptedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final String MISSING_ISSN_AND_TITLE = "Missing issn and title";
     public static final String MISSING_ISSN_AND_PUBLISHER = "Missing issn AND publisher";
@@ -386,6 +387,7 @@ public final class DublinCoreValidator {
     }
 
     private static boolean isValidVersion(DcValue version) {
-        return VERSION_STRING_NVE.equals(version.getValue());
+        return PUBLISHED_VERSION_STRING.equals(version.getValue())
+               || ACCEPTED_VERSION_STRING.equals(version.getValue());
     }
 }
