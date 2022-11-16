@@ -17,4 +17,4 @@ Error:
 Warnings:
 * logges bedre: NOT_FOUND_IN_CHANNEL_REGISTER: https://hdl.handle.net/11250/2992908
 * [INVALID_DATE_WARNING = [2014-05-21]] Bundle location: 219616/9, Handle: https://hdl.handle.net/11250/195274, skal være en error.
-* Unknown file in contents: CC-LICENSE in bundle: no.sikt.nva.model.BrageLocation@6c208957
+* Unknown file in contents: CC-LICENSE in bundle: no.sikt.nva.brage.migration.common.model.BrageLocation@6c208957

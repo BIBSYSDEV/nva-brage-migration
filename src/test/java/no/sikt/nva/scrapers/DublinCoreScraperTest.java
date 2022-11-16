@@ -1,11 +1,12 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_LANGUAGE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
-import static no.sikt.nva.model.ErrorDetails.Error.INVALID_LANGUAGE;
-import static no.sikt.nva.model.ErrorDetails.Error.INVALID_TYPE;
-import static no.sikt.nva.model.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
-import static no.sikt.nva.model.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
-import static no.sikt.nva.model.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.ADVISOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.CONTRIBUTOR;
@@ -24,17 +25,17 @@ import static org.hamcrest.Matchers.nullValue;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
-import no.sikt.nva.model.BrageLocation;
-import no.sikt.nva.model.ErrorDetails;
-import no.sikt.nva.model.WarningDetails;
-import no.sikt.nva.model.WarningDetails.Warning;
+import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.record.Contributor;
+import no.sikt.nva.brage.migration.common.model.record.Identity;
+import no.sikt.nva.brage.migration.common.model.record.Pages;
+import no.sikt.nva.brage.migration.common.model.record.Range;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.sikt.nva.model.record.Contributor;
-import no.sikt.nva.model.record.Identity;
-import no.sikt.nva.model.record.Pages;
-import no.sikt.nva.model.record.Range;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -397,6 +398,18 @@ public class DublinCoreScraperTest {
         dublinCoreScraper
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(appender.getMessages(), containsString(INVALID_TYPE.toString()));
+    }
+
+    @Test
+    void shouldLoggInvalidDoi() {
+        var doi = "10.1016/ S0140-6736wefwfg.(20)30045-#%wt3";
+        var dcType = new DcValue(Element.TYPE, null, "Book");
+        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doi);
+        var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        new DublinCoreScraper(false).validateAndParseDublinCore(dublinCoreWithDoi,
+                                                                new BrageLocation(null));
+        assertThat(appender.getMessages(), containsString(INVALID_DOI_OFFLINE_CHECK.toString()));
     }
 
     @Test

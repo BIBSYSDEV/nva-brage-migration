@@ -8,14 +8,15 @@ import static no.sikt.nva.ResourceNameConstants.INPUT_WITHOUT_HANDLE_ZIP_FILE_NA
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_LICENSE_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.UnZipper.HANDLE_FORMAT;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
 import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import no.sikt.nva.model.ErrorDetails.Error;
-import no.sikt.nva.model.WarningDetails.Warning;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.core.StringUtils;
 import nva.commons.logutils.LogUtils;
@@ -78,7 +79,7 @@ public class BrageMigrationCommandTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI};
         new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
-        assertThat(appender.getMessages(), not(containsString(String.valueOf(Error.INVALID_DOI_OFFLINE_CHECK))));
+        assertThat(appender.getMessages(), not(containsString(String.valueOf(INVALID_DOI_OFFLINE_CHECK))));
     }
 
     @Test
@@ -87,7 +88,7 @@ public class BrageMigrationCommandTest {
         var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI,
             "-ov"};
         new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
-        assertThat(appender.getMessages(), containsString(String.valueOf(Error.INVALID_DOI_ONLINE_CHECK)));
+        assertThat(appender.getMessages(), containsString(String.valueOf(INVALID_DOI_ONLINE_CHECK)));
     }
 
     @Test

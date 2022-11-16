@@ -19,7 +19,7 @@ plugins {
 }
 
 group 'no.sikt.nva'
-version '1.0-SNAPSHOT'
+version '1.1'
 
 sourceCompatibility = JavaVersion.VERSION_11  // source-code version and must be <= targetCompatibility
 targetCompatibility = JavaVersion.VERSION_11 // bytecode target version
@@ -75,6 +75,8 @@ dependencies {
     implementation group: 'org.apache.jena', name: 'jena-core', version: '4.6.1'
     implementation group: 'org.apache.jena', name: 'jena-arq', version: '4.6.1'
     implementation group: 'commons-validator', name: 'commons-validator', version: '1.7'
+
+    implementation project(':brage-migration-common')
 }
 
 compileJava {

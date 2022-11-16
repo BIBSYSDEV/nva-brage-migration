@@ -9,28 +9,27 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.NvaType;
+import no.sikt.nva.brage.migration.common.model.record.Publication;
+import no.sikt.nva.brage.migration.common.model.record.PublishedDate;
+import no.sikt.nva.brage.migration.common.model.record.Record;
+import no.sikt.nva.brage.migration.common.model.record.Type;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.exceptions.DublinCoreException;
-import no.sikt.nva.model.BrageLocation;
-import no.sikt.nva.model.ErrorDetails;
-import no.sikt.nva.model.NvaType;
-import no.sikt.nva.model.WarningDetails;
-import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.sikt.nva.model.record.Publication;
-import no.sikt.nva.model.record.PublishedDate;
-import no.sikt.nva.model.record.Record;
-import no.sikt.nva.model.record.Type;
 import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import nva.commons.core.paths.UriWrapper;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,7 +169,6 @@ public final class DublinCoreScraper {
         return record;
     }
 
-    @NotNull
     private static Publication createPublicationWithIdentifier(DublinCore dublinCore, BrageLocation brageLocation,
                                                                Record record) {
         var publication = extractPublication(dublinCore, brageLocation);
@@ -195,8 +193,20 @@ public final class DublinCoreScraper {
                    .stream()
                    .filter(DcValue::isDoi)
                    .findFirst()
-                   .map(dcValue -> UriWrapper.fromUri(dcValue.scrapeValueAndSetToScraped()).getUri())
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(DoiValidator::updateDoiStructureIfNeeded)
+                   .map(convertToUriAttempt())
                    .orElse(null);
+    }
+
+    private static Function<String, URI> convertToUriAttempt() {
+        return doi -> {
+            try {
+                return URI.create(doi);
+            } catch (Exception e) {
+                return null;
+            }
+        };
     }
 
     private static Publication extractPublication(DublinCore dublinCore, BrageLocation brageLocation) {

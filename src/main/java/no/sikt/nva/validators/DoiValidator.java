@@ -1,14 +1,16 @@
 package no.sikt.nva.validators;
 
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.model.ErrorDetails;
-import no.sikt.nva.model.ErrorDetails.Error;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import nva.commons.core.StringUtils;
 import nva.commons.doi.UnitHttpClient;
 
 public class DoiValidator {
@@ -24,7 +26,7 @@ public class DoiValidator {
             return Optional.empty();
         } else {
             var updatedUriDoiList = filteredDoiList.stream()
-                                        .map(DoiValidator::addHttpStringIfNotPresent)
+                                        .map(DoiValidator::updateDoiStructureIfNeeded)
                                         .collect(Collectors.toList());
             return validateDoiListOnline(updatedUriDoiList);
         }
@@ -37,9 +39,21 @@ public class DoiValidator {
             return Optional.empty();
         } else {
             var updatedUriDoiList = filteredDoiList.stream()
-                                        .map(DoiValidator::addHttpStringIfNotPresent)
+                                        .map(DoiValidator::updateDoiStructureIfNeeded)
                                         .collect(Collectors.toList());
             return validateDoiListOffline(updatedUriDoiList);
+        }
+    }
+
+    public static String updateDoiStructureIfNeeded(String inputDoi) {
+        var doi = removeEmptySpaces(inputDoi);
+        if (doi.contains(HTTP_STRING)) {
+            return doi;
+        }
+        if (doi.contains(DOI_DOMAIN_NAME)) {
+            return HTTPS_STRING + doi;
+        } else {
+            return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
         }
     }
 
@@ -70,14 +84,14 @@ public class DoiValidator {
 
     private static Optional<ErrorDetails> validateDoiOnline(String doi) {
         if (!isValidDoiOnline(doi)) {
-            return Optional.of(new ErrorDetails(Error.INVALID_DOI_ONLINE_CHECK, List.of(doi)));
+            return Optional.of(new ErrorDetails(INVALID_DOI_ONLINE_CHECK, List.of(doi)));
         }
         return Optional.empty();
     }
 
     private static Optional<ErrorDetails> validateDoiOffline(String doi) {
         if (!isValidDoiOffline(doi)) {
-            return Optional.of(new ErrorDetails(Error.INVALID_DOI_OFFLINE_CHECK, List.of(doi)));
+            return Optional.of(new ErrorDetails(INVALID_DOI_OFFLINE_CHECK, List.of(doi)));
         }
         return Optional.empty();
     }
@@ -93,17 +107,6 @@ public class DoiValidator {
         }
     }
 
-    private static String addHttpStringIfNotPresent(String doi) {
-        if (doi.contains(HTTP_STRING)) {
-            return doi;
-        }
-        if (doi.contains(DOI_DOMAIN_NAME)) {
-            return HTTPS_STRING + doi;
-        } else {
-            return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
-        }
-    }
-
     private static List<String> extractDoiList(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
@@ -114,5 +117,9 @@ public class DoiValidator {
 
     private static boolean isValidDoiOffline(String doi) {
         return nva.commons.doi.DoiValidator.validateOffline(doi);
+    }
+
+    private static String removeEmptySpaces(String doi) {
+        return doi.replaceAll("\\s", StringUtils.EMPTY_STRING);
     }
 }
