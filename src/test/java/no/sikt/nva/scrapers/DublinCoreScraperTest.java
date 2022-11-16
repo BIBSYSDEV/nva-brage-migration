@@ -21,11 +21,14 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 import no.sikt.nva.model.BrageLocation;
 import no.sikt.nva.model.ErrorDetails;
+import no.sikt.nva.model.WarningDetails;
+import no.sikt.nva.model.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
@@ -383,7 +386,33 @@ public class DublinCoreScraperTest {
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(appender.getMessages(), not(containsString(INVALID_TYPE.toString())));
         assertThat(appender.getMessages(), containsString(MANY_UNMAPPABLE_TYPES.toString()));
+    }
 
+    @Test
+    void shouldSetPublisherAuthorityToFalseWhenVersionIsAcceptedVersion() {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "acceptedVersion");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, versionDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getPublisherAuthority(), is(false));
+    }
+
+    @Test
+    void shouldLogUnknownVersionsAndApplyNullValue() {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "submittedVersion");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, versionDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getPublisherAuthority(), is(nullValue()));
+        assertThat(record.getWarnings(),
+                   contains(new WarningDetails(Warning.VERSION_WARNING, versionDcValue.getValue())));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
