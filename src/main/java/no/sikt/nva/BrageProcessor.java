@@ -1,6 +1,7 @@
 package no.sikt.nva;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
@@ -13,6 +14,7 @@ import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.exceptions.HandleException;
+import no.sikt.nva.model.Embargo;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.ContentScraper;
 import no.sikt.nva.scrapers.DublinCoreFactory;
@@ -41,6 +43,7 @@ public class BrageProcessor implements Runnable {
     private final HandleScraper handleScraper;
     private final boolean enableOnlineValidation;
     private final boolean noHandleCheck;
+    private final List<Embargo> embargoes;
     private List<Record> records;
 
     public BrageProcessor(String zipfile,
@@ -48,13 +51,15 @@ public class BrageProcessor implements Runnable {
                           String destinationDirectory,
                           final Map<String, String> rescueTitleAndHandleMap,
                           boolean enableOnlineValidation,
-                          boolean noHandleCheck) {
+                          boolean noHandleCheck,
+                          List<Embargo> embargoes) {
         this.customerId = customerId;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
         this.destinationDirectory = destinationDirectory;
         this.handleScraper = new HandleScraper(rescueTitleAndHandleMap);
         this.noHandleCheck = noHandleCheck;
+        this.embargoes = embargoes;
     }
 
     public static Path getContentFilePath(File entryDirectory) {
@@ -69,7 +74,11 @@ public class BrageProcessor implements Runnable {
     @Override
     public void run() {
         List<File> resourceDirectories = UnZipper.extractResourceDirectories(zipfile, destinationDirectory);
-        records = processBundles(resourceDirectories);
+        try {
+            records = processBundles(resourceDirectories);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public List<Record> getRecords() {
@@ -95,7 +104,7 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private List<Record> processBundles(List<File> resourceDirectories) {
+    private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories.stream()
                    .filter(BrageProcessor::isBundle)
@@ -104,8 +113,7 @@ public class BrageProcessor implements Runnable {
                    .collect(Collectors.toList());
     }
 
-    private Optional<Record> processBundle(LicenseScraper licenseScraper,
-                                           File entryDirectory) {
+    private Optional<Record> processBundle(LicenseScraper licenseScraper, File entryDirectory) {
         var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
         try {
             var dublinCore = DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
@@ -118,6 +126,7 @@ public class BrageProcessor implements Runnable {
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
             var warnings = BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory, dublinCore);
             record.getWarnings().addAll(warnings);
+            EmbargoScraper.checkForEmbargo(record, embargoes);
             logWarningsIfNotEmpty(brageLocation, warnings);
             return Optional.of(record);
         } catch (Exception e) {

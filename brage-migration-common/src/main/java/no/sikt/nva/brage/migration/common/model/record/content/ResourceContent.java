@@ -22,6 +22,13 @@ public class ResourceContent {
         this.contentFiles = contentFiles;
     }
 
+    public ContentFile getContentFileByFilename(String filename) {
+        return contentFiles.stream()
+                   .filter(contentFile -> contentFile.getFilename().equals(filename))
+                   .findAny()
+                   .orElse(null);
+    }
+
     @JacocoGenerated
     @Override
     public int hashCode() {

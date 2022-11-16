@@ -6,14 +6,17 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.awsconnection.WriteFileTos3;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.logutils.LogSetup;
+import no.sikt.nva.model.Embargo;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.HandleTitleMapReader;
 import no.unit.nva.s3.S3Driver;
@@ -44,6 +47,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         + "the same time";
     public static final String RECORDS_WITHOUT_ERRORS = "Records without errors: ";
     public static final String SLASH = "/";
+    private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
     private static final String NVE_DEV_CUSTOMER_ID =
@@ -64,8 +68,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
                               + "all zipfiles will be read based on samlingsfil.txt")
     private String[] zipFiles;
 
-    @Option(names = {"-D", "--directory"}, description = "Directory to search for samlingsfil.txt. This option cannot"
-                                                         + " be set at the same time as specified zipfiles")
+    @Option(names = {"-D", "--directory"}, description = "Directory to search for samlingsfil.txt and FileEmbargo.txt. "
+                                                         + "This option cannot be set at the same time as specified "
+                                                         + "zipfiles")
     private String startingDirectory;
 
     @SuppressWarnings("PMD.UnusedPrivateField")
@@ -114,12 +119,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
             }
             var customerUri = UriWrapper.fromUri(customer).getUri();
+            var embargoes = getEmbargoes(new File(inputDirectory)).orElse(Collections.emptyList());
             printIgnoredDcValuesFieldsInInfoLog();
-            var brageProcessors = createBrageProcessorThread(zipFiles,
-                                                             customerUri,
-                                                             enableOnlineValidation,
-                                                             noHandleCheck,
-                                                             outputDirectory);
+            var brageProcessors = getBrageProcessorThread(customerUri, outputDirectory, embargoes);
             var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
             startProcessors(brageProcessorThreads);
             waitForAllProcesses(brageProcessorThreads);
@@ -158,6 +160,26 @@ public class BrageMigrationCommand implements Callable<Integer> {
             throw new RuntimeException(e);
         }
         return zipfiles.toArray(new String[0]);
+    }
+
+    private List<BrageProcessor> getBrageProcessorThread(URI customerUri, String outputDirectory,
+                                                         List<Embargo> embargoes) {
+        return createBrageProcessorThread(zipFiles,
+                                          customerUri,
+                                          enableOnlineValidation,
+                                          noHandleCheck,
+                                          outputDirectory, embargoes);
+    }
+
+    private Optional<List<Embargo>> getEmbargoes(File directory) throws IOException {
+        if (directory.exists()) {
+            var embargoFile = Arrays.stream(Objects.requireNonNull(directory.listFiles()))
+                                  .filter(file -> DEFAULT_EMBARGO_FILE_NAME.equals(file.getName()))
+                                  .findFirst().orElse(null);
+            return Optional.of(EmbargoScraper.getEmbargoList(Objects.requireNonNull(embargoFile)));
+        } else {
+            return Optional.empty();
+        }
     }
 
     private void writeFileToS3() {
@@ -219,9 +241,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, URI customer,
                                                             boolean enableOnlineValidation, boolean noHandleCheck,
-                                                            String outputDirectory) {
+                                                            String outputDirectory, List<Embargo> embargoes) {
         var handleTitleMapReader = new HandleTitleMapReader();
-        var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch());
+        var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch(),
+                                                              embargoes);
         return
             Arrays.stream(zipFiles)
                 .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,
