@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 public final class EmbargoScraper {
 
     public static final String ERROR_OCCURRED_EXTRACTING_EMBARGOES = "ERROR_OCCURRED_EXTRACTING_EMBARGO";
+    public static final String PDF_TXT = "pdf.txt";
+    public static final String PDF_JPG = "pdf.jpg";
+    public static final String PDF = "pdf";
     private static final Logger logger = LoggerFactory.getLogger(EmbargoScraper.class);
 
     public EmbargoScraper() {
@@ -68,9 +71,9 @@ public final class EmbargoScraper {
     }
 
     private static boolean isPdfFile(String filename) {
-        return !filename.contains("pdf.txt")
-               && !filename.contains("pdf.jpg")
-               && filename.contains("pdf")
+        return !filename.contains(PDF_TXT)
+               && !filename.contains(PDF_JPG)
+               && filename.contains(PDF)
                && filename.split("\\.").length == 2;
     }
 }
