@@ -60,4 +60,5 @@ application-warn.log
 **/inputWithInvalidDoi/**
 **/inputWithEmptyCCLicense/**
 **/resourceWithEmbargo/**
+**/resourceWithTwoSameObjects/**
 

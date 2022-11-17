@@ -23,6 +23,7 @@ import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import nva.commons.core.paths.UriWrapper;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -47,6 +48,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         + "the same time";
     public static final String RECORDS_WITHOUT_ERRORS = "Records without errors: ";
     public static final String SLASH = "/";
+    public static final String DUPLICATE_MESSAGE = "RECORD WAS REMOVED FROM IMPORT BECAUSE OF DUPLICATE: ";
     private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
@@ -54,40 +56,34 @@ public class BrageMigrationCommand implements Callable<Integer> {
         "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
-
+    private static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
     private final S3Client s3Client;
     @Option(names = {"-c", "--customer"},
         defaultValue = NVE_DEV_CUSTOMER_ID,
         description = "customer id in NVA")
     private String customer;
-
     @Option(names = {"-ov", "--online-validator"}, description = "enable online validator, disabled if not present")
     private boolean enableOnlineValidation;
-
     @Parameters(description = "input zipfiles containing brage bundles, if none specified "
                               + "all zipfiles will be read based on samlingsfil.txt")
     private String[] zipFiles;
-
     @Option(names = {"-D", "--directory"}, description = "Directory to search for samlingsfil.txt and FileEmbargo.txt. "
                                                          + "This option cannot be set at the same time as specified "
                                                          + "zipfiles")
     private String startingDirectory;
-
     @SuppressWarnings("PMD.UnusedPrivateField")
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
     private boolean usageHelpRequested;
-
     @Option(names = {"-O", "--output-directory"}, description = "result outputdirectory.")
     private String userSpecifiedOutputDirectory;
-
     @Option(names = {"-a", "--do-not-write-to-aws"}, description = "If this flag is set, result will not "
                                                                    + "be pushed "
                                                                    + "to S3")
     private boolean shouldNotWriteToAws;
-
     @Option(names = {"-no-handle-erros"}, description = "turn off handle errors. Invalid and missing handles does not"
                                                         + " get checked")
     private boolean noHandleCheck;
+    private RecordStorage recordStorage;
 
     public BrageMigrationCommand() {
         this.s3Client = S3Driver.defaultS3Client().build();
@@ -105,6 +101,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
+            this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
             var inputDirectory = StringUtils.isNotEmpty(startingDirectory)
                                      ? startingDirectory + "/"
@@ -126,6 +123,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             startProcessors(brageProcessorThreads);
             waitForAllProcesses(brageProcessorThreads);
             writeRecordsToFiles(brageProcessors);
+            logger.info("Records written to file: " + RecordsWriter.getCounter());
             logRecordCounter(brageProcessors);
             if (!shouldNotWriteToAws) {
                 writeFileToS3();
@@ -222,7 +220,35 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private void writeRecordToFile(BrageProcessor brageProcessor) {
         var outputFileName = brageProcessor.getDestinationDirectory() + PATH_DELIMITER + OUTPUT_JSON_FILENAME;
-        RecordsWriter.writeRecordsToFile(outputFileName, brageProcessor.getRecords());
+        var records = removeIdenticalRecords(brageProcessor.getRecords());
+        RecordsWriter.writeRecordsToFile(outputFileName, records);
+    }
+
+    private List<Record> removeIdenticalRecords(List<Record> records) {
+        if (nonNull(records) && !records.isEmpty()) {
+            var duplicates = findDuplicates(records);
+            records.removeAll(duplicates);
+        }
+        return records;
+    }
+
+    private List<Record> findDuplicates(List<Record> records) {
+        List<Record> recordsToRemove = new ArrayList<>();
+        for (Record record : records) {
+            var alreadyRegisteredHandles = recordStorage.getRecords().stream()
+                                               .map(Record::getId)
+                                               .collect(Collectors.toList());
+            if (alreadyRegisteredHandles.contains(record.getId())) {
+                logger.error(DUPLICATE_MESSAGE
+                             + record.getId() + " " + record.getBrageLocation()
+                             + "  =>  EXISTING RESOURCE IS: "
+                             + recordStorage.getRecordLocationStringById(record.getId()));
+                recordsToRemove.add(record);
+            } else {
+                recordStorage.getRecords().add(record);
+            }
+        }
+        return recordsToRemove;
     }
 
     private void waitForAllProcesses(List<Thread> brageProcessors) {

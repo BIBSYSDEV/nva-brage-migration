@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<dublin_core schema="dc">
+  <dcvalue element="contributor" qualifier="author">Andreassen,&#x20;Liss&#x20;M.</dcvalue>
+  <dcvalue element="contributor" qualifier="author">Elvehøy,&#x20;Hallgeir</dcvalue>
+  <dcvalue element="contributor" qualifier="author">Gudevang,&#x20;Espen</dcvalue>
+  <dcvalue element="contributor" qualifier="author">Jackson,&#x20;Miriam</dcvalue>
+  <dcvalue element="contributor" qualifier="author">Kjøllmoen,&#x20;Bjarne</dcvalue>
+  <dcvalue element="contributor" qualifier="editor">Kjøllmoen,&#x20;Bjarne</dcvalue>
+  <dcvalue element="coverage" qualifier="spatial" language="nb_NO">Norway</dcvalue>
+  <dcvalue element="date" qualifier="accessioned">2019-12-18T11:47:31Z</dcvalue>
+  <dcvalue element="date" qualifier="available">2019-12-18T11:47:31Z</dcvalue>
+  <dcvalue element="date" qualifier="issued">2001</dcvalue>
+  <dcvalue element="identifier" qualifier="isbn">82-410-0453-2</dcvalue>
+  <dcvalue element="identifier" qualifier="issn">1502-3540</dcvalue>
+  <dcvalue element="identifier" qualifier="uri">http:&#x2F;&#x2F;hdl.handle.net&#x2F;11250&#x2F;2633900</dcvalue>
+  <dcvalue element="description" qualifier="abstract" language="nb_NO">Results&#x20;of&#x20;glaciological&#x20;investigations&#x20;perforrned&#x20;at&#x20;Norwegian&#x20;glaciers&#x20;in&#x20;2000&#x20;are&#x20;presented&#x20;in&#x20;this&#x20;report.&#x20;The&#x20;main&#x20;part&#x20;concerns&#x20;mass&#x20;balance&#x20;investigations.&#x20;Results&#x20;from&#x20;investigations&#x20;of&#x20;volurne&#x20;change&#x20;and&#x20;glacier&#x20;monitoring&#x20;are&#x20;discussed&#x20;in&#x20;separate&#x20;chapters.</dcvalue>
+  <dcvalue element="description" qualifier="provenance" language="en">Made&#x20;available&#x20;in&#x20;DSpace&#x20;on&#x20;2019-12-18T11:47:31Z&#x20;(GMT).&#x20;No.&#x20;of&#x20;bitstreams:&#x20;1&#x20;report2001_02.pdf:&#x20;20060542&#x20;bytes,&#x20;checksum:&#x20;0ee363c8fcf611b6050d04b50cb7d974&#x20;(MD5)&#x20;Previous&#x20;issue&#x20;date:&#x20;2001</dcvalue>
+  <dcvalue element="language" qualifier="iso" language="nb_NO">eng</dcvalue>
+  <dcvalue element="publisher" qualifier="none" language="nb_NO">NVE</dcvalue>
+  <dcvalue element="relation" qualifier="ispartofseries">NVE&#x20;Report;2001:2</dcvalue>
+  <dcvalue element="title" qualifier="none" language="nb_NO">Glaciological&#x20;investigations&#x20;in&#x20;Norway&#x20;in&#x20;2000</dcvalue>
+  <dcvalue element="type" qualifier="none" language="nb_NO">Report</dcvalue>
+</dublin_core>

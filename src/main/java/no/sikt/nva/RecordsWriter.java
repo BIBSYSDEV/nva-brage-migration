@@ -15,14 +15,19 @@ public final class RecordsWriter {
 
     public static final String WRITING_TO_JSON_FILE_HAS_FAILED = "WRITING TO JSON FILE HAS FAILED IN BUNDLE =";
     private static final Logger logger = LoggerFactory.getLogger(RecordsWriter.class);
+    private static int counter;
 
     private RecordsWriter() {
+    }
 
+    public static int getCounter() {
+        return counter;
     }
 
     public static void writeRecordsToFile(String fileName, List<Record> records) {
         try {
             createFileWithRecords(fileName, records);
+            counter += records.size();
         } catch (RecordsWriterException e) {
             logger.warn(e.getMessage());
         }
