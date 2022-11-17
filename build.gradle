@@ -65,7 +65,7 @@ dependencies {
     implementation group: 'com.github.bibsysdev', name: 'json', version: '1.25.17'
     implementation group: 'com.github.bibsysdev', name: 'doi', version: '1.25.17'
     implementation group: 'com.github.bibsysdev', name: 's3', version: '1.25.17'
-    testImplementation group: 'com.github.bibsysdev', name: 'nvatestutils', version: '1.25.17'
+    testImplementation group: 'com.github.bibsysdev', name: 'nvatestutils', version: '1.25.18'
     implementation group: 'com.github.bibsysdev', name: 'logutils', version: '1.25.17'
 
     implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.0'
