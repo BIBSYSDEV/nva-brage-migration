@@ -35,7 +35,6 @@ public class BrageProcessor implements Runnable {
     private static final String HANDLE_DEFAULT_NAME = "handle";
     private static final String DUBLIN_CORE_XML_DEFAULT_NAME = "dublin_core.xml";
     private static final String CONTENT_FILE_DEFAULT_NAME = "contents";
-
     private final String zipfile;
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private final URI customerId;
