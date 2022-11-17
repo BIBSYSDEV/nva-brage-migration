@@ -1,6 +1,6 @@
 package no.sikt.nva;
 
-import static no.sikt.nva.RecordsWriter.WRITING_RECORDS_HAS_FAILED;
+import static no.sikt.nva.RecordsWriter.WRITING_TO_JSON_FILE_HAS_FAILED;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -21,7 +21,7 @@ public class RecordsWriterTest {
     void shouldLogIfWritingToFileFails() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         RecordsWriter.writeRecordsToFile(INVALID_FILE_NAME, List.of(createRecord()));
-        assertThat(appender.getMessages(), containsString(WRITING_RECORDS_HAS_FAILED));
+        assertThat(appender.getMessages(), containsString(WRITING_TO_JSON_FILE_HAS_FAILED));
     }
 
     private Record createRecord() {

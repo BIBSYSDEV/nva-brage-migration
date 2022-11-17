@@ -3,6 +3,7 @@ package no.sikt.nva.scrapers;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
@@ -437,6 +438,33 @@ public class DublinCoreScraperTest {
         assertThat(record.getPublisherAuthority(), is(nullValue()));
         assertThat(record.getWarnings(),
                    contains(new WarningDetails(Warning.VERSION_WARNING, versionDcValue.getValue())));
+    }
+
+    @Test
+    void testToTestOneSingleDublinCore() {
+        var author = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, "Lussana, Cristian");
+        var coverage = new DcValue(Element.COVERAGE, Qualifier.SPATIAL, "Norway");
+        var accessioned = new DcValue(Element.DATE, Qualifier.ACCESSIONED, "2021-06-15T12:29:02Z");
+        var available = new DcValue(Element.DATE, Qualifier.AVAILABLE, "2021-06-15T12:29:02Z");
+        var issued = new DcValue(Element.DATE, Qualifier.ISSUED, "2018");
+        var id = new DcValue(Element.IDENTIFIER, Qualifier.URI, "https://hdl.handle.net/11250/2759567");
+        var language = new DcValue(Element.LANGUAGE, Qualifier.ISO, "eng");
+        var type = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
+        var pageNumber = new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "235-249");
+        var volume = new DcValue(Element.SOURCE, Qualifier.VOLUME, "10");
+        var journal = new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Earth System Science Data");
+        var issue = new DcValue(Element.SOURCE, Qualifier.ISSUE, "1");
+        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.5194/essd-10-235-2018");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(author, coverage, accessioned, available, issued, id, language, type, pageNumber, volume,
+                    journal, issue, doi));
+        var dublinCoreScraper = new DublinCoreScraper(false);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(appender.getMessages(), containsString(
+            String.valueOf(MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE)));
+
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

@@ -170,6 +170,10 @@ public class DcValue {
         return Element.RELATION.equals(this.element) && Qualifier.IS_PART_OF_SERIES.equals(this.qualifier);
     }
 
+    public boolean isPartOf() {
+        return Element.RELATION.equals(this.element) && Qualifier.IS_PART_OF.equals(this.qualifier);
+    }
+
     public boolean isHandle() {
         if (StringUtils.isNotEmpty(value)) {
             return Element.IDENTIFIER.equals(this.element)
@@ -243,8 +247,6 @@ public class DcValue {
     public boolean isNsiSubject() {
         return Element.SUBJECT.equals(this.element) && Qualifier.NORWEGIAN_SCIENCE_INDEX.equals(this.qualifier);
     }
-
-
 
     public String toXmlString() {
         StringWriter sw = new StringWriter();
