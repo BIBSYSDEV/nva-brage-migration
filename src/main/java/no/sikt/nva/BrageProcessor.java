@@ -76,8 +76,8 @@ public class BrageProcessor implements Runnable {
         List<File> resourceDirectories = UnZipper.extractResourceDirectories(zipfile, destinationDirectory);
         try {
             records = processBundles(resourceDirectories);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException ignored) {
+
         }
     }
 

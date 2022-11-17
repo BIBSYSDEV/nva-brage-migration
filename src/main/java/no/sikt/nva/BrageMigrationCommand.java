@@ -23,6 +23,7 @@ import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import nva.commons.core.paths.UriWrapper;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -89,6 +90,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                         + " get checked")
     private boolean noHandleCheck;
 
+    private static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+
+
     public BrageMigrationCommand() {
         this.s3Client = S3Driver.defaultS3Client().build();
     }
@@ -126,13 +130,14 @@ public class BrageMigrationCommand implements Callable<Integer> {
             startProcessors(brageProcessorThreads);
             waitForAllProcesses(brageProcessorThreads);
             writeRecordsToFiles(brageProcessors);
+            logger.info("Records written to file: " + RecordsWriter.getCounter());
+            logger.info("Number of unique records: " + RecordsWriter.getNumberOfUniqueRecords());
             logRecordCounter(brageProcessors);
             if (!shouldNotWriteToAws) {
                 writeFileToS3();
             }
             return NORMAL_EXIT_CODE;
         } catch (Exception e) {
-            var logger = LoggerFactory.getLogger(BrageProcessor.class);
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
         }
@@ -201,7 +206,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 }
             }
         }
-        var logger = LoggerFactory.getLogger(BrageProcessor.class);
         logger.info(RECORDS_WITHOUT_ERRORS + counterWithoutErrors + SLASH + totalCounter);
     }
 
@@ -212,7 +216,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void printIgnoredDcValuesFieldsInInfoLog() {
-        var logger = LoggerFactory.getLogger(BrageProcessor.class);
         logger.info(FOLLOWING_FIELDS_ARE_IGNORED + DublinCoreScraper.getIgnoredFieldNames());
     }
 

@@ -135,10 +135,8 @@ public class Record {
                && Objects.equals(spatialCoverage, record.spatialCoverage)
                && Objects.equals(partOf, record.partOf)
                && Objects.equals(publication, record.publication)
-               && Objects.equals(contentBundle, record.contentBundle)
                && Objects.equals(publishedDate, record.publishedDate)
                && Objects.equals(cristinId, record.cristinId)
-               && Objects.equals(brageLocation, record.brageLocation)
                && listEqualsIgnoreOrder(errors, record.errors)
                && listEqualsIgnoreOrder(warnings, record.warnings);
     }
