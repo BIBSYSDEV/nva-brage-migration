@@ -139,8 +139,6 @@ public class Record {
                && Objects.equals(publishedDate, record.publishedDate)
                && Objects.equals(cristinId, record.cristinId)
                && Objects.equals(brageLocation, record.brageLocation)
-               && Objects.equals(errors, record.errors)
-               && Objects.equals(warnings, record.warnings)
                && listEqualsIgnoreOrder(errors, record.errors)
                && listEqualsIgnoreOrder(warnings, record.warnings);
     }
