@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 public final class RecordsWriter {
 
-    public static final String WRITING_TO_JSON_FILE_HAS_FAILED = "WRITING TO JSON FILE HAS FAILED IN BUNDLE = ";
+    public static final String WRITING_TO_JSON_FILE_HAS_FAILED = "WRITING TO JSON FILE HAS FAILED IN BUNDLE =";
     private static final Logger logger = LoggerFactory.getLogger(RecordsWriter.class);
 
     private RecordsWriter() {

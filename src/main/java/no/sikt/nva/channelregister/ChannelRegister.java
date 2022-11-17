@@ -63,6 +63,10 @@ public final class ChannelRegister {
                            .map(ChannelRegisterJournal::getIdentifier)
                            .collect(SingletonCollector.collectOrElse(null));
             }
+        } catch (IllegalStateException e) {
+            logger.error(new ErrorDetails(MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE,
+                                          filterOutNullValues(issn)).toString());
+            return null;
         } catch (Exception e) {
             return null;
         }
