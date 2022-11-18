@@ -177,7 +177,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private void checkIfZipFilesInCollectionFileArePresent(String inputDirectory) {
         var fileNamesFromCollectionFile = Arrays.asList(zipFiles);
-        var s = new File(inputDirectory).getPath();
         var files = new File(inputDirectory).listFiles();
         if (nonNull(files)) {
             compareFileNamesWithActualFiles(inputDirectory, fileNamesFromCollectionFile);

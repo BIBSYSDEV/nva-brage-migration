@@ -14,7 +14,7 @@ import nva.commons.core.JacocoGenerated;
 
 @JsonPropertyOrder({"customerId", "bareOrigin", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
     "rightsholder",
-    "type", "embargo", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
+    "type", "partOf", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
     "recordContent", "errors", "warnings"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
@@ -26,10 +26,10 @@ public class Record {
     private Path origin;
     private Type type;
     private Language language;
-    private String embargo;
     private Boolean publisherAuthority;
     private String rightsholder;
     private String spatialCoverage;
+    private String partOf;
     private Publication publication;
     private ResourceContent contentBundle;
     private PublishedDate publishedDate;
@@ -40,6 +40,15 @@ public class Record {
 
     public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
+
+    @JsonProperty("partOf")
+    public String getPartOf() {
+        return partOf;
+    }
+
+    public void setPartOf(String partOf) {
+        this.partOf = partOf;
     }
 
     @JsonProperty("brageLocation")
@@ -99,9 +108,9 @@ public class Record {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(entityDescription, customerId, id, doi, origin, type, language, embargo, publisherAuthority,
-                            rightsholder, spatialCoverage, publication, contentBundle, publishedDate, cristinId, errors,
-                            warnings, brageLocation);
+        return Objects.hash(entityDescription, customerId, id, doi, origin, type, language, publisherAuthority,
+                            rightsholder, spatialCoverage, partOf, publication, contentBundle, publishedDate, cristinId,
+                            brageLocation, errors, warnings);
     }
 
     @JacocoGenerated
@@ -121,10 +130,10 @@ public class Record {
                && Objects.equals(origin, record.origin)
                && Objects.equals(type, record.type)
                && Objects.equals(language, record.language)
-               && Objects.equals(embargo, record.embargo)
                && Objects.equals(publisherAuthority, record.publisherAuthority)
                && Objects.equals(rightsholder, record.rightsholder)
                && Objects.equals(spatialCoverage, record.spatialCoverage)
+               && Objects.equals(partOf, record.partOf)
                && Objects.equals(publication, record.publication)
                && Objects.equals(contentBundle, record.contentBundle)
                && Objects.equals(publishedDate, record.publishedDate)
@@ -200,17 +209,6 @@ public class Record {
 
     public void setLanguage(Language language) {
         this.language = language;
-    }
-
-    @JacocoGenerated
-    @JsonProperty("embargo")
-    public String getEmbargo() {
-        return this.embargo;
-    }
-
-    @JacocoGenerated
-    public void setEmbargo(String embargo) {
-        this.embargo = embargo;
     }
 
     @JsonProperty("bareOrigin")

@@ -167,6 +167,7 @@ public final class DublinCoreScraper {
         record.setPublication(createPublicationWithIdentifier(dublinCore, brageLocation, record));
         record.setPublishedDate(extractAvailableDate(dublinCore));
         record.setCristinId(extractCristinId(dublinCore));
+        record.setPartOf(extractPartOf(dublinCore));
         return record;
     }
 
@@ -288,6 +289,15 @@ public final class DublinCoreScraper {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isPartOfSeries)
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
+    }
+
+    private static String extractPartOf(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isPartOf)
                    .findAny()
                    .orElse(new DcValue())
                    .scrapeValueAndSetToScraped();

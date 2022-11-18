@@ -3,6 +3,7 @@ package no.sikt.nva.scrapers;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
@@ -24,23 +25,19 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Pages;
-import no.sikt.nva.brage.migration.common.model.record.Range;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.sikt.nva.validators.DoiValidator;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class DublinCoreScraperTest {
@@ -454,16 +451,17 @@ public class DublinCoreScraperTest {
         assertThat(record.getPublication().getId(), is(equalTo(idFromChannelRegister)));
     }
 
-    private static Stream<Arguments> provideDcValueAndExpectedPages() {
-        return Stream.of(
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96"),
-                         new Pages("96", null, "96")),
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96 s."),
-                         new Pages("96 s.", null, "96")),
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "s. 96"),
-                         new Pages("s. 96", new Range("96", "96"), "1")),
-            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34-89"),
-                         new Pages("34-89", new Range("34", "89"), "55"))
-        );
+    @Test
+    void shouldLogWhenMultipleSearchResultsInChannelRegister() {
+        var type = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
+        var journal = new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Earth System Science Data");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(type, journal));
+        var dublinCoreScraper = new DublinCoreScraper(false);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(appender.getMessages(), containsString(
+            String.valueOf(MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE)));
     }
 }
