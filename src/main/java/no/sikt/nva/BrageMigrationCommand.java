@@ -99,7 +99,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
-            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
             var inputDirectory = StringUtils.isNotEmpty(startingDirectory)
@@ -111,6 +110,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             var logOutPutDirectory = getLogOutputDirectory(inputDirectory, outputDirectory);
             /* IMPORTANT: DO NOT USE LOGGER BEFORE THIS METHOD HAS RUN: */
             LogSetup.setupLogging(logOutPutDirectory);
+            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             if (Objects.isNull(zipFiles)) {
                 this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
             }
