@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import java.io.File;
 import java.io.IOException;
@@ -111,13 +112,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
             /* IMPORTANT: DO NOT USE LOGGER BEFORE THIS METHOD HAS RUN: */
             LogSetup.setupLogging(logOutPutDirectory);
             List<Embargo> embargoes;
-            if (Objects.isNull(zipFiles)) {
+            if (isNull(zipFiles)) {
                 this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
                 embargoes = getEmbargoes(inputDirectory);
             } else {
                 embargoes = getEmbargoes(Arrays.stream(zipFiles));
             }
-            checkIfZipFilesInCollectionFileArePresent(zipFiles, inputDirectory);
+            checkIfZipFilesInCollectionFileArePresent(inputDirectory);
             var customerUri = UriWrapper.fromUri(customer).getUri();
 
             printIgnoredDcValuesFieldsInInfoLog();
@@ -174,12 +175,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
     }
 
-    private void checkIfZipFilesInCollectionFileArePresent(String[] zipFiles, String inputDirectory) {
-        var fileNamesFromCollectionFile = Arrays.stream(zipFiles)
-                                              .map(file -> new File(file).getName())
-                                              .collect(Collectors.toList());
-        var filesInDirectory = new File(inputDirectory).listFiles();
-        if (nonNull(filesInDirectory)) {
+    private void checkIfZipFilesInCollectionFileArePresent(String inputDirectory) {
+        var fileNamesFromCollectionFile = Arrays.asList(zipFiles);
+        var s = new File(inputDirectory).getPath();
+        var files = new File(inputDirectory).listFiles();
+        if (nonNull(files)) {
             compareFileNamesWithActualFiles(inputDirectory, fileNamesFromCollectionFile);
         }
     }

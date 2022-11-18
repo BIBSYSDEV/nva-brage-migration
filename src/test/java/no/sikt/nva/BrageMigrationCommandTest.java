@@ -30,7 +30,7 @@ public class BrageMigrationCommandTest {
 
     @Test
     void shouldRunWhenZipFileOptionIsNotSet() {
-        var arguments = new String[]{};
+        var arguments = new String[]{"-D", ""};
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
     }
@@ -118,6 +118,14 @@ public class BrageMigrationCommandTest {
         var arguments = new String[]{"-D", EMBARGO_TEST_DIRECTORY};
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(appender.getMessages(), containsString(EXPECTED_EMBARGO_LOGG_MESSAGE));
+        assertThat(status, equalTo(NORMAL_EXIT_CODE));
+    }
+
+    @Test
+    void shouldLogIfFileNamesInsideCollectionFileAreNotPresent() {
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var arguments = new String[]{};
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
     }
 }
