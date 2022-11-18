@@ -23,6 +23,7 @@ import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import nva.commons.core.paths.UriWrapper;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -54,37 +55,30 @@ public class BrageMigrationCommand implements Callable<Integer> {
         "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
-
+    private static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
     private final S3Client s3Client;
     @Option(names = {"-c", "--customer"},
         defaultValue = NVE_DEV_CUSTOMER_ID,
         description = "customer id in NVA")
     private String customer;
-
     @Option(names = {"-ov", "--online-validator"}, description = "enable online validator, disabled if not present")
     private boolean enableOnlineValidation;
-
     @Parameters(description = "input zipfiles containing brage bundles, if none specified "
                               + "all zipfiles will be read based on samlingsfil.txt")
     private String[] zipFiles;
-
     @Option(names = {"-D", "--directory"}, description = "Directory to search for samlingsfil.txt and FileEmbargo.txt. "
                                                          + "This option cannot be set at the same time as specified "
                                                          + "zipfiles")
     private String startingDirectory;
-
     @SuppressWarnings("PMD.UnusedPrivateField")
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
     private boolean usageHelpRequested;
-
     @Option(names = {"-O", "--output-directory"}, description = "result outputdirectory.")
     private String userSpecifiedOutputDirectory;
-
     @Option(names = {"-a", "--do-not-write-to-aws"}, description = "If this flag is set, result will not "
                                                                    + "be pushed "
                                                                    + "to S3")
     private boolean shouldNotWriteToAws;
-
     @Option(names = {"-no-handle-erros"}, description = "turn off handle errors. Invalid and missing handles does not"
                                                         + " get checked")
     private boolean noHandleCheck;
@@ -118,6 +112,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             if (Objects.isNull(zipFiles)) {
                 this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
             }
+            checkIfZipFilesInCollectionFileArePresent(zipFiles, inputDirectory);
             var customerUri = UriWrapper.fromUri(customer).getUri();
             var embargoes = getEmbargoes(new File(inputDirectory)).orElse(Collections.emptyList());
             printIgnoredDcValuesFieldsInInfoLog();
@@ -160,6 +155,28 @@ public class BrageMigrationCommand implements Callable<Integer> {
             throw new RuntimeException(e);
         }
         return zipfiles.toArray(new String[0]);
+    }
+
+    private static void compareFileNamesWithActualFiles(String inputDirectory,
+                                                        List<String> fileNamesFromCollectionFile) {
+        var actualZipFiles = Arrays.stream(Objects.requireNonNull(new File(inputDirectory).listFiles()))
+                                 .map(File::getName)
+                                 .filter(filename -> filename.contains(".zip"))
+                                 .collect(Collectors.toList());
+        if (!actualZipFiles.containsAll(fileNamesFromCollectionFile)) {
+            fileNamesFromCollectionFile.removeAll(actualZipFiles);
+            logger.info("Following collections are missing: " + fileNamesFromCollectionFile);
+        }
+    }
+
+    private void checkIfZipFilesInCollectionFileArePresent(String[] zipFiles, String inputDirectory) {
+        var fileNamesFromCollectionFile = Arrays.stream(zipFiles)
+                                              .map(file -> new File(file).getName())
+                                              .collect(Collectors.toList());
+        var filesInDirectory = new File(inputDirectory).listFiles();
+        if (nonNull(filesInDirectory)) {
+            compareFileNamesWithActualFiles(inputDirectory, fileNamesFromCollectionFile);
+        }
     }
 
     private List<BrageProcessor> getBrageProcessorThread(URI customerUri, String outputDirectory,

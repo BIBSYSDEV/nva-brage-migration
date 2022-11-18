@@ -36,6 +36,7 @@ import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
+import no.sikt.nva.validators.DoiValidator;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -437,6 +438,20 @@ public class DublinCoreScraperTest {
         assertThat(record.getPublisherAuthority(), is(nullValue()));
         assertThat(record.getWarnings(),
                    contains(new WarningDetails(Warning.VERSION_WARNING, versionDcValue.getValue())));
+    }
+
+    @Test
+    void shouldScrapeIdFromChannelRegisterWhenMapsToScientificArticle() {
+        var dcType1 = new DcValue(Element.TYPE, null, "Journal article");
+        var dcType2 = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1664-0640");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType1, dcType2, issnDcValue));
+        var brageLocation = new BrageLocation(null);
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        String idFromChannelRegister = "477294";
+        assertThat(record.getPublication().getId(), is(equalTo(idFromChannelRegister)));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

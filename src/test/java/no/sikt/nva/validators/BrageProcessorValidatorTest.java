@@ -13,7 +13,8 @@ public class BrageProcessorValidatorTest {
 
     @Test
     void shouldLogWhenInvalidCCLicense() {
-        var actualWarnings = BrageProcessorValidator.getBrageProcessorWarnings(new File(PATH_TO_FILES), new DublinCore());
+        var actualWarnings = BrageProcessorValidator.getBrageProcessorWarnings(new File(PATH_TO_FILES),
+                                                                               new DublinCore());
         assertThat(actualWarnings, contains(new WarningDetails(Warning.INVALID_CC_LICENSE)));
     }
 }

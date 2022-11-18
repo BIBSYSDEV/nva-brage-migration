@@ -312,11 +312,11 @@ public final class DublinCoreValidator {
     }
 
     private static boolean isJournalArticle(DublinCore dublinCore) {
-        return DublinCoreScraper.extractType(dublinCore).get(0).equals(BrageType.JOURNAL_ARTICLE.getValue());
+        return DublinCoreScraper.extractType(dublinCore).contains(BrageType.JOURNAL_ARTICLE.getValue());
     }
 
     private static boolean isReport(DublinCore dublinCore) {
-        return DublinCoreScraper.extractType(dublinCore).get(0).equals(BrageType.REPORT.getValue());
+        return DublinCoreScraper.extractType(dublinCore).contains(BrageType.REPORT.getValue());
     }
 
     private static boolean hasPublisher(DublinCore dublinCore) {
@@ -325,7 +325,7 @@ public final class DublinCoreValidator {
     }
 
     private static boolean isBook(DublinCore dublinCore) {
-        return DublinCoreScraper.extractType(dublinCore).get(0).equals(BrageType.BOOK.getValue());
+        return DublinCoreScraper.extractType(dublinCore).contains(BrageType.BOOK.getValue());
     }
 
     private static boolean typeIsPresentInDublinCore(DublinCore dublinCore) {
