@@ -23,7 +23,6 @@ import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import nva.commons.core.paths.UriWrapper;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -56,7 +55,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
         "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
-    private static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
     private final S3Client s3Client;
     @Option(names = {"-c", "--customer"},
         defaultValue = NVE_DEV_CUSTOMER_ID,
@@ -101,6 +99,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
+            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
             var inputDirectory = StringUtils.isNotEmpty(startingDirectory)
@@ -239,6 +238,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                .map(Record::getId)
                                                .collect(Collectors.toList());
             if (alreadyRegisteredHandles.contains(record.getId())) {
+                var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
                 logger.error(DUPLICATE_MESSAGE
                              + record.getId() + " " + record.getBrageLocation()
                              + "  =>  EXISTING RESOURCE IS: "

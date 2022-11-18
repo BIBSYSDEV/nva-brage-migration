@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -27,9 +28,15 @@ public final class RecordsWriter {
     public static void writeRecordsToFile(String fileName, List<Record> records) {
         try {
             createFileWithRecords(fileName, records);
-            counter += records.size();
+            countRecords(records);
         } catch (RecordsWriterException e) {
             logger.warn(e.getMessage());
+        }
+    }
+
+    private static void countRecords(List<Record> records) {
+        if (nonNull(records) && !records.isEmpty()) {
+            counter += records.size();
         }
     }
 
