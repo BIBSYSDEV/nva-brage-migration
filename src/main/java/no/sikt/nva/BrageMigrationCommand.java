@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -25,7 +24,6 @@ import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import nva.commons.core.paths.UriWrapper;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -57,7 +55,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
         "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
-    private static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
     private final S3Client s3Client;
     @Option(names = {"-c", "--customer"},
         defaultValue = NVE_DEV_CUSTOMER_ID,
@@ -118,9 +115,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             } else {
                 embargoes = getEmbargoes(Arrays.stream(zipFiles));
             }
-            checkIfZipFilesInCollectionFileArePresent(inputDirectory);
             var customerUri = UriWrapper.fromUri(customer).getUri();
-
             printIgnoredDcValuesFieldsInInfoLog();
             var brageProcessors = getBrageProcessorThread(customerUri, outputDirectory, embargoes);
             var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
@@ -161,26 +156,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
             throw new RuntimeException(e);
         }
         return zipfiles.toArray(new String[0]);
-    }
-
-    private static void compareFileNamesWithActualFiles(String inputDirectory,
-                                                        List<String> fileNamesFromCollectionFile) {
-        var actualZipFiles = Arrays.stream(Objects.requireNonNull(new File(inputDirectory).listFiles()))
-                                 .map(File::getName)
-                                 .filter(filename -> filename.contains(".zip"))
-                                 .collect(Collectors.toList());
-        if (!actualZipFiles.containsAll(fileNamesFromCollectionFile)) {
-            fileNamesFromCollectionFile.removeAll(actualZipFiles);
-            logger.info("Following collections are missing: " + fileNamesFromCollectionFile);
-        }
-    }
-
-    private void checkIfZipFilesInCollectionFileArePresent(String inputDirectory) {
-        var fileNamesFromCollectionFile = Arrays.asList(zipFiles);
-        var files = new File(inputDirectory).listFiles();
-        if (nonNull(files)) {
-            compareFileNamesWithActualFiles(inputDirectory, fileNamesFromCollectionFile);
-        }
     }
 
     private List<BrageProcessor> getBrageProcessorThread(URI customerUri, String outputDirectory,
