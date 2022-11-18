@@ -81,6 +81,11 @@ public final class DublinCoreValidator {
         return date.matches("\\d{4}");
     }
 
+    public static List<String> filterOutNullValues(String... values) {
+        var valuesList = Arrays.asList(values);
+        return valuesList.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
+    }
+
     @SuppressWarnings("PMD.PrematureDeclaration")
     private static Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         if (typeIsPresentInDublinCore(dublinCore)) {
@@ -127,30 +132,21 @@ public final class DublinCoreValidator {
     }
 
     @NotNull
-    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForJournals(String journalIssn,
-                                                                                                 String journalTitle) {
-        var valuesList = new ArrayList<>();
-        valuesList.add(journalIssn);
-        valuesList.add(journalTitle);
-        var nonNullValuesList =
-            valuesList.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
-        if (!nonNullValuesList.isEmpty()) {
-            return Optional.of(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, nonNullValuesList));
+    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForJournals(String issn,
+                                                                                                 String title) {
+        if (!filterOutNullValues(issn, title).isEmpty()) {
+            return Optional.of(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(issn, title)));
         } else {
             return Optional.of(
                 new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, Collections.singletonList(MISSING_ISSN_AND_TITLE)));
         }
     }
 
-    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String journalIssn,
+    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String issn,
                                                                                                   String publisher) {
-        var valuesList = new ArrayList<>();
-        valuesList.add(journalIssn);
-        valuesList.add(publisher);
-        var nonNullValuesList =
-            valuesList.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
-        if (!nonNullValuesList.isEmpty()) {
-            return Optional.of(new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER, nonNullValuesList));
+        if (!filterOutNullValues(issn, publisher).isEmpty()) {
+            return Optional.of(
+                new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(issn, publisher)));
         } else {
             return Optional.of(new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER,
                                                 Collections.singletonList(MISSING_ISSN_AND_PUBLISHER)));

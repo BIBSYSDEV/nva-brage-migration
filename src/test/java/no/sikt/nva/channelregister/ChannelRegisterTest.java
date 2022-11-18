@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class ChannelRegisterTest {
@@ -34,11 +33,10 @@ public class ChannelRegisterTest {
         assertThat(actual, is(nullValue()));
     }
 
-    @ParameterizedTest
-    @NullAndEmptySource
-    void shouldReturnNullWhenIssnIsNull(String issn) {
+    @Test
+    void shouldReturnNullWhenIssnIsNull() {
         var register = ChannelRegister.getRegister();
-        var actual = register.lookUpInJournalByIssn(issn);
+        var actual = register.lookUpInJournalByIssn(null);
 
         assertThat(actual, is(nullValue()));
     }

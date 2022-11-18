@@ -1,6 +1,9 @@
 package no.sikt.nva.channelregister;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE;
+import static no.sikt.nva.validators.DublinCoreValidator.filterOutNullValues;
 import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,6 +11,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import no.sikt.nva.BrageProcessor;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.DublinCoreScraper;
@@ -51,29 +55,56 @@ public final class ChannelRegister {
     }
 
     public String lookUpInJournalByIssn(String issn) {
-        return isNotNullOrEmpty(issn) ? channelRegisterJournals.stream()
-                                            .filter(item -> item.hasIssn(issn))
-                                            .map(ChannelRegisterJournal::getIdentifier)
-                                            .collect(SingletonCollector.collectOrElse(null)) : null;
+        try {
+            if (isNullOrEmpty(issn)) {
+                return issn;
+            } else {
+                return channelRegisterJournals.stream()
+                           .filter(item -> item.hasIssn(issn))
+                           .map(ChannelRegisterJournal::getIdentifier)
+                           .collect(SingletonCollector.collectOrElse(null));
+            }
+        } catch (IllegalStateException e) {
+            logger.error(new ErrorDetails(MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE,
+                                          filterOutNullValues(issn)).toString());
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public String lookUpInJournalByTitle(String title) {
-        return isNotNullOrEmpty(title) ? channelRegisterJournals.stream()
-                                             .filter(item -> item.hasTitle(title))
-                                             .map(ChannelRegisterJournal::getIdentifier)
-                                             .collect(SingletonCollector.collectOrElse(null)) : null;
+        try {
+            if (isNullOrEmpty(title)) {
+                return title;
+            } else {
+                return channelRegisterJournals.stream()
+                           .filter(item -> item.hasTitle(title))
+                           .map(ChannelRegisterJournal::getIdentifier)
+                           .collect(SingletonCollector.collectOrElse(null));
+            }
+        } catch (IllegalStateException e) {
+            logger.error(new ErrorDetails(MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE,
+                                          filterOutNullValues(title)).toString());
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public String extractIdentifier(DublinCore dublinCore, BrageLocation brageLocation) {
         var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
         var title = DublinCoreScraper.extractJournal(dublinCore);
-
-        return isNotNullOrEmpty(issn) || isNotNullOrEmpty(title)
-                   ? channelRegisterJournals.stream()
-                         .filter(item -> item.hasIssn(issn) || item.hasTitle(title))
-                         .map(ChannelRegisterJournal::getIdentifier)
-                         .collect(SingletonCollector.collectOrElse(null))
-                   : null;
+        try {
+            return isNotNullOrEmpty(issn) || isNotNullOrEmpty(title)
+                       ? channelRegisterJournals.stream()
+                             .filter(item -> item.hasIssn(issn) || item.hasTitle(title))
+                             .map(ChannelRegisterJournal::getIdentifier)
+                             .collect(SingletonCollector.collectOrElse(null))
+                       : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private static List<ChannelRegisterJournal> getJournalsFromCsv() {
@@ -95,7 +126,7 @@ public final class ChannelRegister {
     private boolean extractedIdentifierFromJournalsIsPresent(String publisher, String issn) {
         if (isNotNullOrEmpty(publisher) && isNotNullOrEmpty(issn)) {
             var identifierFromJournal = lookUpInJournalByIssn(issn);
-            return isNotNullOrEmpty(identifierFromJournal);
+            return isNotNullOrEmpty(String.valueOf(identifierFromJournal));
         }
         return false;
     }
@@ -103,5 +134,10 @@ public final class ChannelRegister {
     @SuppressWarnings("PMD.InefficientEmptyStringCheck")
     private boolean isNotNullOrEmpty(String candidate) {
         return nonNull(candidate) && !candidate.trim().isEmpty();
+    }
+
+    @SuppressWarnings("PMD.InefficientEmptyStringCheck")
+    private boolean isNullOrEmpty(String candidate) {
+        return isNull(candidate) || candidate.trim().isEmpty();
     }
 }

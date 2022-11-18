@@ -13,8 +13,7 @@ import org.slf4j.LoggerFactory;
 
 public final class RecordsWriter {
 
-    public static final String WRITING_RECORDS_HAS_FAILED = "Writing records to file has failed: ";
-
+    public static final String WRITING_TO_JSON_FILE_HAS_FAILED = "WRITING TO JSON FILE HAS FAILED IN BUNDLE =";
     private static final Logger logger = LoggerFactory.getLogger(RecordsWriter.class);
 
     private RecordsWriter() {
@@ -25,7 +24,7 @@ public final class RecordsWriter {
         try {
             createFileWithRecords(fileName, records);
         } catch (RecordsWriterException e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(e.getMessage());
         }
     }
 
@@ -41,7 +40,7 @@ public final class RecordsWriter {
         try (var fileWriter = Files.newWriter(new File(fileName), StandardCharsets.UTF_8)) {
             fileWriter.write(convertRecordsToJsonString(records));
         } catch (Exception e) {
-            throw new RecordsWriterException(WRITING_RECORDS_HAS_FAILED + fileName, e);
+            throw new RecordsWriterException(WRITING_TO_JSON_FILE_HAS_FAILED, fileName);
         }
     }
 }

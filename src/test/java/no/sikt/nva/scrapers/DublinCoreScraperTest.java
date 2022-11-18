@@ -3,6 +3,7 @@ package no.sikt.nva.scrapers;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
@@ -437,6 +438,20 @@ public class DublinCoreScraperTest {
         assertThat(record.getPublisherAuthority(), is(nullValue()));
         assertThat(record.getWarnings(),
                    contains(new WarningDetails(Warning.VERSION_WARNING, versionDcValue.getValue())));
+    }
+
+    @Test
+    void shouldLogWhenMultipleSearchResultsInChannelRegister() {
+        var type = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
+        var journal = new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Earth System Science Data");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(type, journal));
+        var dublinCoreScraper = new DublinCoreScraper(false);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(appender.getMessages(), containsString(
+            String.valueOf(MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE)));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
