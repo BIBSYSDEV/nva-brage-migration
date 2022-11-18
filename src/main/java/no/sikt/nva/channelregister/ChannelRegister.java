@@ -1,5 +1,6 @@
 package no.sikt.nva.channelregister;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE;
 import static no.sikt.nva.validators.DublinCoreValidator.filterOutNullValues;
@@ -55,7 +56,7 @@ public final class ChannelRegister {
 
     public String lookUpInJournalByIssn(String issn) {
         try {
-            if (!isNotNullOrEmpty(issn)) {
+            if (isNullOrEmpty(issn)) {
                 return issn;
             } else {
                 return channelRegisterJournals.stream()
@@ -74,7 +75,7 @@ public final class ChannelRegister {
 
     public String lookUpInJournalByTitle(String title) {
         try {
-            if (!isNotNullOrEmpty(title)) {
+            if (isNullOrEmpty(title)) {
                 return title;
             } else {
                 return channelRegisterJournals.stream()
@@ -133,5 +134,10 @@ public final class ChannelRegister {
     @SuppressWarnings("PMD.InefficientEmptyStringCheck")
     private boolean isNotNullOrEmpty(String candidate) {
         return nonNull(candidate) && !candidate.trim().isEmpty();
+    }
+
+    @SuppressWarnings("PMD.InefficientEmptyStringCheck")
+    private boolean isNullOrEmpty(String candidate) {
+        return isNull(candidate) || candidate.trim().isEmpty();
     }
 }
