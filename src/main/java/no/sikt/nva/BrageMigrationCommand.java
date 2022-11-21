@@ -48,6 +48,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         + "the same time";
     public static final String RECORDS_WITHOUT_ERRORS = "Records without errors: ";
     public static final String SLASH = "/";
+    public static final String DUPLICATE_MESSAGE = "RECORD WAS REMOVED FROM IMPORT BECAUSE OF DUPLICATE: ";
     private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
@@ -81,6 +82,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Option(names = {"-no-handle-erros"}, description = "turn off handle errors. Invalid and missing handles does not"
                                                         + " get checked")
     private boolean noHandleCheck;
+    private RecordStorage recordStorage;
 
     public BrageMigrationCommand() {
         this.s3Client = S3Driver.defaultS3Client().build();
@@ -98,6 +100,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
+            this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
             var inputDirectory = StringUtils.isNotEmpty(startingDirectory)
                                      ? startingDirectory + "/"
@@ -109,6 +112,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             /* IMPORTANT: DO NOT USE LOGGER BEFORE THIS METHOD HAS RUN: */
             LogSetup.setupLogging(logOutPutDirectory);
             List<Embargo> embargoes;
+            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             if (isNull(zipFiles)) {
                 this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
                 embargoes = getEmbargoes(inputDirectory);
@@ -122,6 +126,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             startProcessors(brageProcessorThreads);
             waitForAllProcesses(brageProcessorThreads);
             writeRecordsToFiles(brageProcessors);
+            logger.info("Records written to file: " + RecordsWriter.getCounter());
             logRecordCounter(brageProcessors);
             if (!shouldNotWriteToAws) {
                 writeFileToS3();
@@ -229,7 +234,36 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private void writeRecordToFile(BrageProcessor brageProcessor) {
         var outputFileName = brageProcessor.getDestinationDirectory() + PATH_DELIMITER + OUTPUT_JSON_FILENAME;
-        RecordsWriter.writeRecordsToFile(outputFileName, brageProcessor.getRecords());
+        var records = removeIdenticalRecords(brageProcessor.getRecords());
+        RecordsWriter.writeRecordsToFile(outputFileName, records);
+    }
+
+    private List<Record> removeIdenticalRecords(List<Record> records) {
+        if (nonNull(records) && !records.isEmpty()) {
+            var duplicates = findDuplicates(records);
+            records.removeAll(duplicates);
+        }
+        return records;
+    }
+
+    private List<Record> findDuplicates(List<Record> records) {
+        List<Record> recordsToRemove = new ArrayList<>();
+        for (Record record : records) {
+            var alreadyRegisteredHandles = recordStorage.getRecords().stream()
+                                               .map(Record::getId)
+                                               .collect(Collectors.toList());
+            if (alreadyRegisteredHandles.contains(record.getId())) {
+                var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+                logger.error(DUPLICATE_MESSAGE
+                             + record.getId() + " " + record.getBrageLocation()
+                             + "  =>  EXISTING RESOURCE IS: "
+                             + recordStorage.getRecordLocationStringById(record.getId()));
+                recordsToRemove.add(record);
+            } else {
+                recordStorage.getRecords().add(record);
+            }
+        }
+        return recordsToRemove;
     }
 
     private void waitForAllProcesses(List<Thread> brageProcessors) {

@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static no.sikt.nva.BrageMigrationCommand.DUPLICATE_MESSAGE;
 import static no.sikt.nva.BrageMigrationCommand.INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY;
 import static no.sikt.nva.RecordsWriter.WRITING_TO_JSON_FILE_HAS_FAILED;
 import static no.sikt.nva.ResourceNameConstants.EMBARGO_TEST_DIRECTORY;
@@ -8,6 +9,7 @@ import static no.sikt.nva.ResourceNameConstants.INPUT_WHERE_DOI_HAS_VALID_STRUCT
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_LICENSE_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
+import static no.sikt.nva.ResourceNameConstants.TWO_SAME_OBJECTS_RESOURCE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
 import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
@@ -115,6 +117,15 @@ public class BrageMigrationCommandTest {
         var arguments = new String[]{"-D", EMBARGO_TEST_DIRECTORY};
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(appender.getMessages(), containsString(EXPECTED_EMBARGO_LOGG_MESSAGE));
+        assertThat(status, equalTo(NORMAL_EXIT_CODE));
+    }
+
+    @Test
+    void shouldNotCreateDuplicate() {
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var arguments = new String[]{TWO_SAME_OBJECTS_RESOURCE};
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
+        assertThat(appender.getMessages(), containsString(DUPLICATE_MESSAGE));
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
     }
 }

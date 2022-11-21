@@ -138,7 +138,6 @@ public class Record {
                && Objects.equals(contentBundle, record.contentBundle)
                && Objects.equals(publishedDate, record.publishedDate)
                && Objects.equals(cristinId, record.cristinId)
-               && Objects.equals(brageLocation, record.brageLocation)
                && listEqualsIgnoreOrder(errors, record.errors)
                && listEqualsIgnoreOrder(warnings, record.warnings);
     }

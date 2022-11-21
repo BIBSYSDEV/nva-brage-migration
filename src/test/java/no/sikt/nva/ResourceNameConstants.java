@@ -15,6 +15,8 @@ public class ResourceNameConstants {
     public static final String INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI = "inputWithInvalidDoi.zip";
     public static final String CONTENT_FILE_PATH = "src/test/resources/contents";
     public static final String EMBARGO_TEST_DIRECTORY = "src/test/resources/resourceWithEmbargo";
+    public static final String TWO_SAME_OBJECTS_RESOURCE = "src/test/resources/resourceWithTwoSameObjects.zip";
+
     public static final String EMPTY_ZIP_FILE_NAME = "empty.zip";
 
     private ResourceNameConstants() {
