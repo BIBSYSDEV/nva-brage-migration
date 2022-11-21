@@ -4,15 +4,16 @@ import static java.util.Objects.nonNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.awsconnection.WriteFileTos3;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.logutils.LogSetup;
@@ -110,12 +111,16 @@ public class BrageMigrationCommand implements Callable<Integer> {
             var logOutPutDirectory = getLogOutputDirectory(inputDirectory, outputDirectory);
             /* IMPORTANT: DO NOT USE LOGGER BEFORE THIS METHOD HAS RUN: */
             LogSetup.setupLogging(logOutPutDirectory);
+            List<Embargo> embargoes;
             var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             if (Objects.isNull(zipFiles)) {
                 this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
+                embargoes = getEmbargoes(inputDirectory);
+            } else {
+                embargoes = getEmbargoes(Arrays.stream(zipFiles));
             }
             var customerUri = UriWrapper.fromUri(customer).getUri();
-            var embargoes = getEmbargoes(new File(inputDirectory)).orElse(Collections.emptyList());
+
             printIgnoredDcValuesFieldsInInfoLog();
             var brageProcessors = getBrageProcessorThread(customerUri, outputDirectory, embargoes);
             var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
@@ -168,15 +173,26 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                           outputDirectory, embargoes);
     }
 
-    private Optional<List<Embargo>> getEmbargoes(File directory) throws IOException {
-        if (directory.exists()) {
-            var embargoFile = Arrays.stream(Objects.requireNonNull(directory.listFiles()))
-                                  .filter(file -> DEFAULT_EMBARGO_FILE_NAME.equals(file.getName()))
-                                  .findFirst().orElse(null);
-            return Optional.of(EmbargoScraper.getEmbargoList(Objects.requireNonNull(embargoFile)));
-        } else {
-            return Optional.empty();
+    private List<Embargo> getEmbargoes(String directory) {
+        try {
+            var embargoFile = new File(directory + DEFAULT_EMBARGO_FILE_NAME);
+            return EmbargoScraper.getEmbargoList(embargoFile);
+        } catch (IOException e) {
+            //TODO: do something with this exception
+            return List.of();
         }
+    }
+
+    private List<Embargo> getEmbargoes(Stream<String> zipfiles) {
+        return zipfiles.map(this::getDirectory)
+                   .map(this::getEmbargoes)
+                   .flatMap(Collection::stream)
+                   .collect(Collectors.toList());
+    }
+
+    private String getDirectory(String zipfile) {
+        var zipfileName = Path.of(zipfile).getFileName().toString();
+        return zipfile.substring(0, zipfile.indexOf(zipfileName));
     }
 
     private void writeFileToS3() {
