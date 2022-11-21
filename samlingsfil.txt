@@ -1,2 +1,3 @@
 inputWithCristinId
 inputWithInvalidDoi
+dir

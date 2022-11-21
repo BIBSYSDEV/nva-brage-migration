@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
+import no.unit.nva.s3.S3Driver;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldRunWhenZipFileOptionIsNotSet() {
         var arguments = new String[]{};
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
+        int status = new CommandLine(new BrageMigrationCommand(S3Driver.defaultS3Client().build())).execute(arguments);
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
     }
 

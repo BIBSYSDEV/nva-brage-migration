@@ -21,6 +21,7 @@ dependencies {
     implementation 'com.io-informatics.oss:jackson-jsonld:0.1.1'
 
     implementation group: 'com.github.bibsysdev', name: 'core', version: '1.25.17'
+
 }
 
 test {

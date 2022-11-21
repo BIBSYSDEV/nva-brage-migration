@@ -1,0 +1,91 @@
+plugins {
+    id 'java'
+    id 'checkstyle'
+    id 'pmd'
+    id 'jacoco'
+    id 'application'
+    id 'nebula.lint' version '17.7.0'
+}
+
+group 'no.sikt.nva.brage.migration.aws'
+version '1.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    implementation group: 'com.github.bibsysdev', name: 's3', version: '1.25.17'
+    implementation group: 'com.github.bibsysdev', name: 'logutils', version: '1.25.17'
+    implementation group: 'com.github.bibsysdev', name: 'json', version: '1.25.17'
+    implementation group: 'com.github.bibsysdev', name: 'core', version: '1.25.17'
+
+    implementation 'com.io-informatics.oss:jackson-jsonld:0.1.1'
+    implementation group: 'software.amazon.awssdk', name: 's3', version: '2.17.191'
+
+    implementation project(':brage-migration-common')
+
+    testImplementation group: 'com.github.bibsysdev', name: 'nvatestutils', version: '1.25.17'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.5.1'
+
+}
+
+pmd {
+    ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/ruleset.xml')
+    ruleSets = []
+    ignoreFailures = false
+}
+
+test {
+    useJUnitPlatform()
+    failFast = true
+    finalizedBy jacocoTestReport
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.enabled false
+        html.enabled true
+        html.stylesheet rootProject.resources.text.fromFile('config/checkstyle/checkstyle-simple.xsl')
+    }
+}
+
+gradleLint {
+    rules = ['all-dependency']
+    reportFormat = 'html'
+    reportOnlyFixableViolations = true
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled false
+        html.destination file("${buildDir}/reports/jacoco")
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification
+jacocoTestCoverageVerification.dependsOn(jacocoTestReport)
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                counter = 'METHOD'
+                value = 'COVEREDRATIO'
+                minimum = 0.8
+            }
+        }
+
+        rule {
+            limit {
+                counter = 'CLASS'
+                value = 'COVEREDRATIO'
+                minimum = 0.8
+            }
+        }
+    }
+}

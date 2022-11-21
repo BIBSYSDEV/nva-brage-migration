@@ -77,6 +77,8 @@ dependencies {
     implementation group: 'commons-validator', name: 'commons-validator', version: '1.7'
 
     implementation project(':brage-migration-common')
+    implementation project(':post-to-aws')
+
 }
 
 compileJava {
