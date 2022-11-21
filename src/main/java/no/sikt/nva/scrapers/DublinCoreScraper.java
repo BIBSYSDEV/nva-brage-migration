@@ -273,7 +273,8 @@ public final class DublinCoreScraper {
                || dcValue.isNsiSubject()
                || dcValue.isCreatedDate()
                || dcValue.isUpdatedDate()
-               || dcValue.isRelationUri();
+               || dcValue.isRelationUri()
+               || dcValue.isNoneDate();
     }
 
     private static String extractCristinId(DublinCore dublinCore) {
@@ -309,10 +310,11 @@ public final class DublinCoreScraper {
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
-    private static String extractSpatialCoverage(DublinCore dublinCore) {
+    private static List<String> extractSpatialCoverage(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isSpatialCoverage)
-                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
     }
 
     @SuppressWarnings("PMD.PrematureDeclaration")

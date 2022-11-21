@@ -28,7 +28,7 @@ public class Record {
     private Language language;
     private Boolean publisherAuthority;
     private String rightsholder;
-    private String spatialCoverage;
+    private List<String> spatialCoverage;
     private String partOf;
     private Publication publication;
     private ResourceContent contentBundle;
@@ -145,11 +145,11 @@ public class Record {
 
     @JacocoGenerated
     @JsonProperty("spatialCoverage")
-    public String getSpatialCoverage() {
+    public List<String> getSpatialCoverage() {
         return spatialCoverage;
     }
 
-    public void setSpatialCoverage(String spatialCoverage) {
+    public void setSpatialCoverage(List<String> spatialCoverage) {
         this.spatialCoverage = spatialCoverage;
     }
 
