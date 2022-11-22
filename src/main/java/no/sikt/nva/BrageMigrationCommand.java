@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -113,14 +113,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
             LogSetup.setupLogging(logOutPutDirectory);
             List<Embargo> embargoes;
             var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
-            if (Objects.isNull(zipFiles)) {
+            if (isNull(zipFiles)) {
                 this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
                 embargoes = getEmbargoes(inputDirectory);
             } else {
                 embargoes = getEmbargoes(Arrays.stream(zipFiles));
             }
             var customerUri = UriWrapper.fromUri(customer).getUri();
-
             printIgnoredDcValuesFieldsInInfoLog();
             var brageProcessors = getBrageProcessorThread(customerUri, outputDirectory, embargoes);
             var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());

@@ -41,7 +41,7 @@ public final class UnZipper {
             return Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles())).collect(Collectors.toList());
         } catch (Exception e) {
             String collectionHandle = getCollectionHandle(pathToZip);
-            logger.warn(new WarningDetails(Warning.EMPTY_COLLECTION, collectionHandle).toString());
+            logger.warn(new WarningDetails(Warning.EMPTY_OR_NONEXISTENT_COLLECTION, collectionHandle).toString());
             throw new RuntimeException(e);
         }
     }

@@ -2,6 +2,7 @@ package no.sikt.nva;
 
 import static no.sikt.nva.BrageMigrationCommand.DUPLICATE_MESSAGE;
 import static no.sikt.nva.BrageMigrationCommand.INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY;
+import static no.sikt.nva.RecordsWriter.WRITING_TO_JSON_FILE_HAS_FAILED;
 import static no.sikt.nva.ResourceNameConstants.EMBARGO_TEST_DIRECTORY;
 import static no.sikt.nva.ResourceNameConstants.EMPTY_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI;
@@ -9,7 +10,6 @@ import static no.sikt.nva.ResourceNameConstants.INPUT_WITHOUT_HANDLE_ZIP_FILE_NA
 import static no.sikt.nva.ResourceNameConstants.INPUT_WITH_LICENSE_ZIP_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.ResourceNameConstants.TWO_SAME_OBJECTS_RESOURCE;
-import static no.sikt.nva.UnZipper.HANDLE_FORMAT;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
 import static no.sikt.nva.scrapers.HandleScraper.COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV;
@@ -20,7 +20,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.unit.nva.stubs.FakeS3Client;
-import nva.commons.core.StringUtils;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
@@ -97,14 +96,12 @@ public class BrageMigrationCommandTest {
     void shouldLoggZipThatIsEmpty() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var arguments = new String[]{TEST_RESOURCE_PATH + EMPTY_ZIP_FILE_NAME};
-        var expectedCollectionHandle =
-            String.format(HANDLE_FORMAT,
-                          EMPTY_ZIP_FILE_NAME.replace(".zip", StringUtils.EMPTY_STRING));
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
         assertThat(appender.getMessages(),
-                   containsString(String.format(String.valueOf(Warning.EMPTY_COLLECTION), expectedCollectionHandle
-                   )));
+                   containsString(Warning.EMPTY_OR_NONEXISTENT_COLLECTION.toString()));
+        assertThat(appender.getMessages(),
+                   not(containsString(WRITING_TO_JSON_FILE_HAS_FAILED)));
     }
 
     @Test

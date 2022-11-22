@@ -49,10 +49,12 @@ public final class RecordsWriter {
     }
 
     private static void writeRecords(String fileName, List<Record> records) {
-        try (var fileWriter = Files.newWriter(new File(fileName), StandardCharsets.UTF_8)) {
-            fileWriter.write(convertRecordsToJsonString(records));
-        } catch (Exception e) {
-            throw new RecordsWriterException(WRITING_TO_JSON_FILE_HAS_FAILED, fileName);
+        if (nonNull(records)) {
+            try (var fileWriter = Files.newWriter(new File(fileName), StandardCharsets.UTF_8)) {
+                fileWriter.write(convertRecordsToJsonString(records));
+            } catch (Exception e) {
+                throw new RecordsWriterException(WRITING_TO_JSON_FILE_HAS_FAILED, fileName);
+            }
         }
     }
 }

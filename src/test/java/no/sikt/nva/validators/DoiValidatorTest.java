@@ -59,4 +59,5 @@ public class DoiValidatorTest {
         assertThat(actualDoiErrorsOffline, is(equalTo(expectedDoiErrors)));
         assertThat(actualDoiErrorsOnline, is(equalTo(expectedDoiErrors)));
     }
+
 }

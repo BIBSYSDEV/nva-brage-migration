@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
@@ -174,19 +175,29 @@ public final class DublinCoreScraper {
                                                                Record record) {
         var publication = extractPublication(dublinCore, brageLocation);
         record.setPublication(publication);
-        var recordType = record.getType().getNva();
-        if (NvaType.JOURNAL_ARTICLE.getValue().equals(recordType)) {
-            publication.setId(channelRegister.extractIdentifier(dublinCore, brageLocation));
-        }
-        if (nonNull(publication.getPublisher())
-            && NvaType.REPORT.getValue().equals(recordType)
-            || NvaType.BOOK.getValue().equals(recordType)) {
-            var identifier = channelRegister.lookUpInChannelRegister(record);
-            if (nonNull(identifier)) {
+        var nvaType = record.getType().getNva();
+        if (nonNull(nvaType)) {
+            if (isSearchableInJournals(nvaType)) {
+                publication.setId(channelRegister.extractIdentifier(dublinCore, brageLocation));
+            }
+            if (isSearchableInPublishers(publication, nvaType)) {
+                var identifier = channelRegister.lookUpInChannelRegister(record);
                 publication.setId(identifier);
             }
         }
         return publication;
+    }
+
+    private static boolean isSearchableInJournals(String nvaType) {
+        return nvaType.equals(NvaType.JOURNAL_ARTICLE.getValue())
+               || nvaType.equals(NvaType.SCIENTIFIC_ARTICLE.getValue());
+    }
+
+    private static boolean isSearchableInPublishers(Publication publication, String nvaType) {
+        return nonNull(publication.getPublisher())
+               && nvaType.equals(BrageType.REPORT.getValue())
+               || nvaType.equals(BrageType.BOOK.getValue())
+               || nvaType.equals(NvaType.SCIENTIFIC_MONOGRAPH.getValue());
     }
 
     private static URI extractDoi(DublinCore dublinCore) {
@@ -262,7 +273,8 @@ public final class DublinCoreScraper {
                || dcValue.isNsiSubject()
                || dcValue.isCreatedDate()
                || dcValue.isUpdatedDate()
-               || dcValue.isRelationUri();
+               || dcValue.isRelationUri()
+               || dcValue.isNoneDate();
     }
 
     private static String extractCristinId(DublinCore dublinCore) {
@@ -298,10 +310,11 @@ public final class DublinCoreScraper {
                    .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
     }
 
-    private static String extractSpatialCoverage(DublinCore dublinCore) {
+    private static List<String> extractSpatialCoverage(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isSpatialCoverage)
-                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
     }
 
     @SuppressWarnings("PMD.PrematureDeclaration")

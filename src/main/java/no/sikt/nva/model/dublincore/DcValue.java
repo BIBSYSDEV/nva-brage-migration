@@ -248,6 +248,10 @@ public class DcValue {
         return Element.SUBJECT.equals(this.element) && Qualifier.NORWEGIAN_SCIENCE_INDEX.equals(this.qualifier);
     }
 
+    public boolean isNoneDate() {
+        return Element.DATE.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
+    }
+
     public String toXmlString() {
         StringWriter sw = new StringWriter();
         JAXB.marshal(this, sw);
