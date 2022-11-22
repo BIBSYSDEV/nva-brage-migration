@@ -62,7 +62,7 @@ public class S3RecordStorage implements StoreRecord {
                                    .build(),
                                RequestBody.fromString(recordToStore));
         } catch (Exception e) {
-            logger.error(COULD_NOT_WRITE_MESSAGE + record.getBrageLocation() + " " + e.getMessage());
+            logger.info(COULD_NOT_WRITE_MESSAGE + record.getBrageLocation() + " " + e.getMessage());
         }
     }
 

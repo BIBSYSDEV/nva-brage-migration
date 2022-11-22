@@ -21,10 +21,11 @@ public class FakeS3ClientWithPutObjectSupport extends FakeS3Client {
     private final String filename;
     private final InputStream inputStream;
 
-    public FakeS3ClientWithPutObjectSupport(String filename, String contentType) {
+    public FakeS3ClientWithPutObjectSupport(String filename, String path, String contentType) {
+        super();
         this.filename = filename;
         this.contentType = contentType;
-        this.inputStream = IoUtils.inputStreamFromResources(filename);
+        this.inputStream = IoUtils.inputStreamFromResources(path + "/" + filename);
     }
 
     @Override

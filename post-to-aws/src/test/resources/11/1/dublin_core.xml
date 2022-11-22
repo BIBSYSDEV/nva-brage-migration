@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<dublin_core schema="dc">
+  <dcvalue element="contributor" qualifier="author">Skaugen,&#x20;Thomas</dcvalue>
+  <dcvalue element="contributor" qualifier="author">Andersen,&#x20;Jess</dcvalue>
+  <dcvalue element="coverage" qualifier="spatial" language="en_US">Norway</dcvalue>
+  <dcvalue element="date" qualifier="accessioned">2021-05-03T11:33:48Z</dcvalue>
+  <dcvalue element="date" qualifier="available">2021-05-03T11:33:48Z</dcvalue>
+  <dcvalue element="date" qualifier="issued">2011</dcvalue>
+  <dcvalue element="identifier" qualifier="uri">https:&#x2F;&#x2F;hdl.handle.net&#x2F;11250&#x2F;2753238</dcvalue>
+  <dcvalue element="description" qualifier="abstract" language="en_US">Gridded&#x20;meteorological&#x20;data&#x20;are&#x20;available&#x20;for&#x20;all&#x20;of&#x20;Norway&#x20;as&#x20;time&#x20;series&#x20;dating&#x20;from&#x20;1961.&#x20;A&#x20;new&#x20;way&#x20;of&#x20;interpolating&#x20;precipitation&#x20;in&#x20;space&#x20;from&#x20;observed&#x20;values&#x20;is&#x20;proposed.&#x20;Based&#x20;on&#x20;the&#x20;criteria&#x20;that&#x20;interpolated&#x20;precipitation&#x20;fields&#x20;in&#x20;space&#x20;should&#x20;be&#x20;consistent&#x20;with&#x20;observed&#x20;spatial&#x20;statistics,&#x20;such&#x20;as&#x20;spatial&#x20;mean,&#x20;variance&#x20;and&#x20;intermittency,&#x20;spatial&#x20;fields&#x20;of&#x20;precipitation&#x20;are&#x20;simulated&#x20;from&#x20;a&#x20;gamma&#x20;distribution&#x20;with&#x20;parameters&#x20;determined&#x20;from&#x20;observed&#x20;data,&#x20;adjusted&#x20;for&#x20;intermittency.&#x20;The&#x20;simulated&#x20;data&#x20;are&#x20;distributed&#x20;in&#x20;space,&#x20;using&#x20;the&#x20;spatial&#x20;pattern&#x20;derived&#x20;from&#x20;kriging.&#x20;The&#x20;proposed&#x20;method&#x20;is&#x20;compared&#x20;to&#x20;indicator&#x20;kriging&#x20;and&#x20;to&#x20;the&#x20;current&#x20;methodology&#x20;used&#x20;for&#x20;producing&#x20;gridded&#x20;precipitation&#x20;data.&#x20;Cross-validation&#x20;gave&#x20;similar&#x20;results&#x20;for&#x20;the&#x20;three&#x20;methods&#x20;with&#x20;respect&#x20;to&#x20;RMSE,&#x20;temporal&#x20;mean&#x20;and&#x20;standard&#x20;deviation,&#x20;whereas&#x20;a&#x20;comparison&#x20;on&#x20;estimated&#x20;spatial&#x20;variance&#x20;showed&#x20;that&#x20;the&#x20;new&#x20;method&#x20;has&#x20;a&#x20;near&#x20;perfect&#x20;agreement&#x20;with&#x20;observations.&#x20;Indicator&#x20;kriging&#x20;underestimated&#x20;the&#x20;spatial&#x20;variance&#x20;by&#x20;60–80%&#x20;and&#x20;the&#x20;current&#x20;method&#x20;produced&#x20;a&#x20;significant&#x20;scatter&#x20;in&#x20;its&#x20;estimates.</dcvalue>
+  <dcvalue element="description" qualifier="provenance" language="en">Made&#x20;available&#x20;in&#x20;DSpace&#x20;on&#x20;2021-05-03T11:33:48Z&#x20;(GMT).&#x20;No.&#x20;of&#x20;bitstreams:&#x20;1&#x0A;Simulated&#x20;precipitation&#x20;fields&#x20;with&#x20;variance&#x20;consistent&#x20;interpolation.pdf:&#x20;787849&#x20;bytes,&#x20;checksum:&#x20;bd5609a678be693c293d613ffd1ff38d&#x20;(MD5)&#x0A;&#x20;&#x20;Previous&#x20;issue&#x20;date:&#x20;2011</dcvalue>
+  <dcvalue element="language" qualifier="iso" language="en_US">eng</dcvalue>
+  <dcvalue element="publisher" qualifier="none" language="en_US">Taylor&#x20;&amp;&#x20;Francis</dcvalue>
+  <dcvalue element="title" qualifier="none" language="en_US">Simulated&#x20;precipitation&#x20;fields&#x20;with&#x20;variance-consistent&#x20;interpolation</dcvalue>
+  <dcvalue element="type" qualifier="none" language="en_US">Journal&#x20;article</dcvalue>
+  <dcvalue element="source" qualifier="pagenumber" language="en_US">676-686</dcvalue>
+  <dcvalue element="source" qualifier="journal" language="en_US">Hydrological&#x20;Sciences&#x20;Journal</dcvalue>
+  <dcvalue element="identifier" qualifier="doi">https:&#x2F;&#x2F;doi.org&#x2F;10.1080&#x2F;02626667.2010.487976</dcvalue>
+</dublin_core>
