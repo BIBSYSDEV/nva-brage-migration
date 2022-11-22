@@ -99,7 +99,7 @@ public class S3RecordStorage implements StoreRecord {
     }
 
     private void writeRecordFilesToS3(Record record) {
-        var filesToStore = getFilesToStore(record);
+        var filesToStore = getMappedFiles(record);
         for (UUID fileId : filesToStore.keySet()) {
             var fileKey = createKey(record, fileId.toString());
             var fileName = filesToStore.get(fileId).getName();
@@ -112,7 +112,7 @@ public class S3RecordStorage implements StoreRecord {
         }
     }
 
-    private Map<UUID, File> getFilesToStore(Record record) {
+    private Map<UUID, File> getMappedFiles(Record record) {
         var resourceFiles = findFilesToRecord(record);
         return mapFilesToUuid(record, resourceFiles);
     }
