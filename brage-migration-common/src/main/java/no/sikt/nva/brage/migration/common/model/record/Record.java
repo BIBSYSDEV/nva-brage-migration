@@ -3,6 +3,7 @@ package no.sikt.nva.brage.migration.common.model.record;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
+import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.JacocoGenerated;
 
 @JsonPropertyOrder({"customerId", "bareOrigin", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
@@ -244,5 +246,9 @@ public class Record {
 
     public void setEntityDescription(EntityDescription entityDescription) {
         this.entityDescription = entityDescription;
+    }
+
+    public String toJsonString() throws JsonProcessingException {
+        return JsonUtils.dtoObjectMapper.writeValueAsString(this);
     }
 }
