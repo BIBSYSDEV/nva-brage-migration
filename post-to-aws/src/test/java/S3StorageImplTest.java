@@ -1,11 +1,11 @@
-import static no.sikt.nva.brage.migration.aws.S3RecordStorage.COULD_NOT_WRITE_MESSAGE;
+import static no.sikt.nva.brage.migration.aws.S3StorageImpl.COULD_NOT_WRITE_RECORD_MESSAGE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import java.util.List;
 import java.util.UUID;
-import no.sikt.nva.brage.migration.aws.S3RecordStorage;
+import no.sikt.nva.brage.migration.aws.S3StorageImpl;
 import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Record;
@@ -19,20 +19,21 @@ import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 
-public class S3RecordStorageTest {
+public class S3StorageImplTest {
 
     public static final String TEST_PATH = "src/test/resources/";
     public static final String VALID_TEST_FILE_NAME = "Simulated precipitation fields with variance consistent "
                                                       + "interpolation.pdf";
+    public static final String CUSTOMER = "CUSTOMER";
 
     @Test
     void shouldUploadRecordAndFileToS3File() {
         Record testRecord = createValidTestRecord();
-        var expectedKeyToRecord = "nve/11/1/1.json";
+        var expectedKeyToRecord = "CUSTOMER/11/1/1.json";
         var expectedKeyToFile =
-            "nve/11/1/" + testRecord.getContentBundle().getContentFileByFilename(VALID_TEST_FILE_NAME).getIdentifier();
+            "CUSTOMER/11/1/" + testRecord.getContentBundle().getContentFileByFilename(VALID_TEST_FILE_NAME).getIdentifier();
         var s3Client = new FakeS3Client();
-        var storageClient = new S3RecordStorage(s3Client, TEST_PATH);
+        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER);
         storageClient.storeRecord(testRecord);
         var actualRecordKeyFromBucket =
             s3Client.listObjects(createListObjectsRequest(UnixPath.fromString(expectedKeyToRecord)))
@@ -52,15 +53,15 @@ public class S3RecordStorageTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var nullRecord = createNullRecord();
         var s3Client = new FakeS3Client();
-        var storageClient = new S3RecordStorage(s3Client, TEST_PATH);
+        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER);
         storageClient.storeRecord(nullRecord);
 
-        assertThat(appender.getMessages(), containsString(COULD_NOT_WRITE_MESSAGE));
+        assertThat(appender.getMessages(), containsString(COULD_NOT_WRITE_RECORD_MESSAGE));
     }
 
     private static ListObjectsRequest createListObjectsRequest(UnixPath folder) {
         return ListObjectsRequest.builder()
-                   .bucket(S3RecordStorage.bucketName)
+                   .bucket(S3StorageImpl.bucketName)
                    .prefix(folder.toString())
                    .maxKeys(10)
                    .build();

@@ -15,7 +15,7 @@ import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import no.sikt.nva.brage.migration.aws.S3RecordStorage;
+import no.sikt.nva.brage.migration.aws.S3StorageImpl;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.logutils.LogSetup;
 import no.sikt.nva.model.Embargo;
@@ -130,6 +130,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             if (!shouldNotWriteToAws) {
                 pushToS3(brageProcessors);
             }
+            storeLogsToS3();
             logger.info("Records written to file: " + RecordsWriter.getCounter());
             logRecordCounter(brageProcessors);
             return NORMAL_EXIT_CODE;
@@ -168,7 +169,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         brageProcessors.stream()
             .map(BrageProcessor::getRecords)
             .filter(Objects::nonNull)
-            .forEach(list -> list.forEach(this::storeFileTos3));
+            .forEach(list -> list.forEach(this::storeFileToS3));
     }
 
     private List<BrageProcessor> getBrageProcessorThread(URI customerUri, String outputDirectory,
@@ -202,9 +203,14 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return zipfile.substring(0, zipfile.indexOf(zipfileName));
     }
 
-    private void storeFileTos3(Record record) {
-        S3RecordStorage storage = new S3RecordStorage(s3Client);
+    private void storeFileToS3(Record record) {
+        S3StorageImpl storage = new S3StorageImpl(s3Client, "CUSTOMER");
         storage.storeRecord(record);
+    }
+
+    private void storeLogsToS3() {
+        S3StorageImpl storage = new S3StorageImpl(s3Client, "CUSTOMER");
+        storage.storeLogs();
     }
 
     private void logRecordCounter(List<BrageProcessor> brageProcessors) {

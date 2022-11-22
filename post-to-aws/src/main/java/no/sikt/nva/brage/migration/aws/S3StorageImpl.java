@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -20,23 +21,31 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-public class S3RecordStorage implements StoreRecord {
+public class S3StorageImpl implements S3Storage {
 
-    public static final String COULD_NOT_WRITE_MESSAGE = "Could not write files to s3 for: ";
+    public static final String DEFAULT_ERROR_FILENAME = "application-error.log";
+    public static final String DEFAULT_WARNING_FILENAME = "application-warn.log";
+    public static final String DEFAULT_INFO_FILENAME = "application-info.log";
+    public static final String COULD_NOT_WRITE_RECORD_MESSAGE = "Could not write files to s3 for: ";
+    public static final String COULD_NOT_WRITE_LOGS_MESSAGE = "Could not write logs to s3: ";
+
     public static final String JSON_STRING = ".json";
     public static final String APPLICATION_JSON = "application/json";
     public static final String bucketName = "anette-kir-brage-migration-experiment";
-    private static final Logger logger = LoggerFactory.getLogger(S3RecordStorage.class);
+    private static final Logger logger = LoggerFactory.getLogger(S3StorageImpl.class);
     private final S3Client s3Client;
+    private final String customer;
     private String pathPrefixString = StringUtils.EMPTY_STRING;
 
-    public S3RecordStorage(S3Client s3Client, String pathPrefixString) {
+    public S3StorageImpl(S3Client s3Client, String pathPrefixString, String customer) {
         this.s3Client = s3Client;
         this.pathPrefixString = pathPrefixString;
+        this.customer = customer;
     }
 
-    public S3RecordStorage(S3Client s3Client) {
+    public S3StorageImpl(S3Client s3Client, String customer) {
         this.s3Client = s3Client;
+        this.customer = customer;
     }
 
     @Override
@@ -45,7 +54,16 @@ public class S3RecordStorage implements StoreRecord {
             writeRecordFilesToS3(record);
             writeRecordToS3(record);
         } catch (Exception e) {
-            logger.info(COULD_NOT_WRITE_MESSAGE + record.getBrageLocation() + " " + e.getMessage());
+            logger.info(COULD_NOT_WRITE_RECORD_MESSAGE + record.getBrageLocation() + " " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void storeLogs() {
+        try {
+            writeLogsToS3();
+        } catch (Exception e) {
+            logger.info(COULD_NOT_WRITE_LOGS_MESSAGE + e.getMessage());
         }
     }
 
@@ -66,6 +84,22 @@ public class S3RecordStorage implements StoreRecord {
         return record.getContentBundle().getContentFileByFilename(file.getName()).getIdentifier();
     }
 
+    private void writeLogsToS3() {
+        var errorFile = new File(DEFAULT_ERROR_FILENAME);
+        var warningFile = new File(DEFAULT_WARNING_FILENAME);
+        var infoFile = new File(DEFAULT_INFO_FILENAME);
+        List.of(errorFile, warningFile, infoFile).forEach(this::writeLogFileToS3);
+    }
+
+    private void writeLogFileToS3(File file) {
+        s3Client.putObject(PutObjectRequest
+                               .builder()
+                               .bucket(bucketName)
+                               .key(customer + "/" + file.getName())
+                               .build(),
+                           RequestBody.fromFile(file));
+    }
+
     private File findFilesToRecord(Record record) {
         var brageLocation = record.getBrageLocation();
         var collectionDirectory = getCollectionDirectory(brageLocation);
@@ -78,8 +112,7 @@ public class S3RecordStorage implements StoreRecord {
     private String createKey(Record record, String filename) {
         var collection = getCollectionDirectory(record.getBrageLocation()).getName();
         var bundle = getResourceDirectoryName(record.getBrageLocation());
-        var hardCodedCustomer = "nve";
-        return Path.of(hardCodedCustomer, collection, bundle, filename).toString();
+        return Path.of(customer, collection, bundle, filename).toString();
     }
 
     private File getCollectionDirectory(String brageLocation) {
