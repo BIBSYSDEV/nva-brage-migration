@@ -25,7 +25,7 @@ public class S3RecordStorage implements StoreRecord {
     public static final String COULD_NOT_WRITE_MESSAGE = "Could not write files to s3 for: ";
     public static final String JSON_STRING = ".json";
     public static final String APPLICATION_JSON = "application/json";
-    private static final String bucketName = "anette-kir-brage-migration-experiment";
+    public static final String bucketName = "anette-kir-brage-migration-experiment";
     private static final Logger logger = LoggerFactory.getLogger(S3RecordStorage.class);
     private final S3Client s3Client;
     private String pathPrefixString = StringUtils.EMPTY_STRING;
