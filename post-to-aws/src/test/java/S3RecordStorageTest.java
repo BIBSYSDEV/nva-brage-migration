@@ -47,6 +47,7 @@ public class S3RecordStorageTest {
         assertTrue(new File(TEST_PATH_TO_STORE + filenameToStoreFile).exists());
     }
 
+
     @Test
     void shouldThrowExceptionWhenRecordIsNull() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
