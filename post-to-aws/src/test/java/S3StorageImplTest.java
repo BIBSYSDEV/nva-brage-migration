@@ -58,16 +58,16 @@ public class S3StorageImplTest {
     @Test
     void shouldUploadLogFilesToS3() {
         var s3Client = new FakeS3Client();
-        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, "CUSTOMER");
+        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER);
         storageClient.storeLogs();
-        var bucketContent = s3Client.listObjects(createListObjectsRequest(UnixPath.fromString("CUSTOMER")))
+        var bucketContent = s3Client.listObjects(createListObjectsRequest(UnixPath.fromString(CUSTOMER)))
                                 .contents();
 
         assertThat(bucketContent.size(), is(equalTo(3)));
         assertThat(bucketContent,
                    containsInAnyOrder(S3Object.builder().key(CUSTOMER + "/" + DEFAULT_WARNING_FILENAME).build(),
-                                                     S3Object.builder().key(CUSTOMER + "/" + DEFAULT_ERROR_FILENAME).build(),
-                                                     S3Object.builder().key(CUSTOMER + "/" + DEFAULT_INFO_FILENAME).build()));
+                                      S3Object.builder().key(CUSTOMER + "/" + DEFAULT_ERROR_FILENAME).build(),
+                                      S3Object.builder().key(CUSTOMER + "/" + DEFAULT_INFO_FILENAME).build()));
     }
 
     @Test
