@@ -1,0 +1,642 @@
+Hydrological Sciences Journal
+ISSN: 0262-6667 (Print) 2150-3435 (Online) Journal homepage: https://www.tandfonline.com/loi/thsj20
+Simulated precipitation fields with variance-
+consistent interpolation
+Thomas Skaugen & Jess Andersen
+To cite this article: Thomas Skaugen & Jess Andersen (2010) Simulated precipitation fields
+with variance-consistent interpolation, Hydrological Sciences Journal, 55:5, 676-686, DOI:
+10.1080/02626667.2010.487976
+To link to this article:  https://doi.org/10.1080/02626667.2010.487976
+Published online: 05 Jul 2010.
+Submit your article to this journal 
+Article views: 407
+View related articles 
+Citing articles: 4 View citing articles 
+Full Terms & Conditions of access and use can be found at
+https://www.tandfonline.com/action/journalInformation?journalCode=thsj20
+676 Hydrological Sciences Journal – Journal des Sciences Hydrologiques, 55(5) 2010
+Simulated precipitation fields with variance-consistent interpolation
+Thomas Skaugen & Jess Andersen
+Hydrology Department, Norwegian Water Resources and Energy Directorate (NVE), PO Box 5091, Maj., N-0301 Oslo, Norway
+ths@nve.no
+Received 6 May 2009; accepted 9 March 2010; open for discussion until 1 January 2011
+Citation Skaugen, T. & Andersen, J. (2010) Simulated precipitation fields with variance-consistent interpolation. Hydrol. Sci. J. 55(5),
+676–686.
+AbstractGridded meteorological data are available for all of Norway as time series dating from 1961. A newway of
+interpolating precipitation in space from observed values is proposed. Based on the criteria that interpolated
+precipitation fields in space should be consistent with observed spatial statistics, such as spatial mean, variance
+and intermittency, spatial fields of precipitation are simulated from a gamma distribution with parameters deter-
+mined from observed data, adjusted for intermittency. The simulated data are distributed in space, using the spatial
+pattern derived from kriging. The proposed method is compared to indicator kriging and to the current methodology
+used for producing gridded precipitation data. Cross-validation gave similar results for the three methods with
+respect to RMSE, temporal mean and standard deviation, whereas a comparison on estimated spatial variance
+showed that the new method has a near perfect agreement with observations. Indicator kriging underestimated the
+spatial variance by 60–80% and the current method produced a significant scatter in its estimates.
+Key words spatial rainfall; interpolation; spatial variance; intermittency; Norway
+Simulation de champs de précipitation par interpolation cohérente en termes de variance
+Résumé Des séries temporelles de données météorologiques maillées sont disponibles pour l’ensemble de la
+Norvège depuis 1961. Une nouvelle façon d’interpoler les champs de précipitations dans l’espace à partir des
+valeurs observées est proposée. Sur la base des critères selon lesquels les champs de précipitations interpolés dans
+l’espace devraient être compatibles avec les statistiques spatiales observées comme les moyennes, variances et
+intermittences spatiales, les champs de précipitations sont simulés selon une distribution gamma déterminée à partir
+de données observées, ajustées pour l’intermittence. Les données simulées sont distribuées dans l’espace à l’aide du
+patron spatial dérivé par krigeage. La méthode proposée est comparée à l’indicateur de krigeage et à la méthode
+actuellement utilisée pour produire des données de précipitations maillées. La validation croisée a donné des
+résultats similaires pour les trois méthodes, pour les valeurs de l’erreur quadratique moyenne, de la moyenne
+temporelle et de l’écart type, tandis que la comparaison sur la variance spatiale a montré que la nouvelle méthode
+donne un accord presque parfait avec les observations. L’indicateur de krigeage sous-estime la variance spatiale de
+60-80% et la méthode actuelle produit une dispersion significative de ses estimations.
+Mots clefs champs de précipitations; interpolation; variance spatiale; intermittence, Norvége
+INTRODUCTION The problem with using specific gauging stations
+is that these stations have a varying life span depen-
+Spatial interpolation of meteorological elements such dent on their representativeness, and the availability of
+as precipitation and temperature is essential in opera- staff to carry out the observations. Once such a station
+tional hydrology. In Norway, the national flood fore- is no longer operational, the hydrological forecast
+casting service is based on simulations and forecasts model has to be re-calibrated for a new set of gauging
+from 117 catchments, using the Swedish hydrological stations. It is foreseen that maintenance of the flood
+model, the HBV model (Bergström, 1992). In order to forecasting system would be much easier if meteoro-
+facilitate rapid inclusion of new catchments into the logical grids were used. However, these grids have to
+forecasting system, it has been decided to use meteor- be interpolated on a daily basis according to available
+ological grids of temperature and precipitation as input gauging stations. The current precipitation grid
+to the hydrological models rather than weighted values (see examples at www.senorge.no) is obtained by
+from nearby specific meteorological gauging stations. a simple interpolation method, where a triangular
+ISSN 0262-6667 print/ISSN 2150-3435 online
+© 2010 IAHS Press
+doi: 10.1080/02626667.2010.487976
+http://www.informaworld.com
+Variance-consistent precipitation fields 677
+irregular network (TIN) of precipitation is estab- term “within-storm”, we mean the part of the area in
+lished based on all points of observation. A grid of question in which positive values of precipitation are
+resolution 1  1 km2 is constructed from the TIN. A observed (see Seo, 1998). The within-storm spatial
+similar grid of station altitude is produced and this mean and variance are derived from the observed
+altitude grid is compared to altitudes from a digital moments, but with estimated intermittency taken into
+terrain model (DTM); then the precipitation grid is account. Simulated precipitation values typically
+adjusted using a precipitation gradient of 10%/100 m span outside the interval determined by the smallest
+on the differences between the two altitude grids and largest observed values (apart from observed
+(Jansson et al., 2007). The resulting precipitation zeros) and we try here to devise rules to correctly
+grid compared well with grids obtained by other place the maximum simulated precipitation value
+methods used in the Nordic countries (Jansson in space. We further hypothesize that this added
+et al., 2007). However, the method has the disadvan- information will result in more precise interpolated
+tage of not being able to extrapolate outside defined fields. Furthermore, we use the spatial distribution of
+triangles, and the spatial variability and correlation a kriged field (using spatially mapped ranks of pre-
+are, for a large part, the result of topography rather cipitation values) as a map of where to distribute the
+than derived from the rainfall process itself. simulated values. The new method for simulating/
+Most methods used for interpolating precipita- interpolating precipitation fields is hereafter named
+tion, even sophisticated methods such as kriging SPF, an abbreviation for its product, simulated pre-
+(Creutin & Obled, 1982; Teegavarapu, 2007), have cipitation fields.
+a tendency to produce too smooth fields, i.e. to under- Over a catchment, precipitation is often fractional,
+estimate the spatial variability (Creutin & Obled, and procedures for the interpolation of precipitation
+1982; Haberland, 2007). The loss of variability thus have to take into account within-storm variability
+will affect the estimation of extreme values and and the variability due to intermittency (Seo, 1998).
+undermine the main contribution of the distributed Here, the intermittency is estimated through the rela-
+hydrological model which is the optimal use of spa- tionship between observed spatial mean and variance
+tially distributed moisture input. The relative impor- and derived within-storm spatial mean and variance.
+tance of the spatial variability of rainfall in relation to The proposed method for determining intermittency is
+hydrological prediction is not entirely clear, and is compared to that of indicator kriging (Barancourt
+dependent on physical catchment characteristics, et al., 1992) and to the method of deriving intermit-
+catchment scale, precipitation type and scale, ante- tency from weather radar. Indicator kriging is also the
+cedent moisture conditions and type of hydrological method to which SPF is compared through cross-
+model (lumped, distributed, physical, conceptual, validation analysis.
+etc.; Segond et al., 2007). Most authors conclude, In the next section, we present the theory applied
+however, that for semi-distributed and distributed for estimating intermittency and thus the within-storm
+models, improvements in predictions and hydro- parameters in the gamma distribution. The methods
+logical insights are gained by taking into account derived for mapping the simulated precipitation values
+the spatial variability of rainfall (Singh, 1997; are also described in this section. The next section
+Tetzlaff & Uhlenbrook, 2005; Pechlivanidis et al., presents the results of the cross-validation and a
+2008). Chaubey et al. (1999) point out that a large discussion follows in the last section.
+uncertainty in estimated parameters of the hydro-
+logical model can be expected if spatial variability
+METHOD
+of precipitation is ignored.
+Ideally, we would like an interpolated rainfall The methods developed in this paper are described
+field to have the same spatial statistical features below: first the statistical model, the gamma distribu-
+as the observed spatial fields. The spatial statistical tion, used for simulating precipitation is presented;
+features that are the focus of this study are spatial then, we introduce an algorithm for estimating inter-
+mean, spatial variability and realistic fractions of mittency from observed spatial mean and variance.
+dry area. The path followed in this study is to simulate Next we develop a method for determining a possible
+precipitation values according to a two-parameter location for the highest simulated value, and, finally,
+gamma distribution. The parameters are estimated the method for distributing the simulated precipitation
+from within-storm spatial mean and variance. By the in space is presented.
+678 Thomas Skaugen & Jess Andersen
+Statistical model problem of having to determine the fraction of wet
+area p, within a fixed domain in order to decide on the
+Let us introduce a statistical model for the spatial dis-
+0 parameters of two-parameter gamma distribution fortribution of within-storm positive precipitation, z (x),
+0 0 the within-storm precipitation. Let z and z0 denote(z (x) > 0). Precipitation z (x) is measured during
+precipitation distributed in space including and not
+a fixed time interval (in this case daily) across space, x.
+including zeros, respectively. We refer to the within-
+In order to further simplify the notation, we omit x, so
+storm precipitation, z0, as conditional precipitation
+positive rainfall across space is hereafter denoted z0.
+(conditioned on positive precipitation) and to z, as
+The distribution in space of the within-storm (positive)
+non-conditional precipitation. In order to determine
+rainfall is assumed to follow a gamma marginal
+the fraction of wet area, p, we have to express p as a
+distribution.
+function of conditional and non-conditional moments.
+1 0 Furthermore, if we make an assumption on the func-
+fa;ðz0Þ ¼  01 azð Þ a z e tional relationship between the non-conditional spatial  (1)
+0 mean and variance, we have enough information toa; ; z > 0 determine the fraction of wet area p and the parameters
+of the within-storm distribution of precipitation.
+where  and a are the shape and scale parameters, If we grid a fixed area into n elements, and m
+respectively. The mean is E(z0) ¼ /a and the variance
+0 ¼ of these elements are wet, the first-order momentsvar(z ) /a2. The parameters are estimated from the of non-conditional and conditional precipitation are,
+observed spatial mean and variance as: respectively:
+¼ Êðz
+0Þ
+a Eð n m mzÞ ¼ 0þ Eðz0Þ
+v̂arðz0Þ n n (3)
+0 (2)Êðz Þ2 ¼ pEðz0Þ
+ ¼
+v̂arðz0Þ
+ð 0Þ ¼ EðzÞE z (4)
+where the hats denote the estimate of the expected p
+value.
+The gamma distribution is a common choice of where p ¼ m/n is the fraction of the area with positive
+distribution for precipitation in space due to its flex- precipitation. Similarly, for the second-order moments:
+ibility in shape (Robinson & Sivapalan, 1997; Kuzuha
+et al., 2006), whichmay range from very skewed to the Eðz2Þ ¼ n m m0þ Eðz02Þ
+left or approaching that of the normal distribution. n n (5)
+When spatial precipitation is studied over a fixed ¼ pEðz02Þ
+area, we find two possible outcomes of the spatial
+pattern: (a) the area might be fully covered with pre- 02 Eðz2Þ
+cipitation; and (b) we have an intermittent field, where Eðz Þ ¼ (6)p
+only a fraction of the area is covered by precipitation.
+For both cases, the spatial distribution of precipitation From equation (6), one can write the conditional
+can be described by a two-parameter gamma distribu- variance, var(z0), as
+tion as suggested above.
+varðz0Þ ¼ Eðz02Þ  Eðz0Þ2
+2 (7)
+Estimating the intermittency of a precipitation ¼ Eðz Þ  Eðz0Þ2
+field p
+In the case of full coverage of precipitation over the and since E(z2) ¼ var(z) + E(z)2 equation (7) can be
+area of interest, fitting the gamma distribution to the written as:
+observed spatial mean and variance is straightforward,
+2
+and equation (2) is used to estimate the parameters. In ð varðzÞ þ EðzÞvar z0Þ ¼  Eðz0Þ2 (8)
+the case of intermittency, we are faced with the p
+Variance-consistent precipitation fields 679
+which gives:
+¼ varðzÞ þ EðzÞ
+2
+p ð 0Þ þ ð 0Þ2 (9)var z E z
+From equation (3), we also have:
+EðzÞ Fig. 1 Fixed relationship between spatial standard deviation
+p ¼ ð 0Þ (10) and mean (conditional values) for the Rissa area. The fixedE z relationship is modelled as s ¼ amh, where s and m are
+estimated standard deviation and mean respectively and
+which, together with equation (9), give: a (1.012) and h (0.83) are parameters.
+ð Þ þ ð Þ2 ð 0Þ þ ð 0Þ2 wet fraction can be estimated through equation (10),var z E z ¼ var z E z (11) when a match is found.
+EðzÞ Eðz0Þ It should be noted here that the reason for estimat-
+ing the intermittency through the proposed method
+From observed values we can determine the non-
+ð Þ ð Þ instead of using the fraction of observation points thatconditional mean and variance, Ê z and v̂ar z , and measure zero precipitation is that the number of pre-
+the right-hand side of equation (11) is quantified. In cipitation gauges in the area of interest is often too small
+order to proceed further and quantify the fraction of to give us a reliable estimate of the fraction of wet area.
+wet area, p, and the conditional mean and variance,
+E(z0) and var(z0), we introduce an assumption regard-
+0 Location of the highest simulated value in spaceing the regularity of the relationship between E(z )
+and var(z0). If we assume a one-to-one functional This section describes the non-trivial task of placing
+relationship between E(z0) and var(z0), equation (11) the highest simulated precipitation value in space.
+becomes an equation with only one unknown. With When interpolating using kriging, the highest value
+estimated values of E(z0) and var(z0), the fraction of in the kriged field is equal to, or very similar, to the
+wet area, p, can be determined from equation (10). In highest observed. However, the highest simulated
+support of an assumption of a one-to-one relationship value is almost always higher than the highest
+between E(z0) and var(z0), we have found reports in observed, and we need to place this value at a location
+the literature on very high correlation between spatial which is consistent with the pattern of the observed
+mean and spatial standard deviation (Creutin & Obled, values. This is necessary for the procedure described
+1982; Barancourt et al., 1992; Skaugen, 2007), which in the next sub-section, which concerns the distribu-
+we can use to determine the right-hand side of equa- tion in space of all the simulated values, and in which
+tion (11). In assessing this relationship, we have to the highest simulated value is treated as an observa-
+consider events, over a fixed area, for which zeros tion. In order to avoid confusion, we wish to make it
+are observed, but where spatial mean and variance clear that kriging interpolation is carried out twice in
+are estimated from non-zero observations. This will SPF. First we use the kriged field to place the highest
+ensure that the observed spatial distribution is not simulated value in space, according to the procedure
+bounded to the left by positive values. Of course, the described herein. Second, we apply kriging again,
+data available for this assessment are limited, as there using the highest simulated value as an observation,
+are not so many events (especially events with heavy and use the kriged field when distributing all the
+precipitation) for which there are also stations within simulated values in space. The latter procedure is
+the same area that measure zero precipitation. Figure 1 described in the next subsection.
+shows an assessment of the fixed relationship between It is difficult to devise clear rules as to where a
+standard deviation and mean for conditional precipita- precipitation maximum should be located. An intuitive
+tion of the Rissa area in central Norway. thought is to associate maximum precipitation with
+If var(z0), or rather the standard deviation, s(z0), is topography, i.e. placing the maximum value at the
+considered as a function of E(z0), the left-hand side of highest peak close to the highest observed values.
+equation (11) can be compared, for different values of Such a procedure was abandoned based on reported
+E(z0), with the right-hand side of equation (11), and the low correlation between precipitation and altitude in
+680 Thomas Skaugen & Jess Andersen
+Norway. Two Norwegian studies conclude that the Distribution of simulated precipitation in space
+altitude explains very little of the variability for daily,
+As already stated, the main objective of this study is to
+monthly and annual precipitation, and negative trends
+produce daily precipitation fields which respect the
+are often found (Førland, 1979; Steinsland et al.,
+observed spatial mean, variance and intermittency. In
+2007). Furthermore, when such a procedure was tested
+order to achieve this we choose to simulate values
+using cross-validation, we found that for some loca-
+from a gamma distribution with parameters estimated
+tions estimation was improved compared to kriging,
+so that simulated spatial mean and variance are the
+whereas for other locations this was not the case.
+same as the observed values. The following descrip-
+Interestingly enough, placing the highest precipitation
+tion deals with the method of distributing the simu-
+value at the lowest local location was found to be just
+lated values in space with the aid of the kriging
+as good. The adopted procedure is a result of a trial-
+interpolation method.
+and-error process, in which several schemes were
+In distributing the simulated values in space, we
+tested and evaluated; it can be described as follows:
+use the same line of reasoning as in Skaugen (2002). A
+the optimum location of the highest simulated value is
+precipitation field is interpolated from the observed
+the location where the spatial correlation structure in
+values using ordinary kriging. Here, the highest simu-
+terms of a semivariogram is best defined. For precipi-
+lated value is included as one of those observed
+tation stations rather close to each other, we expect a
+through the procedure described in the previous sub
+close-to-linear slope in a well-defined empirical semi-
+section. The vector of kriged values is ranked and the
+variogram (see Cole & Moore, 2008). The winning
+spatial location is determined from the location in the
+location is thus selected as the point for which the
+vector (i.e. the first value corresponds to the lower left
+deviations from a linear slope of the empirical semi-
+value in the grid). So to each spatial location, there is
+variogram are the smallest. In practice, the highest
+assigned a rank, denoting the relative precipitation
+simulated value is placed in different locations and
+value (the highest, the second highest, etc.). The vector
+the empirical semivariogram is calculated for each
+of simulated values is sorted and each simulated value
+new location. The location which gives the smallest
+is placed at the location where its place in the simu-
+deviations from the linear slope of the empirical semi-
+lated vector (after ordering) and rank from the kriged
+variogram is defined as the optimum location of the
+field are equal. In mathematical terms this procedure
+highest simulated value. However, it can be quite time-
+can be described as follows (see also Skaugen, 2002):
+consuming to test every possible location within an
+let V be a vector of ordered simulated values, drawn
+area of interest, so the area for testing locations is
+from a gamma distribution and sorted into ascending
+restricted in the following way. The precipitation
+order. Let Y be the vector of kriged values. Then if
+field is interpolated by ordinary kriging from the
+rankY is a vector of the ranks of the kriged values Y,
+observed values and ranked. It is reasonable to assume
+the resulting precipitation field Z, can be expressed as:
+that the highest simulated value should be located in a
+general area where we find the highest kriged values. Z½i ¼ V ½rankY½i for all i ¼ 1; . . . ; I (12)
+The size of the area, in which we assume the highest
+simulated value is located, is restricted to the number where the brackets [ ] indicate the components of
+of simulated values that are higher than the highest the vector and also the spatial location. The result is
+observed value. Note that each value represents the thus a field with gamma distributed values of non-zero
+average value within a grid cell so that a collection of precipitation, and with spatial dependencies inherited
+values also represents an area. This procedure defines from the interpolated field Y.
+an area which is large when the difference is large Figure 2 shows a simplified flow chart of the steps
+between the highest simulated and observed value and procedures necessary for producing simulated
+(i.e. we have a field with high spatial variability), and precipitation fields.
+small when the difference is small.
+The procedure described above gave the best
+RESULTS
+result when evaluated using cross-validation. Other
+schemes, based, for example, on precipitation gradi- In this section we will first evaluate the algorithm for
+ents and correlation distances, were inferior to the estimating the intermittency. Finding a sufficiently
+chosen method, but the problem should remain open dense network of precipitation gauges in Norway to
+for further study. estimate the intermittency is difficult. A possible way
+Variance-consistent precipitation fields 681
+Øyungen catchment (238 km2, with elevations
+  Determine the intermittency p 103–680 m a.s.l.). Figure 3 shows the location of the
+  and the conditional moments   
+   E( ) and var( ),  from radar and some nearby catchments.z z
+   observations The Øyungen catchment is located quite near the
+radar and the radar is considered to provide good
+precipitation estimates. Through the observed non-
+conditional spatial mean and variance of precipitation
+Simulate precipitation 
+from the gamma (derived by the radar) and the fixed relations between
+distribution with parameters conditional moments (see Fig. 1), we can estimate
+obtained using eq. (2) the intermittency. Figure 4 shows how the estimated
+intermittency compares with intermittency observed
+by the radar. The agreement is good, especially for
+Determine a possible location precipitation events of small spatial extent.
+in space for the highest 
+simulated value 
+Cross-validation comparison between SPF
+and indicator kriging (IK)
+In order to evaluate SPF, cross-validation was per-
+formed for two areas in Norway: Oslo (interpolating
+Distribute the simulated over a grid of 60  60 km2) and Trondheim (inter-
+values in space by using the polating over a grid of 70 70 km2). Cross-validation
+ranks of the kriged field 
+is a procedure in which values of one of the observed
+stations are removed when interpolating. The values
+Fig. 2 Simplified flow chart of SPF procedures. of this particular station are then estimated by the
+interpolation method and compared to what is
+is to use observations from weather radar. The Rissa observed. Cross-validation was carried out for nine
+radar in central Norway (near Trondheim) provided stations in the Oslo area (ranging in altitude from
+precipitation observations (derived by the Norwegian 53–514 m a.s.l.) and 10 stations in the Trondheim
+Meteorological Institute) on a 1  1 km2 grid for the area (11–158 m a.s.l.) using a time series of length
+Fig. 3 Location of weather radar and the Øyungen catchment in central Norway.
+682 Thomas Skaugen & Jess Andersen
+1 Oslo
+2.5
+0.8
+2 IK
+0.6 SPF
+1.5
+0.4
+1
+0.2
+0.5
+0
+0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1 0
+Obs p (radar) AFDm AFDstd RMSE MAE AFDzero
+(a)
+Fig. 4 Estimated vs observed intermittence (329 events,
+Trondheim
+radar data for Øyungen), where p is the fraction of wet area. 3.5
+one year. We wanted to compare the time series 3 IK
+obtained by SPF and by indicator kriging (IK) with 2.5 SPF
+the observed time series in order to evaluate the 2
+relative performance of SPF compared to IK. Kriging 1.5
+is a very commonly-used interpolation method 1
+(Teegavarapu, 2007) and is also considered to be 0.5
+among the best interpolation methods for precipitation 0
+AFDm AFDstd RMSE MAE AFDzero
+(Creutin & Obled, 1982; Lebel, 1987). In indicator (b)
+kriging, the probability of precipitation is mapped
+Fig. 5 Assessing the performance of SPF and IK against
+spatially. If precipitation is observed, then the station observed values for (a) the Oslo area; and (b) the Trondheim
+in question is assigned the value one, and zero if not. A area. The best method evaluated by the different measures is
+probability field is then interpolated. If a pixel in space the one with the shortest bar.
+has the probability of more than 0.5 for precipitation,
+the value obtained from ordinary kriging is used and a 16
+value of zero precipitation is assigned if the probability 14 IK
+of precipitation is below 0.5. Ordinary kriging was 12 SPF
+carried out using an exponential semivariogram model
+10
+with sill equal to the observed spatial variance and with
+8
+a nugget effect equal to 5% of the sill. The results of the
+cross-validation for SPF and IK are shown in Fig. 5. The 6
+measures used for evaluation are: mean absolute error 4
+(MAE), the root mean square error (RMSE), absolute 2
+fractional deviation AFD, (AFD ¼ |1 – (sim/obs)|, 0
+where sim is the simulated value and obs the observed MAEex (Oslo) RMSEex (Oslo) MAEex (Trm) RMSEex (Trm)
+value) of temporal mean (AFDm), standard deviation Fig. 6 Assessing the performance of SPF and IK for
+(AFDstd), and number of dry days (AFDzero). extreme values at Oslo (bars to the left) and Trondheim
+In general, the performance of the two methods (bars to the right). The best method evaluated by the
+appears to be very similar. The IKmethod is somewhat different measures is the one with the shortest bar.
+better for the Oslo area, and the two methods perform
+very similarly for the Trondheim area. Note that the values during the year of observation were compared
+amount of precipitation is generally much higher for to those estimated. Figure 6 shows the MAE and
+the Trondheim area with a daily mean for this year of RMSE for the extreme values. The extreme values
+about 3–4 mm whereas for the Oslo area the daily for the Trondheim area were best estimated by SPF,
+mean was less than 2 mm. whereas the two methods have the same performance
+for the Oslo area. We also compared the sample
+quantiles obtained for the cross-validation series of
+Extreme values SPF and IK for the probabilities 0.8, 0.82, up to 1.00
+In order to investigate the ability of SPF and IK to against the sample quantiles of the observed precipita-
+estimate extreme values, the two highest observed tion. A mean AFD of the quantiles, averaged over the
+Est p
+Variance-consistent precipitation fields 683
+different probabilities was computed for each station 50
+and this value was averaged for all the stations within 40
+the areas Oslo and Trondheim. The SPF performed
+30
+marginally better for the Oslo area with a mean AFD
+over the quantiles and over the stations with 0.14 (SPF) 20
+against 0.15 (IK), and clearly better for the Trondheim 10
+area with 0.19 (SPF) against 0.23 (IK).
+0
+0 10 20 30 40 50
+(a) Observed (mm)
+Comparison of SPF and the current interpolation
+150
+method
+The SPF method was also compared to the current 100
+interpolation method for precipitation, used in
+www.senorge.no (denoted SeNorge). The method is 50
+briefly described in the introduction. Figure 7 shows
+the results of comparing SPF and SeNorge derived
+0
+values against independent observations of precipita- 0 50 100 150
+tion for the month of August 2001. The independent (b) Observed (mm2)
+precipitation values are independent in the sense that
+Fig. 8 (a) Modelled and observed spatial mean and
+they were not used in estimating the SPF or SeNorge (b) variance for the Oslo area. Small diamonds denote IK,
+precipitation fields. large diamonds – SPF, and triangles – SeNorge.
+We observe that SPF is just slightly better than
+the current interpolation method. As, in the case of the 50
+cross validation exercises, SPF compares well with
+the mean and standard deviation of the observed time 40
+series, whereas for the absolute and squared deviations 30
+(MAE and RMSE), no improvements of SPF com- 20
+pared to the other methods are found.
+10
+0
+Comparison of spatial fields 0 10 20 30 40 50
+(a) Observed (mm)
+We also compare the spatial statistics of the estimates 150
+of SPF, IK and SeNorge. The estimated spatial means
+and variances were compared to those observed from
+100
+the network of precipitation gauges for the two areas.
+The results are shown in Figs 8 and 9.
+50
+5 0
+4.5 SeNorge 0 50 100 150
+4 SPF (b) Observed (mm2)
+3.5
+3
+2.5 Fig. 9 (a) Modelled and observed spatial mean and
+2 (b) variance for the Trondheim area. Small diamonds
+1.5 denote IK, large diamonds – SPF, and triangles – SeNorge.
+1
+0.5
+0
+RMSE MAE AFDm AFDstd The comparison shows that, whereas the esti-
+mates of the spatial mean are indistinguishable for
+Fig. 7 Assessing the performance of SPF and the current
+interpolation method used at the SeNorge area. The best IK and SPF, SeNorge appears to have a very small
+method evaluated by the different measures is the one with negative bias for the Oslo area and a clear positive bias
+the shortest bar. for the Trondheim area. In regard to the estimation of
+Modelled (mm2) Modelled (mm2Modelled (mm) ) Modelled (mm)
+684 Thomas Skaugen & Jess Andersen
+spatial variance, the most striking result is the severe DISCUSSION
+underestimation of spatial variance by IK. The kriged
+The increased use of spatially-distributed hydrological
+fields reproduce 40% of the observed spatial variabil-
+models also increases the demand on the quality of
+ity for the Oslo area and only 20% for the Trondheim
+the interpolated meteorological fields used as input.
+area. The SPF method naturally estimates the spatial
+If the interpolation method applied to the observed
+variance very well, as the simulations are performed
+values produces too smooth a field, it undermines the
+with a specified variance equal to that of the observed
+very idea of distributed models and the motivation
+precipitation values, whereas SeNorge exhibits an over-
+for using them. In principle, the more the spatial varia-
+estimation for the Oslo area and a slight underestima-
+bility of the input is underestimated, the more the
+tion for the events of low intensity for the Trondheim
+distributed models will tend to provide the same infor-
+area. A considerably larger scatter is observed for
+mation as lumped models with spatial means as input.
+SeNorge compared to SPF.
+One could argue that the degree of distribution in
+The estimates of the fraction of wet area (p) also
+space of the hydrological model should be carefully
+deserve a comment. Figure 10 shows the estimate of
+matched by the detail of the spatial distribution of
+the fraction of zero precipitation by SPF and IK com-
+the meteorological input. If the spatial variability
+pared to the observed fraction of zeros (estimated as
+of precipitation is systematically underestimated,
+the proportion of stations that actually observed zero
+one cannot expect to properly calibrate or model the
+precipitation). Estimates of the fraction of wet area
+different (nonlinear) hydrological response mechan-
+were not carried out for SeNorge. The estimate of
+isms. An informative data set is one which contains
+p by SPF is scattered around the line representing a
+enough variability in watershed behaviour that the
+perfect match between modelled and observed values.
+different modes of operation of the hydrological pro-
+For both the areas, the estimates of p by IK tend to
+cesses are properly represented (Sorooshian, 1995,
+underestimate coverage for events where less than half
+p. 49). Also, when predicting hydrological response,
+of the area is covered by precipitation and overesti-
+it is better to have extreme precipitation estimated
+mate coverage for events where more than half of the
+for the wrong location than not estimated at all.
+area is covered by precipitation.
+The latter will be the case if spatial variability is
+underestimated.
+1 It is clear from Figs 7 and 8(b) that SPF is better at
+0.9 reproducing the observed spatial variability and that
+0.8
+0.7 this feature is seriously underestimated by IK. The fact
+0.6 that the spatial variability of SPF is generally higher
+0.5
+0.4 than IK could have had a negative impact on the
+0.3 precision in point estimation of SPF. The generally
+0.2
+0.1 higher spatial variability of SPF clearly gives a higher
+0 potential for errors than IK with its very conservative
+0 0.2 0.4 0.6 0.8 1
+(a) Observed (fraction of 20 stations) estimate, since SPF provides a larger range of variation
+around the spatial mean than IK. The SPF method is
+1
+0.9 thus more dependent on a good procedure for placing
+0.8 the estimated values correctly in space, since, due to
+0.7
+0.6 this method’s higher spatial variability, there is a
+0.5 greater risk of large deviations from the true precipita-
+0.4
+0.3 tion values. It is surprising that the quite significant
+0.2 difference in estimate of spatial variance is not, some-
+0.1
+0 how, reflected in the cross-validation results. Although
+0 0.2 0.4 0.6 0.8 1 RMSE and MAE for the Oslo area are slightly better
+(b) Observed (fraction of 10 stations) for IK, the results for the other error measures, and for
+Fig. 10 Modelled and observed and spatial fraction of zeros the Trondheim area, are very similar. One possible
+for (a) the Oslo area, and (b) the Trondheim area. Small explanation may be that the data records of precipita-
+diamonds indicate result from IK, whereas large diamonds tion (one year) are not sufficient to resolve the,
+indicate those from SPF. perhaps, subtle differences.
+Modelled (fraction of Modelled (fraction of
+49000 grid cells) 36000 grid cells)
+Variance-consistent precipitation fields 685
+The cross-validation results for the extreme spatial structure is often difficult to determine and if
+values show that the two methods perform similarly SPF is used operationally, nationwide, the number of
+for the Oslo area and that SPF is somewhat better for stations will often be too few for a meaningful estimate
+the Trondheim area. The analysis contains few data of spatial structure.
+but the comparison of extreme values is more in favour The SPF method is not an exact interpolator,
+of SPF than when assessing the one-year data sample. which means that the interpolated precipitation field
+Perhaps one can see here the effect of a more realistic does not go through the observations. In contrast,
+estimate of spatial variance of SPF, in that one would kriging with zero nugget effect and inverse distance
+expect significant errors in the estimates of extreme interpolation both do have this feature. The practical
+values if the spatial variance were underestimated. implication of SPF not being an exact interpolator is
+Analysis of longer time series is needed for further primarily that the observation points are not as well
+assessments to be made. estimated as would be the case using kriging. The
+The derived algorithm for estimating the dry areas results of cross-validation, however, indicate that all
+appears to work well. The agreement with the Rissa the other points in the area of interest are estimated with
+weather radar of the Trondheim area is very good. The a quality comparable to IK. As the number of observa-
+differences between the estimates of intermittency by tion points comprises a very tiny fraction of the area
+IK and SPF methods are indistinguishable when to be interpolated, the hydrological impact of SPF not
+assessed for the cross-validation, and the systematic being an exact interpolator is believed to be modest.
+errors of under-/over-estimation to that of IK only It is reasonable to assume that since the spatial
+appears when assessing the spatial data. variability is better estimated by SPF, the spatial
+It can be argued that in order to employ SPF and distribution of precipitation obtained by SPF should
+kriging, an assumption of second-order stationarity in be closer to reality than that of IK. In principle, there is
+space (see Delhomme, 1978) has to be made. Whether thus a potential for SPF to provide better precipitation
+SPF is subject to such constraints is not entirely clear fields, and this serves as an inspiration to deriving
+in that the shape of the spatial distribution is allowed better ways of distributing the simulated values in
+to vary for each event. In addition, the spatial distribu- space than the method employed in this study. This
+tion will, for some events, have a frequency of zeros. line of enquiry will be followed in future work.
+Stationarity of the second order for the precipitation
+fields from SPF is therefore not obvious and perhaps Acknowledgements Ole Einar Tveito of the
+not even desired. The ability to produce non-stationary Norwegian meteorological institute is gratefully
+sequences is considered as a positive feature in rainfall acknowledged for discussions and providing the pre-
+modelling, and the application of generalized linear cipitation data. The comments of the two anonymous
+models on rainfall modelling problems has this feature reviewers helped very much to improve the paper.
+(Chandler & Wheater, 2002). Nevertheless, imple-
+mented operationally, SPF will be employed for
+limited areas of 70  70 km2, in an attempt to ensure REFERENCES
+some degree of spatial stationarity. Barancourt, C., Creutin, J.-D. & Rivoirard, J. (1992) A method
+The semivariogram used in the kriging proce- for delineating and estimating rainfall fields. Water. Resour.
+dure defines the spatial structure (i.e. spatial auto- Res. 28, 4, 1133–1144.
+Bergström, S. (1992) The HBV model – its structure and applications.
+correlation) of the precipitation fields obtained by SMHI Reports Hydrology no. 4, Swedish Meteorological and
+SPF. The type of the semivariogram is fixed as expo- Hydrological Institute, Norrköping, Sweden.
+nential and the sill is estimated, for each event, from Chandler, R. E. &Wheater, H. S. (2002) Analysis of rainfall variability
+the observed spatial variance. By using a fixed-type using generalized linear models: A case study from the westof Ireland. Water. Resour. Res. 38(10), 1192, doi:10.1029/
+semivariogram, the spatial structure of the fields from 2001WR000906.
+SPF is unrealistic and probably too smooth. The spa- Chaubey, I., Haan, C. T., Grunwald, S. & Salisbury, J. M. (1999)
+tial auto-correlation structure of precipitation fields is Uncertainty in the model parameters due to spatial variability
+of rainfall. J. Hydrol. 220, 48–66.
+probably not well described for shorter time scales Cole, S. J. & Moore, R. J. (2008) Hydrological modelling using
+by the sort of climatological variograms (Lebel raingauge-and radar-based estimators of areal rainfall. J. Hydrol.
+et al., 1987) employed in this study, and ideally, the 358, 159–181.
+Creutin, J.-D. & Obled, C. (1982) Objective analyses and mapping
+spatial structure of each event should be determined. techniques for rainfall fields: an objective comparison. Water
+However, an analytical representation of the observed Resour. Res. 18(1982), 413–431.
+686 Thomas Skaugen & Jess Andersen
+Delhomme, J. P. (1978) Kriging in the hydrosciences. Adv. Water Segond, M.-L., Wheater, H. S. & Onof, C. (2007) The significance of
+Res. 1(5), 251–266. spatial rainfall representation for flood runoff estimation:
+Førland, E. (1979) Nedbørens høydeavhengighet (Precipitation and a numerical evaluation based on the Lee catchment, UK.
+topography, in Norwegian with English summary). Klima report J. Hydrol., doi:10.1016/j.hydrol.2007.09.040.
+no. 2, Norwegian Meteorological Institute. Seo, D. J. (1998) Real-time estimation of rainfall fields using rain gauge
+Haberland, U. (2007) Geostatistical interpolation of hourly precipita- data under fractional coverage conditions. J. Hydrol. 208, 25–36.
+tion from raingauges and radar for a large-scale rainfall event. Skaugen, T. (2002) A spatial disaggregation procedure for precipi-
+J. Hydrol. 332, 144–157. tation. Hydrol. Sci. J. 47(6), 943–956.
+Jansson, A., Tveito, O. E., Pirinen, P. & Scharling, M. (2007) Skaugen, T. (2007) Modelling the spatial variability of snow water
+NORDGRID – a preliminary investigation on the potential for equivalent at the catchment scale. Hydrol. Earth System Sci. 11,
+creation of a joint Nordic gridded climate dataset. Norwegian 1543–1550.
+Meteorological Institute, Climate report no. 3/2007. Singh, V. P. (1997) Effect of spatial and temporal variability in rainfall
+Kuzuha, Y., Sivapalan, M., Tomosugi, K., Kishii, T. & Komatsu, Y. and watershed characteristics on stream flow hydrograph.
+(2006) Role of spatial variability of rainfall intensity: improve- Hydrol. Processes 11, 1649–1669.
+ments of Eagleson’s classical model to explain the relationship Sorooshian, S. & Gupta, V. K (1995) Model calibration. In: Computer
+between the coefficient of variation of annual maximum dis- Models of Watershed Hydrology (ed. by V. P. Singh), 23–69.
+charge and catchments size. Hydrol. Processes 20, 1335–1346. Highlands Ranch, CO: Water Resources Publications.
+Lebel, T., Bastin, G., Obled, C. & Creutin, J.-D. (1987) On the Steinsland, I., Tøfte, L. S. & Kolberg, S. (2007) Evaluering av
+accuracy of areal rainfall estimation: a case study. Water. høgdegradient samt evaluering og korrigering av nedbørvarsel
+Resour. Res. 23(11), 2123–2134. (Evaluation of altitude correction of precipitation and evaluation
+Pechlivanidis, I. G., McIntyre, N. & Wheater, H. S. (2008) The sig- and correction of precipitation forecasts, in Norwegian). Report
+nificance of spatial variability of rainfall on runoff. In: TR A3568, Sintef, Trondheim, Norway.
+Proceedings of the Fourth Biennial Meeting of iEMSs (ed. by Teegavarapu, R. S. V. (2007) Use of universal function approximation
+M. Sanches-Marre, J. Bejar, J. Comas, A. Rizolli & G. Guariso), in variance-dependent surface interpolation method: an applica-
+478–785. International Environmental Modelling and Software tion in hydrology. J. Hydrol. 332, 16–29.
+Society (iEMSs). Teztlaff, D. &Uhlenbrook, S. (2005) Significance of spatial variability
+Robinson, J. S. & Sivapalan, M. (1997) Temporal scales and hydro- of precipitation for process-oriented modelling: results from two
+logical regimes: implications for flood frequency scaling.Water nested catchments using radar and ground station data. Hydrol.
+Resour. Res. 33(12), 2981–2999. Earth System Sci. 9, 29–41.

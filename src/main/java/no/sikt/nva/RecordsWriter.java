@@ -40,7 +40,7 @@ public final class RecordsWriter {
         }
     }
 
-    public static String convertRecordsToJsonString(List<Record> records) throws JsonProcessingException {
+    public static String convertMultipleRecordsToJsonString(List<Record> records) throws JsonProcessingException {
         return JsonUtils.dtoObjectMapper.writeValueAsString(records);
     }
 
@@ -51,7 +51,7 @@ public final class RecordsWriter {
     private static void writeRecords(String fileName, List<Record> records) {
         if (nonNull(records)) {
             try (var fileWriter = Files.newWriter(new File(fileName), StandardCharsets.UTF_8)) {
-                fileWriter.write(convertRecordsToJsonString(records));
+                fileWriter.write(convertMultipleRecordsToJsonString(records));
             } catch (Exception e) {
                 throw new RecordsWriterException(WRITING_TO_JSON_FILE_HAS_FAILED, fileName);
             }

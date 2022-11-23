@@ -47,15 +47,14 @@ public class ErrorDetails {
     }
 
     public enum Error {
-        CRISTIN_ID_PRESENT,
         INVALID_TYPE,
         MANY_UNMAPPABLE_TYPES,
         INVALID_ISSN,
+        INVALID_ISBN,
         INVALID_DATE_ERROR,
         DATE_NOT_PRESENT_ERROR,
         JOURNAL_NOT_IN_CHANNEL_REGISTER,
         PUBLISHER_NOT_IN_CHANNEL_REGISTER,
-        INVALID_ISBN,
         INVALID_DOI_OFFLINE_CHECK,
         INVALID_DOI_ONLINE_CHECK,
         INVALID_LANGUAGE,

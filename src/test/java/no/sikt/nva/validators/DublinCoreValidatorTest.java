@@ -124,11 +124,13 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(new DcValue(Element.LANGUAGE, Qualifier.NONE, "someInvalidLanguage"));
         var dublinCore = new DublinCore(dcValues);
         var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, new BrageLocation(null));
+
         assertThat(actualWarningList, hasItems(new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED, List.of())));
     }
 
     @Test
-    void shouldReturnMapValidLanguageToNvaLanguage() {
+    void shouldMapValidLanguageToNvaLanguage() {
         var dcValues = List.of(new DcValue(Element.LANGUAGE, Qualifier.NONE, "nob"));
         var dublinCore = new DublinCore(dcValues);
         var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore);

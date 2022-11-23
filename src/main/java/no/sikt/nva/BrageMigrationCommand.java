@@ -10,11 +10,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import no.sikt.nva.brage.migration.awsconnection.WriteFileTos3;
+import no.sikt.nva.brage.migration.aws.S3RecordStorage;
+import no.sikt.nva.brage.migration.aws.StoreRecord;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.logutils.LogSetup;
 import no.sikt.nva.model.Embargo;
@@ -31,7 +33,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import software.amazon.awssdk.services.s3.S3Client;
 
-@SuppressWarnings({"PMD.DoNotUseThreads"})
+@SuppressWarnings({"PMD.DoNotUseThreads", "PMD.GodClass"})
 @JacocoGenerated
 @Command(
     name = "Brage migration",
@@ -126,11 +128,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
             startProcessors(brageProcessorThreads);
             waitForAllProcesses(brageProcessorThreads);
             writeRecordsToFiles(brageProcessors);
+            if (!shouldNotWriteToAws) {
+                pushToNVA(brageProcessors);
+            }
             logger.info("Records written to file: " + RecordsWriter.getCounter());
             logRecordCounter(brageProcessors);
-            if (!shouldNotWriteToAws) {
-                writeFileToS3();
-            }
             return NORMAL_EXIT_CODE;
         } catch (Exception e) {
             var logger = LoggerFactory.getLogger(BrageProcessor.class);
@@ -161,6 +163,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
             throw new RuntimeException(e);
         }
         return zipfiles.toArray(new String[0]);
+    }
+
+    private void pushToNVA(List<BrageProcessor> brageProcessors) {
+        brageProcessors.stream()
+            .map(BrageProcessor::getRecords)
+            .filter(Objects::nonNull)
+            .forEach(list -> list.forEach(this::storeFileToNVA));
     }
 
     private List<BrageProcessor> getBrageProcessorThread(URI customerUri, String outputDirectory,
@@ -194,10 +203,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return zipfile.substring(0, zipfile.indexOf(zipfileName));
     }
 
-    private void writeFileToS3() {
-        var awsFileWriter = new WriteFileTos3(s3Client);
-        var testFile = new File("samlingsfil.txt");
-        awsFileWriter.writeFileToS3(testFile, "wohoo/pushet fil");
+    private void storeFileToNVA(Record record) {
+        StoreRecord storage = new S3RecordStorage(s3Client);
+        storage.storeRecord(record);
     }
 
     private void logRecordCounter(List<BrageProcessor> brageProcessors) {

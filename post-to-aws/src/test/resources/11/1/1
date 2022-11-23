@@ -1,0 +1,17 @@
+{
+  "id" : "https://hdl.handle.net/11/1",
+  "cristinId" : "cristinId",
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Book" ],
+    "nva" : "Book"
+  },
+  "partOf" : "partOfSomethingBigger",
+  "recordContent" : {
+    "contentFiles" : [ {
+      "filename" : "Simulated precipitation fields with variance consistent interpolation.pdf",
+      "identifier" : "115974fe-c4fd-4e4f-a52d-a996c77f37e9"
+    } ]
+  },
+  "brageLocation" : "11/1"
+}
