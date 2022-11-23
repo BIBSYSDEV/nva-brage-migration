@@ -44,9 +44,14 @@ bin/
 .DS_Store
 
 ### Logs generated from building
-app-info.html
-app-info*
+nva-brage-migration/app-info.html
+nva-brage-migration/application-error.log
+nva-brage-migration/application-info.log
+nva-brage-migration/app-info*
+nva-brage-migration/application-warn.log
 
+nva-brage-migration/src/test/resources/app-info**
+nva-brage-migration/src/test/resources/application-**
 
 ### tmp folder containing unzipped result
 /tmp/
@@ -59,3 +64,4 @@ app-info*
 **/inputWithEmptyCCLicense/**
 **/resourceWithEmbargo/**
 **/resourceWithTwoSameObjects/**
+**/testFilesToDelete/**

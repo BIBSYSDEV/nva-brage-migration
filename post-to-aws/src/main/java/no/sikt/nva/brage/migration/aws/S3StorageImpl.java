@@ -2,6 +2,8 @@ package no.sikt.nva.brage.migration.aws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +29,6 @@ public class S3StorageImpl implements S3Storage {
     public static final String DEFAULT_INFO_FILENAME = "application-info.log";
     public static final String COULD_NOT_WRITE_RECORD_MESSAGE = "Could not write files to s3 for: ";
     public static final String COULD_NOT_WRITE_LOGS_MESSAGE = "Could not write logs to s3: ";
-
     public static final String JSON_STRING = ".json";
     public static final String APPLICATION_JSON = "application/json";
     public static final String bucketName = "anette-kir-brage-migration-experiment";
@@ -118,7 +119,7 @@ public class S3StorageImpl implements S3Storage {
         var filesToStore = getMappedFiles(record);
         for (UUID fileId : filesToStore.keySet()) {
             var fileKey = createKey(record, fileId.toString());
-            var fileName = filesToStore.get(fileId).getName();
+            var fileName = URLEncoder.encode(filesToStore.get(fileId).getName(), StandardCharsets.UTF_8);
             s3Client.putObject(PutObjectRequest
                                    .builder()
                                    .bucket(bucketName)
