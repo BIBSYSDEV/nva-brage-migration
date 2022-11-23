@@ -34,8 +34,8 @@ public class S3StorageImpl implements S3Storage {
     public static final String bucketName = "anette-kir-brage-migration-experiment";
     private static final Logger logger = LoggerFactory.getLogger(S3StorageImpl.class);
     private final S3Client s3Client;
+    private final String pathPrefixString;
     private final String customer;
-    private String pathPrefixString = StringUtils.EMPTY_STRING;
 
     public S3StorageImpl(S3Client s3Client, String pathPrefixString, String customer) {
         this.s3Client = s3Client;
@@ -45,6 +45,7 @@ public class S3StorageImpl implements S3Storage {
 
     public S3StorageImpl(S3Client s3Client, String customer) {
         this.s3Client = s3Client;
+        this.pathPrefixString = StringUtils.EMPTY_STRING;
         this.customer = customer;
     }
 
