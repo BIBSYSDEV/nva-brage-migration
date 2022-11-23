@@ -27,7 +27,7 @@ public class S3RecordStorage implements StoreRecord {
     public static final String bucketName = "anette-kir-brage-migration-experiment";
     private static final Logger logger = LoggerFactory.getLogger(S3RecordStorage.class);
     private final S3Client s3Client;
-    private String pathPrefixString = StringUtils.EMPTY_STRING;
+    private final String pathPrefixString;
 
     public S3RecordStorage(S3Client s3Client, String pathPrefixString) {
         this.s3Client = s3Client;
@@ -36,6 +36,7 @@ public class S3RecordStorage implements StoreRecord {
 
     public S3RecordStorage(S3Client s3Client) {
         this.s3Client = s3Client;
+        this.pathPrefixString = StringUtils.EMPTY_STRING;
     }
 
     @Override
