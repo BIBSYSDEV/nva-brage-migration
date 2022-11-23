@@ -16,6 +16,7 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.aws.S3RecordStorage;
+import no.sikt.nva.brage.migration.aws.StoreRecord;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.logutils.LogSetup;
 import no.sikt.nva.model.Embargo;
@@ -128,7 +129,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             waitForAllProcesses(brageProcessorThreads);
             writeRecordsToFiles(brageProcessors);
             if (!shouldNotWriteToAws) {
-                pushToS3(brageProcessors);
+                pushToNVA(brageProcessors);
             }
             logger.info("Records written to file: " + RecordsWriter.getCounter());
             logRecordCounter(brageProcessors);
@@ -164,11 +165,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return zipfiles.toArray(new String[0]);
     }
 
-    private void pushToS3(List<BrageProcessor> brageProcessors) {
+    private void pushToNVA(List<BrageProcessor> brageProcessors) {
         brageProcessors.stream()
             .map(BrageProcessor::getRecords)
             .filter(Objects::nonNull)
-            .forEach(list -> list.forEach(this::storeFileTos3));
+            .forEach(list -> list.forEach(this::storeFileToNVA));
     }
 
     private List<BrageProcessor> getBrageProcessorThread(URI customerUri, String outputDirectory,
@@ -202,8 +203,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return zipfile.substring(0, zipfile.indexOf(zipfileName));
     }
 
-    private void storeFileTos3(Record record) {
-        S3RecordStorage storage = new S3RecordStorage(s3Client);
+    private void storeFileToNVA(Record record) {
+        StoreRecord storage = new S3RecordStorage(s3Client);
         storage.storeRecord(record);
     }
 

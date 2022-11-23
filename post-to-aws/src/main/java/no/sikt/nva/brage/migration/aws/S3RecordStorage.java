@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
-import nva.commons.core.SingletonCollector;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +41,7 @@ public class S3RecordStorage implements StoreRecord {
     @Override
     public void storeRecord(Record record) {
         try {
-            writeRecordFilesToS3(record);
+            writeAssociatedFilesToS3(record);
             writeRecordToS3(record);
         } catch (Exception e) {
             logger.info(COULD_NOT_WRITE_MESSAGE + record.getBrageLocation() + " " + e.getMessage());
@@ -66,24 +65,24 @@ public class S3RecordStorage implements StoreRecord {
         return record.getContentBundle().getContentFileByFilename(file.getName()).getIdentifier();
     }
 
-    private File findFilesToRecord(Record record) {
+    private File findAssociatedFiles(Record record) {
         var brageLocation = record.getBrageLocation();
-        var collectionDirectory = getCollectionDirectory(brageLocation);
-        var resourceDirectoryName = brageLocation.split("/")[1];
-        return Arrays.stream(Objects.requireNonNull(collectionDirectory.listFiles()))
-                   .filter(resourceDir -> resourceDir.getName().equals(resourceDirectoryName))
-                   .collect(SingletonCollector.collect());
+        return new File(getCollectionDirectory(brageLocation) + "/" + getResourceDirectory(brageLocation));
     }
 
     private String createKey(Record record, String filename) {
-        var collection = getCollectionDirectory(record.getBrageLocation()).getName();
+        var collection = getCollectionDirectory(record.getBrageLocation());
         var bundle = getResourceDirectoryName(record.getBrageLocation());
         var hardCodedCustomer = "nve";
-        return Path.of(hardCodedCustomer, collection, bundle, filename).toString();
+        return Path.of(hardCodedCustomer, collection.getName(), bundle, filename).toString();
     }
 
     private File getCollectionDirectory(String brageLocation) {
         return new File(getPathPrefixString() + brageLocation.split("/")[0]);
+    }
+
+    private String getResourceDirectory(String brageLocation) {
+        return brageLocation.split("/")[1];
     }
 
     private void writeRecordToS3(Record record) throws JsonProcessingException {
@@ -98,7 +97,7 @@ public class S3RecordStorage implements StoreRecord {
                            RequestBody.fromString(recordToStore));
     }
 
-    private void writeRecordFilesToS3(Record record) {
+    private void writeAssociatedFilesToS3(Record record) {
         var filesToStore = getMappedFiles(record);
         for (UUID fileId : filesToStore.keySet()) {
             var fileKey = createKey(record, fileId.toString());
@@ -113,7 +112,7 @@ public class S3RecordStorage implements StoreRecord {
     }
 
     private Map<UUID, File> getMappedFiles(Record record) {
-        var resourceFiles = findFilesToRecord(record);
+        var resourceFiles = findAssociatedFiles(record);
         return mapFilesToUuid(record, resourceFiles);
     }
 
