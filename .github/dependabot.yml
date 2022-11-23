@@ -8,7 +8,17 @@ updates:
   - package-ecosystem: 'gradle'
     directory: '/' # Location of package manifests
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
+    target-branch: 'main'
+  - package-ecosystem: 'gradle'
+    directory: '/brage-migration-common'
+    schedule:
+      interval: 'weekly'
+    target-branch: 'main'
+  - package-ecosystem: 'gradle'
+    directory: '/create-publication-from-brage'
+    schedule:
+      interval: 'weekly'
     target-branch: 'main'
 
 

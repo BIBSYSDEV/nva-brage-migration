@@ -1,5 +1,9 @@
 import static no.sikt.nva.brage.migration.aws.S3StorageImpl.COULD_NOT_WRITE_RECORD_MESSAGE;
+import static no.sikt.nva.brage.migration.aws.S3StorageImpl.DEFAULT_ERROR_FILENAME;
+import static no.sikt.nva.brage.migration.aws.S3StorageImpl.DEFAULT_INFO_FILENAME;
+import static no.sikt.nva.brage.migration.aws.S3StorageImpl.DEFAULT_WARNING_FILENAME;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -18,6 +22,7 @@ import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 public class S3StorageImplTest {
 
@@ -27,11 +32,13 @@ public class S3StorageImplTest {
     public static final String CUSTOMER = "CUSTOMER";
 
     @Test
-    void shouldUploadRecordAndFileToS3File() {
+    void shouldUploadRecordAndFileToS3() {
         Record testRecord = createValidTestRecord();
         var expectedKeyToRecord = "CUSTOMER/11/1/1.json";
         var expectedKeyToFile =
-            "CUSTOMER/11/1/" + testRecord.getContentBundle().getContentFileByFilename(VALID_TEST_FILE_NAME).getIdentifier();
+            "CUSTOMER/11/1/" + testRecord.getContentBundle()
+                                   .getContentFileByFilename(VALID_TEST_FILE_NAME)
+                                   .getIdentifier();
         var s3Client = new FakeS3Client();
         var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER);
         storageClient.storeRecord(testRecord);
@@ -46,6 +53,21 @@ public class S3StorageImplTest {
 
         assertThat(actualRecordKeyFromBucket, is(equalTo(expectedKeyToRecord)));
         assertThat(actualFileKeyFromBucket, is(equalTo(expectedKeyToFile)));
+    }
+
+    @Test
+    void shouldUploadLogFilesToS3() {
+        var s3Client = new FakeS3Client();
+        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, "CUSTOMER");
+        storageClient.storeLogs();
+        var bucketContent = s3Client.listObjects(createListObjectsRequest(UnixPath.fromString("CUSTOMER")))
+                                .contents();
+
+        assertThat(bucketContent.size(), is(equalTo(3)));
+        assertThat(bucketContent,
+                   containsInAnyOrder(S3Object.builder().key(CUSTOMER + "/" + DEFAULT_WARNING_FILENAME).build(),
+                                                     S3Object.builder().key(CUSTOMER + "/" + DEFAULT_ERROR_FILENAME).build(),
+                                                     S3Object.builder().key(CUSTOMER + "/" + DEFAULT_INFO_FILENAME).build()));
     }
 
     @Test

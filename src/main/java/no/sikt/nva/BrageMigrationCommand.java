@@ -15,6 +15,7 @@ import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import no.sikt.nva.brage.migration.aws.S3Storage;
 import no.sikt.nva.brage.migration.aws.S3StorageImpl;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.logutils.LogSetup;
@@ -128,9 +129,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
             waitForAllProcesses(brageProcessorThreads);
             writeRecordsToFiles(brageProcessors);
             if (!shouldNotWriteToAws) {
-                pushToS3(brageProcessors);
+                pushToNva(brageProcessors);
+                storeLogsToNva();
             }
-            storeLogsToS3();
             logger.info("Records written to file: " + RecordsWriter.getCounter());
             logRecordCounter(brageProcessors);
             return NORMAL_EXIT_CODE;
@@ -165,11 +166,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return zipfiles.toArray(new String[0]);
     }
 
-    private void pushToS3(List<BrageProcessor> brageProcessors) {
+    private void pushToNva(List<BrageProcessor> brageProcessors) {
         brageProcessors.stream()
             .map(BrageProcessor::getRecords)
             .filter(Objects::nonNull)
-            .forEach(list -> list.forEach(this::storeFileToS3));
+            .forEach(list -> list.forEach(this::storeFileToNVA));
     }
 
     private List<BrageProcessor> getBrageProcessorThread(URI customerUri, String outputDirectory,
@@ -199,17 +200,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private String getDirectory(String zipfile) {
-        var zipfileName = Path.of(zipfile).getFileName().toString();
-        return zipfile.substring(0, zipfile.indexOf(zipfileName));
+        var zipFileName = Path.of(zipfile).getFileName().toString();
+        return zipfile.substring(0, zipfile.indexOf(zipFileName));
     }
 
-    private void storeFileToS3(Record record) {
-        S3StorageImpl storage = new S3StorageImpl(s3Client, "CUSTOMER");
+    private void storeFileToNVA(Record record) {
+        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER");
         storage.storeRecord(record);
     }
 
-    private void storeLogsToS3() {
-        S3StorageImpl storage = new S3StorageImpl(s3Client, "CUSTOMER");
+    private void storeLogsToNva() {
+        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER");
         storage.storeLogs();
     }
 
