@@ -4,11 +4,11 @@ import static java.util.Objects.isNull;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.brage.migration.common.model.record.Contributor;
-import no.sikt.nva.brage.migration.common.model.record.EntityDescription;
-import no.sikt.nva.brage.migration.common.model.record.Identity;
+import no.sikt.nva.brage.migration.common.model.record.entitydescription.Contributor;
+import no.sikt.nva.brage.migration.common.model.record.entitydescription.EntityDescription;
+import no.sikt.nva.brage.migration.common.model.record.entitydescription.Identity;
 import no.sikt.nva.brage.migration.common.model.record.PublicationDate;
-import no.sikt.nva.brage.migration.common.model.record.PublicationInstance;
+import no.sikt.nva.brage.migration.common.model.record.entitydescription.PublicationInstance;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.validators.DublinCoreValidator;
@@ -55,6 +55,7 @@ public final class EntityDescriptionExtractor {
         entityDescription.setTags(SubjectScraper.extractTags(dublinCore));
         entityDescription.setPublicationInstance(extractPublicationInstance(dublinCore));
         entityDescription.setPublicationDate(extractPublicationDate(dublinCore));
+        entityDescription.setLanguage(BrageNvaLanguageMapper.extractLanguage(dublinCore));
         return entityDescription;
     }
 

@@ -13,10 +13,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.BrageType;
-import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.record.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
-import no.sikt.nva.brage.migration.common.model.record.PublishedDate;
+import no.sikt.nva.brage.migration.common.model.record.entitydescription.PublishedDate;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.Type;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
@@ -158,7 +158,7 @@ public final class DublinCoreScraper {
         record.setId(brageLocation.getHandle());
         record.setOrigin(brageLocation.getBrageBundlePath());
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
-        record.setLanguage(BrageNvaLanguageMapper.extractLanguage(dublinCore));
+
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore));
         record.setDoi(extractDoi(dublinCore));

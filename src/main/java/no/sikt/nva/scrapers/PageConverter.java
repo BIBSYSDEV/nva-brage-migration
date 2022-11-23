@@ -1,8 +1,8 @@
 package no.sikt.nva.scrapers;
 
 import java.util.regex.Pattern;
-import no.sikt.nva.brage.migration.common.model.record.Pages;
-import no.sikt.nva.brage.migration.common.model.record.Range;
+import no.sikt.nva.brage.migration.common.model.record.entitydescription.Pages;
+import no.sikt.nva.brage.migration.common.model.record.entitydescription.Range;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.StringUtils;

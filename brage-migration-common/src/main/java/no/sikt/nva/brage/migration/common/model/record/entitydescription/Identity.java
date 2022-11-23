@@ -1,4 +1,4 @@
-package no.sikt.nva.brage.migration.common.model.record;
+package no.sikt.nva.brage.migration.common.model.record.entitydescription;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;

@@ -9,8 +9,9 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
+import no.sikt.nva.brage.migration.common.model.record.entitydescription.EntityDescription;
+import no.sikt.nva.brage.migration.common.model.record.entitydescription.PublishedDate;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.JacocoGenerated;
 
@@ -27,7 +28,6 @@ public class Record {
     private URI doi;
     private Path origin;
     private Type type;
-    private Language language;
     private Boolean publisherAuthority;
     private String rightsholder;
     private List<String> spatialCoverage;
@@ -110,7 +110,7 @@ public class Record {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(entityDescription, customerId, id, doi, origin, type, language, publisherAuthority,
+        return Objects.hash(entityDescription, customerId, id, doi, origin, type, publisherAuthority,
                             rightsholder, spatialCoverage, partOf, publication, contentBundle, publishedDate, cristinId,
                             brageLocation, errors, warnings);
     }
@@ -131,7 +131,6 @@ public class Record {
                && Objects.equals(doi, record.doi)
                && Objects.equals(origin, record.origin)
                && Objects.equals(type, record.type)
-               && Objects.equals(language, record.language)
                && Objects.equals(publisherAuthority, record.publisherAuthority)
                && Objects.equals(rightsholder, record.rightsholder)
                && Objects.equals(spatialCoverage, record.spatialCoverage)
@@ -200,16 +199,6 @@ public class Record {
 
     public void setType(Type type) {
         this.type = type;
-    }
-
-    @JacocoGenerated
-    @JsonProperty("language")
-    public Language getLanguage() {
-        return this.language;
-    }
-
-    public void setLanguage(Language language) {
-        this.language = language;
     }
 
     @JsonProperty("bareOrigin")

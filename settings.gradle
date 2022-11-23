@@ -1,5 +1,4 @@
 rootProject.name = 'nva-brage-migration'
-include 'create-publication-from-brage'
 include 'brage-migration-common'
 include 'post-to-aws'
 

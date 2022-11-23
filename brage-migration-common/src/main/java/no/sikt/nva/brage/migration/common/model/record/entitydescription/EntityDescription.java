@@ -1,8 +1,9 @@
-package no.sikt.nva.brage.migration.common.model.record;
+package no.sikt.nva.brage.migration.common.model.record.entitydescription;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
+import no.sikt.nva.brage.migration.common.model.record.PublicationDate;
 
 public class EntityDescription {
 
@@ -14,6 +15,8 @@ public class EntityDescription {
     private List<Contributor> contributors;
     private List<String> tags;
     private PublicationInstance publicationInstance;
+
+    private Language language;
 
     @JsonProperty("publicationDate")
     public PublicationDate getPublicationDate() {
@@ -87,10 +90,19 @@ public class EntityDescription {
         this.alternativeTitles = alternativeTitles;
     }
 
+    @JsonProperty("language")
+    public Language getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(Language language) {
+        this.language = language;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(publicationDate, descriptions, abstracts, mainTitle, alternativeTitles, contributors, tags,
-                            publicationInstance);
+                            publicationInstance, language);
     }
 
     @Override
@@ -106,6 +118,7 @@ public class EntityDescription {
                && Objects.equals(descriptions, that.descriptions)
                && Objects.equals(abstracts, that.abstracts)
                && Objects.equals(mainTitle, that.mainTitle)
+               && Objects.equals(language, that.language)
                && Objects.equals(alternativeTitles, that.alternativeTitles)
                && Objects.equals(contributors, that.contributors)
                && Objects.equals(tags, that.tags)
