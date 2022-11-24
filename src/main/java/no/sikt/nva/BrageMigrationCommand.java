@@ -80,7 +80,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Option(names = {"-a", "--do-not-write-to-aws"}, description = "If this flag is set, result will not "
                                                                    + "be pushed "
                                                                    + "to S3")
-    private boolean shouldNotWriteToAws;
+    private boolean shouldWriteToAws;
+
+    @Option(names = {"-b", "--write-processed-import-to-aws"}, description = "If this flag is set, processed result"
+                                                                             + "will be pushed to S3")
+    private boolean writeProcessedImportToAws;
     @Option(names = {"-no-handle-erros"}, description = "turn off handle errors. Invalid and missing handles does not"
                                                         + " get checked")
     private boolean noHandleCheck;
@@ -113,27 +117,32 @@ public class BrageMigrationCommand implements Callable<Integer> {
             var logOutPutDirectory = getLogOutputDirectory(inputDirectory, outputDirectory);
             /* IMPORTANT: DO NOT USE LOGGER BEFORE THIS METHOD HAS RUN: */
             LogSetup.setupLogging(logOutPutDirectory);
-            List<Embargo> embargoes;
-            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
-            if (isNull(zipFiles)) {
-                this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
-                embargoes = getEmbargoes(inputDirectory);
+            if (writeProcessedImportToAws) {
+                pushExistingResourcesToNva(readZipFileNamesFromCollectionFile(inputDirectory));
             } else {
-                embargoes = getEmbargoes(Arrays.stream(zipFiles));
+                List<Embargo> embargoes;
+                if (isNull(zipFiles)) {
+                    this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
+                    embargoes = getEmbargoes(inputDirectory);
+                } else {
+                    embargoes = getEmbargoes(Arrays.stream(zipFiles));
+                }
+                var customerUri = UriWrapper.fromUri(customer).getUri();
+                printIgnoredDcValuesFieldsInInfoLog();
+                var brageProcessors = getBrageProcessorThread(customerUri, outputDirectory, embargoes);
+                var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
+                startProcessors(brageProcessorThreads);
+                waitForAllProcesses(brageProcessorThreads);
+                writeRecordsToFiles(brageProcessors);
+
+                if (shouldWriteToAws) {
+                    pushToNva(brageProcessors);
+                    storeLogsToNva();
+                }
+                var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+                logger.info("Records written to file: " + RecordsWriter.getCounter());
+                logRecordCounter(brageProcessors);
             }
-            var customerUri = UriWrapper.fromUri(customer).getUri();
-            printIgnoredDcValuesFieldsInInfoLog();
-            var brageProcessors = getBrageProcessorThread(customerUri, outputDirectory, embargoes);
-            var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
-            startProcessors(brageProcessorThreads);
-            waitForAllProcesses(brageProcessorThreads);
-            writeRecordsToFiles(brageProcessors);
-            if (!shouldNotWriteToAws) {
-                pushToNva(brageProcessors);
-                storeLogsToNva();
-            }
-            logger.info("Records written to file: " + RecordsWriter.getCounter());
-            logRecordCounter(brageProcessors);
             return NORMAL_EXIT_CODE;
         } catch (Exception e) {
             var logger = LoggerFactory.getLogger(BrageProcessor.class);
@@ -164,6 +173,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
             throw new RuntimeException(e);
         }
         return zipfiles.toArray(new String[0]);
+    }
+
+    @SuppressWarnings("PMD.UseVarargs")
+    private void pushExistingResourcesToNva(String[] collections) {
+        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER");
+        storage.storeProcessedCollections(collections);
     }
 
     private void pushToNva(List<BrageProcessor> brageProcessors) {

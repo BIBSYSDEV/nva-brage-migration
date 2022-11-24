@@ -10,7 +10,8 @@ public class WarningDetails {
     private final Warning warningCode;
     private List<String> details;
 
-    public WarningDetails(Warning warningCode, List<String> details) {
+    public WarningDetails(@JsonProperty("warningCode") Warning warningCode,
+                          @JsonProperty("details")List<String> details) {
         this.warningCode = warningCode;
         this.details = details;
     }

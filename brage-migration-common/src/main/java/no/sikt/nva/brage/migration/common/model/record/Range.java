@@ -1,5 +1,6 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 public class Range {
@@ -7,7 +8,8 @@ public class Range {
     private String begin;
     private String end;
 
-    public Range(String begin, String end) {
+    public Range(@JsonProperty("begin") String begin,
+                 @JsonProperty("end") String end) {
         this.begin = begin;
         this.end = end;
     }

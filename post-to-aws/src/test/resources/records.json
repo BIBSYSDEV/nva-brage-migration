@@ -1,0 +1,1153 @@
+[ {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/9/",
+  "id" : "https://hdl.handle.net/11250/2597873",
+  "publishedDate" : {
+    "brage" : [ "2019-05-16T11:56:24Z" ],
+    "nva" : "2019-05-16T11:56:24Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241017742",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2018:94",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "I denne temarapporten i Nasjonal ramme for vindkraft går vi gjennom eksisterende kunnskap om virkninger av vindkraft for elektronisk kommunikasjon, med fokus på virkninger for radiolinjer og digitalt bakkenett for TV" ],
+    "publicationDate" : {
+      "brage" : "2018",
+      "nva" : "2018"
+    },
+    "mainTitle" : "Temarapport om elektronisk kommunikasjon",
+    "alternativeTitles" : [ ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Seim, Lars Hagvaag"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Kommunikasjonssystemer", "Kraftledninger", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2018_94.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "4af56bd0-43c8-4029-8dd4-3a1ba259afca"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/9"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/11/",
+  "id" : "https://hdl.handle.net/11250/2597919",
+  "publishedDate" : {
+    "brage" : [ "2019-05-20T06:40:34Z" ],
+    "nva" : "2019-05-20T06:40:34Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241018299",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2019:10",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Vindkraftverk kan påvirke en rekke ulike miljø- og samfunnsinteresser. Noen aktiviteter og næringer kan sameksistere og ha positive synergieffekter med vindkraftverk, mens andre interesser kan bli påvirket negativt. Denne rapporten er en gjennomgang av hvordan vindkraftverk kan påvirke sivil luftfart" ],
+    "publicationDate" : {
+      "brage" : "2019",
+      "nva" : "2019"
+    },
+    "mainTitle" : "Temarapport om sivil luftfart",
+    "alternativeTitles" : [ ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Aas, Hilde"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Luftfart", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2019_10.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "b439ad6d-b527-41c2-8371-7bee92128c66"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/11"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/7/",
+  "id" : "https://hdl.handle.net/11250/2597867",
+  "publishedDate" : {
+    "brage" : [ "2019-05-16T11:41:25Z" ],
+    "nva" : "2019-05-16T11:41:25Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241017315",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2018:73",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Denne rapporten gir en oversikt over de viktigste problemstillingene innenfor temaet drikkevann og vindkraft. Vi tar for oss uønskede hendelser knyttet til utbygging og drift av vindkraftverk i områder med drikkevannsinteresser, og vurderer hvordan avbøtende tiltak kan minimere negative virkninger" ],
+    "publicationDate" : {
+      "brage" : "2018",
+      "nva" : "2018"
+    },
+    "mainTitle" : "Temarapport om virkninger for drikkevann",
+    "alternativeTitles" : [ "" ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Solberg, Kjetil G."
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Ramtvedt, Ane N."
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Skogvold, Silje"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Drikkevann", "Konsekvensanalyser", "Skygger", "Støy", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2018_73.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "07e1bf99-e100-4e7d-8c19-e6fd76c9795e"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/7"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/6/",
+  "id" : "https://hdl.handle.net/11250/2597847",
+  "publishedDate" : {
+    "brage" : [ "2019-05-16T11:02:02Z" ],
+    "nva" : "2019-05-16T11:02:02Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241017117",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2018:58",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Rapporten er en del av NVEs forslag til en nasjonal ramme for vindkraft og presenterer kunnskapsgrunnlaget om reindrift og annen samisk utmarksbruk" ],
+    "publicationDate" : {
+      "brage" : "2018",
+      "nva" : "2018"
+    },
+    "mainTitle" : "Temarapport om reindrift og annen samisk utmarksbruk",
+    "alternativeTitles" : [ ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Berg, Matilde"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Johansen, Frode B."
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Kraftledninger", "Reindrift", "Samisk utmarksbruk", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2018_58.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "3c3da000-a66a-4f33-b267-5f7db832a29b"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/6"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/1/",
+  "id" : "https://hdl.handle.net/11250/2597932",
+  "publishedDate" : {
+    "brage" : [ "2019-05-20T07:04:57Z" ],
+    "nva" : "2019-05-20T07:04:57Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241018411",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2019:17",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Rapporten er en del av NVEs forslag til en nasjonal ramme for vindkraft og presenterer kunnskapsgrunnlaget om klimaavtrykk og livssyklusanalyser for vindkraft" ],
+    "publicationDate" : {
+      "brage" : "2019",
+      "nva" : "2019"
+    },
+    "mainTitle" : "Temarapport om klimaavtrykk og livssyklusanalyser",
+    "alternativeTitles" : [ ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Krogvold, Jon"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Energiregnskap", "Klimaavtrykk", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2019_17.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "1de52dbd-1ce3-4074-8d90-bc0899fe577c"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/1"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/10/",
+  "id" : "https://hdl.handle.net/11250/2597875",
+  "publishedDate" : {
+    "brage" : [ "2019-05-16T12:01:45Z" ],
+    "nva" : "2019-05-16T12:01:45Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241018138",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2019:5",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Denne temarapporten er en del av NVEs forslag til en nasjonal ramme for vindkraft. Rapporten inneholder en gjennomgang av hvordan vindkraftverk kan påvirke Forsvarets interesser, med fokus på blant annet radarer og lavtflyging" ],
+    "publicationDate" : {
+      "brage" : "2019",
+      "nva" : "2019"
+    },
+    "mainTitle" : "Temarapport om forsvarets interesser",
+    "alternativeTitles" : [ "" ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Nilsen, Steinar"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Forsvaret", "Lavtflyging", "Radar", "Radiolinjer", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2019_05.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "0c27b30f-bdbf-4378-b5a1-d23ebf0eb671"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/10"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/8/",
+  "id" : "https://hdl.handle.net/11250/2597934",
+  "publishedDate" : {
+    "brage" : [ "2019-05-20T07:09:25Z" ],
+    "nva" : "2019-05-20T07:09:25Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241018428",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Rapporten er en del av NVEs forslag til en nasjonal ramme for vindkraft og presenterer kunnskapsgrunnlaget om sammenhenger mellom klimagassutslipp og landbasert norsk vindkraft" ],
+    "publicationDate" : {
+      "brage" : "2019",
+      "nva" : "2019"
+    },
+    "mainTitle" : "Norsk vindkraft og klimagassutslipp",
+    "alternativeTitles" : [ ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Krogvold, Jon"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Willumsen, Vegard"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Energiregnskap", "Klimaavtrykk", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2019_18.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "e67f92e4-1555-4903-8f0b-89a1421e4635"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/8"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/4/",
+  "id" : "https://hdl.handle.net/11250/2597861",
+  "publishedDate" : {
+    "brage" : [ "2019-05-16T11:33:41Z" ],
+    "nva" : "2019-05-16T11:33:41Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241017308",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2018:72",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Vindkraftverk gir visuell eksponering og støy for de nære omgivelsene, og naboer til vindkraftverk kan bli påvirket av dette. Med nabovirkninger menes i denne rapporten virkninger for naboer knyttet til synlighet, støy, skyggekast og lysmerking for luftfart, og hvordan dette igjen kan påvirke eiendomspriser og folkehelse. I rapporten vurderes virkninger for både helårs- og fritidsboliger" ],
+    "publicationDate" : {
+      "brage" : "2018",
+      "nva" : "2018"
+    },
+    "mainTitle" : "Temarapport om nabovirkninger",
+    "alternativeTitles" : [ "" ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Jakobsen, Sissel Belgen"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bølling, Jørgen K."
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Jakobsen, Sissel Belgen"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Folkehelse", "Eiendomspriser", "Nabovirkninger", "Støy", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2018_72.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "b2f13818-4158-4b7f-9a26-273a556efb2a"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/4"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/15/",
+  "id" : "https://hdl.handle.net/11250/2597928",
+  "publishedDate" : {
+    "brage" : [ "2019-05-20T06:59:04Z" ],
+    "nva" : "2019-05-20T06:59:04Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241018404",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2019:16",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Denne rapporten tar for seg hvordan utbygging og drift av vindkraftverk kan påvirke lokal og regional næringsutvikling" ],
+    "publicationDate" : {
+      "brage" : "2019",
+      "nva" : "2019"
+    },
+    "mainTitle" : "Temarapport om lokal og regional næringsutvikling",
+    "alternativeTitles" : [ ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Berg, Matilde"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Næringsutvikling", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2019_16.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "31e7f95f-c9a2-4e59-866c-55f2b8d5732e"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/15"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/3/",
+  "id" : "https://hdl.handle.net/11250/2597878",
+  "publishedDate" : {
+    "brage" : [ "2019-05-16T12:09:24Z" ],
+    "nva" : "2019-05-16T12:09:24Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241018145",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2019:6",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Denne temarapporten er en del av NVEs forslag til en nasjonal ramme for vindkraft. Rapporten inneholder en gjennomgang av hvordan vindkraftverk kan påvirke værradarene til Meteorologisk Institutt" ],
+    "publicationDate" : {
+      "brage" : "2019",
+      "nva" : "2019"
+    },
+    "mainTitle" : "Temarapport om værradarer",
+    "alternativeTitles" : [ ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Aass, Hilde"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Meteorologisk institutt", "Vindkraft", "Vindkraftverk", "Værradar" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2019_06.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "b978c1c3-0e69-43bb-a079-f8bee8efc10b"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/3"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/12/",
+  "id" : "https://hdl.handle.net/11250/2597871",
+  "publishedDate" : {
+    "brage" : [ "2019-05-16T11:50:27Z" ],
+    "nva" : "2019-05-16T11:50:27Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241017728",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2018:93",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Rapporten er en del av NVEs forslag til en nasjonal ramme for vindkraft på land, og presenterer kunnskapsgrunnlaget om landbruk, mineralske ressurser og andre tema" ],
+    "publicationDate" : {
+      "brage" : "2018",
+      "nva" : "2018"
+    },
+    "mainTitle" : "Temarapport om landbruk, mineralressurser og andre tema",
+    "alternativeTitles" : [ "" ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Lundsbakken, Marte"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Ingebrigtsen, Kaja Henny"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Idrett", "Kraftledninger", "Landbruk", "Mineralressurser", "Trafikk", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2018_93.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "f7636a45-f0dd-42fa-a074-2d10325ce22b"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/12"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/2/",
+  "id" : "https://hdl.handle.net/11250/2597853",
+  "publishedDate" : {
+    "brage" : [ "2019-05-16T11:21:51Z" ],
+    "nva" : "2019-05-16T11:21:51Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241017100",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2018:57",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Rapporten er en del av NVEs forslag til en nasjonal ramme for vindkraft og presenterer kunnskapsgrunnlaget om iskast og isnedfall fra vindturbiner" ],
+    "publicationDate" : {
+      "brage" : "2018",
+      "nva" : "2018"
+    },
+    "mainTitle" : "Temarapport om iskast",
+    "alternativeTitles" : [ "" ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Butt, Bushra"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Lundsbakken, Marte"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Bjerkestrand, Erlend"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Iskast", "Isnedfall", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2018_57.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "43c33b59-7ce9-4220-a1e8-2751fab382de"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/2"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/13/",
+  "id" : "https://hdl.handle.net/11250/2597924",
+  "publishedDate" : {
+    "brage" : [ "2019-05-20T06:55:00Z" ],
+    "nva" : "2019-05-20T06:55:00Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241018398",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2019:15",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Rapporten er en del av NVEs forslag til nasjonal ramme for vindkraft. Rapporten beskriver det folkerettslige vernet av samiske interesser og hvordan dette ivaretas i konsesjonsbehandlingen" ],
+    "publicationDate" : {
+      "brage" : "2019",
+      "nva" : "2019"
+    },
+    "mainTitle" : "Det folkerettslige vernet av samiske interesser i konsesjonsbehandlingen",
+    "alternativeTitles" : [ ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Dalen, Even Vegard"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Villaruel, Amanda"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Rogstad, Anne"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Folkerett", "Samer", "Samiske interesser", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2019_15.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "3d5fe217-f336-4d3e-bf49-172b53a2cadd"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/13"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/5/",
+  "id" : "https://hdl.handle.net/11250/2597839",
+  "publishedDate" : {
+    "brage" : [ "2019-05-16T10:46:26Z" ],
+    "nva" : "2019-05-16T10:46:26Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241018367",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2019:12",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ "Prosjektleder: Erlend Bjerkestrand Forfattere: Sissel B. Jacobsen, Sigrun K. Mindeberg, Ann M. Østenby, Even V. Dalen, Marte Lundsbakken, Erlend Bjerkestrand, Ingrid E. Haukeli, Mathilde Berg, Frode B. Johansen, David Weir, Jon Krogvold, Anne M. Aabøe, Fredrik Arnesen, Vegard Willumsen, Bushra Butt, Jørgen K. Bølling, Kjetil G. Solberg, Ane N. Ramtvedt, Hilde Aass, Lars H. Seim, Kaja H. Engebrigtsen Kart: Kristian Marcussen, Rambøll" ],
+    "abstracts" : [ "Denne rapporten er Norges vassdrags- og energidirektorat (NVE) sitt forslag til en nasjonal ramme for vindkraft på land i Norge. Rapporten er utarbeidet på oppdrag fra Olje- og energidepartementet (OED)" ],
+    "publicationDate" : {
+      "brage" : "2019-04",
+      "nva" : "2019-04-01"
+    },
+    "mainTitle" : "Forslag til Nasjonal ramme for vindkraft",
+    "alternativeTitles" : [ ],
+    "contributors" : [ {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Lundsbakken, Marte"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Kraftutbygging", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2019_12.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "78400d67-944b-4d50-82ec-37bb5a61f3e0"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/5"
+}, {
+  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/14/",
+  "id" : "https://hdl.handle.net/11250/2597922",
+  "publishedDate" : {
+    "brage" : [ "2019-05-20T06:49:10Z" ],
+    "nva" : "2019-05-20T06:49:10Z"
+  },
+  "publisherAuthority" : null,
+  "type" : {
+    "brage" : [ "Report" ],
+    "nva" : "Report"
+  },
+  "spatialCoverage" : [ "Norway" ],
+  "language" : {
+    "brage" : [ "nob" ],
+    "nva" : "http://lexvo.org/id/iso639-3/nob"
+  },
+  "publication" : {
+    "issn" : "1501-2832",
+    "isbn" : "9788241018381",
+    "publisher" : "NVE",
+    "partOfSeries" : "NVE Rapport;2019:14",
+    "id" : "450187"
+  },
+  "entityDescription" : {
+    "descriptions" : [ ],
+    "abstracts" : [ "Norsk reiselivsnæring er sterkt relatert til opplevelser av urørt natur, og er en næring i sterk vekst. Denne rapporten gir en gjennomgang av et utvalg studier av hvordan vindkraftutbygging påvirker reiselivsnæringen. I rapporten vurderes også behovet for ny kunnskap. Til slutt diskuteres hvordan reiselivsinteresser bør vektlegges i henholdsvis arbeidet med å peke ut Norges mest egnede områder for vindkraft, og i fremtidige konsesjonssaker" ],
+    "publicationDate" : {
+      "brage" : "2019",
+      "nva" : "2019"
+    },
+    "mainTitle" : "Temarapport om reiseliv",
+    "alternativeTitles" : [ ],
+    "contributors" : [ {
+      "brageRole" : "author",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Jakobsen, Sissel Belgen"
+      },
+      "role" : "Author"
+    }, {
+      "brageRole" : "editor",
+      "type" : "Contributor",
+      "identity" : {
+        "type" : "Identity",
+        "name" : "Olsen, Arne"
+      },
+      "role" : "Editor"
+    } ],
+    "tags" : [ "Turisme", "Vindkraft", "Vindkraftverk" ],
+    "publicationInstance" : { }
+  },
+  "recordContent" : {
+    "contentFiles" : [ {
+      "description" : "Datagrunnlag",
+      "license" : {
+        "brageLicense" : null,
+        "nvaLicense" : {
+          "identifier" : "Rights Reserved",
+          "type" : "License"
+        }
+      },
+      "filename" : "rapport2019_14.pdf",
+      "bundleType" : "ORIGINAL",
+      "identifier" : "4a1d1c4f-f144-43a6-877d-83cbe0abb53e"
+    } ]
+  },
+  "errors" : [ ],
+  "warnings" : [ ],
+  "brageLocation" : "2597824/14"
+} ]

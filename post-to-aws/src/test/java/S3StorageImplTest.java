@@ -81,6 +81,20 @@ public class S3StorageImplTest {
         assertThat(appender.getMessages(), containsString(COULD_NOT_WRITE_RECORD_MESSAGE));
     }
 
+    @Test
+    void shouldPushProcessedRecordsToS3() {
+        var expectedKeyFromBucket = "CUSTOMER/2833909/1/2836938.json";
+        var s3Client = new FakeS3Client();
+        var storageClient = new S3StorageImpl(s3Client, "src/test/resources/NVE/", CUSTOMER);
+        String[] bundles = {"2833909"};
+        storageClient.storeProcessedCollections(bundles);
+        var actualFileKeyFromBucket =
+            s3Client.listObjects(createListObjectsRequest(UnixPath.fromString(expectedKeyFromBucket)))
+                .contents()
+                .get(0).key();
+        assertThat(actualFileKeyFromBucket, is(equalTo(expectedKeyFromBucket)));
+    }
+
     private static ListObjectsRequest createListObjectsRequest(UnixPath folder) {
         return ListObjectsRequest.builder()
                    .bucket(S3StorageImpl.bucketName)
