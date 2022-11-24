@@ -15,8 +15,8 @@ import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import no.sikt.nva.brage.migration.aws.S3RecordStorage;
-import no.sikt.nva.brage.migration.aws.StoreRecord;
+import no.sikt.nva.brage.migration.aws.S3Storage;
+import no.sikt.nva.brage.migration.aws.S3StorageImpl;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.logutils.LogSetup;
 import no.sikt.nva.model.Embargo;
@@ -129,7 +129,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
             waitForAllProcesses(brageProcessorThreads);
             writeRecordsToFiles(brageProcessors);
             if (!shouldNotWriteToAws) {
-                pushToNVA(brageProcessors);
+                pushToNva(brageProcessors);
+                storeLogsToNva();
             }
             logger.info("Records written to file: " + RecordsWriter.getCounter());
             logRecordCounter(brageProcessors);
@@ -165,7 +166,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return zipfiles.toArray(new String[0]);
     }
 
-    private void pushToNVA(List<BrageProcessor> brageProcessors) {
+    private void pushToNva(List<BrageProcessor> brageProcessors) {
         brageProcessors.stream()
             .map(BrageProcessor::getRecords)
             .filter(Objects::nonNull)
@@ -199,13 +200,18 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private String getDirectory(String zipfile) {
-        var zipfileName = Path.of(zipfile).getFileName().toString();
-        return zipfile.substring(0, zipfile.indexOf(zipfileName));
+        var zipFileName = Path.of(zipfile).getFileName().toString();
+        return zipfile.substring(0, zipfile.indexOf(zipFileName));
     }
 
     private void storeFileToNVA(Record record) {
-        StoreRecord storage = new S3RecordStorage(s3Client);
+        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER");
         storage.storeRecord(record);
+    }
+
+    private void storeLogsToNva() {
+        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER");
+        storage.storeLogs();
     }
 
     private void logRecordCounter(List<BrageProcessor> brageProcessors) {
