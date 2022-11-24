@@ -1,0 +1,18 @@
+The following fields are ignored: 
+<dcValue element="date" qualifier="copyright"/>
+<dcValue element="relation" qualifier="project"/>
+<dcValue element="description" qualifier="provenance"/>
+<dcValue element="description" qualifier="sponsorship"/>
+<dcValue element="identifier" qualifier="citation"/>
+<dcValue element="subject" qualifier="nsi"/>
+<dcValue element="date" qualifier="created"/>
+<dcValue element="date" qualifier="updated"/>
+Could not write files to s3 for: 2828121/1 The request signature we calculated does not match the signature you provided. Check your key and signing method. (Service: S3, Status Code: 403, Request ID: 39VK322B402C5QQ7, Extended Request ID: gm2Si9Xxpqc1NE7A+Av11qq3AmOa4cM9ZX3Wt8lTWg4XGu1ALDOu7y4/vwMw5M9kX2nus42OqzA=)
+Could not write files to s3 for: 2828121/12 The request signature we calculated does not match the signature you provided. Check your key and signing method. (Service: S3, Status Code: 403, Request ID: 5DSA9Q1R6VE2C2NR, Extended Request ID: 03Q/MUmxw8P0EhPbIGabZlDoiT3P9C0BvIGukaD+swA2ikXnzwoNJ0puWhuSuedllrnEgzLDOIk=)
+Could not write files to s3 for: 2488796/58 The request signature we calculated does not match the signature you provided. Check your key and signing method. (Service: S3, Status Code: 403, Request ID: RVP1R2PW8W4891EG, Extended Request ID: oX8VYwZiCbi2Ijb5+ExwWh+Xl9ZTzrsc0OI3zPT/5r/jxY86a6hAUK0HpFI9aVS9xYwrZZh2NEU=)
+Could not write files to s3 for: 2488796/67 The request signature we calculated does not match the signature you provided. Check your key and signing method. (Service: S3, Status Code: 403, Request ID: XKV5AGS9VD37S4Y3, Extended Request ID: wtmBpikTEsTSPF9HqZxY8b7BkuKLPOLb65avwzTToDU56RCaZfsdy2ZKHYhjDL5Z4g8BgCYUzwk=)
+Could not write files to s3 for: 2488796/33 The request signature we calculated does not match the signature you provided. Check your key and signing method. (Service: S3, Status Code: 403, Request ID: V92MRG7TPPMG0P99, Extended Request ID: cnsMBG9DJP9Crn/QlS8ZnyPUXhdpzFZtZ7LhxSmlZs6X1st+NtzKW/aDhW2LK61yp7NbeJKbX8s=)
+Could not write files to s3 for: 2488796/75 The request signature we calculated does not match the signature you provided. Check your key and signing method. (Service: S3, Status Code: 403, Request ID: T47ETA2BSS9RQ4W1, Extended Request ID: tMHne4KqRF3sjQZ+2h6b2h5wR3JfE3pwFa6PwFQDhzJx8eWiTUD+Yqdo3GJ98WD4WpTxjnttkSw=)
+Could not write files to s3 for: 2488796/55 The request signature we calculated does not match the signature you provided. Check your key and signing method. (Service: S3, Status Code: 403, Request ID: 51RKM7GD3CR0JG2T, Extended Request ID: /idZJdH1487iG5eh2LoK7bUcl+jbeTLehJWLEN+1RcIFN9pm5UjamkrwRSApXG3tV3fdDJuVsx3RSDlTHGh+Ng==)
+Records written to file: 357
+Records without errors: 343/357

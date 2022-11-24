@@ -1,10 +1,14 @@
 package no.sikt.nva.brage.migration.aws;
 
+import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
+import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +37,8 @@ public class S3StorageImpl implements S3Storage {
     public static final String JSON_STRING = ".json";
     public static final String APPLICATION_JSON = "application/json";
     public static final String bucketName = "anette-kir-brage-migration-experiment";
+    public static final String RECORDS_JSON_FILE_NAME = "records.json";
+    public static final String PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 = "Problem pushing processed records to S3: ";
     private static final Logger logger = LoggerFactory.getLogger(S3StorageImpl.class);
     private final S3Client s3Client;
     private final String pathPrefixString;
@@ -68,8 +75,38 @@ public class S3StorageImpl implements S3Storage {
         }
     }
 
+    @Override
+    public void storeProcessedCollections(String[] collections) {
+        try {
+            var collectionFiles = getCollections(stripZipBundlesToCollections(collections));
+            var listOfRecordsCollections = gerRecordsJsonFiles(collectionFiles);
+            extractRecords(listOfRecordsCollections).forEach(this::storeRecord);
+            writeLogsToS3();
+        } catch (Exception e) {
+            logger.info(PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 + e.getMessage());
+        }
+    }
+
     public String getPathPrefixString() {
         return pathPrefixString;
+    }
+
+    public List<Record> readRecordsFromFile(File recordsFile) throws IOException {
+        var path = getPathPrefixString() + recordsFile.getPath();
+        var recordsAsString = Files.readString(Path.of(path));
+        return Arrays.asList(JsonUtils.dtoObjectMapper.readValue(recordsAsString, Record[].class));
+    }
+
+    private static List<File> gerRecordsJsonFiles(List<File> collectionFiles) {
+        return collectionFiles.stream()
+                   .map(file -> new File(file.getName() + "/" + RECORDS_JSON_FILE_NAME))
+                   .collect(Collectors.toList());
+    }
+
+    private static List<String> stripZipBundlesToCollections(String... collections) {
+        return Arrays.stream(collections)
+                   .map(collectionString -> collectionString.replaceAll(".zip", ""))
+                   .collect(Collectors.toList());
     }
 
     private static String extractHandleForFilename(Record record) {
@@ -83,6 +120,20 @@ public class S3StorageImpl implements S3Storage {
 
     private static UUID getUuidToRecordFile(Record record, File file) {
         return record.getContentBundle().getContentFileByFilename(file.getName()).getIdentifier();
+    }
+
+    private List<Record> extractRecords(List<File> listOfRecordsCollections) throws IOException {
+        List<Record> records = new ArrayList<>();
+        for (File file : listOfRecordsCollections) {
+            if (nonNull(file)) {
+                records.addAll(readRecordsFromFile(file));
+            }
+        }
+        return records;
+    }
+
+    private List<File> getCollections(List<String> bundles) {
+        return bundles.stream().map(File::new).collect(Collectors.toList());
     }
 
     private File findAssociatedFiles(Record record) {

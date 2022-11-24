@@ -9,6 +9,9 @@ public class PublishedDate {
     private List<String> brageDates;
     private String nvaDate;
 
+    public PublishedDate() {
+    }
+
     @JsonProperty("brage")
     public List<String> getBrageDates() {
         return brageDates;

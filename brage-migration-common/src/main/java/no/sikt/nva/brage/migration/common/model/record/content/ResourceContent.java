@@ -1,5 +1,6 @@
 package no.sikt.nva.brage.migration.common.model.record.content;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
@@ -9,7 +10,8 @@ public class ResourceContent {
 
     private List<ContentFile> contentFiles;
 
-    public ResourceContent(List<ContentFile> contentFiles) {
+    @JsonCreator
+    public ResourceContent(@JsonProperty("contentFiles") List<ContentFile> contentFiles) {
         this.contentFiles = contentFiles;
     }
 

@@ -13,6 +13,9 @@ public class Publication {
     private String partOfSeries;
     private String id;
 
+    public Publication() {
+    }
+
     @JsonProperty("id")
     public String getId() {
         return id;

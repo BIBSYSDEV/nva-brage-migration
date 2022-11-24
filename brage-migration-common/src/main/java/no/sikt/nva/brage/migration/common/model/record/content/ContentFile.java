@@ -87,11 +87,11 @@ public class ContentFile {
         return bundleType;
     }
 
-    @JsonProperty("description")
     public void setBundleType(BundleType bundleType) {
         this.bundleType = bundleType;
     }
 
+    @JsonProperty("license")
     public License getLicense() {
         return license;
     }
@@ -100,6 +100,7 @@ public class ContentFile {
         this.license = license;
     }
 
+    @JsonProperty("description")
     public String getDescription() {
         return description;
     }
