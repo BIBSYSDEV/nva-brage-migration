@@ -248,22 +248,6 @@ public class DublinCoreScraperTest {
         assertThat(record.getType(), is(notNullValue()));
     }
 
-    @ParameterizedTest
-    @MethodSource("provideDcValueAndExpectedPages")
-    void shouldExtractPagesWithDifferentFormats(DcValue pageNumber, Pages expectedPages) {
-        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
-        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(peerReviewed, typeDcValue, pageNumber));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper
-                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getEntityDescription().getPublicationInstance().getPages(), is(equalTo(expectedPages)));
-        assertThat(appender.getMessages(), not(containsString(PAGE_NUMBER_FORMAT_NOT_RECOGNIZED.toString())));
-    }
-
     @Test
     void shouldLogWarningIfPageNumberIsNotRecognized() {
         var unrecognizedPagenumber = randomString();
@@ -468,6 +452,23 @@ public class DublinCoreScraperTest {
             String.valueOf(MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE)));
     }
 
+    @ParameterizedTest
+    @MethodSource("provideDcValueAndExpectedPages")
+    void shouldExtractPagesWithDifferentFormats(DcValue pageNumber, Pages expectedPages) {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(peerReviewed, typeDcValue, pageNumber));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var actualPages = record.getEntityDescription().getPublicationInstance().getPages();
+        assertThat(actualPages, is(equalTo(expectedPages)));
+        assertThat(appender.getMessages(), not(containsString(PAGE_NUMBER_FORMAT_NOT_RECOGNIZED.toString())));
+    }
+
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
         return Stream.of(
             Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "96"),
@@ -477,7 +478,10 @@ public class DublinCoreScraperTest {
             Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "s. 96"),
                          new Pages("s. 96", new Range("96", "96"), "1")),
             Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34-89"),
-                         new Pages("34-89", new Range("34", "89"), "55"))
+                         new Pages("34-89", new Range("34", "89"), "55")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "[86] s."),
+                         new Pages("[86] s.", null, "86"))
+
         );
     }
 }
