@@ -4,7 +4,6 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +24,6 @@ import no.sikt.nva.scrapers.HandleTitleMapReader;
 import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import nva.commons.core.paths.UriWrapper;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -127,9 +125,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 } else {
                     embargoes = getEmbargoes(Arrays.stream(zipFiles));
                 }
-                var customerUri = UriWrapper.fromUri(customer).getUri();
                 printIgnoredDcValuesFieldsInInfoLog();
-                var brageProcessors = getBrageProcessorThread(customerUri, outputDirectory, embargoes);
+                var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes);
                 var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
                 startProcessors(brageProcessorThreads);
                 waitForAllProcesses(brageProcessorThreads);
@@ -188,7 +185,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             .forEach(list -> list.forEach(this::storeFileToNVA));
     }
 
-    private List<BrageProcessor> getBrageProcessorThread(URI customerUri, String outputDirectory,
+    private List<BrageProcessor> getBrageProcessorThread(String customerUri, String outputDirectory,
                                                          List<Embargo> embargoes) {
         return createBrageProcessorThread(zipFiles,
                                           customerUri,
@@ -220,12 +217,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void storeFileToNVA(Record record) {
-        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER");
+        S3Storage storage = new S3StorageImpl(s3Client, customer);
         storage.storeRecord(record);
     }
 
     private void storeLogsToNva() {
-        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER");
+        S3Storage storage = new S3StorageImpl(s3Client, customer);
         storage.storeLogs();
     }
 
@@ -309,7 +306,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         brageProcessors.forEach(Thread::start);
     }
 
-    private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, URI customer,
+    private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, String customer,
                                                             boolean enableOnlineValidation, boolean noHandleCheck,
                                                             String outputDirectory, List<Embargo> embargoes) {
         var handleTitleMapReader = new HandleTitleMapReader();
