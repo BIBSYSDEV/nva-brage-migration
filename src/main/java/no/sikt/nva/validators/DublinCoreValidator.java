@@ -28,6 +28,7 @@ import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.scrapers.BrageNvaLanguageMapper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.PageConverter;
+import no.sikt.nva.scrapers.PublisherMapper;
 import no.sikt.nva.scrapers.SubjectScraper;
 import no.sikt.nva.scrapers.TypeMapper;
 import nva.commons.core.StringUtils;
@@ -123,9 +124,11 @@ public final class DublinCoreValidator {
         var title = DublinCoreScraper.extractJournal(dublinCore);
         var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(issn);
         var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(title);
-//        var possibleChannelRegisterIdentifierByTitle = channelRegister.lookUpInPublisherByPublisher(dublinCore.ex)
+        var possibleChannelRegisterIdentifierByPublisher =
+            channelRegister.lookUpInPublisherByPublisher(PublisherMapper.getMappablePublisher(publisher));
         if (nonNull(possibleChannelRegisterIdentifierByIssn)
-            || nonNull(possibleChannelRegisterIdentifierByJournal)) {
+            || nonNull(possibleChannelRegisterIdentifierByJournal)
+            || nonNull(possibleChannelRegisterIdentifierByPublisher)) {
             return Optional.empty();
         } else {
             return getChannelRegisterErrorDetailsWhenSearchingForPublisher(issn, publisher);

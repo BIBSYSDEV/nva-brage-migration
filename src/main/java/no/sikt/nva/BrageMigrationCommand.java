@@ -283,7 +283,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                .collect(Collectors.toList());
             if (alreadyRegisteredHandles.contains(record.getId())) {
                 var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
-                logger.error(DUPLICATE_MESSAGE
+                logger.info(DUPLICATE_MESSAGE
                              + record.getId() + " " + record.getBrageLocation()
                              + "  =>  EXISTING RESOURCE IS: "
                              + recordStorage.getRecordLocationStringById(record.getId()));

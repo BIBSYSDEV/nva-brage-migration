@@ -15,6 +15,7 @@ import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.PublisherMapper;
 import nva.commons.core.SingletonCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,11 +49,10 @@ public final class ChannelRegister {
         return register;
     }
 
-    public String lookUpInChannelRegister(Record record) {
-        var publisher = record.getPublication().getPublisher();
-        var issn = record.getPublication().getIssn();
-        if (extractedIdentifierFromJournalsIsPresent(publisher, issn)) {
-            return lookUpInJournalByIssn(issn);
+    public String lookUpInChannelRegisterForPublisher(Record record) {
+        var publicationContext = record.getPublication().getPublicationContext();
+        if(extractedIdentifierFromPublishersIsPresent(publicationContext.getBragePublisher())) {
+            return lookUpInPublisherByPublisher(publicationContext.getBragePublisher());
         }
         return null;
     }
@@ -100,8 +100,9 @@ public final class ChannelRegister {
             if (isNullOrEmpty(publisher)) {
                 return publisher;
             } else {
+                var publisherFromMapper = PublisherMapper.getMappablePublisher(publisher);
                 return channelRegisterPublishers.stream()
-                           .filter(item -> item.hasIsbn(publisher))
+                           .filter(item -> item.hasPublisher(publisherFromMapper))
                            .map(ChannelRegisterPublisher::getIdentifier)
                            .collect(SingletonCollector.collectOrElse(null));
             }
@@ -114,10 +115,9 @@ public final class ChannelRegister {
         }
     }
 
-    public String extractIdentifier(DublinCore dublinCore, BrageLocation brageLocation) {
+    public String extractIdentifierFromJournals(DublinCore dublinCore, BrageLocation brageLocation) {
         var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
         var title = DublinCoreScraper.extractJournal(dublinCore);
-        var publisher = DublinCoreScraper.extractPublisher(dublinCore);
         try {
             return isNotNullOrEmpty(issn) || isNotNullOrEmpty(title)
                        ? channelRegisterJournals.stream()
@@ -159,14 +159,6 @@ public final class ChannelRegister {
             logger.error(KANALREGISTER_READING_ERROR_MESSAGE);
             throw new RuntimeException(e);
         }
-    }
-
-    private boolean extractedIdentifierFromJournalsIsPresent(String publisher, String issn) {
-        if (isNotNullOrEmpty(publisher) && isNotNullOrEmpty(issn)) {
-            var identifierFromJournal = lookUpInJournalByIssn(issn);
-            return isNotNullOrEmpty(String.valueOf(identifierFromJournal));
-        }
-        return false;
     }
 
     private boolean extractedIdentifierFromPublishersIsPresent(String publisher) {

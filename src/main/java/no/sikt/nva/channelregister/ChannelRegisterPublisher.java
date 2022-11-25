@@ -54,4 +54,11 @@ public class ChannelRegisterPublisher {
         var isbnPrefix = Optional.ofNullable(this.getIsbnPrefix()).orElse(StringUtils.EMPTY_STRING);
         return isbnPrefix.equals(isbn);
     }
+
+    public boolean hasPublisher(String publisher) {
+        var originalTitle = Optional.of(this.getOriginalTitle()).orElse(StringUtils.EMPTY_STRING);
+        var internationalTitle = Optional.of(this.getInternationalTitle()).orElse(StringUtils.EMPTY_STRING);
+
+        return originalTitle.equalsIgnoreCase(publisher) || internationalTitle.equalsIgnoreCase(publisher);
+    }
 }

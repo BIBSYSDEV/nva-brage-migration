@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.validators.DublinCoreValidator.ACCEPTED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
@@ -15,9 +16,13 @@ import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
+import no.sikt.nva.brage.migration.common.model.record.Journal;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
+import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
 import no.sikt.nva.brage.migration.common.model.record.PublishedDate;
+import no.sikt.nva.brage.migration.common.model.record.Publisher;
 import no.sikt.nva.brage.migration.common.model.record.Record;
+import no.sikt.nva.brage.migration.common.model.record.Series;
 import no.sikt.nva.brage.migration.common.model.record.Type;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
@@ -174,27 +179,61 @@ public final class DublinCoreScraper {
     private static Publication createPublicationWithIdentifier(DublinCore dublinCore, BrageLocation brageLocation,
                                                                Record record) {
         var publication = extractPublication(dublinCore, brageLocation);
+        publication.setPublicationContext(new PublicationContext());
+        publication.getPublicationContext().setBragePublisher(extractPublisher(dublinCore));
         record.setPublication(publication);
+
         var nvaType = record.getType().getNva();
         if (nonNull(nvaType)) {
-            if (isSearchableInJournals(nvaType)) {
-                publication.setId(channelRegister.extractIdentifier(dublinCore, brageLocation));
-            }
-            if (isSearchableInPublishers(publication, nvaType)) {
-                var identifier = channelRegister.lookUpInChannelRegister(record);
-                publication.setId(identifier);
-            }
+            searchForSeriesAndJournalsInChannelRegister(dublinCore, brageLocation, record);
+            searchForPublisherInChannelRegister(record);
         }
         return publication;
     }
 
-    private static boolean isSearchableInJournals(String nvaType) {
-        return nvaType.equals(NvaType.JOURNAL_ARTICLE.getValue())
-               || nvaType.equals(NvaType.SCIENTIFIC_ARTICLE.getValue());
+    private static void searchForSeriesAndJournalsInChannelRegister(DublinCore dublinCore, BrageLocation brageLocation,
+                                                                    Record record) {
+        var nvaType = record.getType().getNva();
+        var publication = record.getPublication();
+        if (isSearchableInJournals(nvaType)) {
+            setIdFromJournals(dublinCore, brageLocation, publication);
+        }
     }
 
-    private static boolean isSearchableInPublishers(Publication publication, String nvaType) {
-        return nonNull(publication.getPublisher())
+    private static void setIdFromJournals(DublinCore dublinCore, BrageLocation brageLocation, Publication publication) {
+        if (nonNull(publication.getPartOfSeries())) {
+            var seriesId = channelRegister.extractIdentifierFromJournals(dublinCore, brageLocation);
+            publication.getPublicationContext().setSeries(new Series(seriesId));
+        }
+        if (isNull(publication.getPartOfSeries())) {
+            var journalId = channelRegister.extractIdentifierFromJournals(dublinCore, brageLocation);
+            if (nonNull(journalId)) {
+                publication.getPublicationContext().setJournal(new Journal(journalId));
+            }
+        }
+    }
+
+    private static void searchForPublisherInChannelRegister(Record record) {
+        var publication = record.getPublication();
+        if (isSearchableInPublishers(record)) {
+            var publisherId = channelRegister.lookUpInChannelRegisterForPublisher(record);
+            if (nonNull(publisherId)) {
+                publication.getPublicationContext().setPublisher(new Publisher(publisherId));
+            }
+        }
+    }
+
+    private static boolean isSearchableInJournals(String nvaType) {
+        return nvaType.equals(NvaType.JOURNAL_ARTICLE.getValue())
+               || nvaType.equals(NvaType.SCIENTIFIC_ARTICLE.getValue())
+               || nvaType.equals(NvaType.REPORT.getValue());
+    }
+
+    private static boolean isSearchableInPublishers(Record record) {
+        var publication = record.getPublication();
+        var nvaType = record.getType().getNva();
+        var bragePublisher = publication.getPublicationContext().getBragePublisher();
+        return nonNull(bragePublisher)
                && nvaType.equals(BrageType.REPORT.getValue())
                || nvaType.equals(BrageType.BOOK.getValue())
                || nvaType.equals(NvaType.SCIENTIFIC_MONOGRAPH.getValue());
@@ -226,7 +265,6 @@ public final class DublinCoreScraper {
         publication.setIssn(extractIssn(dublinCore, brageLocation));
         publication.setIsbn(extractIsbn(dublinCore, brageLocation));
         publication.setJournal(extractJournal(dublinCore));
-        publication.setPublisher(extractPublisher(dublinCore));
         publication.setPartOfSeries(extractPartOfSeries(dublinCore));
         return publication;
     }
