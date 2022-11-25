@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
@@ -32,8 +33,6 @@ import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Pages;
 import no.sikt.nva.brage.migration.common.model.record.Range;
-import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
-import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
@@ -63,7 +62,7 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldConvertValidVersionToPublisherAuthority() {
-        var expectedPublisherAuthority = true;
+        var expectedPublisherAuthority = Optional.of(true);
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
@@ -71,7 +70,7 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore,
                                                                   new BrageLocation(null));
-        var actualPublisherAuthority = record.getPublisherAuthority();
+        var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
     }
 
@@ -83,7 +82,7 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCoreWithoutVersion,
                                                                   new BrageLocation(null));
-        var actualPublisherAuthority = record.getPublisherAuthority();
+        var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(null)));
     }
 
@@ -406,7 +405,7 @@ public class DublinCoreScraperTest {
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getPublisherAuthority(), is(false));
+        assertThat(record.getPublisherAuthority().getNva(), is(Optional.of(false)));
     }
 
     @Test
@@ -419,9 +418,7 @@ public class DublinCoreScraperTest {
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(record.getPublisherAuthority(), is(nullValue()));
-        assertThat(record.getWarnings(),
-                   contains(new WarningDetails(Warning.VERSION_WARNING, versionDcValue.getValue())));
+        assertThat(record.getPublisherAuthority().getNva(), is(nullValue()));
     }
 
     @Test
