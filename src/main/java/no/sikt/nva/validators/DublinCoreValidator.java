@@ -123,6 +123,7 @@ public final class DublinCoreValidator {
         var title = DublinCoreScraper.extractJournal(dublinCore);
         var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(issn);
         var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(title);
+//        var possibleChannelRegisterIdentifierByTitle = channelRegister.lookUpInPublisherByPublisher(dublinCore.ex)
         if (nonNull(possibleChannelRegisterIdentifierByIssn)
             || nonNull(possibleChannelRegisterIdentifierByJournal)) {
             return Optional.empty();

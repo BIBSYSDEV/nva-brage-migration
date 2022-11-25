@@ -439,6 +439,18 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldScrapeIdFromPublishersInChannelRegisterWhenReport() {
+        var dcType = new DcValue(Element.TYPE, null, "Report");
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, "NVE");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
+        var brageLocation = new BrageLocation(null);
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var l = "";
+    }
+
+    @Test
     void shouldLogWhenMultipleSearchResultsInChannelRegister() {
         var type = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
         var journal = new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Earth System Science Data");

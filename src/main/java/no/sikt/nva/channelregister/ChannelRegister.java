@@ -117,6 +117,7 @@ public final class ChannelRegister {
     public String extractIdentifier(DublinCore dublinCore, BrageLocation brageLocation) {
         var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
         var title = DublinCoreScraper.extractJournal(dublinCore);
+        var publisher = DublinCoreScraper.extractPublisher(dublinCore);
         try {
             return isNotNullOrEmpty(issn) || isNotNullOrEmpty(title)
                        ? channelRegisterJournals.stream()
