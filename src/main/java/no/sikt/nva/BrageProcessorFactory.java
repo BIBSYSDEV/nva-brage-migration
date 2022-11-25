@@ -1,6 +1,5 @@
 package no.sikt.nva;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import no.sikt.nva.model.Embargo;
@@ -19,7 +18,7 @@ public class BrageProcessorFactory {
         this.embargoes = embargoes;
     }
 
-    public BrageProcessor createBrageProcessor(String zipfile, URI customerId, boolean enableOnlineValidation,
+    public BrageProcessor createBrageProcessor(String zipfile, String customerId, boolean enableOnlineValidation,
                                                boolean noHandleCheck, String outputDirectory) {
         var destinationDirectory = outputDirectory + zipfile.replace(ZIP_EXTENSION, StringUtils.EMPTY_STRING);
         if (StringUtils.isEmpty(destinationDirectory)) {
