@@ -1,9 +1,12 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
+@JsonPropertyOrder({"brageRole", "role", "type", "identity"})
 public class Contributor {
 
     private String type;
@@ -12,7 +15,11 @@ public class Contributor {
 
     private String brageRole;
 
-    public Contributor(String type, Identity identity, String role, String brageRole) {
+    @JsonCreator
+    public Contributor(@JsonProperty("type") String type,
+                       @JsonProperty("identity") Identity identity,
+                       @JsonProperty("role") String role,
+                       @JsonProperty("brageRole") String brageRole) {
         this.type = type;
         this.identity = identity;
         this.role = role;

@@ -15,6 +15,10 @@ public class EntityDescription {
     private List<String> tags;
     private PublicationInstance publicationInstance;
 
+    public EntityDescription() {
+
+    }
+
     @JsonProperty("publicationDate")
     public PublicationDate getPublicationDate() {
         return publicationDate;

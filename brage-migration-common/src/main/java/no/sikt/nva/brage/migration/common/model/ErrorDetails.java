@@ -9,7 +9,8 @@ public class ErrorDetails {
     private final Error errorCode;
     private final List<String> details;
 
-    public ErrorDetails(Error errorCode, List<String> details) {
+    public ErrorDetails(@JsonProperty("errorCode") Error errorCode,
+                        @JsonProperty("details") List<String> details) {
         this.errorCode = errorCode;
         this.details = details;
     }

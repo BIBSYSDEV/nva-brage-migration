@@ -214,7 +214,8 @@ public final class DublinCoreValidator {
             var pageNumber = dublinCore.getDcValues().stream()
                                  .filter(DcValue::isPageNumber)
                                  .findAny().map(DcValue::getValue)
-                                 .orElse(StringUtils.EMPTY_STRING);
+                                 .orElse(StringUtils.EMPTY_STRING)
+                                 .replaceAll("(\\.)|(\\[)|(\\])", "");
             return PageConverter.isValidPageNumber(pageNumber)
                        ? Optional.empty()
                        : Optional.of(new WarningDetails(Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED, pageNumber));

@@ -9,7 +9,7 @@ public class Identity {
     private final String type;
     private String name;
 
-    public Identity(String name) {
+    public Identity(@JsonProperty("name") String name) {
         this.name = name;
         this.type = IDENTITY_TYPE;
     }

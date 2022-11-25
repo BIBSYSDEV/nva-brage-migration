@@ -10,6 +10,9 @@ public class PublicationInstance {
     private Pages pages;
     private String articleNumber;
 
+    public PublicationInstance() {
+    }
+
     @JsonProperty("articleNumber")
     public String getArticleNumber() {
         return articleNumber;

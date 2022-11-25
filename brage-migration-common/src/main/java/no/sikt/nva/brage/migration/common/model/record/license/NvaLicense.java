@@ -8,7 +8,7 @@ public class NvaLicense {
     private static final String TYPE = "License";
     private NvaLicenseIdentifier identifier;
 
-    public NvaLicense(NvaLicenseIdentifier identifier) {
+    public NvaLicense(@JsonProperty("identifier") NvaLicenseIdentifier identifier) {
         this.identifier = identifier;
     }
 
