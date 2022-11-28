@@ -8,6 +8,7 @@ import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.EntityDescription;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.PublicationDate;
+import no.sikt.nva.brage.migration.common.model.record.PublicationDateNva.Builder;
 import no.sikt.nva.brage.migration.common.model.record.PublicationInstance;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -64,15 +65,25 @@ public final class EntityDescriptionExtractor {
                        .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
 
         if (isNull(date)) {
-            return null;
+            var publicationDateNva = new Builder().build();
+            return new PublicationDate(null, publicationDateNva);
         }
         if (DublinCoreValidator.containsYearOnly(date)) {
-            return new PublicationDate(date, date);
+            var publicationDateNva = new Builder().withYear(date).build();
+            return new PublicationDate(date, publicationDateNva);
         }
         if (DublinCoreValidator.containsYearAndMonth(date)) {
-            return new PublicationDate(date, date + FIRST_DAY_OF_A_MONTH);
+            var publicationDateNva = new Builder()
+                                         .withYear(date.split("-")[0])
+                                         .withMonth(date.split("-")[1])
+                                         .withMonth("01").build();
+            return new PublicationDate(date, publicationDateNva);
         }
-        return new PublicationDate(date, date);
+        var publicationDateNva = new Builder()
+                                     .withYear(date.split("-")[0])
+                                     .withMonth(date.split("-")[1])
+                                     .withMonth(date.split("-")[2]).build();
+        return new PublicationDate(date, publicationDateNva);
     }
 
     private static List<String> extractAbstracts(DublinCore dublinCore) {

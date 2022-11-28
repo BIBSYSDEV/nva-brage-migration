@@ -1,85 +1,104 @@
-[ {
-  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
-  "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2833909/1/",
-  "id" : "https://hdl.handle.net/11250/2836938",
-  "publishedDate" : {
-    "brage" : [ "2022-01-11T14:04:08Z" ],
-    "nva" : "2022-01-11T14:04:08Z"
-  },
-  "publisherAuthority" : null,
-  "type" : {
-    "brage" : [ "Dataset" ],
-    "nva" : "DataSet"
-  },
-  "spatialCoverage" : [ "Norway, Jostedalsbreen" ],
-  "language" : {
-    "brage" : [ ],
-    "nva" : "http://lexvo.org/id/iso639-3/und"
-  },
-  "publication" : {
-    "publisher" : "NVE"
-  },
-  "entityDescription" : {
-    "descriptions" : [ ],
-    "abstracts" : [ "Glacier outlines of Jostedalsbreen (southern Norway) at Little Ice Age (LIA) maximum were reconstructed based on ice-marginal moraines and other landforms and land cover." ],
-    "publicationDate" : {
-      "brage" : "2022",
-      "nva" : "2022"
+[
+  {
+    "customerId": "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+    "bareOrigin": "file:///Users/kir.truhacev/Desktop/NVE/2833909/1/",
+    "id": "https://hdl.handle.net/11250/2836938",
+    "publishedDate": {
+      "brage": [
+        "2022-01-11T14:04:08Z"
+      ],
+      "nva": "2022-01-11T14:04:08Z"
     },
-    "mainTitle" : "A reconstruction of Jostedalsbreen during the Little Ice Age (LIA)",
-    "alternativeTitles" : [ ],
-    "contributors" : [ {
-      "brageRole" : "author",
-      "type" : "Contributor",
-      "identity" : {
-        "type" : "Identity",
-        "name" : "Carrivick, Jonathan L."
-      },
-      "role" : "Author"
-    }, {
-      "brageRole" : "author",
-      "type" : "Contributor",
-      "identity" : {
-        "type" : "Identity",
-        "name" : "Andreassen, Liss M."
-      },
-      "role" : "Author"
-    }, {
-      "brageRole" : "author",
-      "type" : "Contributor",
-      "identity" : {
-        "type" : "Identity",
-        "name" : "Nesje, Atle"
-      },
-      "role" : "Author"
-    }, {
-      "brageRole" : "author",
-      "type" : "Contributor",
-      "identity" : {
-        "type" : "Identity",
-        "name" : "Yde, Jacob C."
-      },
-      "role" : "Author"
-    } ],
-    "tags" : [ ],
-    "publicationInstance" : { }
-  },
-  "recordContent" : {
-    "contentFiles" : [ {
-      "description" : "Datagrunnlag",
-      "license" : {
-        "brageLicense" : "http://creativecommons.org/licenses/by/4.0/deed.no",
-        "nvaLicense" : {
-          "identifier" : "CC BY",
-          "type" : "License"
+    "publisherAuthority": null,
+    "type": {
+      "brage": [
+        "Dataset"
+      ],
+      "nva": "DataSet"
+    },
+    "spatialCoverage": [
+      "Norway, Jostedalsbreen"
+    ],
+    "language": {
+      "brage": [],
+      "nva": "http://lexvo.org/id/iso639-3/und"
+    },
+    "publication": {
+      "publisher": "NVE"
+    },
+    "entityDescription": {
+      "descriptions": [],
+      "abstracts": [
+        "Glacier outlines of Jostedalsbreen (southern Norway) at Little Ice Age (LIA) maximum were reconstructed based on ice-marginal moraines and other landforms and land cover."
+      ],
+      "publicationDate": {
+        "brage": "2022",
+        "publicationDateNva": {
+          "year": "2022"
         }
       },
-      "filename" : "glacier_outlines_Jostedalsbreen_LIA.zip",
-      "bundleType" : "ORIGINAL",
-      "identifier" : "4f74b581-85bc-4a3f-8644-8030c743cf86"
-    } ]
-  },
-  "errors" : [ ],
-  "warnings" : [ ],
-  "brageLocation" : "2833909/1"
-} ]
+      "mainTitle": "A reconstruction of Jostedalsbreen during the Little Ice Age (LIA)",
+      "alternativeTitles": [],
+      "contributors": [
+        {
+          "brageRole": "author",
+          "type": "Contributor",
+          "identity": {
+            "type": "Identity",
+            "name": "Carrivick, Jonathan L."
+          },
+          "role": "Author"
+        },
+        {
+          "brageRole": "author",
+          "type": "Contributor",
+          "identity": {
+            "type": "Identity",
+            "name": "Andreassen, Liss M."
+          },
+          "role": "Author"
+        },
+        {
+          "brageRole": "author",
+          "type": "Contributor",
+          "identity": {
+            "type": "Identity",
+            "name": "Nesje, Atle"
+          },
+          "role": "Author"
+        },
+        {
+          "brageRole": "author",
+          "type": "Contributor",
+          "identity": {
+            "type": "Identity",
+            "name": "Yde, Jacob C."
+          },
+          "role": "Author"
+        }
+      ],
+      "tags": [],
+      "publicationInstance": {}
+    },
+    "recordContent": {
+      "contentFiles": [
+        {
+          "description": "Datagrunnlag",
+          "license": {
+            "brageLicense": "http://creativecommons.org/licenses/by/4.0/deed.no",
+            "nvaLicense": {
+              "identifier": "CC BY",
+              "type": "License"
+            }
+          },
+          "filename": "glacier_outlines_Jostedalsbreen_LIA.zip",
+          "bundleType": "ORIGINAL",
+          "identifier": "4f74b581-85bc-4a3f-8644-8030c743cf86"
+        }
+      ]
+    },
+    "errors": [],
+    "warnings": [],
+    "brageLocation": "2833909/1"
+  }
+]
