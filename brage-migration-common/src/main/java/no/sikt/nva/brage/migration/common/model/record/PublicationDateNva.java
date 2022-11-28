@@ -11,7 +11,6 @@ public class PublicationDateNva {
     private String month;
     private String day;
 
-
     private PublicationDateNva(Builder builder) {
         setYear(builder.year);
         setMonth(builder.month);
@@ -44,6 +43,12 @@ public class PublicationDateNva {
 
     @JacocoGenerated
     @Override
+    public int hashCode() {
+        return Objects.hash(getYear(), getMonth(), getDay());
+    }
+
+    @JacocoGenerated
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -57,13 +62,8 @@ public class PublicationDateNva {
                && Objects.equals(getDay(), that.getDay());
     }
 
-    @JacocoGenerated
-    @Override
-    public int hashCode() {
-        return Objects.hash(getYear(), getMonth(), getDay());
-    }
-
     public static final class Builder {
+
         private String year;
         private String month;
         private String day;

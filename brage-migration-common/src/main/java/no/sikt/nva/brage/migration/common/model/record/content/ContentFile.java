@@ -3,8 +3,8 @@ package no.sikt.nva.brage.migration.common.model.record.content;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
-import no.sikt.nva.brage.migration.common.model.record.license.License;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.BundleType;
+import no.sikt.nva.brage.migration.common.model.record.license.License;
 import nva.commons.core.JacocoGenerated;
 
 public class ContentFile {
