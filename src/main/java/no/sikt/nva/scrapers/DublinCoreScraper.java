@@ -41,6 +41,7 @@ public final class DublinCoreScraper {
     public static final String DELIMITER = "\n";
     public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
     public static final String SCRAPING_HAS_FAILED = "Scraping has failed: ";
+    public static final String CRISTIN_POST = "[CRISTIN_POST]";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
 
@@ -128,8 +129,9 @@ public final class DublinCoreScraper {
             record.setErrors(errors);
             record.setWarnings(warnings);
             logUnscrapedValues(dublinCore, brageLocation);
-            logWarningsIfNotEmpty(brageLocation, warnings);
-            logErrorsIfNotEmpty(brageLocation, errors);
+            var isCristinPost = isInCristin(dublinCore);
+            logWarningsIfNotEmpty(brageLocation, warnings, isCristinPost);
+            logErrorsIfNotEmpty(brageLocation, errors, isCristinPost);
             return record;
         } catch (Exception e) {
             throw new DublinCoreException(SCRAPING_HAS_FAILED + e);
@@ -140,14 +142,22 @@ public final class DublinCoreScraper {
         return enableOnlineValidation;
     }
 
-    private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings) {
+    private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings,
+                                              boolean isCristinPost) {
         if (!warnings.isEmpty()) {
+            if (isCristinPost) {
+                logger.warn(CRISTIN_POST + warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
+            }
             logger.warn(warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
 
-    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> error) {
+    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> error,
+                                            boolean isCristinPost) {
         if (!error.isEmpty()) {
+            if (isCristinPost) {
+                logger.error(CRISTIN_POST + error + StringUtils.SPACE + brageLocation.getOriginInformation());
+            }
             logger.error(error + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
@@ -387,5 +397,10 @@ public final class DublinCoreScraper {
 
     private static Type mapOriginTypeToNvaType(List<String> types) {
         return new Type(types, TypeMapper.convertBrageTypeToNvaType(types));
+    }
+
+    private static boolean isInCristin(DublinCore dublinCore) {
+        var cristinId = extractCristinId(dublinCore);
+        return nonNull(cristinId) && !cristinId.isEmpty();
     }
 }

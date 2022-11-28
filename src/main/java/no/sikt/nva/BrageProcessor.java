@@ -37,7 +37,7 @@ public class BrageProcessor implements Runnable {
     private static final String CONTENT_FILE_DEFAULT_NAME = "contents";
     private final String zipfile;
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
-    private final URI customerId;
+    private final String customer;
     private final String destinationDirectory;
     private final HandleScraper handleScraper;
     private final boolean enableOnlineValidation;
@@ -46,13 +46,13 @@ public class BrageProcessor implements Runnable {
     private List<Record> records;
 
     public BrageProcessor(String zipfile,
-                          URI customerId,
+                          String customer,
                           String destinationDirectory,
                           final Map<String, String> rescueTitleAndHandleMap,
                           boolean enableOnlineValidation,
                           boolean noHandleCheck,
                           List<Embargo> embargoes) {
-        this.customerId = customerId;
+        this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
         this.destinationDirectory = destinationDirectory;
@@ -120,7 +120,7 @@ public class BrageProcessor implements Runnable {
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
             var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation);
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-            record.setCustomerId(customerId);
+            record.setCustomer(customer);
             record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper, dublinCore));
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
             var warnings = BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory, dublinCore);
