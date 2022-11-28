@@ -1,6 +1,5 @@
 package no.sikt.nva.scrapers;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.validators.DublinCoreValidator.ACCEPTED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
@@ -194,18 +193,17 @@ public final class DublinCoreScraper {
     private static void searchForSeriesAndJournalsInChannelRegister(DublinCore dublinCore, BrageLocation brageLocation,
                                                                     Record record) {
         var nvaType = record.getType().getNva();
-        var publication = record.getPublication();
         if (isSearchableInJournals(nvaType)) {
-            setIdFromJournals(dublinCore, brageLocation, publication);
+            setIdFromJournals(dublinCore, brageLocation, record);
         }
     }
 
-    private static void setIdFromJournals(DublinCore dublinCore, BrageLocation brageLocation, Publication publication) {
-        if (nonNull(publication.getPartOfSeries())) {
+    private static void setIdFromJournals(DublinCore dublinCore, BrageLocation brageLocation, Record record) {
+        var publication = record.getPublication();
+        if (NvaType.REPORT.getValue().equals(record.getType().getNva())) {
             var seriesId = channelRegister.extractIdentifierFromJournals(dublinCore, brageLocation);
             publication.getPublicationContext().setSeries(new Series(seriesId));
-        }
-        if (isNull(publication.getPartOfSeries())) {
+        } else {
             var journalId = channelRegister.extractIdentifierFromJournals(dublinCore, brageLocation);
             if (nonNull(journalId)) {
                 publication.getPublicationContext().setJournal(new Journal(journalId));
