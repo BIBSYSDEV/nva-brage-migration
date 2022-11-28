@@ -62,7 +62,6 @@ public class WarningDetails {
     }
 
     public enum Warning {
-        VERSION_WARNING,
         SUBJECT_WARNING,
         LANGUAGE_MAPPED_TO_UNDEFINED,
         MULTIPLE_DESCRIPTION_PRESENT,

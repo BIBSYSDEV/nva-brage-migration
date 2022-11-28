@@ -28,7 +28,7 @@ public class Record {
     private Path origin;
     private Type type;
     private Language language;
-    private Boolean publisherAuthority;
+    private PublisherAuthority publisherAuthority;
     private String rightsholder;
     private List<String> spatialCoverage;
     private String partOf;
@@ -159,11 +159,11 @@ public class Record {
 
     @JsonInclude
     @JsonProperty("publisherAuthority")
-    public Boolean getPublisherAuthority() {
+    public PublisherAuthority getPublisherAuthority() {
         return publisherAuthority;
     }
 
-    public void setPublisherAuthority(Boolean publisherAuthority) {
+    public void setPublisherAuthority(PublisherAuthority publisherAuthority) {
         this.publisherAuthority = publisherAuthority;
     }
 

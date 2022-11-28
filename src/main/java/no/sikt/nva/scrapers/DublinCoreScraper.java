@@ -8,7 +8,6 @@ import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
@@ -17,6 +16,7 @@ import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.PublishedDate;
+import no.sikt.nva.brage.migration.common.model.record.PublisherAuthority;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.Type;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
@@ -377,21 +377,20 @@ public final class DublinCoreScraper {
         return isbnList.get(0);
     }
 
-    private static Boolean extractVersion(DublinCore dublinCore) {
+    private static PublisherAuthority extractVersion(DublinCore dublinCore) {
         var version = dublinCore.getDcValues().stream()
                           .filter(DcValue::isVersion)
-                          .findAny();
-        return version.flatMap(DublinCoreScraper::mapToNvaVersion).orElse(null);
+                          .findAny().orElse(new DcValue());
+        return mapToNvaVersion(version);
     }
 
-    private static Optional<Boolean> mapToNvaVersion(DcValue version) {
+    private static PublisherAuthority mapToNvaVersion(DcValue version) {
         if (PUBLISHED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
-            return Optional.of(true);
-        }
-        if (ACCEPTED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
-            return Optional.of(false);
+            return new PublisherAuthority(version.getValue(), true);
+        } else if (ACCEPTED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
+            return new PublisherAuthority(version.getValue(), false);
         } else {
-            return Optional.empty();
+            return new PublisherAuthority(version.getValue(), null);
         }
     }
 
