@@ -39,8 +39,6 @@ public class License {
         return Objects.hash(brageLicense, nvaLicense);
     }
 
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
