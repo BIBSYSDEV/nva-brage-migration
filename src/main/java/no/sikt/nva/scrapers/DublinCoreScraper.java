@@ -8,7 +8,6 @@ import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
@@ -376,16 +375,13 @@ public final class DublinCoreScraper {
     }
 
     private static PublisherAuthority mapToNvaVersion(DcValue version) {
-        var publisherAuthority = new PublisherAuthority();
         if (PUBLISHED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
-            publisherAuthority.setNva(Optional.of(true));
-        }
-        if (ACCEPTED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
-            publisherAuthority.setNva(Optional.of(false));
+            return new PublisherAuthority(version.getValue(), true);
+        } else if (ACCEPTED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
+            return new PublisherAuthority(version.getValue(), false);
         } else {
-            publisherAuthority.setBrage(version.getValue());
+            return new PublisherAuthority(version.getValue(), null);
         }
-        return publisherAuthority;
     }
 
     private static Type mapOriginTypeToNvaType(List<String> types) {

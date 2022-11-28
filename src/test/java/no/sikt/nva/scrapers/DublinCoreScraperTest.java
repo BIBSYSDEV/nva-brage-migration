@@ -25,7 +25,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
@@ -62,7 +61,7 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldConvertValidVersionToPublisherAuthority() {
-        var expectedPublisherAuthority = Optional.of(true);
+        var expectedPublisherAuthority = true;
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
@@ -405,7 +404,7 @@ public class DublinCoreScraperTest {
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getPublisherAuthority().getNva(), is(Optional.of(false)));
+        assertThat(record.getPublisherAuthority().getNva(), is(false));
     }
 
     @Test
