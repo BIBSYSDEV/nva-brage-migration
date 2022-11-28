@@ -41,8 +41,6 @@ public final class DublinCoreValidator {
 
     public static final String PUBLISHED_VERSION_STRING = "publishedVersion";
     public static final String ACCEPTED_VERSION_STRING = "acceptedVersion";
-    public static final String SUBMITTED_VERSION_STRING = "submittedVersion";
-
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final String MISSING_ISSN_AND_TITLE = "Missing issn and title";
     public static final String MISSING_ISSN_AND_PUBLISHER = "Missing issn AND publisher";
