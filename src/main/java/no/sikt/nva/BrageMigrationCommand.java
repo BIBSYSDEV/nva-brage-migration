@@ -185,10 +185,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
             .forEach(list -> list.forEach(this::storeFileToNVA));
     }
 
-    private List<BrageProcessor> getBrageProcessorThread(String customerUri, String outputDirectory,
+    private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
                                                          List<Embargo> embargoes) {
         return createBrageProcessorThread(zipFiles,
-                                          customerUri,
+                                          customer,
                                           enableOnlineValidation,
                                           noHandleCheck,
                                           outputDirectory, embargoes);
