@@ -11,9 +11,6 @@ public class PublicationDateNva {
     private String month;
     private String day;
 
-    public PublicationDateNva() {
-
-    }
 
     private PublicationDateNva(Builder builder) {
         setYear(builder.year);

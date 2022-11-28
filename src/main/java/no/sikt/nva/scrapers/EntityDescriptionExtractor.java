@@ -17,7 +17,6 @@ import no.sikt.nva.validators.DublinCoreValidator;
 public final class EntityDescriptionExtractor {
 
     public static final String FIRST_DAY_OF_A_MONTH = "-01";
-
     public static final String CONTRIBUTOR = "Contributor";
     public static final String ADVISOR = "Advisor";
     public static final String AUTHOR = "Author";
@@ -76,13 +75,13 @@ public final class EntityDescriptionExtractor {
             var publicationDateNva = new Builder()
                                          .withYear(date.split("-")[0])
                                          .withMonth(date.split("-")[1])
-                                         .withMonth("01").build();
+                                         .withDay(FIRST_DAY_OF_A_MONTH).build();
             return new PublicationDate(date, publicationDateNva);
         }
         var publicationDateNva = new Builder()
                                      .withYear(date.split("-")[0])
                                      .withMonth(date.split("-")[1])
-                                     .withMonth(date.split("-")[2]).build();
+                                     .withDay(date.split("-")[2]).build();
         return new PublicationDate(date, publicationDateNva);
     }
 
@@ -148,19 +147,19 @@ public final class EntityDescriptionExtractor {
         Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped());
         String brageRole = dcValue.getQualifier().getValue();
         if (dcValue.isAuthor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, AUTHOR, brageRole));
+            return Optional.of(new Contributor(identity, AUTHOR, brageRole));
         }
         if (dcValue.isAdvisor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, ADVISOR, brageRole));
+            return Optional.of(new Contributor(identity, ADVISOR, brageRole));
         }
         if (dcValue.isEditor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, EDITOR, brageRole));
+            return Optional.of(new Contributor(identity, EDITOR, brageRole));
         }
         if (dcValue.isIllustrator()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, ILLUSTRATOR, brageRole));
+            return Optional.of(new Contributor(identity, ILLUSTRATOR, brageRole));
         }
         if (dcValue.isOtherContributor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, OTHER_CONTRIBUTOR, brageRole));
+            return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole));
         }
         return Optional.empty();
     }

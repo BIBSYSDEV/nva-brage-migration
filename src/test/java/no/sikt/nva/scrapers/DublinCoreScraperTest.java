@@ -10,7 +10,6 @@ import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.War
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.ADVISOR;
-import static no.sikt.nva.scrapers.EntityDescriptionExtractor.CONTRIBUTOR;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -91,7 +90,7 @@ public class DublinCoreScraperTest {
     void shouldCreateContributor() {
 
         List<Contributor> expectedContributors = List.of(
-            new Contributor(CONTRIBUTOR, new Identity("Some Person"), ADVISOR, Qualifier.ADVISOR.getValue()));
+            new Contributor(new Identity("Some Person"), ADVISOR, Qualifier.ADVISOR.getValue()));
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Some Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
