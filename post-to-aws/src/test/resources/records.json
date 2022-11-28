@@ -1,5 +1,5 @@
 [ {
-  "customerId" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
+  "customer" : "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2",
   "bareOrigin" : "file:///Users/kir.truhacev/Desktop/NVE/2597824/9/",
   "id" : "https://hdl.handle.net/11250/2597873",
   "publishedDate" : {
