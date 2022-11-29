@@ -51,7 +51,7 @@ public final class ChannelRegister {
 
     public String lookUpInChannelRegisterForPublisher(Record record) {
         var publicationContext = record.getPublication().getPublicationContext();
-        if(extractedIdentifierFromPublishersIsPresent(publicationContext.getBragePublisher())) {
+        if (extractedIdentifierFromPublishersIsPresent(publicationContext.getBragePublisher())) {
             return lookUpInPublisherByPublisher(publicationContext.getBragePublisher());
         }
         return null;

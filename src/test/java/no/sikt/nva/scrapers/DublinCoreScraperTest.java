@@ -470,6 +470,20 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldScrapeIdFromPublishersInChannelRegisterWhenReportFromFHS() {
+        var expectedPublisherId = "19008";
+        var dcType = new DcValue(Element.TYPE, null, "Report");
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, "Orkana Forlag");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
+        var brageLocation = new BrageLocation(null);
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var publisherId = record.getPublication().getPublicationContext().getPublisher().getId();
+        assertThat(publisherId, is(equalTo(expectedPublisherId)));
+    }
+
+    @Test
     void shouldScrapeIdFromPublishersAndJournalsWhenReportAndPartOfSeries() {
         var expectedPublisherId = "28073";
         var expectedSeriesId = "450187";

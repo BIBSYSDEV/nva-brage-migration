@@ -201,7 +201,9 @@ public final class DublinCoreScraper {
         var publication = record.getPublication();
         if (NvaType.REPORT.getValue().equals(record.getType().getNva())) {
             var seriesId = channelRegister.extractIdentifierFromJournals(dublinCore, brageLocation);
-            publication.getPublicationContext().setSeries(new Series(seriesId));
+            if (nonNull(seriesId)) {
+                publication.getPublicationContext().setSeries(new Series(seriesId));
+            }
         } else {
             var journalId = channelRegister.extractIdentifierFromJournals(dublinCore, brageLocation);
             if (nonNull(journalId)) {

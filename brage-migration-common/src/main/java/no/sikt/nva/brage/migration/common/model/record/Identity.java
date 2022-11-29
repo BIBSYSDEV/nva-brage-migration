@@ -1,13 +1,17 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import java.util.Objects;
 
+@JsonTypeInfo(use = Id.NAME, property = "type")
 public class Identity {
 
     private static final String IDENTITY_TYPE = "Identity";
     private final String type;
-    private String name;
+    @JsonProperty("name")
+    private final String name;
 
     public Identity(@JsonProperty("name") String name) {
         this.name = name;
@@ -19,14 +23,11 @@ public class Identity {
         return type;
     }
 
-    @JsonProperty("name")
+
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     @Override
     public int hashCode() {
