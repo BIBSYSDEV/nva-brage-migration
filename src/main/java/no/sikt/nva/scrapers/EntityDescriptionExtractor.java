@@ -16,8 +16,7 @@ import no.sikt.nva.validators.DublinCoreValidator;
 
 public final class EntityDescriptionExtractor {
 
-    public static final String FIRST_DAY_OF_A_MONTH = "-01";
-    public static final String CONTRIBUTOR = "Contributor";
+    public static final String FIRST_DAY_OF_A_MONTH = "01";
     public static final String ADVISOR = "Advisor";
     public static final String AUTHOR = "Author";
     public static final String EDITOR = "Editor";
