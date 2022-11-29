@@ -19,6 +19,7 @@
   "publication" : {
     "publicationContext" : {
       "publisher" : {
+        "type" : "Publisher",
         "bragePublisher" : "NVE",
         "id" : "28065"
       }
