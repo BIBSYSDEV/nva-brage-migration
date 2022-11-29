@@ -5,7 +5,7 @@ import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-public class PublicationDateNva {
+public final class PublicationDateNva {
 
     private String year;
     private String month;
