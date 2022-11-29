@@ -122,8 +122,10 @@ public final class DublinCoreValidator {
         var title = DublinCoreScraper.extractJournal(dublinCore);
         var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(issn);
         var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(title);
+        var possibleChannelRegisterIdentifierByPublisher = channelRegister.lookUpInPublisherByPublisher(publisher);
         if (nonNull(possibleChannelRegisterIdentifierByIssn)
-            || nonNull(possibleChannelRegisterIdentifierByJournal)) {
+            || nonNull(possibleChannelRegisterIdentifierByJournal)
+            || nonNull(possibleChannelRegisterIdentifierByPublisher)) {
             return Optional.empty();
         } else {
             return getChannelRegisterErrorDetailsWhenSearchingForPublisher(issn, publisher);
