@@ -62,6 +62,5 @@ nva-brage-migration/src/test/resources/application-**
 **/invalidFileInput/**
 **/inputWithInvalidDoi/**
 **/inputWithEmptyCCLicense/**
-**/resourceWithEmbargo/**
 **/resourceWithTwoSameObjects/**
 **/testFilesToDelete/**

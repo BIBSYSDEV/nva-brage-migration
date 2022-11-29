@@ -30,7 +30,9 @@
     "abstracts" : [ "Glacier outlines of Jostedalsbreen (southern Norway) at Little Ice Age (LIA) maximum were reconstructed based on ice-marginal moraines and other landforms and land cover." ],
     "publicationDate" : {
       "brage" : "2022",
-      "nva" : "2022"
+      "publicationDateNva": {
+        "year": "2022"
+      }
     },
     "mainTitle" : "A reconstruction of Jostedalsbreen during the Little Ice Age (LIA)",
     "alternativeTitles" : [ ],

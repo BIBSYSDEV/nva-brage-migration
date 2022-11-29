@@ -9,17 +9,17 @@ import nva.commons.core.JacocoGenerated;
 public class PublicationDate {
 
     private final String brage;
-    private final String nva;
+    private final PublicationDateNva nva;
 
     @JacocoGenerated
     @JsonCreator
     public PublicationDate(@JsonProperty("brage") String brage,
-                           @JsonProperty("nva") String nva) {
+                           @JsonProperty("nva") PublicationDateNva nva) {
         this.brage = brage;
         this.nva = nva;
     }
 
-    public String getNva() {
+    public PublicationDateNva getNva() {
         return nva;
     }
 

@@ -28,7 +28,6 @@ import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.scrapers.BrageNvaLanguageMapper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.PageConverter;
-import no.sikt.nva.scrapers.PublisherMapper;
 import no.sikt.nva.scrapers.SubjectScraper;
 import no.sikt.nva.scrapers.TypeMapper;
 import nva.commons.core.StringUtils;
@@ -92,11 +91,8 @@ public final class DublinCoreValidator {
             if (isJournalArticle(dublinCore)) {
                 return getErrorDetailsForJournalArticle(dublinCore, brageLocation);
             }
-            if (hasPublisher(dublinCore) && isBook(dublinCore)) {
-                return getErrorDetailsForBook(dublinCore, brageLocation);
-            }
-            if (isReport(dublinCore)) {
-                return getErrorDetailsForReport(dublinCore);
+            if (hasPublisher(dublinCore) && isReport(dublinCore) || isBook(dublinCore)) {
+                return getErrorDetailsForReport(dublinCore, brageLocation);
             }
         }
         return Optional.empty();
@@ -120,51 +116,36 @@ public final class DublinCoreValidator {
     }
 
     @SuppressWarnings("PMD.PrematureDeclaration")
-    private static Optional<ErrorDetails> getErrorDetailsForBook(DublinCore dublinCore, BrageLocation brageLocation) {
+    private static Optional<ErrorDetails> getErrorDetailsForReport(DublinCore dublinCore, BrageLocation brageLocation) {
         var publisher = DublinCoreScraper.extractPublisher(dublinCore);
         var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
         var title = DublinCoreScraper.extractJournal(dublinCore);
         var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(issn);
         var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(title);
-        var possibleChannelRegisterIdentifierByPublisher =
-            channelRegister.lookUpInPublisherByPublisher(PublisherMapper.getMappablePublisher(publisher));
         if (nonNull(possibleChannelRegisterIdentifierByIssn)
-            || nonNull(possibleChannelRegisterIdentifierByJournal)
-            || nonNull(possibleChannelRegisterIdentifierByPublisher)) {
+            || nonNull(possibleChannelRegisterIdentifierByJournal)) {
             return Optional.empty();
         } else {
             return getChannelRegisterErrorDetailsWhenSearchingForPublisher(issn, publisher);
         }
     }
 
-    private static Optional<ErrorDetails> getErrorDetailsForReport(DublinCore dublinCore) {
-        var publisher = DublinCoreScraper.extractPublisher(dublinCore);
-        var title = DublinCoreScraper.extractJournal(dublinCore);
-        var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(title);
-        var possibleChannelRegisterIdentifierByPublisher =
-            channelRegister.lookUpInPublisherByPublisher(publisher);
-        if (nonNull(possibleChannelRegisterIdentifierByJournal)
-            || nonNull(possibleChannelRegisterIdentifierByPublisher)) {
-            return Optional.empty();
-        } else {
-            return getChannelRegisterErrorDetailsWhenSearchingForPublisher(publisher);
-        }
-    }
-
     @NotNull
-    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForJournals(String... values) {
-        if (!filterOutNullValues(values).isEmpty()) {
-            return Optional.of(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(values)));
+    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForJournals(String issn,
+                                                                                                 String title) {
+        if (!filterOutNullValues(issn, title).isEmpty()) {
+            return Optional.of(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(issn, title)));
         } else {
             return Optional.of(
                 new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, Collections.singletonList(MISSING_ISSN_AND_TITLE)));
         }
     }
 
-    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String... values) {
-        if (!filterOutNullValues(values).isEmpty()) {
+    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String issn,
+                                                                                                  String publisher) {
+        if (!filterOutNullValues(issn, publisher).isEmpty()) {
             return Optional.of(
-                new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(values)));
+                new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(issn, publisher)));
         } else {
             return Optional.of(new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER,
                                                 Collections.singletonList(MISSING_ISSN_AND_PUBLISHER)));

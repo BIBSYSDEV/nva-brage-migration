@@ -8,6 +8,7 @@ import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.EntityDescription;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.PublicationDate;
+import no.sikt.nva.brage.migration.common.model.record.PublicationDateNva.Builder;
 import no.sikt.nva.brage.migration.common.model.record.PublicationInstance;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -15,9 +16,7 @@ import no.sikt.nva.validators.DublinCoreValidator;
 
 public final class EntityDescriptionExtractor {
 
-    public static final String FIRST_DAY_OF_A_MONTH = "-01";
-
-    public static final String CONTRIBUTOR = "Contributor";
+    public static final String FIRST_DAY_OF_A_MONTH = "01";
     public static final String ADVISOR = "Advisor";
     public static final String AUTHOR = "Author";
     public static final String EDITOR = "Editor";
@@ -64,15 +63,25 @@ public final class EntityDescriptionExtractor {
                        .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
 
         if (isNull(date)) {
-            return null;
+            var publicationDateNva = new Builder().build();
+            return new PublicationDate(null, publicationDateNva);
         }
         if (DublinCoreValidator.containsYearOnly(date)) {
-            return new PublicationDate(date, date);
+            var publicationDateNva = new Builder().withYear(date).build();
+            return new PublicationDate(date, publicationDateNva);
         }
         if (DublinCoreValidator.containsYearAndMonth(date)) {
-            return new PublicationDate(date, date + FIRST_DAY_OF_A_MONTH);
+            var publicationDateNva = new Builder()
+                                         .withYear(date.split("-")[0])
+                                         .withMonth(date.split("-")[1])
+                                         .withDay(FIRST_DAY_OF_A_MONTH).build();
+            return new PublicationDate(date, publicationDateNva);
         }
-        return new PublicationDate(date, date);
+        var publicationDateNva = new Builder()
+                                     .withYear(date.split("-")[0])
+                                     .withMonth(date.split("-")[1])
+                                     .withDay(date.split("-")[2]).build();
+        return new PublicationDate(date, publicationDateNva);
     }
 
     private static List<String> extractAbstracts(DublinCore dublinCore) {
@@ -137,19 +146,19 @@ public final class EntityDescriptionExtractor {
         Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped());
         String brageRole = dcValue.getQualifier().getValue();
         if (dcValue.isAuthor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, AUTHOR, brageRole));
+            return Optional.of(new Contributor(identity, AUTHOR, brageRole));
         }
         if (dcValue.isAdvisor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, ADVISOR, brageRole));
+            return Optional.of(new Contributor(identity, ADVISOR, brageRole));
         }
         if (dcValue.isEditor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, EDITOR, brageRole));
+            return Optional.of(new Contributor(identity, EDITOR, brageRole));
         }
         if (dcValue.isIllustrator()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, ILLUSTRATOR, brageRole));
+            return Optional.of(new Contributor(identity, ILLUSTRATOR, brageRole));
         }
         if (dcValue.isOtherContributor()) {
-            return Optional.of(new Contributor(CONTRIBUTOR, identity, OTHER_CONTRIBUTOR, brageRole));
+            return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole));
         }
         return Optional.empty();
     }
