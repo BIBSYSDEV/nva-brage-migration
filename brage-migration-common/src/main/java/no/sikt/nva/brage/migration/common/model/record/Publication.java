@@ -9,20 +9,10 @@ public class Publication {
     private String journal;
     private String issn;
     private String isbn;
-    private String publisher;
+    private PublicationContext publicationContext;
     private String partOfSeries;
-    private String id;
 
     public Publication() {
-    }
-
-    @JsonProperty("id")
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     @JsonProperty("partOfSeries")
@@ -37,7 +27,7 @@ public class Publication {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(journal, issn, isbn, publisher, partOfSeries, id);
+        return Objects.hash(journal, issn, isbn, publicationContext, partOfSeries);
     }
 
     @JacocoGenerated
@@ -53,9 +43,8 @@ public class Publication {
         return Objects.equals(journal, that.journal)
                && Objects.equals(issn, that.issn)
                && Objects.equals(isbn, that.isbn)
-               && Objects.equals(publisher, that.publisher)
-               && Objects.equals(partOfSeries, that.partOfSeries)
-               && Objects.equals(id, that.id);
+               && Objects.equals(publicationContext, that.publicationContext)
+               && Objects.equals(partOfSeries, that.partOfSeries);
     }
 
     @JacocoGenerated
@@ -89,12 +78,12 @@ public class Publication {
     }
 
     @JacocoGenerated
-    @JsonProperty("publisher")
-    public String getPublisher() {
-        return publisher;
+    @JsonProperty("publicationContext")
+    public PublicationContext getPublicationContext() {
+        return publicationContext;
     }
 
-    public void setPublisher(String publisher) {
-        this.publisher = publisher;
+    public void setPublicationContext(PublicationContext publicationContext) {
+        this.publicationContext = publicationContext;
     }
 }

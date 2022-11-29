@@ -94,7 +94,8 @@ public class S3StorageImpl implements S3Storage {
     public List<Record> readRecordsFromFile(File recordsFile) throws IOException {
         var path = getPathPrefixString() + recordsFile.getPath();
         var recordsAsString = Files.readString(Path.of(path));
-        return Arrays.asList(JsonUtils.dtoObjectMapper.readValue(recordsAsString, Record[].class));
+        Record[] a = JsonUtils.dtoObjectMapper.readValue(recordsAsString, Record[].class);
+        return Arrays.asList(a);
     }
 
     private static List<File> gerRecordsJsonFiles(List<File> collectionFiles) {

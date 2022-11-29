@@ -17,7 +17,13 @@
     "nva" : "http://lexvo.org/id/iso639-3/und"
   },
   "publication" : {
-    "publisher" : "NVE"
+    "publicationContext" : {
+      "publisher" : {
+        "type" : "Publisher",
+        "bragePublisher" : "NVE",
+        "id" : "28065"
+      }
+    }
   },
   "entityDescription" : {
     "descriptions" : [ ],

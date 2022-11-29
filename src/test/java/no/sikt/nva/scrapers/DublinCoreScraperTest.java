@@ -166,7 +166,7 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getPublication().getId(), is(equalTo("503077")));
+        assertThat(record.getPublication().getPublicationContext().getJournal().getId(), is(equalTo("503077")));
     }
 
     @Test
@@ -175,13 +175,15 @@ public class DublinCoreScraperTest {
         var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
         var typeDcValue = new DcValue(Element.TYPE, null, "Report");
         var dateDcValue = new DcValue(Element.DATE, Qualifier.ISSUED, "2020");
+        var partOfSeriesDcValue = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, "NVE Rapport;2019:1");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(publisherDcValue, issnDcValue, typeDcValue, dateDcValue));
+            List.of(publisherDcValue, issnDcValue, typeDcValue, dateDcValue, partOfSeriesDcValue));
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getPublication().getId(), is(equalTo("450187")));
+        String seriesId = record.getPublication().getPublicationContext().getSeries().getId();
+        assertThat(seriesId, is(equalTo("450187")));
     }
 
     @Test
@@ -431,7 +433,71 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         String idFromChannelRegister = "477294";
-        assertThat(record.getPublication().getId(), is(equalTo(idFromChannelRegister)));
+        var journalId = record.getPublication().getPublicationContext().getJournal().getId();
+        assertThat(journalId, is(equalTo(idFromChannelRegister)));
+    }
+
+    @Test
+    void shouldScrapeIdFromPublishersInChannelRegisterWhenReportFromNVE() {
+        var expectedPublisherId = "28065";
+        var dcType = new DcValue(Element.TYPE, null, "Report");
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, "NVE");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
+        var brageLocation = new BrageLocation(null);
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var publisherId = record.getPublication().getPublicationContext().getPublisher().getId();
+        assertThat(publisherId, is(equalTo(expectedPublisherId)));
+    }
+
+    @Test
+    void shouldScrapeIdFromPublishersInChannelRegisterWhenReportFromKrus() {
+        var expectedPublisherId = "28073";
+        var dcType = new DcValue(Element.TYPE, null, "Report");
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, "KRUS");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
+        var brageLocation = new BrageLocation(null);
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var publisherId = record.getPublication().getPublicationContext().getPublisher().getId();
+        assertThat(publisherId, is(equalTo(expectedPublisherId)));
+    }
+
+    @Test
+    void shouldScrapeIdFromPublishersInChannelRegisterWhenReportFromFHS() {
+        var expectedPublisherId = "19008";
+        var dcType = new DcValue(Element.TYPE, null, "Report");
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, "Orkana Forlag");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
+        var brageLocation = new BrageLocation(null);
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var publisherId = record.getPublication().getPublicationContext().getPublisher().getId();
+        assertThat(publisherId, is(equalTo(expectedPublisherId)));
+    }
+
+    @Test
+    void shouldScrapeIdFromPublishersAndJournalsWhenReportAndPartOfSeries() {
+        var expectedPublisherId = "28073";
+        var expectedSeriesId = "450187";
+        var dcType = new DcValue(Element.TYPE, null, "Report");
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, "KRUS");
+        var dcIssn = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
+        var dcPartOfSeries = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, "NVE Rapport;2022:13");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(dcType, dcPublisher, dcIssn, dcPartOfSeries));
+        var brageLocation = new BrageLocation(null);
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var publisherId = record.getPublication().getPublicationContext().getPublisher().getId();
+        var seriesId = record.getPublication().getPublicationContext().getSeries().getId();
+
+        assertThat(publisherId, is(equalTo(expectedPublisherId)));
+        assertThat(seriesId, is(equalTo(expectedSeriesId)));
     }
 
     @Test
