@@ -8,7 +8,6 @@ import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
@@ -20,6 +19,7 @@ import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
 import no.sikt.nva.brage.migration.common.model.record.PublishedDate;
 import no.sikt.nva.brage.migration.common.model.record.Publisher;
+import no.sikt.nva.brage.migration.common.model.record.PublisherAuthority;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.Series;
 import no.sikt.nva.brage.migration.common.model.record.Type;
@@ -45,6 +45,7 @@ public final class DublinCoreScraper {
     public static final String DELIMITER = "\n";
     public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
     public static final String SCRAPING_HAS_FAILED = "Scraping has failed: ";
+    public static final String CRISTIN_POST = "[CRISTIN_POST]";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
 
@@ -132,8 +133,9 @@ public final class DublinCoreScraper {
             record.setErrors(errors);
             record.setWarnings(warnings);
             logUnscrapedValues(dublinCore, brageLocation);
-            logWarningsIfNotEmpty(brageLocation, warnings);
-            logErrorsIfNotEmpty(brageLocation, errors);
+            var isCristinPost = isInCristin(dublinCore);
+            logWarningsIfNotEmpty(brageLocation, warnings, isCristinPost);
+            logErrorsIfNotEmpty(brageLocation, errors, isCristinPost);
             return record;
         } catch (Exception e) {
             throw new DublinCoreException(SCRAPING_HAS_FAILED + e);
@@ -144,14 +146,22 @@ public final class DublinCoreScraper {
         return enableOnlineValidation;
     }
 
-    private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings) {
+    private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings,
+                                              boolean isCristinPost) {
         if (!warnings.isEmpty()) {
+            if (isCristinPost) {
+                logger.warn(CRISTIN_POST + warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
+            }
             logger.warn(warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
 
-    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> error) {
+    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> error,
+                                            boolean isCristinPost) {
         if (!error.isEmpty()) {
+            if (isCristinPost) {
+                logger.error(CRISTIN_POST + error + StringUtils.SPACE + brageLocation.getOriginInformation());
+            }
             logger.error(error + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
@@ -404,25 +414,29 @@ public final class DublinCoreScraper {
         return isbnList.get(0);
     }
 
-    private static Boolean extractVersion(DublinCore dublinCore) {
+    private static PublisherAuthority extractVersion(DublinCore dublinCore) {
         var version = dublinCore.getDcValues().stream()
                           .filter(DcValue::isVersion)
-                          .findAny();
-        return version.flatMap(DublinCoreScraper::mapToNvaVersion).orElse(null);
+                          .findAny().orElse(new DcValue());
+        return mapToNvaVersion(version);
     }
 
-    private static Optional<Boolean> mapToNvaVersion(DcValue version) {
+    private static PublisherAuthority mapToNvaVersion(DcValue version) {
         if (PUBLISHED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
-            return Optional.of(true);
-        }
-        if (ACCEPTED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
-            return Optional.of(false);
+            return new PublisherAuthority(version.getValue(), true);
+        } else if (ACCEPTED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
+            return new PublisherAuthority(version.getValue(), false);
         } else {
-            return Optional.empty();
+            return new PublisherAuthority(version.getValue(), null);
         }
     }
 
     private static Type mapOriginTypeToNvaType(List<String> types) {
         return new Type(types, TypeMapper.convertBrageTypeToNvaType(types));
+    }
+
+    private static boolean isInCristin(DublinCore dublinCore) {
+        var cristinId = extractCristinId(dublinCore);
+        return nonNull(cristinId) && !cristinId.isEmpty();
     }
 }

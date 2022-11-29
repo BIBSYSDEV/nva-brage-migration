@@ -13,7 +13,7 @@ import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.JacocoGenerated;
 
-@JsonPropertyOrder({"customerId", "brageLocation", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
+@JsonPropertyOrder({"customer", "brageLocation", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
     "rightsholder",
     "type", "partOf", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
     "recordContent", "errors", "warnings"})
@@ -21,12 +21,12 @@ import nva.commons.core.JacocoGenerated;
 public class Record {
 
     private EntityDescription entityDescription;
-    private URI customerId;
+    private String customer;
     private URI id;
     private URI doi;
     private Type type;
     private Language language;
-    private Boolean publisherAuthority;
+    private PublisherAuthority publisherAuthority;
     private String rightsholder;
     private List<String> spatialCoverage;
     private String partOf;
@@ -111,7 +111,7 @@ public class Record {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(entityDescription, customerId, id, doi, type, language, publisherAuthority,
+        return Objects.hash(entityDescription, customer, id, doi, type, language, publisherAuthority,
                             rightsholder, spatialCoverage, partOf, publication, contentBundle, publishedDate, cristinId,
                             brageLocation, errors, warnings);
     }
@@ -127,7 +127,7 @@ public class Record {
         }
         Record record = (Record) o;
         return Objects.equals(entityDescription, record.entityDescription)
-               && Objects.equals(customerId, record.customerId)
+               && Objects.equals(customer, record.customer)
                && Objects.equals(id, record.id)
                && Objects.equals(doi, record.doi)
                && Objects.equals(type, record.type)
@@ -156,11 +156,11 @@ public class Record {
 
     @JsonInclude
     @JsonProperty("publisherAuthority")
-    public Boolean getPublisherAuthority() {
+    public PublisherAuthority getPublisherAuthority() {
         return publisherAuthority;
     }
 
-    public void setPublisherAuthority(Boolean publisherAuthority) {
+    public void setPublisherAuthority(PublisherAuthority publisherAuthority) {
         this.publisherAuthority = publisherAuthority;
     }
 
@@ -174,14 +174,14 @@ public class Record {
     }
 
     @JacocoGenerated
-    @JsonProperty("customerId")
-    public URI getCustomerId() {
-        return this.customerId;
+    @JsonProperty("customer")
+    public String getCustomer() {
+        return this.customer;
     }
 
     @JacocoGenerated
-    public void setCustomerId(URI customerId) {
-        this.customerId = customerId;
+    public void setCustomer(String customer) {
+        this.customer = customer;
     }
 
     @JsonProperty("id")

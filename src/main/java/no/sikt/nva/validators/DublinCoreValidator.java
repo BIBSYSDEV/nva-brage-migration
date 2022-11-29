@@ -62,7 +62,6 @@ public final class DublinCoreValidator {
 
     public static List<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore) {
         var warnings = new ArrayList<WarningDetails>();
-        getVersionWarnings(dublinCore).ifPresent(warnings::add);
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
         BrageNvaLanguageMapper.getLanguageWarning(dublinCore).ifPresent(warnings::add);
         getDescriptionsWarning(dublinCore).ifPresent(warnings::add);
@@ -242,13 +241,6 @@ public final class DublinCoreValidator {
         return Optional.empty();
     }
 
-    private static Optional<WarningDetails> getVersionWarnings(DublinCore dublinCore) {
-        if (!versionIsPresent(dublinCore)) {
-            return Optional.empty();
-        }
-        return getVersionWarning(dublinCore);
-    }
-
     private static Optional<ErrorDetails> getDateError(DublinCore dublinCore) {
         if (hasDate(dublinCore)) {
             var date = dublinCore.getDcValues()
@@ -386,28 +378,5 @@ public final class DublinCoreValidator {
     private static boolean hasPageNumber(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .anyMatch(DcValue::isPageNumber);
-    }
-
-    private static Optional<WarningDetails> getVersionWarning(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DublinCoreValidator::dcValueIsVersionAndVersionIsUnvalid)
-                   .findAny()
-                   .map(dcValue -> new WarningDetails(WarningDetails.Warning.VERSION_WARNING,
-                                                      List.of(dcValue.getValue())));
-    }
-
-    private static boolean dcValueIsVersionAndVersionIsUnvalid(DcValue dcValue) {
-        return dcValue.isVersion() && !isValidVersion(dcValue);
-    }
-
-    private static boolean versionIsPresent(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .anyMatch(DcValue::isVersion);
-    }
-
-    private static boolean isValidVersion(DcValue version) {
-        return PUBLISHED_VERSION_STRING.equals(version.getValue())
-               || ACCEPTED_VERSION_STRING.equals(version.getValue());
     }
 }
