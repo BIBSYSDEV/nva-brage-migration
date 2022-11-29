@@ -7,20 +7,17 @@ import java.util.Objects;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 public class Identity {
 
-    private String name;
+    private final String name;
 
     public Identity(@JsonProperty("name") String name) {
         this.name = name;
     }
 
-    @JsonProperty("name")
+
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     @Override
     public int hashCode() {

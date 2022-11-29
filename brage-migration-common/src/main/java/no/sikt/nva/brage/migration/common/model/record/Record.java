@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -14,7 +13,7 @@ import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.JacocoGenerated;
 
-@JsonPropertyOrder({"customer", "bareOrigin", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
+@JsonPropertyOrder({"customer", "brageLocation", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
     "rightsholder",
     "type", "partOf", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
     "recordContent", "errors", "warnings"})
@@ -25,10 +24,9 @@ public class Record {
     private String customer;
     private URI id;
     private URI doi;
-    private Path origin;
     private Type type;
     private Language language;
-    private Boolean publisherAuthority;
+    private PublisherAuthority publisherAuthority;
     private String rightsholder;
     private List<String> spatialCoverage;
     private String partOf;
@@ -113,7 +111,7 @@ public class Record {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(entityDescription, customer, id, doi, origin, type, language, publisherAuthority,
+        return Objects.hash(entityDescription, customer, id, doi, type, language, publisherAuthority,
                             rightsholder, spatialCoverage, partOf, publication, contentBundle, publishedDate, cristinId,
                             brageLocation, errors, warnings);
     }
@@ -132,7 +130,6 @@ public class Record {
                && Objects.equals(customer, record.customer)
                && Objects.equals(id, record.id)
                && Objects.equals(doi, record.doi)
-               && Objects.equals(origin, record.origin)
                && Objects.equals(type, record.type)
                && Objects.equals(language, record.language)
                && Objects.equals(publisherAuthority, record.publisherAuthority)
@@ -159,11 +156,11 @@ public class Record {
 
     @JsonInclude
     @JsonProperty("publisherAuthority")
-    public Boolean getPublisherAuthority() {
+    public PublisherAuthority getPublisherAuthority() {
         return publisherAuthority;
     }
 
-    public void setPublisherAuthority(Boolean publisherAuthority) {
+    public void setPublisherAuthority(PublisherAuthority publisherAuthority) {
         this.publisherAuthority = publisherAuthority;
     }
 
@@ -213,15 +210,6 @@ public class Record {
 
     public void setLanguage(Language language) {
         this.language = language;
-    }
-
-    @JsonProperty("bareOrigin")
-    public Path getOrigin() {
-        return origin;
-    }
-
-    public void setOrigin(Path origin) {
-        this.origin = origin;
     }
 
     @JsonProperty("rightsholder")
