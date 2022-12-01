@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
-import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Journal;
@@ -243,8 +242,8 @@ public final class DublinCoreScraper {
         var nvaType = record.getType().getNva();
         var bragePublisher = publication.getPublicationContext().getBragePublisher();
         return nonNull(bragePublisher)
-               && nvaType.equals(BrageType.REPORT.getValue())
-               || nvaType.equals(BrageType.BOOK.getValue())
+               && nvaType.equals(NvaType.REPORT.getValue())
+               || nvaType.equals(NvaType.BOOK.getValue())
                || nvaType.equals(NvaType.SCIENTIFIC_MONOGRAPH.getValue());
     }
 
