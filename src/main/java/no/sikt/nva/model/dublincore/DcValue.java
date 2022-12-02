@@ -174,6 +174,14 @@ public class DcValue {
         return Element.RELATION.equals(this.element) && Qualifier.IS_PART_OF.equals(this.qualifier);
     }
 
+    public boolean isHasPart() {
+        return Element.RELATION.equals(this.element) && Qualifier.HAS_PART.equals(this.qualifier);
+    }
+
+    public boolean isLocalCode() {
+        return Element.DESCRIPTION.equals(this.element) && Qualifier.LOCAL_CODE.equals(this.qualifier);
+    }
+
     public boolean isHandle() {
         if (StringUtils.isNotEmpty(value)) {
             return Element.IDENTIFIER.equals(this.element)

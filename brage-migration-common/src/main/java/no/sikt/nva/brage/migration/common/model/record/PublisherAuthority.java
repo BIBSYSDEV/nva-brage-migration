@@ -2,16 +2,17 @@ package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
 public class PublisherAuthority {
 
-    private String brage;
+    private List<String> brage;
     private Boolean nva;
 
     @JsonCreator
-    public PublisherAuthority(@JsonProperty("brage") String brage,
+    public PublisherAuthority(@JsonProperty("brage") List<String> brage,
                               @JsonProperty("nva") Boolean nva) {
         this.nva = nva;
         this.brage = brage;
@@ -37,11 +38,11 @@ public class PublisherAuthority {
     }
 
     @JsonProperty("brage")
-    public String getBrage() {
+    public List<String> getBrage() {
         return brage;
     }
 
-    public void setBrage(String brage) {
+    public void setBrage(List<String> brage) {
         this.brage = brage;
     }
 

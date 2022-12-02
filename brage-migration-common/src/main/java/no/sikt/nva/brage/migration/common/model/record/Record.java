@@ -15,7 +15,8 @@ import nva.commons.core.JacocoGenerated;
 
 @JsonPropertyOrder({"customer", "brageLocation", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
     "rightsholder",
-    "type", "partOf", "publisherAuthority", "spatialCoverage", "date", "language", "publication", "entityDescription",
+    "type", "partOf", "hasPart", "publisherAuthority", "spatialCoverage", "date", "language", "publication",
+    "entityDescription",
     "recordContent", "errors", "warnings"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
@@ -30,6 +31,7 @@ public class Record {
     private String rightsholder;
     private List<String> spatialCoverage;
     private String partOf;
+    private String hasPart;
     private Publication publication;
     private ResourceContent contentBundle;
     private PublishedDate publishedDate;
@@ -37,12 +39,20 @@ public class Record {
     private String brageLocation;
     private List<ErrorDetails> errors;
     private List<WarningDetails> warnings;
-
     public Record() {
     }
 
     public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
+
+    @JsonProperty("hasPart")
+    public String getHasPart() {
+        return hasPart;
+    }
+
+    public void setHasPart(String hasPart) {
+        this.hasPart = hasPart;
     }
 
     @JsonProperty("partOf")

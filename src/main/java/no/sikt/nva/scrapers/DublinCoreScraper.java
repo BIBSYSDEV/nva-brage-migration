@@ -1,12 +1,14 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_VERSIONS;
 import static no.sikt.nva.validators.DublinCoreValidator.ACCEPTED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.validators.DublinCoreValidator.PUBLISHED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,12 +36,14 @@ import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.GodClass")
 public final class DublinCoreScraper {
 
+    public static final String SUBMITTED_VERSION = "submittedVersion";
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
     public static final String DELIMITER = "\n";
     public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
@@ -174,7 +178,7 @@ public final class DublinCoreScraper {
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
         record.setLanguage(BrageNvaLanguageMapper.extractLanguage(dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
-        record.setPublisherAuthority(extractVersion(dublinCore));
+        record.setPublisherAuthority(extractVersion(dublinCore, brageLocation));
         record.setDoi(extractDoi(dublinCore));
         record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore));
         record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
@@ -182,6 +186,7 @@ public final class DublinCoreScraper {
         record.setPublishedDate(extractAvailableDate(dublinCore));
         record.setCristinId(extractCristinId(dublinCore));
         record.setPartOf(extractPartOf(dublinCore));
+        record.setHasPart(extractHasPart(dublinCore));
         return record;
     }
 
@@ -322,7 +327,8 @@ public final class DublinCoreScraper {
                || dcValue.isCreatedDate()
                || dcValue.isUpdatedDate()
                || dcValue.isRelationUri()
-               || dcValue.isNoneDate();
+               || dcValue.isNoneDate()
+               || dcValue.isLocalCode();
     }
 
     private static String extractCristinId(DublinCore dublinCore) {
@@ -347,6 +353,15 @@ public final class DublinCoreScraper {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isPartOf)
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
+    }
+
+    private static String extractHasPart(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isHasPart)
                    .findAny()
                    .orElse(new DcValue())
                    .scrapeValueAndSetToScraped();
@@ -415,20 +430,57 @@ public final class DublinCoreScraper {
         return isbnList.get(0);
     }
 
-    private static PublisherAuthority extractVersion(DublinCore dublinCore) {
+    private static PublisherAuthority extractVersion(DublinCore dublinCore, BrageLocation brageLocation) {
         var version = dublinCore.getDcValues().stream()
                           .filter(DcValue::isVersion)
-                          .findAny().orElse(new DcValue());
-        return mapToNvaVersion(version);
+                          .map(DcValue::scrapeValueAndSetToScraped)
+                          .collect(Collectors.toList());
+        return mapToNvaVersion(version, brageLocation);
     }
 
-    private static PublisherAuthority mapToNvaVersion(DcValue version) {
-        if (PUBLISHED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
-            return new PublisherAuthority(version.getValue(), true);
-        } else if (ACCEPTED_VERSION_STRING.equals(version.scrapeValueAndSetToScraped())) {
-            return new PublisherAuthority(version.getValue(), false);
+    private static PublisherAuthority mapToNvaVersion(List<String> versions, BrageLocation brageLocation) {
+        if (isSingleton(versions)) {
+            return mapSingleVersion(versions);
+        }
+        if (containsMultipleValues(versions)) {
+            logger.error(new ErrorDetails(MULTIPLE_VERSIONS, versions)
+                         + StringUtils.SPACE
+                         + brageLocation.getOriginInformation());
+            return mapMultipleVersions(versions);
+        }
+        return new PublisherAuthority(versions, null);
+    }
+
+    private static boolean containsMultipleValues(List<String> versions) {
+        return versions.size() >= 2;
+    }
+
+    private static boolean isSingleton(List<String> versions) {
+        return versions.size() == 1;
+    }
+
+    private static PublisherAuthority mapMultipleVersions(List<String> versions) {
+        if (versions.contains(List.of(PUBLISHED_VERSION_STRING, ACCEPTED_VERSION_STRING))) {
+            return new PublisherAuthority(Collections.singletonList(PUBLISHED_VERSION_STRING), true);
+        }
+        if (versions.contains(List.of(PUBLISHED_VERSION_STRING, SUBMITTED_VERSION))) {
+            return new PublisherAuthority(Collections.singletonList(PUBLISHED_VERSION_STRING), true);
+        }
+        if (versions.contains(List.of(ACCEPTED_VERSION_STRING, SUBMITTED_VERSION))) {
+            return new PublisherAuthority(Collections.singletonList(ACCEPTED_VERSION_STRING), false);
+        }
+        return new PublisherAuthority(versions, null);
+    }
+
+    @NotNull
+    private static PublisherAuthority mapSingleVersion(List<String> versions) {
+        var version = versions.get(0);
+        if (PUBLISHED_VERSION_STRING.equals(version)) {
+            return new PublisherAuthority(Collections.singletonList(version), true);
+        } else if (ACCEPTED_VERSION_STRING.equals(version)) {
+            return new PublisherAuthority(Collections.singletonList(version), false);
         } else {
-            return new PublisherAuthority(version.getValue(), null);
+            return new PublisherAuthority(Collections.singletonList(version), null);
         }
     }
 
