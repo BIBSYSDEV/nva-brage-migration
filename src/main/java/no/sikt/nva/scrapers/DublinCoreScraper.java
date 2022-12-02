@@ -150,8 +150,9 @@ public final class DublinCoreScraper {
         if (!warnings.isEmpty()) {
             if (isCristinPost) {
                 logger.warn(CRISTIN_POST + warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
+            } else {
+                logger.warn(warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
             }
-            logger.warn(warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
 
@@ -160,8 +161,9 @@ public final class DublinCoreScraper {
         if (!error.isEmpty()) {
             if (isCristinPost) {
                 logger.error(CRISTIN_POST + error + StringUtils.SPACE + brageLocation.getOriginInformation());
+            } else {
+                logger.error(error + StringUtils.SPACE + brageLocation.getOriginInformation());
             }
-            logger.error(error + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
 

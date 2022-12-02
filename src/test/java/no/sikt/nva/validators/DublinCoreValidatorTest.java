@@ -9,6 +9,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALI
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISBN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.JOURNAL_NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_ISSN_AND_JOURNAL;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -213,7 +214,7 @@ public class DublinCoreValidatorTest {
         var brageLocation = new BrageLocation(null);
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
 
-        assertThat(actualErrors, not(hasItems(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of()))));
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(MISSING_ISSN_AND_JOURNAL, List.of()))));
     }
 
     @Test
@@ -225,6 +226,6 @@ public class DublinCoreValidatorTest {
         var brageLocation = new BrageLocation(null);
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
 
-        assertThat(actualErrors, not(hasItems(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of()))));
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(MISSING_ISSN_AND_JOURNAL, List.of()))));
     }
 }
