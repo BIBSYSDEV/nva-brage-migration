@@ -31,7 +31,7 @@ public class Record {
     private String rightsholder;
     private List<String> spatialCoverage;
     private String partOf;
-    private String hasPart;
+    private String hasPartValue;
     private Publication publication;
     private ResourceContent contentBundle;
     private PublishedDate publishedDate;
@@ -47,12 +47,12 @@ public class Record {
     }
 
     @JsonProperty("hasPart")
-    public String getHasPart() {
-        return hasPart;
+    public String getHasPartValue() {
+        return hasPartValue;
     }
 
-    public void setHasPart(String hasPart) {
-        this.hasPart = hasPart;
+    public void setHasPartValue(String hasPartValue) {
+        this.hasPartValue = hasPartValue;
     }
 
     @JsonProperty("partOf")

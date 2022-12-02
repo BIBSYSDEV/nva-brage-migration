@@ -186,7 +186,7 @@ public final class DublinCoreScraper {
         record.setPublishedDate(extractAvailableDate(dublinCore));
         record.setCristinId(extractCristinId(dublinCore));
         record.setPartOf(extractPartOf(dublinCore));
-        record.setHasPart(extractHasPart(dublinCore));
+        record.setHasPartValue(extractHasPart(dublinCore));
         return record;
     }
 
