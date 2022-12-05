@@ -18,7 +18,7 @@ public final class EntityDescriptionExtractor {
 
     public static final String FIRST_DAY_OF_A_MONTH = "01";
     public static final String ADVISOR = "Advisor";
-    public static final String AUTHOR = "Author";
+    public static final String AUTHOR = "Creator";
     public static final String EDITOR = "Editor";
     public static final String ILLUSTRATOR = "Illustrator";
     public static final String OTHER_CONTRIBUTOR = "Other";
