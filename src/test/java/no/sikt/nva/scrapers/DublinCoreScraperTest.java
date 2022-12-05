@@ -466,7 +466,7 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldScrapeIdFromPublishersInChannelRegisterWhenReportFromFHS() {
-        var expectedPublisherId = "19008";
+        var expectedPublisherId = "14088";
         var dcType = new DcValue(Element.TYPE, null, "Report");
         var dcPublisher = new DcValue(Element.PUBLISHER, null, "Orkana Forlag");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));

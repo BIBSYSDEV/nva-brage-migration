@@ -112,11 +112,9 @@ public final class ChannelRegister {
             if (isNullOrEmpty(publisher)) {
                 return publisher;
             } else {
-                var publisherFromMapper = PublisherMapper.getMappablePublisher(publisher);
-                return channelRegisterPublishers.stream()
-                           .filter(item -> item.hasPublisher(publisherFromMapper))
-                           .map(ChannelRegisterPublisher::getIdentifier)
-                           .collect(SingletonCollector.collectOrElse(null));
+                return nonNull(getPublisherIdentifer(publisher))
+                           ? getPublisherIdentifer(publisher)
+                           : getPublisherIdentifer(PublisherMapper.getMappablePublisher(publisher));
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
@@ -171,6 +169,13 @@ public final class ChannelRegister {
             logger.error(KANALREGISTER_READING_ERROR_MESSAGE);
             throw new RuntimeException(e);
         }
+    }
+
+    private String getPublisherIdentifer(String publisherFromMapper) {
+        return channelRegisterPublishers.stream()
+                   .filter(item -> item.hasPublisher(publisherFromMapper))
+                   .map(ChannelRegisterPublisher::getIdentifier)
+                   .collect(SingletonCollector.collectOrElse(null));
     }
 
     private boolean extractedIdentifierFromPublishersIsPresent(String publisher) {
