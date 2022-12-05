@@ -64,7 +64,7 @@ dependencies {
     implementation group: 'com.github.bibsysdev', name: 'core', version: '1.25.18'
     implementation group: 'com.github.bibsysdev', name: 'json', version: '1.25.18'
     implementation group: 'com.github.bibsysdev', name: 'doi', version: '1.25.18'
-    implementation group: 'com.github.bibsysdev', name: 's3', version: '1.25.18'
+    implementation group: 'com.github.bibsysdev', name: 's3', version: '1.25.20'
     testImplementation group: 'com.github.bibsysdev', name: 'nvatestutils', version: '1.25.18'
     implementation group: 'com.github.bibsysdev', name: 'logutils', version: '1.25.18'
 
