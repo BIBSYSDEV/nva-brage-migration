@@ -14,12 +14,9 @@ import no.sikt.nva.BrageProcessor;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.Record;
-import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.PublisherMapper;
 import nva.commons.core.SingletonCollector;
 import nva.commons.core.StringUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,8 +58,8 @@ public final class ChannelRegister {
     }
 
     public String lookUpInJournal(String issn, String title, BrageLocation brageLocation) {
-        return ObjectUtils.firstNonNull(lookUpInJournalByIssn(issn, brageLocation),
-                                        lookUpInJournalByTitle(title, brageLocation));
+        var identifierByIssn = lookUpInJournalByIssn(issn, brageLocation);
+        return nonNull(identifierByIssn) ? identifierByIssn : lookUpInJournalByTitle(title, brageLocation);
     }
 
     public String lookUpInJournalByIssn(String issn, BrageLocation brageLocation) {
@@ -120,21 +117,6 @@ public final class ChannelRegister {
             logger.error(new ErrorDetails(DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
                                           filterOutNullValues(publisher)).toString());
             return null;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public String extractIdentifierFromJournals(DublinCore dublinCore, BrageLocation brageLocation) {
-        var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
-        var title = DublinCoreScraper.extractJournal(dublinCore);
-        try {
-            return isNotNullOrEmpty(issn) || isNotNullOrEmpty(title)
-                       ? channelRegisterJournals.stream()
-                             .filter(item -> item.hasIssn(issn) || item.hasTitle(title))
-                             .map(ChannelRegisterJournal::getIdentifier)
-                             .collect(SingletonCollector.collectOrElse(null))
-                       : null;
         } catch (Exception e) {
             return null;
         }

@@ -104,12 +104,8 @@ public final class DublinCoreValidator {
                                                                            BrageLocation brageLocation) {
         var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
         var title = DublinCoreScraper.extractJournal(dublinCore);
-        var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(issn, brageLocation);
-        var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(title, brageLocation);
-        if (nonNull(possibleChannelRegisterIdentifierByIssn)) {
-            return Optional.empty();
-        }
-        if (nonNull(possibleChannelRegisterIdentifierByJournal)) {
+        var possibleIdentifier = channelRegister.lookUpInJournal(issn, title, brageLocation);
+        if (nonNull(possibleIdentifier)) {
             return Optional.empty();
         } else {
             return getChannelRegisterErrorDetailsWhenSearchingForJournals(issn, title);

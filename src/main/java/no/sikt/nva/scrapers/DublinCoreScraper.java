@@ -215,13 +215,17 @@ public final class DublinCoreScraper {
 
     private static void setIdFromJournals(DublinCore dublinCore, BrageLocation brageLocation, Record record) {
         var publication = record.getPublication();
+        var issn = extractIssn(dublinCore, brageLocation);
+        var title = extractJournal(dublinCore);
         if (NvaType.REPORT.getValue().equals(record.getType().getNva())) {
-            var seriesId = channelRegister.extractIdentifierFromJournals(dublinCore, brageLocation);
+            var seriesId = channelRegister.lookUpInJournal(issn, title, brageLocation);
             if (nonNull(seriesId)) {
                 publication.getPublicationContext().setSeries(new Series(seriesId));
             }
-        } else {
-            var journalId = channelRegister.extractIdentifierFromJournals(dublinCore, brageLocation);
+        }
+        if (NvaType.JOURNAL_ARTICLE.getValue().equals(record.getType().getNva())
+            || NvaType.SCIENTIFIC_ARTICLE.getValue().equals(record.getType().getNva())) {
+            var journalId = channelRegister.lookUpInJournal(issn, title, brageLocation);
             if (nonNull(journalId)) {
                 publication.getPublicationContext().setJournal(new Journal(journalId));
             }
