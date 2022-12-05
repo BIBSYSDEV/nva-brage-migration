@@ -2,7 +2,8 @@ package no.sikt.nva.channelregister;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.validators.DublinCoreValidator.filterOutNullValues;
 import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.BufferedReader;
@@ -17,6 +18,8 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.PublisherMapper;
 import nva.commons.core.SingletonCollector;
+import nva.commons.core.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,12 +55,17 @@ public final class ChannelRegister {
     public String lookUpInChannelRegisterForPublisher(Record record) {
         var publicationContext = record.getPublication().getPublicationContext();
         if (extractedIdentifierFromPublishersIsPresent(publicationContext.getBragePublisher())) {
-            return lookUpInPublisherByPublisher(publicationContext.getBragePublisher());
+            return lookUpInPublisher(publicationContext.getBragePublisher());
         }
         return null;
     }
 
-    public String lookUpInJournalByIssn(String issn) {
+    public String lookUpInJournal(String issn, String title, BrageLocation brageLocation) {
+        return ObjectUtils.firstNonNull(lookUpInJournalByIssn(issn, brageLocation),
+                                        lookUpInJournalByTitle(title, brageLocation));
+    }
+
+    public String lookUpInJournalByIssn(String issn, BrageLocation brageLocation) {
         try {
             if (isNullOrEmpty(issn)) {
                 return issn;
@@ -68,15 +76,17 @@ public final class ChannelRegister {
                            .collect(SingletonCollector.collectOrElse(null));
             }
         } catch (IllegalStateException e) {
-            logger.error(new ErrorDetails(MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE,
-                                          filterOutNullValues(issn)).toString());
+            logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
+                                          filterOutNullValues(issn))
+                         + StringUtils.SPACE
+                         + brageLocation.getOriginInformation());
             return null;
         } catch (Exception e) {
             return null;
         }
     }
 
-    public String lookUpInJournalByTitle(String title) {
+    public String lookUpInJournalByTitle(String title, BrageLocation brageLocation) {
         try {
             if (isNullOrEmpty(title)) {
                 return title;
@@ -87,27 +97,27 @@ public final class ChannelRegister {
                            .collect(SingletonCollector.collectOrElse(null));
             }
         } catch (IllegalStateException e) {
-            logger.error(new ErrorDetails(MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE,
-                                          filterOutNullValues(title)).toString());
+            logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
+                                          filterOutNullValues(title))
+                         + StringUtils.SPACE
+                         + brageLocation.getOriginInformation());
             return null;
         } catch (Exception e) {
             return null;
         }
     }
 
-    public String lookUpInPublisherByPublisher(String publisher) {
+    public String lookUpInPublisher(String publisher) {
         try {
             if (isNullOrEmpty(publisher)) {
                 return publisher;
             } else {
-                var publisherFromMapper = PublisherMapper.getMappablePublisher(publisher);
-                return channelRegisterPublishers.stream()
-                           .filter(item -> item.hasPublisher(publisherFromMapper))
-                           .map(ChannelRegisterPublisher::getIdentifier)
-                           .collect(SingletonCollector.collectOrElse(null));
+                return nonNull(getPublisherIdentifer(publisher))
+                           ? getPublisherIdentifer(publisher)
+                           : getPublisherIdentifer(PublisherMapper.getMappablePublisher(publisher));
             }
         } catch (IllegalStateException e) {
-            logger.error(new ErrorDetails(MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE,
+            logger.error(new ErrorDetails(DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
                                           filterOutNullValues(publisher)).toString());
             return null;
         } catch (Exception e) {
@@ -161,9 +171,16 @@ public final class ChannelRegister {
         }
     }
 
+    private String getPublisherIdentifer(String publisherFromMapper) {
+        return channelRegisterPublishers.stream()
+                   .filter(item -> item.hasPublisher(publisherFromMapper))
+                   .map(ChannelRegisterPublisher::getIdentifier)
+                   .collect(SingletonCollector.collectOrElse(null));
+    }
+
     private boolean extractedIdentifierFromPublishersIsPresent(String publisher) {
         if (isNotNullOrEmpty(publisher)) {
-            var identifierFromPublisher = lookUpInPublisherByPublisher(publisher);
+            var identifierFromPublisher = lookUpInPublisher(publisher);
             return isNotNullOrEmpty(identifierFromPublisher);
         }
         return false;

@@ -1,9 +1,9 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
@@ -466,7 +466,7 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldScrapeIdFromPublishersInChannelRegisterWhenReportFromFHS() {
-        var expectedPublisherId = "19008";
+        var expectedPublisherId = "14088";
         var dcType = new DcValue(Element.TYPE, null, "Report");
         var dcPublisher = new DcValue(Element.PUBLISHER, null, "Orkana Forlag");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
@@ -510,7 +510,7 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(appender.getMessages(), containsString(
-            String.valueOf(MULTIPLE_SEARCH_RESULTS_IN_CHANNEL_REGISTER_BY_VALUE)));
+            String.valueOf(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER)));
     }
 
     @ParameterizedTest

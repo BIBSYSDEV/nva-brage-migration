@@ -25,10 +25,9 @@ public final class PublisherMapper {
     public static final String FHS_BRAGE_PUBLISHER_V7 = "MCDC. Multinational Capability Development Campaign";
     public static final String FHS_BRAGE_PUBLISHER_V8 = "Forsvarssjefen. Utarbeidet av Forsvarets høgskole/Forsvarets"
                                                         + " stabsskole";
-    public static final String FHS_BRAGE_PUBLISHER_V9 = "Orkana Forlag";
-    public static final String FHS_BRAGE_PUBLISHER_V10 = "Forsvarsstaben. Utarbeidet av Forsvarets stabsskole. Denne "
-                                                         + "versjonen er erstattet av en ny utgave, utgitt 1. oktober "
-                                                         + "2014.";
+    public static final String FHS_BRAGE_PUBLISHER_V9 = "Forsvarsstaben. Utarbeidet av Forsvarets stabsskole. Denne "
+                                                        + "versjonen er erstattet av en ny utgave, utgitt 1. oktober "
+                                                        + "2014.";
     public static final String FHS_BRAGE_PUBLISHER_V11 = "Institutt for forsvarsstudier";
     public static final String FHS_BRAGE_PUBLISHER_V12 = "Sjøkrigsskolen";
     public static final String FHS_BRAGE_PUBLISHER_V13 = "Norwegian Institute for Defence Studies";
@@ -48,7 +47,7 @@ public final class PublisherMapper {
                       KRUS_CHANNEL_REGISTER_PUBLISHER), KRUS_CHANNEL_REGISTER_PUBLISHER),
         entry(List.of(FHS_BRAGE_PUBLISHER_V1, FHS_BRAGE_PUBLISHER_V2, FHS_BRAGE_PUBLISHER_V3, FHS_BRAGE_PUBLISHER_V4,
                       FHS_BRAGE_PUBLISHER_V5, FHS_BRAGE_PUBLISHER_V6, FHS_BRAGE_PUBLISHER_V7, FHS_BRAGE_PUBLISHER_V8,
-                      FHS_BRAGE_PUBLISHER_V9, FHS_BRAGE_PUBLISHER_V10, FHS_BRAGE_PUBLISHER_V11,
+                      FHS_BRAGE_PUBLISHER_V9, FHS_BRAGE_PUBLISHER_V11,
                       FHS_BRAGE_PUBLISHER_V12, FHS_BRAGE_PUBLISHER_V13, FHS_BRAGE_PUBLISHER_V14,
                       FHS_BRAGE_PUBLISHER_V15, FHS_BRAGE_PUBLISHER_V16, FHS_BRAGE_PUBLISHER_V17,
                       FHS_BRAGE_PUBLISHER_V18, FHS_CHANNEL_REGISTER_PUBLISHER, FHS_BRAGE_PUBLISHER_V19,

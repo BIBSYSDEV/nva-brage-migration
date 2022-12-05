@@ -7,6 +7,8 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALI
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.JOURNAL_NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_ISSN_AND_JOURNAL;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_PUBLISHER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.DublinCoreScraper.channelRegister;
 import java.util.ArrayList;
@@ -24,7 +26,6 @@ import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.scrapers.BrageNvaLanguageMapper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.PageConverter;
@@ -42,8 +43,8 @@ public final class DublinCoreValidator {
     public static final String PUBLISHED_VERSION_STRING = "publishedVersion";
     public static final String ACCEPTED_VERSION_STRING = "acceptedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
-    public static final String MISSING_ISSN_AND_TITLE = "Missing issn and title";
-    public static final String MISSING_ISSN_AND_PUBLISHER = "Missing issn AND publisher";
+    public static final String NO_ISSN_OR_JOURNAL_FOUND = "No issn or journal found";
+    public static final String NO_PUBLISHER_FOUND = "No publisher found";
     private static final int ONE_DESCRIPTION = 1;
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -103,8 +104,8 @@ public final class DublinCoreValidator {
                                                                            BrageLocation brageLocation) {
         var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
         var title = DublinCoreScraper.extractJournal(dublinCore);
-        var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(issn);
-        var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(title);
+        var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(issn, brageLocation);
+        var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(title, brageLocation);
         if (nonNull(possibleChannelRegisterIdentifierByIssn)) {
             return Optional.empty();
         }
@@ -120,15 +121,13 @@ public final class DublinCoreValidator {
         var publisher = DublinCoreScraper.extractPublisher(dublinCore);
         var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
         var title = DublinCoreScraper.extractJournal(dublinCore);
-        var possibleChannelRegisterIdentifierByIssn = channelRegister.lookUpInJournalByIssn(issn);
-        var possibleChannelRegisterIdentifierByJournal = channelRegister.lookUpInJournalByTitle(title);
-        var possibleChannelRegisterIdentifierByPublisher = channelRegister.lookUpInPublisherByPublisher(publisher);
-        if (nonNull(possibleChannelRegisterIdentifierByIssn)
-            || nonNull(possibleChannelRegisterIdentifierByJournal)
-            || nonNull(possibleChannelRegisterIdentifierByPublisher)) {
+        var journalIdentifier = channelRegister.lookUpInJournal(issn, title, brageLocation);
+        var publisherIdentifier = channelRegister.lookUpInPublisher(publisher);
+        if (nonNull(journalIdentifier)
+            || nonNull(publisherIdentifier)) {
             return Optional.empty();
         } else {
-            return getChannelRegisterErrorDetailsWhenSearchingForPublisher(issn, publisher);
+            return getChannelRegisterErrorDetailsWhenSearchingForPublisher(publisher);
         }
     }
 
@@ -139,18 +138,17 @@ public final class DublinCoreValidator {
             return Optional.of(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(issn, title)));
         } else {
             return Optional.of(
-                new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, Collections.singletonList(MISSING_ISSN_AND_TITLE)));
+                new ErrorDetails(MISSING_ISSN_AND_JOURNAL, Collections.singletonList(NO_ISSN_OR_JOURNAL_FOUND)));
         }
     }
 
-    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String issn,
-                                                                                                  String publisher) {
-        if (!filterOutNullValues(issn, publisher).isEmpty()) {
+    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String publisher) {
+        if (!filterOutNullValues(publisher).isEmpty()) {
             return Optional.of(
-                new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(issn, publisher)));
+                new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(publisher)));
         } else {
-            return Optional.of(new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER,
-                                                Collections.singletonList(MISSING_ISSN_AND_PUBLISHER)));
+            return Optional.of(new ErrorDetails(MISSING_PUBLISHER,
+                                                Collections.singletonList(NO_PUBLISHER_FOUND)));
         }
     }
 
@@ -312,7 +310,7 @@ public final class DublinCoreValidator {
 
     private static boolean hasPublisher(DublinCore dublinCore) {
         var publisher = DublinCoreScraper.extractPublisher(dublinCore);
-        return nonNull(publisher) && publisher.equals(Element.PUBLISHER.getValue());
+        return nonNull(publisher);
     }
 
     private static boolean isBook(DublinCore dublinCore) {
