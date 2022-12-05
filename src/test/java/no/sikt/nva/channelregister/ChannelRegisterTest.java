@@ -19,7 +19,8 @@ public class ChannelRegisterTest {
     void shouldReturnJournalIdWhenIssnIsFound(String issn) {
         var register = ChannelRegister.getRegister();
         var brageLocation = new BrageLocation(null);
-        var actual = register.lookUpInJournalByIssn(issn, brageLocation);
+        var someTitle = "someTitle";
+        var actual = register.lookUpInJournal(issn, someTitle, brageLocation);
         var expectedIdentifier = "503077";
 
         assertThat(actual, is(equalTo(expectedIdentifier)));
@@ -30,7 +31,8 @@ public class ChannelRegisterTest {
         var issn = "dalksldaf";
         var register = ChannelRegister.getRegister();
         var brageLocation = new BrageLocation(null);
-        var actual = register.lookUpInJournalByIssn(issn, brageLocation);
+        var title = "someTitle";
+        var actual = register.lookUpInJournal(issn, title, brageLocation);
 
         assertThat(actual, is(nullValue()));
     }
@@ -39,7 +41,8 @@ public class ChannelRegisterTest {
     void shouldReturnNullWhenIssnIsNull() {
         var register = ChannelRegister.getRegister();
         var brageLocation = new BrageLocation(null);
-        var actual = register.lookUpInJournalByIssn(null, brageLocation);
+        var someTitle = "someTitle";
+        var actual = register.lookUpInJournal(null, someTitle, brageLocation);
 
         assertThat(actual, is(nullValue()));
     }
