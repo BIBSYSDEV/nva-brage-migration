@@ -64,7 +64,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private final S3Client s3Client;
 
     @Spec
-    CommandSpec spec;
+    private CommandSpec spec;
 
     @Option(names = {"-c", "--customer"},
         defaultValue = NVE_DEV_CUSTOMER_ID,
@@ -194,7 +194,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     @SuppressWarnings("PMD.UseVarargs")
     private void pushExistingResourcesToNva(String[] collections) {
-        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER");
+        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER", awsEnvironment.getValue());
         storage.storeProcessedCollections(collections);
     }
 
@@ -237,12 +237,20 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void storeFileToNVA(Record record) {
-        S3Storage storage = new S3StorageImpl(s3Client, customer);
+        S3Storage storage = new S3StorageImpl(s3Client, getCustomerShortName(), awsEnvironment.getValue());
         storage.storeRecord(record);
     }
 
+    private String getCustomerShortName() {
+        if (NVE_DEV_CUSTOMER_ID.equals(customer)) {
+            return "NVE";
+        } else {
+            return "CUSTOMER";
+        }
+    }
+
     private void storeLogsToNva() {
-        S3Storage storage = new S3StorageImpl(s3Client, customer);
+        S3Storage storage = new S3StorageImpl(s3Client, getCustomerShortName(), awsEnvironment.getValue());
         storage.storeLogs();
     }
 
