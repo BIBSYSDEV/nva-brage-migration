@@ -35,3 +35,4 @@ With all zipfiles specified by the samlingsfil.txt:
 ```shell
 java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -c custommer-id
 ```
+
