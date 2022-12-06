@@ -44,7 +44,7 @@ Sample import pushing resources to default bucket:
 
 Have to specify location with your JRE since default JRE is Java 8
 
-When migrating same collection many times in row, remember to delete directory with unzipped bundles, otherwise log files will affected.
+When migrating same collection many times in row, remember to delete directory with unzipped bundles, otherwise log files will be affected.
 
 ```shell
 /etc/alternatives/jre_11/bin/java -jar nva-brage-migration-1.1-all.jar -c NVE -a -D /brage/nve/app/export
