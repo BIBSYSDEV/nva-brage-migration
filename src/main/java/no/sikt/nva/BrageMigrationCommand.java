@@ -84,7 +84,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private boolean usageHelpRequested;
     @Option(names = {"-O", "--output-directory"}, description = "result outputdirectory.")
     private String userSpecifiedOutputDirectory;
-    @Option(names = {"-a", "--do-not-write-to-aws"}, description = "If this flag is set, result will not "
+    @Option(names = {"-a", "--do-not-write-to-aws"}, description = "If this flag is set, result will "
                                                                    + "be pushed "
                                                                    + "to S3")
     private boolean shouldWriteToAws;
