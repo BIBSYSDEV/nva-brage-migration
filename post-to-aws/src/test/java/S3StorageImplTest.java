@@ -30,6 +30,7 @@ public class S3StorageImplTest {
     public static final String VALID_TEST_FILE_NAME = "Simulated precipitation fields with variance consistent "
                                                       + "interpolation.pdf";
     public static final String CUSTOMER = "CUSTOMER";
+    private static final String EXPERIMENTAL_BUCKET_SETTTING = "experimental";
 
     @Test
     void shouldUploadRecordAndFileToS3() {
@@ -40,7 +41,7 @@ public class S3StorageImplTest {
                                    .getContentFileByFilename(VALID_TEST_FILE_NAME)
                                    .getIdentifier();
         var s3Client = new FakeS3Client();
-        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER);
+        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
         storageClient.storeRecord(testRecord);
         var actualRecordKeyFromBucket =
             s3Client.listObjects(createListObjectsRequest(UnixPath.fromString(expectedKeyToRecord)))
@@ -58,7 +59,7 @@ public class S3StorageImplTest {
     @Test
     void shouldUploadLogFilesToS3() {
         var s3Client = new FakeS3Client();
-        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER);
+        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
         storageClient.storeLogs();
         var bucketContent = s3Client.listObjects(createListObjectsRequest(UnixPath.fromString(CUSTOMER)))
                                 .contents();
@@ -75,7 +76,7 @@ public class S3StorageImplTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var nullRecord = createNullRecord();
         var s3Client = new FakeS3Client();
-        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER);
+        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
         storageClient.storeRecord(nullRecord);
 
         assertThat(appender.getMessages(), containsString(COULD_NOT_WRITE_RECORD_MESSAGE));
@@ -85,7 +86,7 @@ public class S3StorageImplTest {
     void shouldPushProcessedRecordsToS3() {
         var expectedKeyFromBucket = "CUSTOMER/2833909/1/2836938.json";
         var s3Client = new FakeS3Client();
-        var storageClient = new S3StorageImpl(s3Client, "src/test/resources/NVE/", CUSTOMER);
+        var storageClient = new S3StorageImpl(s3Client, "src/test/resources/NVE/", CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
         String[] bundles = {"2833909"};
         storageClient.storeProcessedCollections(bundles);
         var actualFileKeyFromBucket =
@@ -95,9 +96,9 @@ public class S3StorageImplTest {
         assertThat(actualFileKeyFromBucket, is(equalTo(expectedKeyFromBucket)));
     }
 
-    private static ListObjectsRequest createListObjectsRequest(UnixPath folder) {
+    private ListObjectsRequest createListObjectsRequest(UnixPath folder) {
         return ListObjectsRequest.builder()
-                   .bucket(S3StorageImpl.bucketName)
+                   .bucket(S3StorageImpl.EXPERIMENTAL_BUCKET_NAME)
                    .prefix(folder.toString())
                    .maxKeys(10)
                    .build();

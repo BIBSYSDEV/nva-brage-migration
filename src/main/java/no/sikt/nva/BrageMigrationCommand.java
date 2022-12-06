@@ -27,8 +27,11 @@ import nva.commons.core.StringUtils;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Spec;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @SuppressWarnings({"PMD.DoNotUseThreads", "PMD.GodClass"})
@@ -38,6 +41,8 @@ import software.amazon.awssdk.services.s3.S3Client;
     description = "Tool for migrating Brage bundles"
 )
 public class BrageMigrationCommand implements Callable<Integer> {
+
+    private AwsEnvironment awsEnvironment;
 
     public static final String PATH_DELIMITER = "/";
     public static final String OUTPUT_JSON_FILENAME = "records.json";
@@ -57,6 +62,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
     private final S3Client s3Client;
+
+    @Spec
+    private CommandSpec spec;
+
     @Option(names = {"-c", "--customer"},
         defaultValue = NVE_DEV_CUSTOMER_ID,
         description = "customer id in NVA")
@@ -94,6 +103,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     public BrageMigrationCommand(S3Client s3Client) {
         this.s3Client = s3Client;
+    }
+
+    @Option(names = {"-j", "--aws-bucket"}, description = "Name of AWS bucket to push result in  'experimental', "
+                                                          + "'sandbox', and 'develop' are valid",
+        defaultValue = "experimental")
+    public void setAwsEnvironment(String value) {
+        this.awsEnvironment = AwsEnvironment.fromValue(value);
+        if (isNull(awsEnvironment)) {
+            throw new ParameterException(spec.commandLine(), String.format("Invalid value '%s' for option "
+                                                                           + "'--aws-bucket'", value));
+        }
     }
 
     public static void main(String[] args) {
@@ -174,7 +194,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     @SuppressWarnings("PMD.UseVarargs")
     private void pushExistingResourcesToNva(String[] collections) {
-        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER");
+        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER", awsEnvironment.getValue());
         storage.storeProcessedCollections(collections);
     }
 
@@ -217,12 +237,20 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void storeFileToNVA(Record record) {
-        S3Storage storage = new S3StorageImpl(s3Client, customer);
+        S3Storage storage = new S3StorageImpl(s3Client, getCustomerShortName(), awsEnvironment.getValue());
         storage.storeRecord(record);
     }
 
+    private String getCustomerShortName() {
+        if (NVE_DEV_CUSTOMER_ID.equals(customer)) {
+            return "NVE";
+        } else {
+            return "CUSTOMER";
+        }
+    }
+
     private void storeLogsToNva() {
-        S3Storage storage = new S3StorageImpl(s3Client, customer);
+        S3Storage storage = new S3StorageImpl(s3Client, getCustomerShortName(), awsEnvironment.getValue());
         storage.storeLogs();
     }
 
@@ -281,9 +309,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
             if (alreadyRegisteredHandles.contains(record.getId())) {
                 var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
                 logger.info(DUPLICATE_MESSAGE
-                             + record.getId() + " " + record.getBrageLocation()
-                             + "  =>  EXISTING RESOURCE IS: "
-                             + recordStorage.getRecordLocationStringById(record.getId()));
+                            + record.getId() + " " + record.getBrageLocation()
+                            + "  =>  EXISTING RESOURCE IS: "
+                            + recordStorage.getRecordLocationStringById(record.getId()));
                 recordsToRemove.add(record);
             } else {
                 recordStorage.getRecords().add(record);
@@ -317,5 +345,30 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,
                                                                            noHandleCheck, outputDirectory))
                 .collect(Collectors.toList());
+    }
+
+    public enum AwsEnvironment {
+        EXPERIMENTAL("experimental"),
+        SANDBOX("sandbox"),
+        DEVELOP("develop");
+
+        private final String value;
+
+        AwsEnvironment(String type) {
+            this.value = type;
+        }
+
+        public static AwsEnvironment fromValue(String v) {
+            for (AwsEnvironment c : AwsEnvironment.values()) {
+                if (c.getValue().equalsIgnoreCase(v)) {
+                    return c;
+                }
+            }
+            return null;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

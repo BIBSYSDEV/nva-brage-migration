@@ -36,7 +36,11 @@ public class S3StorageImpl implements S3Storage {
     public static final String COULD_NOT_WRITE_LOGS_MESSAGE = "Could not write logs to s3: ";
     public static final String JSON_STRING = ".json";
     public static final String APPLICATION_JSON = "application/json";
-    public static final String bucketName = "anette-kir-brage-migration-experiment";
+    private final String bucketName;
+
+    public static final String EXPERIMENTAL_BUCKET_NAME = "anette-kir-brage-migration-experiment";
+    private static final String DEVELOP_BUCKET_NAME = "brage-migration-input-files-884807050265";
+    public static final String SANDBOX_BUCKET_NAME = "brage-migration-input-files-750639270376";
     public static final String RECORDS_JSON_FILE_NAME = "records.json";
     public static final String PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 = "Problem pushing processed records to S3: ";
     private static final Logger logger = LoggerFactory.getLogger(S3StorageImpl.class);
@@ -44,16 +48,26 @@ public class S3StorageImpl implements S3Storage {
     private final String pathPrefixString;
     private final String customer;
 
-    public S3StorageImpl(S3Client s3Client, String pathPrefixString, String customer) {
+    public S3StorageImpl(S3Client s3Client, String pathPrefixString, String customer, String awsBucket) {
         this.s3Client = s3Client;
         this.pathPrefixString = pathPrefixString;
         this.customer = customer;
+        this.bucketName = determineBucketFromAwsEnvironment(awsBucket);
     }
 
-    public S3StorageImpl(S3Client s3Client, String customer) {
-        this.s3Client = s3Client;
-        this.pathPrefixString = StringUtils.EMPTY_STRING;
-        this.customer = customer;
+    private static String determineBucketFromAwsEnvironment(String awsBucket) {
+        switch (awsBucket) {
+            case "sandbox":
+                return SANDBOX_BUCKET_NAME;
+            case "develop":
+                return DEVELOP_BUCKET_NAME;
+            default:
+                return EXPERIMENTAL_BUCKET_NAME;
+        }
+    }
+
+    public S3StorageImpl(S3Client s3Client, String customer, String awsBucket) {
+        this(s3Client, StringUtils.EMPTY_STRING, customer, awsBucket);
     }
 
     @Override
@@ -61,6 +75,7 @@ public class S3StorageImpl implements S3Storage {
         try {
             writeAssociatedFilesToS3(record);
             writeRecordToS3(record);
+            logger.info("record" + record.getId() + "stored to bucket" + bucketName);
         } catch (Exception e) {
             logger.info(COULD_NOT_WRITE_RECORD_MESSAGE + record.getBrageLocation() + " " + e.getMessage());
         }
