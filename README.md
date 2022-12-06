@@ -39,6 +39,7 @@ java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -c custommer-id
 ## Run the CLI tool from brage instance
 
 Sample import pushing resources to default bucket:
+
 .jar file has to be placed into the root directory, and we have to specify directory with .zip bundles
 
 ```shell
