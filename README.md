@@ -42,6 +42,8 @@ Sample import pushing resources to default bucket:
 
 .jar file has to be placed into the root directory, and we have to specify directory with .zip bundles
 
+Have to specify location with your JRE since default java JRE is Java 8
+
 ```shell
 /etc/alternatives/jre_11/bin/java -jar nva-brage-migration-1.1-all.jar -c NVE -a -D /brage/nve/app/export
 ```
