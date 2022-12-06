@@ -22,7 +22,7 @@ Read the manual:
 java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -h
 ```
 
-Sample import:
+Sample import localy:
 
 With specified zipfiles:
 
@@ -35,4 +35,14 @@ With all zipfiles specified by the samlingsfil.txt:
 ```shell
 java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -c custommer-id
 ```
+
+## Run the CLI tool from brage instance
+
+Sample import pushing resources to default bucket:
+.jar file has to be placed into the root directory, and we have to specify directory with .zip bundles
+
+```shell
+/etc/alternatives/jre_11/bin/java -jar nva-brage-migration-1.1-all.jar -c NVE -a -D /brage/nve/app/export
+```
+
 
