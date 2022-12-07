@@ -6,7 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import java.util.Collections;
 import java.util.List;
-import no.sikt.nva.brage.migration.common.model.record.Language;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.Type;
 import no.sikt.nva.scrapers.TypeMapper;
@@ -29,9 +28,6 @@ public class RecordsWriterTest {
         record.setId(randomUri());
         List<String> types = Collections.singletonList("Research report");
         record.setType(new Type(types, TypeMapper.convertBrageTypeToNvaType(types)));
-        record.setLanguage(new Language(List.of("as"), randomUri()));
-        record.setLanguage(new Language(List.of("nob"), randomUri()));
-
         return record;
     }
 }

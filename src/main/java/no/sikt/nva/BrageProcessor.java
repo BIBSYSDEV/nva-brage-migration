@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.record.Customer;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
@@ -18,13 +19,16 @@ import no.sikt.nva.model.Embargo;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.ContentScraper;
+import no.sikt.nva.scrapers.CustomerMapper;
 import no.sikt.nva.scrapers.DublinCoreFactory;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.HandleScraper;
 import no.sikt.nva.scrapers.LicenseScraper;
+import no.sikt.nva.scrapers.ResourceOwnerMapper;
 import no.sikt.nva.validators.BrageProcessorValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,9 +126,9 @@ public class BrageProcessor implements Runnable {
 
     private static void logEmbargoMessage(BrageLocation brageLocation, DublinCore dublinCore) {
         logger.error(RECORD_REMOVED_BECAUSE_OF_EMBARGO
-                    + getEmbargoDate(dublinCore)
-                    + StringUtils.SPACE
-                    + brageLocation.getOriginInformation());
+                     + getEmbargoDate(dublinCore)
+                     + StringUtils.SPACE
+                     + brageLocation.getOriginInformation());
     }
 
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
@@ -148,7 +152,8 @@ public class BrageProcessor implements Runnable {
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
             var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation);
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-            record.setCustomer(customer);
+            record.setCustomer(generateCustomer());
+            record.setResourceOwner(ResourceOwnerMapper.getResourceOwner(customer));
             record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper, dublinCore));
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
             var warnings = BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory, dublinCore);
@@ -160,6 +165,11 @@ public class BrageProcessor implements Runnable {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
             return Optional.empty();
         }
+    }
+
+    @NotNull
+    private Customer generateCustomer() {
+        return new Customer(customer, CustomerMapper.getCustomerUri(customer));
     }
 
     private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,

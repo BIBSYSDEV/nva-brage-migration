@@ -1,5 +1,7 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
@@ -11,12 +13,14 @@ public final class PublicationDateNva {
     private String month;
     private String day;
 
+    @JsonCreator
     private PublicationDateNva(Builder builder) {
         setYear(builder.year);
         setMonth(builder.month);
         setDay(builder.day);
     }
 
+    @JsonProperty("year")
     public String getYear() {
         return year;
     }
@@ -25,6 +29,7 @@ public final class PublicationDateNva {
         this.year = year;
     }
 
+    @JsonProperty("month")
     public String getMonth() {
         return month;
     }
@@ -33,6 +38,7 @@ public final class PublicationDateNva {
         this.month = month;
     }
 
+    @JsonProperty("day")
     public String getDay() {
         return day;
     }

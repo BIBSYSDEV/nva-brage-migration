@@ -55,6 +55,7 @@ public final class EntityDescriptionExtractor {
         entityDescription.setTags(SubjectScraper.extractTags(dublinCore));
         entityDescription.setPublicationInstance(extractPublicationInstance(dublinCore));
         entityDescription.setPublicationDate(extractPublicationDate(dublinCore));
+        entityDescription.setLanguage(BrageNvaLanguageMapper.extractLanguage(dublinCore));
         return entityDescription;
     }
 
