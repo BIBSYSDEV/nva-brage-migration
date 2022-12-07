@@ -77,7 +77,7 @@ public class S3StorageImpl implements S3Storage {
             writeRecordToS3(record);
             logger.info("record" + record.getId() + "stored to bucket" + bucketName);
         } catch (Exception e) {
-            logger.info(COULD_NOT_WRITE_RECORD_MESSAGE + record.getBrageLocation() + " " + e.getMessage());
+            logger.info(COULD_NOT_WRITE_RECORD_MESSAGE + record.getBrageLocation() + " " + e);
         }
     }
 
@@ -130,10 +130,6 @@ public class S3StorageImpl implements S3Storage {
         return handleToList.get(handleToList.size() - 1) + JSON_STRING;
     }
 
-    private static String getResourceDirectoryName(String brageLocation) {
-        return brageLocation.split("/")[1];
-    }
-
     private static UUID getUuidToRecordFile(Record record, File file) {
         return record.getContentBundle().getContentFileByFilename(file.getName()).getIdentifier();
     }
@@ -153,22 +149,23 @@ public class S3StorageImpl implements S3Storage {
     }
 
     private File findAssociatedFiles(Record record) {
-        var brageLocation = record.getBrageLocation();
-        return new File(getCollectionDirectory(brageLocation) + "/" + getResourceDirectory(brageLocation));
+        return new File(getPathPrefixString() + record.getBrageLocation());
+    }
+
+    private String getCollectionDirectory(Record record) {
+        var brageLocation = record.getBrageLocation().split("/");
+        return brageLocation[brageLocation.length -2];
+    }
+
+    private String getResourceDirectory(Record record) {
+        var brageLocation = record.getBrageLocation().split("/");
+        return brageLocation[brageLocation.length - 1];
     }
 
     private String createKey(Record record, String filename) {
-        var collection = getCollectionDirectory(record.getBrageLocation());
-        var bundle = getResourceDirectoryName(record.getBrageLocation());
-        return Path.of(customer, collection.getName(), bundle, filename).toString();
-    }
-
-    private File getCollectionDirectory(String brageLocation) {
-        return new File(getPathPrefixString() + brageLocation.split("/")[0]);
-    }
-
-    private String getResourceDirectory(String brageLocation) {
-        return brageLocation.split("/")[1];
+        var collection = getCollectionDirectory(record);
+        var bundle = getResourceDirectory(record);
+        return Path.of(customer, collection, bundle, filename).toString();
     }
 
     private void writeRecordToS3(Record record) throws JsonProcessingException {
