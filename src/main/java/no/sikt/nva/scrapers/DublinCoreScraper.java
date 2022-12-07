@@ -176,7 +176,6 @@ public final class DublinCoreScraper {
         var record = new Record();
         record.setId(brageLocation.getHandle());
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
-        record.setLanguage(BrageNvaLanguageMapper.extractLanguage(dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore, brageLocation));
         record.setDoi(extractDoi(dublinCore));
