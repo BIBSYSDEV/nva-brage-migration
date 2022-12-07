@@ -13,7 +13,8 @@ import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.JacocoGenerated;
 
-@JsonPropertyOrder({"customer", "brageLocation", "id", "cristinId", "doi", "publishedDate", "publisherAuthority",
+@JsonPropertyOrder({"customer", "resourceOwner", "brageLocation", "id", "cristinId", "doi", "publishedDate",
+    "publisherAuthority",
     "rightsholder",
     "type", "partOf", "hasPart", "publisherAuthority", "spatialCoverage", "date", "language", "publication",
     "entityDescription",
@@ -21,8 +22,9 @@ import nva.commons.core.JacocoGenerated;
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
 
+    private ResourceOwner resourceOwner;
     private EntityDescription entityDescription;
-    private String customer;
+    private Customer customer;
     private URI id;
     private URI doi;
     private Type type;
@@ -39,11 +41,21 @@ public class Record {
     private String brageLocation;
     private List<ErrorDetails> errors;
     private List<WarningDetails> warnings;
+
     public Record() {
     }
 
     public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
+
+    @JsonProperty("resourceOwner")
+    public ResourceOwner getResourceOwner() {
+        return resourceOwner;
+    }
+
+    public void setResourceOwner(ResourceOwner resourceOwner) {
+        this.resourceOwner = resourceOwner;
     }
 
     @JsonProperty("hasPart")
@@ -119,42 +131,6 @@ public class Record {
     }
 
     @JacocoGenerated
-    @Override
-    public int hashCode() {
-        return Objects.hash(entityDescription, customer, id, doi, type, language, publisherAuthority,
-                            rightsholder, spatialCoverage, partOf, publication, contentBundle, publishedDate, cristinId,
-                            brageLocation, errors, warnings);
-    }
-
-    @JacocoGenerated
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Record record = (Record) o;
-        return Objects.equals(entityDescription, record.entityDescription)
-               && Objects.equals(customer, record.customer)
-               && Objects.equals(id, record.id)
-               && Objects.equals(doi, record.doi)
-               && Objects.equals(type, record.type)
-               && Objects.equals(language, record.language)
-               && Objects.equals(publisherAuthority, record.publisherAuthority)
-               && Objects.equals(rightsholder, record.rightsholder)
-               && Objects.equals(spatialCoverage, record.spatialCoverage)
-               && Objects.equals(partOf, record.partOf)
-               && Objects.equals(publication, record.publication)
-               && Objects.equals(contentBundle, record.contentBundle)
-               && Objects.equals(publishedDate, record.publishedDate)
-               && Objects.equals(cristinId, record.cristinId)
-               && listEqualsIgnoreOrder(errors, record.errors)
-               && listEqualsIgnoreOrder(warnings, record.warnings);
-    }
-
-    @JacocoGenerated
     @JsonProperty("spatialCoverage")
     public List<String> getSpatialCoverage() {
         return spatialCoverage;
@@ -183,14 +159,12 @@ public class Record {
         this.publication = publication;
     }
 
-    @JacocoGenerated
     @JsonProperty("customer")
-    public String getCustomer() {
+    public Customer getCustomer() {
         return this.customer;
     }
 
-    @JacocoGenerated
-    public void setCustomer(String customer) {
+    public void setCustomer(Customer customer) {
         this.customer = customer;
     }
 
@@ -251,5 +225,46 @@ public class Record {
 
     public String toJsonString() throws JsonProcessingException {
         return JsonUtils.dtoObjectMapper.writeValueAsString(this);
+    }
+
+    @JacocoGenerated
+    @Override
+    public int hashCode() {
+        return Objects.hash(resourceOwner, getEntityDescription(), getCustomer(), getId(), getDoi(), getType(),
+                            getLanguage(), getPublisherAuthority(), getRightsholder(), getSpatialCoverage(),
+                            getPartOf(),
+                            getPart(), getPublication(), getContentBundle(), getPublishedDate(), getCristinId(),
+                            getBrageLocation(), getErrors(), getWarnings());
+    }
+
+    @JacocoGenerated
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Record record = (Record) o;
+        return Objects.equals(resourceOwner, record.resourceOwner)
+               && Objects.equals(getEntityDescription(), record.getEntityDescription())
+               && Objects.equals(getCustomer(), record.getCustomer())
+               && Objects.equals(getId(), record.getId())
+               && Objects.equals(getDoi(), record.getDoi())
+               && Objects.equals(getType(), record.getType())
+               && Objects.equals(getLanguage(), record.getLanguage())
+               && Objects.equals(getPublisherAuthority(), record.getPublisherAuthority())
+               && Objects.equals(getRightsholder(), record.getRightsholder())
+               && Objects.equals(getSpatialCoverage(), record.getSpatialCoverage())
+               && Objects.equals(getPartOf(), record.getPartOf())
+               && Objects.equals(getPart(), record.getPart())
+               && Objects.equals(getPublication(), record.getPublication())
+               && Objects.equals(getContentBundle(), record.getContentBundle())
+               && Objects.equals(getPublishedDate(), record.getPublishedDate())
+               && Objects.equals(getCristinId(), record.getCristinId())
+               && Objects.equals(getBrageLocation(), record.getBrageLocation())
+               && Objects.equals(getErrors(), record.getErrors())
+               && Objects.equals(getWarnings(), record.getWarnings());
     }
 }
