@@ -40,7 +40,7 @@ public final class EmbargoScraper {
         }
     }
 
-    public static void checkForEmbargo(Record record, List<Embargo> embargoes) {
+    public static void checkForEmbargoFromSuppliedEmbargoFile(Record record, List<Embargo> embargoes) {
         var handle = record.getId().toString();
         if (containsHandle(embargoes, handle)) {
             var potentialEmbargo = embargoes.stream()

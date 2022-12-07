@@ -15,6 +15,7 @@ import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.Embargo;
+import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.ContentScraper;
 import no.sikt.nva.scrapers.DublinCoreFactory;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
 public class BrageProcessor implements Runnable {
 
     public static final String DEFAULT_LICENSE_FILE_NAME = "license_rdf";
+    public static final String RECORD_REMOVED_BECAUSE_OF_EMBARGO = "Record was removed from import because of "
+                                                                   + "embargo: ";
     private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
     private static final String HANDLE_DEFAULT_NAME = "handle";
     private static final String DUBLIN_CORE_XML_DEFAULT_NAME = "dublin_core.xml";
@@ -103,6 +106,27 @@ public class BrageProcessor implements Runnable {
         }
     }
 
+    private static boolean hasEmbargo(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .anyMatch(DcValue::isEmbargo);
+    }
+
+    private static String getEmbargoDate(DublinCore dublinCore) {
+        return String.valueOf(dublinCore.getDcValues()
+                                  .stream()
+                                  .filter(DcValue::isEmbargo)
+                                  .findFirst()
+                                  .map(DcValue::scrapeValueAndSetToScraped));
+    }
+
+    private static void logEmbargoMessage(BrageLocation brageLocation, DublinCore dublinCore) {
+        logger.error(RECORD_REMOVED_BECAUSE_OF_EMBARGO
+                    + getEmbargoDate(dublinCore)
+                    + StringUtils.SPACE
+                    + brageLocation.getOriginInformation());
+    }
+
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories.stream()
@@ -116,6 +140,10 @@ public class BrageProcessor implements Runnable {
         var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
         try {
             var dublinCore = DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
+            if (hasEmbargo(dublinCore)) {
+                logEmbargoMessage(brageLocation, dublinCore);
+                return Optional.empty();
+            }
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
             var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation);
@@ -125,7 +153,7 @@ public class BrageProcessor implements Runnable {
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
             var warnings = BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory, dublinCore);
             record.getWarnings().addAll(warnings);
-            EmbargoScraper.checkForEmbargo(record, embargoes);
+            EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(record, embargoes);
             logWarningsIfNotEmpty(brageLocation, warnings);
             return Optional.of(record);
         } catch (Exception e) {

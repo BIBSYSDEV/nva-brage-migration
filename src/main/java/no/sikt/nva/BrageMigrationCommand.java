@@ -53,7 +53,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         + "the same time";
     public static final String RECORDS_WITHOUT_ERRORS = "Records without errors: ";
     public static final String SLASH = "/";
-    public static final String DUPLICATE_MESSAGE = "RECORD WAS REMOVED FROM IMPORT BECAUSE OF DUPLICATE: ";
+    public static final String DUPLICATE_MESSAGE = "Record was removed from import because of duplicate: ";
     private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;

@@ -332,7 +332,8 @@ public final class DublinCoreScraper {
                || dcValue.isUpdatedDate()
                || dcValue.isRelationUri()
                || dcValue.isNoneDate()
-               || dcValue.isLocalCode();
+               || dcValue.isLocalCode()
+               || dcValue.isEmbargo();
     }
 
     private static String extractCristinId(DublinCore dublinCore) {
@@ -345,12 +346,15 @@ public final class DublinCoreScraper {
     }
 
     private static String extractPartOfSeries(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isPartOfSeries)
-                   .findAny()
-                   .orElse(new DcValue())
-                   .scrapeValueAndSetToScraped();
+        var partOfSeriesValues = dublinCore.getDcValues()
+                                     .stream()
+                                     .filter(DcValue::isPartOfSeries)
+                                     .map(DcValue::scrapeValueAndSetToScraped)
+                                     .collect(Collectors.toList());
+
+        return partOfSeriesValues.isEmpty()
+                   ? new DcValue().scrapeValueAndSetToScraped()
+                   : partOfSeriesValues.get(0);
     }
 
     private static String extractPartOf(DublinCore dublinCore) {

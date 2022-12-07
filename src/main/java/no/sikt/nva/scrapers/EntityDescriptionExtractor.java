@@ -22,6 +22,7 @@ public final class EntityDescriptionExtractor {
     public static final String EDITOR = "Editor";
     public static final String ILLUSTRATOR = "Illustrator";
     public static final String OTHER_CONTRIBUTOR = "Other";
+    public static final String DATE_DELIMITER = "[-.]";
 
     private EntityDescriptionExtractor() {
 
@@ -72,15 +73,15 @@ public final class EntityDescriptionExtractor {
         }
         if (DublinCoreValidator.containsYearAndMonth(date)) {
             var publicationDateNva = new Builder()
-                                         .withYear(date.split("-")[0])
-                                         .withMonth(date.split("-")[1])
+                                         .withYear(date.split(DATE_DELIMITER)[0])
+                                         .withMonth(date.split(DATE_DELIMITER)[1])
                                          .withDay(FIRST_DAY_OF_A_MONTH).build();
             return new PublicationDate(date, publicationDateNva);
         }
         var publicationDateNva = new Builder()
-                                     .withYear(date.split("-")[0])
-                                     .withMonth(date.split("-")[1])
-                                     .withDay(date.split("-")[2]).build();
+                                     .withYear(date.split(DATE_DELIMITER)[0])
+                                     .withMonth(date.split(DATE_DELIMITER)[1])
+                                     .withDay(date.split(DATE_DELIMITER)[2]).build();
         return new PublicationDate(date, publicationDateNva);
     }
 
