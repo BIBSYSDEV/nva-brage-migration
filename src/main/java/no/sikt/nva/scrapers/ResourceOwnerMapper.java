@@ -13,7 +13,7 @@ public final class ResourceOwnerMapper {
     @SuppressWarnings("PMD.UseConcurrentHashMap")
     private static final Map<String, ResourceOwner> RESOURCE_OWNER_MAP = Map.ofEntries(
         entry("TEST", new ResourceOwner("TestOwner", UriWrapper.fromUri(TEST).getUri())),
-        entry("NVE", new ResourceOwner(null, UriWrapper.fromUri(NVE).getUri()))
+        entry("NVE", new ResourceOwner("nve@5948.0.0.0", UriWrapper.fromUri(NVE).getUri()))
     );
 
     private ResourceOwnerMapper() {
