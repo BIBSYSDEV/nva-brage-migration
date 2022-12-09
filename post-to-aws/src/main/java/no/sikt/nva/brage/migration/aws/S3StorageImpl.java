@@ -44,6 +44,8 @@ public class S3StorageImpl implements S3Storage {
     public static final String RECORDS_JSON_FILE_NAME = "records.json";
     public static final String PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 = "Problem pushing processed records to S3: ";
     private static final Logger logger = LoggerFactory.getLogger(S3StorageImpl.class);
+
+    private static final String CONTENT_DISPOSITION_FILE_NAME_PATTERN = "filename=\"%s\"";
     private final S3Client s3Client;
     private final String pathPrefixString;
     private final String customer;
@@ -154,7 +156,7 @@ public class S3StorageImpl implements S3Storage {
 
     private String getCollectionDirectory(Record record) {
         var brageLocation = record.getBrageLocation().split("/");
-        return brageLocation[brageLocation.length -2];
+        return brageLocation[brageLocation.length - 2];
     }
 
     private String getResourceDirectory(Record record) {
@@ -188,7 +190,7 @@ public class S3StorageImpl implements S3Storage {
             s3Client.putObject(PutObjectRequest
                                    .builder()
                                    .bucket(bucketName)
-                                   .contentDisposition(fileName)
+                                   .contentDisposition(String.format(CONTENT_DISPOSITION_FILE_NAME_PATTERN, fileName))
                                    .key(fileKey).build(),
                                RequestBody.fromFile(filesToStore.get(fileId)));
         }
