@@ -115,7 +115,7 @@ public final class EntityDescriptionExtractor {
                    .collect(Collectors.toList());
     }
 
-    private static List<Contributor> extractContributors(DublinCore dublinCore) {
+    public static List<Contributor> extractContributors(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)

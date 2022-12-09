@@ -22,12 +22,14 @@ import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails.Error;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.BrageNvaLanguageMapper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.EntityDescriptionExtractor;
 import no.sikt.nva.scrapers.PageConverter;
 import no.sikt.nva.scrapers.SubjectScraper;
 import no.sikt.nva.scrapers.TypeMapper;
@@ -56,6 +58,7 @@ public final class DublinCoreValidator {
         getIsbnErrors(dublinCore, brageLocation).ifPresent(errors::add);
         getDateError(dublinCore).ifPresent(errors::add);
         getChannelRegisterErrors(dublinCore, brageLocation).ifPresent(errors::add);
+        getNonContributorsError(dublinCore).ifPresent(errors::add);
         BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
         return errors;
     }
@@ -84,6 +87,18 @@ public final class DublinCoreValidator {
     public static List<String> filterOutNullValues(String... values) {
         var valuesList = Arrays.asList(values);
         return valuesList.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
+    }
+
+    private static Optional<ErrorDetails> getNonContributorsError(DublinCore dublinCore) {
+        if (hasContributors(dublinCore)) {
+            return Optional.empty();
+        } else {
+            return Optional.of(new ErrorDetails(Error.NO_CONTRIBUTORS, Collections.emptyList()));
+        }
+    }
+
+    private static boolean hasContributors(DublinCore dublinCore) {
+        return !EntityDescriptionExtractor.extractContributors(dublinCore).isEmpty();
     }
 
     @SuppressWarnings("PMD.PrematureDeclaration")
