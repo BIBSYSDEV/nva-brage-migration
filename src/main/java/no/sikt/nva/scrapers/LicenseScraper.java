@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.record.license.License;
 import no.sikt.nva.brage.migration.common.model.record.license.NvaLicense;
@@ -25,7 +26,6 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDF;
-import org.jetbrains.annotations.NotNull;
 
 public class LicenseScraper {
 
@@ -36,6 +36,7 @@ public class LicenseScraper {
     public static final String LICENSE_EXCEPTION_MESSAGE = "Extraction of license failed";
     public static final String READING_LICENSE_FILE_EXCEPTION_MESSAGE = "Reading license file has failed";
     public static final String CC_BASE_URL = "creativecommons.org";
+    public static final String NORWEGIAN_BOKMAAL = "nb";
 
     private final String customLicenseFilename;
 
@@ -56,10 +57,14 @@ public class LicenseScraper {
     public License extractOrCreateLicense(File bundleDirectory, DublinCore dublinCore) {
         try {
             var licenseFile = new File(bundleDirectory, customLicenseFilename);
-            var license = extractLicenseFromFile(licenseFile, dublinCore);
-            return mapValidLicenseUriToNvaLicense(license, LicenseMapper.mapLicenseToNva(license));
+            var brageLicense = extractLicenseFromFile(licenseFile, dublinCore);
+            var nvaLicenseIdentifier = LicenseMapper.mapLicenseToNva(brageLicense);
+            var nvaLicenseLabels = getLicenseLabels(nvaLicenseIdentifier);
+            return new License(brageLicense,
+                               new NvaLicense(nvaLicenseIdentifier, nvaLicenseLabels));
         } catch (Exception e) {
-            return mapValidLicenseUriToNvaLicense(null, DEFAULT_LICENSE);
+            return new License(null,
+                               new NvaLicense(DEFAULT_LICENSE, getLicenseLabels(DEFAULT_LICENSE)));
         }
     }
 
@@ -78,9 +83,11 @@ public class LicenseScraper {
             var licenseStringFromDublinCore = dublinCore.getDcValues().stream()
                                                   .filter(DcValue::isLicense)
                                                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
-            var licenseFromDublinCore = mapValidLicenseUriToNvaLicense(licenseStringFromDublinCore,
-                                                                       LicenseMapper.mapLicenseToNva(
-                                                                           licenseStringFromDublinCore));
+            var nvaLicenseIdentifier = LicenseMapper.mapLicenseToNva(
+                licenseStringFromDublinCore);
+            var nvaLicenseLabels = getLicenseLabels(nvaLicenseIdentifier);
+            var licenseFromDublinCore = new License(licenseStringFromDublinCore,
+                                                    new NvaLicense(nvaLicenseIdentifier, nvaLicenseLabels));
             if (isValidCCLicense(licenseFromDublinCore)) {
                 return licenseFromDublinCore.getBrageLicense();
             } else {
@@ -89,11 +96,8 @@ public class LicenseScraper {
         }
     }
 
-    @NotNull
-    private static License mapValidLicenseUriToNvaLicense(String licenseStringFromDublinCore,
-                                                          NvaLicenseIdentifier licenseStringFromDublinCore1) {
-        return new License(licenseStringFromDublinCore,
-                           new NvaLicense(licenseStringFromDublinCore1));
+    private static Map<String, String> getLicenseLabels(NvaLicenseIdentifier nvaLicenseIdentifier) {
+        return Map.of(NORWEGIAN_BOKMAAL, nvaLicenseIdentifier.getValue());
     }
 
     private static String extractLicense(Stream<RDFNode> model) {

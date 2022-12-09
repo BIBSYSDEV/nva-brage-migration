@@ -5,11 +5,13 @@ import static no.sikt.nva.ResourceNameConstants.INVALID_LICENSE_RDF_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.FIRST_VALID_LICENSE_RDF_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.SECOND_VALID_LICENSE_RDF_FILE_NAME;
 import static no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentifier.DEFAULT_LICENSE;
+import static no.sikt.nva.scrapers.LicenseScraper.NORWEGIAN_BOKMAAL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import no.sikt.nva.brage.migration.common.model.record.license.License;
 import no.sikt.nva.brage.migration.common.model.record.license.NvaLicense;
 import no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentifier;
@@ -31,7 +33,9 @@ public class LicenseScraperTest {
     @Test
     void shouldReadLicenseWhenCustomLicenseFileIsValid() throws LicenseExtractingException {
         LicenseScraper licenseScraper = new LicenseScraper(FIRST_VALID_LICENSE_RDF_FILE_NAME);
-        var expectedLicense = new License(CC_LICENSE, new NvaLicense(NvaLicenseIdentifier.CC_BY));
+        var expectedLicense = new License(CC_LICENSE,
+                                          new NvaLicense(NvaLicenseIdentifier.CC_BY, Map.of(NORWEGIAN_BOKMAAL,
+                                                                                            NvaLicenseIdentifier.CC_BY.getValue())));
         var actualLicense = licenseScraper.extractOrCreateLicense(new File(PATH_TO_FILES), new DublinCore());
         assertThat(actualLicense, is(equalTo(expectedLicense)));
     }
@@ -40,7 +44,9 @@ public class LicenseScraperTest {
     void shouldReadLicenseWhenCustomLicenseFileIsInvalidButLicenseIsPresentInDublinCore()
         throws LicenseExtractingException {
         LicenseScraper licenseScraper = new LicenseScraper(SECOND_VALID_LICENSE_RDF_FILE_NAME);
-        var expectedLicense = new License(CC_LICENSE, new NvaLicense(NvaLicenseIdentifier.CC_BY));
+        var expectedLicense = new License(CC_LICENSE,
+                                          new NvaLicense(NvaLicenseIdentifier.CC_BY, Map.of(NORWEGIAN_BOKMAAL,
+                                                                                            NvaLicenseIdentifier.CC_BY.getValue())));
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var licenseDcValue = new DcValue(Element.RIGHTS, Qualifier.URI, CC_LICENSE);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, licenseDcValue));
@@ -52,7 +58,9 @@ public class LicenseScraperTest {
     @ValueSource(strings = {FILE_DOES_NOT_EXISTS, INVALID_LICENSE_RDF_FILE_NAME})
     void shouldReturnDefaultLicenseAndWriteToLogsWhenLicenseFileCannotBeRead(String filename) {
         LicenseScraper licenseScraper = new LicenseScraper(filename);
-        var expectedLicense = new License(null, new NvaLicense(DEFAULT_LICENSE));
+        var expectedLicense = new License(null,
+                                          new NvaLicense(DEFAULT_LICENSE,
+                                                         Map.of(NORWEGIAN_BOKMAAL, DEFAULT_LICENSE.getValue())));
         var actualLicense = licenseScraper.extractOrCreateLicense(new File(PATH_TO_FILES), new DublinCore());
         assertThat(actualLicense, is(equalTo(expectedLicense)));
     }
