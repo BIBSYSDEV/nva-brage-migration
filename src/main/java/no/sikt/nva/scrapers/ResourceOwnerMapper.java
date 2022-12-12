@@ -9,11 +9,13 @@ public final class ResourceOwnerMapper {
 
     public static final String TEST = "https://api.test.nva.aws.unit.no/cristin/organization/test";
     public static final String NVE = "https://api.test.nva.aws.unit.no/cristin/organization/5948.0.0.0";
+    public static final String KRUS = "https://api.test.nva.aws.unit.no/cristin/organization/0000.0.0.0";
 
     @SuppressWarnings("PMD.UseConcurrentHashMap")
     private static final Map<String, ResourceOwner> RESOURCE_OWNER_MAP = Map.ofEntries(
         entry("TEST", new ResourceOwner("TestOwner", UriWrapper.fromUri(TEST).getUri())),
-        entry("NVE", new ResourceOwner("nve@5948.0.0.0", UriWrapper.fromUri(NVE).getUri()))
+        entry("NVE", new ResourceOwner("nve@5948.0.0.0", UriWrapper.fromUri(NVE).getUri())),
+        entry("KRUS", new ResourceOwner("nve@0000.0.0.0", UriWrapper.fromUri(KRUS).getUri()))
     );
 
     private ResourceOwnerMapper() {
