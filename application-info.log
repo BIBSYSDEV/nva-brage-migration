@@ -1,0 +1,36 @@
+FOLLOWING COLLECTION CONTAINS 1 EMBARGOES.
+The following fields are ignored: 
+<dcValue element="date" qualifier="copyright"/>
+<dcValue element="relation" qualifier="project"/>
+<dcValue element="description" qualifier="provenance"/>
+<dcValue element="description" qualifier="sponsorship"/>
+<dcValue element="identifier" qualifier="citation"/>
+<dcValue element="subject" qualifier="nsi"/>
+<dcValue element="date" qualifier="created"/>
+<dcValue element="date" qualifier="updated"/>
+Records written to file: 0
+Records without errors: 0/0
+FOLLOWING COLLECTION CONTAINS 1 EMBARGOES.
+The following fields are ignored: 
+<dcValue element="date" qualifier="copyright"/>
+<dcValue element="relation" qualifier="project"/>
+<dcValue element="description" qualifier="provenance"/>
+<dcValue element="description" qualifier="sponsorship"/>
+<dcValue element="identifier" qualifier="citation"/>
+<dcValue element="subject" qualifier="nsi"/>
+<dcValue element="date" qualifier="created"/>
+<dcValue element="date" qualifier="updated"/>
+Records written to file: 1
+Records without errors: 1/1
+FOLLOWING COLLECTION CONTAINS 1 EMBARGOES.
+The following fields are ignored: 
+<dcValue element="date" qualifier="copyright"/>
+<dcValue element="relation" qualifier="project"/>
+<dcValue element="description" qualifier="provenance"/>
+<dcValue element="description" qualifier="sponsorship"/>
+<dcValue element="identifier" qualifier="citation"/>
+<dcValue element="subject" qualifier="nsi"/>
+<dcValue element="date" qualifier="created"/>
+<dcValue element="date" qualifier="updated"/>
+Records written to file: 1
+Records without errors: 1/1

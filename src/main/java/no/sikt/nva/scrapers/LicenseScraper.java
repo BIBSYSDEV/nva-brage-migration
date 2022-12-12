@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.record.license.License;
 import no.sikt.nva.brage.migration.common.model.record.license.NvaLicense;
@@ -15,6 +16,7 @@ import no.sikt.nva.exceptions.LicenseExtractingException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.SingletonCollector;
+import nva.commons.core.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -33,10 +35,12 @@ public class LicenseScraper {
     public static final Property WORK = ResourceFactory.createProperty("http://creativecommons.org/ns#Work");
     public static final Resource ANY_SUBJECT = null;
     public static final RDFNode ANY_OBJECT = null;
-    public static final String LICENSE_EXCEPTION_MESSAGE = "Extraction of license failed";
     public static final String READING_LICENSE_FILE_EXCEPTION_MESSAGE = "Reading license file has failed";
     public static final String CC_BASE_URL = "creativecommons.org";
     public static final String NORWEGIAN_BOKMAAL = "nb";
+
+    public static final License FALLBACK_LICENSE =
+        new License(null, new NvaLicense(DEFAULT_LICENSE, getLicenseLabels(DEFAULT_LICENSE)));
 
     private final String customLicenseFilename;
 
@@ -54,45 +58,31 @@ public class LicenseScraper {
         return license.getBrageLicense().contains(CC_BASE_URL);
     }
 
-    public License extractOrCreateLicense(File bundleDirectory, DublinCore dublinCore) {
-        try {
-            var licenseFile = new File(bundleDirectory, customLicenseFilename);
-            var brageLicense = extractLicenseFromFile(licenseFile, dublinCore);
-            var nvaLicenseIdentifier = LicenseMapper.mapLicenseToNva(brageLicense);
-            var nvaLicenseLabels = getLicenseLabels(nvaLicenseIdentifier);
-            return new License(brageLicense,
-                               new NvaLicense(nvaLicenseIdentifier, nvaLicenseLabels));
-        } catch (Exception e) {
-            return new License(null,
-                               new NvaLicense(DEFAULT_LICENSE, getLicenseLabels(DEFAULT_LICENSE)));
-        }
+    public License extractLicenseFromDublinCoreOrFileOrCreateLicense(File bundleDirectory, DublinCore dublinCore) {
+        return extractLicenseFromDublinCore(dublinCore)
+                   .orElseGet(() -> extractLicenseFromFile(bundleDirectory)
+                                        .orElse(FALLBACK_LICENSE));
     }
 
-    private static String extractLicenseFromFile(File file, DublinCore dublinCore) {
-        try {
-            Model model = createModel(file);
-            var work = new SimpleSelector(ANY_SUBJECT, RDF.type, WORK).getSubject();
-            SimpleSelector uriSelector = new SimpleSelector(work, LICENSE, ANY_OBJECT);
+    private static License constructLicense(NvaLicenseIdentifier nvaLicenseIdentifier, String brageLicense) {
+        var nvaLicenseLabels = getLicenseLabels(nvaLicenseIdentifier);
+        return new License(brageLicense,
+                           new NvaLicense(nvaLicenseIdentifier, nvaLicenseLabels));
+    }
 
-            return extractLicense(model.listStatements(uriSelector)
-                                      .toList()
-                                      .stream()
-                                      .map(Statement::getObject)
-                                      .filter(RDFNode::isResource));
-        } catch (Exception e) {
-            var licenseStringFromDublinCore = dublinCore.getDcValues().stream()
-                                                  .filter(DcValue::isLicense)
-                                                  .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
-            var nvaLicenseIdentifier = LicenseMapper.mapLicenseToNva(
-                licenseStringFromDublinCore);
-            var nvaLicenseLabels = getLicenseLabels(nvaLicenseIdentifier);
-            var licenseFromDublinCore = new License(licenseStringFromDublinCore,
-                                                    new NvaLicense(nvaLicenseIdentifier, nvaLicenseLabels));
-            if (isValidCCLicense(licenseFromDublinCore)) {
-                return licenseFromDublinCore.getBrageLicense();
-            } else {
-                throw new LicenseExtractingException(LICENSE_EXCEPTION_MESSAGE, e);
-            }
+    private static Optional<License> extractLicenseFromDublinCore(DublinCore dublinCore) {
+        var licenseStringFromDublinCore = dublinCore.getDcValues().stream()
+                                              .filter(DcValue::isLicense)
+                                              .findAny()
+                                              .map(DcValue::scrapeValueAndSetToScraped)
+                                              .orElse(StringUtils.EMPTY_STRING);
+        var licenseFromDublinCore = LicenseMapper.mapLicenseToNva(
+            licenseStringFromDublinCore).map(nvaLicenseIdentifier -> constructLicense(nvaLicenseIdentifier,
+                                                                                      licenseStringFromDublinCore));
+        if (licenseFromDublinCore.isPresent() && isValidCCLicense(licenseFromDublinCore.get())) {
+            return licenseFromDublinCore;
+        } else {
+            return Optional.empty();
         }
     }
 
@@ -115,6 +105,26 @@ public class LicenseScraper {
             return model;
         } catch (Exception e) {
             throw new LicenseExtractingException(READING_LICENSE_FILE_EXCEPTION_MESSAGE, e);
+        }
+    }
+
+    private Optional<License> extractLicenseFromFile(File bundleDirectory) {
+        try {
+            var licenseFile = new File(bundleDirectory, customLicenseFilename);
+            Model model = createModel(licenseFile);
+            var work = new SimpleSelector(ANY_SUBJECT, RDF.type, WORK).getSubject();
+            SimpleSelector uriSelector = new SimpleSelector(work, LICENSE, ANY_OBJECT);
+
+            var brageLicense = extractLicense(model.listStatements(uriSelector)
+                                                  .toList()
+                                                  .stream()
+                                                  .map(Statement::getObject)
+                                                  .filter(RDFNode::isResource));
+
+            return LicenseMapper.mapLicenseToNva(brageLicense)
+                       .map(nvaLicenseIdentifier -> constructLicense(nvaLicenseIdentifier, brageLicense));
+        } catch (Exception e) {
+            return Optional.empty();
         }
     }
 }

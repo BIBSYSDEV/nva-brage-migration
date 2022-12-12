@@ -175,7 +175,7 @@ public class BrageProcessor implements Runnable {
     private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,
                                        LicenseScraper licenseScraper, DublinCore dublinCore)
         throws ContentException {
-        var license = licenseScraper.extractOrCreateLicense(entryDirectory, dublinCore);
+        var license = licenseScraper.extractLicenseFromDublinCoreOrFileOrCreateLicense(entryDirectory, dublinCore);
         var contentScraper = new ContentScraper(getContentFilePath(entryDirectory), brageLocation, license);
         return contentScraper.scrapeContent();
     }
