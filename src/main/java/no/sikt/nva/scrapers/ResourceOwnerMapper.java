@@ -15,7 +15,7 @@ public final class ResourceOwnerMapper {
     private static final Map<String, ResourceOwner> RESOURCE_OWNER_MAP = Map.ofEntries(
         entry("TEST", new ResourceOwner("TestOwner", UriWrapper.fromUri(TEST).getUri())),
         entry("NVE", new ResourceOwner("nve@5948.0.0.0", UriWrapper.fromUri(NVE).getUri())),
-        entry("KRUS", new ResourceOwner("nve@0000.0.0.0", UriWrapper.fromUri(KRUS).getUri()))
+        entry("KRUS", new ResourceOwner("krus@0000.0.0.0", UriWrapper.fromUri(KRUS).getUri()))
     );
 
     private ResourceOwnerMapper() {
