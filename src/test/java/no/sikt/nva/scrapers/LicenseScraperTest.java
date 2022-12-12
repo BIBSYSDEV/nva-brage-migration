@@ -40,8 +40,7 @@ public class LicenseScraperTest {
                         new NvaLicense(NvaLicenseIdentifier.CC_BY,
                                        Map.of(NORWEGIAN_BOKMAAL,
                                               NvaLicenseIdentifier.CC_BY.getValue())));
-        var actualLicense = licenseScraper.extractLicenseFromDublinCoreOrFileOrCreateLicense(new File(PATH_TO_FILES),
-                                                                                             new DublinCore(List.of()));
+        var actualLicense = licenseScraper.extractLicense(new File(PATH_TO_FILES), new DublinCore(List.of()));
         assertThat(actualLicense, is(equalTo(expectedLicense)));
     }
 
@@ -59,9 +58,7 @@ public class LicenseScraperTest {
                         new NvaLicense(NvaLicenseIdentifier.CC_BY_NC_ND,
                                        Map.of(NORWEGIAN_BOKMAAL,
                                               NvaLicenseIdentifier.CC_BY_NC_ND.getValue())));
-        var actualLicense =
-            licenseScraper.extractLicenseFromDublinCoreOrFileOrCreateLicense(
-                new File(PATH_TO_FILES), dublinCoreWithCcByNcNdLicense);
+        var actualLicense = licenseScraper.extractLicense(new File(PATH_TO_FILES), dublinCoreWithCcByNcNdLicense);
         assertThat(actualLicense, is(equalTo(expectedLicense)));
     }
 
@@ -77,9 +74,7 @@ public class LicenseScraperTest {
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var licenseDcValue = new DcValue(Element.RIGHTS, Qualifier.URI, CC_LICENSE);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, licenseDcValue));
-        var actualLicense =
-            licenseScraper.extractLicenseFromDublinCoreOrFileOrCreateLicense(
-                new File(PATH_TO_FILES), dublinCore);
+        var actualLicense = licenseScraper.extractLicense(new File(PATH_TO_FILES), dublinCore);
         assertThat(actualLicense, is(equalTo(expectedLicense)));
     }
 
@@ -92,17 +87,14 @@ public class LicenseScraperTest {
                         new NvaLicense(DEFAULT_LICENSE,
                                        Map.of(NORWEGIAN_BOKMAAL, DEFAULT_LICENSE.getValue())));
         var actualLicense =
-            licenseScraper.extractLicenseFromDublinCoreOrFileOrCreateLicense(
-                new File(PATH_TO_FILES), new DublinCore(List.of()));
+            licenseScraper.extractLicense(new File(PATH_TO_FILES), new DublinCore(List.of()));
         assertThat(actualLicense, is(equalTo(expectedLicense)));
     }
 
     @Test
     void shouldDetectInvalidLicense() {
         LicenseScraper licenseScraper = new LicenseScraper(EMPTY_LICENSE_RDF_FILE_NAME);
-        var license =
-            licenseScraper.extractLicenseFromDublinCoreOrFileOrCreateLicense(
-                new File(PATH_TO_FILES), new DublinCore(List.of()));
+        var license = licenseScraper.extractLicense(new File(PATH_TO_FILES), new DublinCore(List.of()));
         var expectedResult = false;
         assertThat(LicenseScraper.isValidCCLicense(license), is(equalTo(expectedResult)));
     }

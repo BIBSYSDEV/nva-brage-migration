@@ -58,7 +58,7 @@ public class LicenseScraper {
         return license.getBrageLicense().contains(CC_BASE_URL);
     }
 
-    public License extractLicenseFromDublinCoreOrFileOrCreateLicense(File bundleDirectory, DublinCore dublinCore) {
+    public License extractLicense(File bundleDirectory, DublinCore dublinCore) {
         return extractLicenseFromDublinCore(dublinCore)
                    .orElseGet(() -> extractLicenseFromFile(bundleDirectory)
                                         .orElse(FALLBACK_LICENSE));
