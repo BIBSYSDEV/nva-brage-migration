@@ -1,0 +1,18 @@
+Case:
+
+Vi har kjørt .jar filen og har hentet ut alle bundles, dvs. alle brage kolleksjonene er
+unzipped og plassert i en mappe på bragemaskina.
+
+La oss si vi har kjørt slikt kommando:
+
+/etc/alternatives/jre_11/bin/java -jar nva-brage-migration-1.1-all.jar -c NVE -O /brage/nibio/backup/nve/brage10 -D /brage/nve/app/export
+
+Etter at kommandoen er kjørt, har du alle kolleksjoner til en institusjon inn i brage10 mappe
+
+Kolleksjonene inn i brage10 mappe har nå følgende path:  /brage/nve/app/export/brage10/brage/nve/app/export/ = /brage/nve/app/export/brage10 + /brage/nve/app/export
+
+Om vi ønsker å pushe de prosseserte postene til aws, bør vi gjøre følgende:
+
+1. Laste opp .jar til /brage/nve/app/export/brage10/brage/nve/app/export/ , dvs. directory der alle de prosseserte ressursene ligger.
+
+2. Kjøre: /etc/alternatives/jre_11/bin/java -jar nva-brage-migration-1.1-all.jar -c NVE -b -j sandbox -O /brage/nve/app/export/brage9/brage/nve/app/export/ -D /brage/nve/app/export
