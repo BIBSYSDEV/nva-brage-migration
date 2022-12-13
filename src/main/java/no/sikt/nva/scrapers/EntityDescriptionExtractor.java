@@ -1,6 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -59,6 +60,15 @@ public final class EntityDescriptionExtractor {
         return entityDescription;
     }
 
+    public static List<Contributor> extractContributors(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isContributor)
+                   .map(EntityDescriptionExtractor::createContributorFromDcValue)
+                   .flatMap(Optional::stream)
+                   .filter(EntityDescriptionExtractor::isMissingName)
+                   .collect(Collectors.toList());
+    }
+
     private static PublicationDate extractPublicationDate(DublinCore dublinCore) {
         var date = dublinCore.getDcValues().stream()
                        .filter(DcValue::isPublicationDate)
@@ -115,12 +125,8 @@ public final class EntityDescriptionExtractor {
                    .collect(Collectors.toList());
     }
 
-    public static List<Contributor> extractContributors(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isContributor)
-                   .map(EntityDescriptionExtractor::createContributorFromDcValue)
-                   .flatMap(Optional::stream)
-                   .collect(Collectors.toList());
+    private static boolean isMissingName(Contributor contributor) {
+        return nonNull(contributor.getIdentity().getName()) && !contributor.getIdentity().getName().isEmpty();
     }
 
     private static PublicationInstance extractPublicationInstance(DublinCore dublinCore) {

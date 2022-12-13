@@ -16,6 +16,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
@@ -511,6 +512,19 @@ public class DublinCoreScraperTest {
         dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(appender.getMessages(), containsString(
             String.valueOf(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER)));
+    }
+
+    @Test
+    void shouldRemoveForContributorsWithoutNameFromContributors() {
+        var type = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
+        var contributor1 = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, "");
+        var contributor2 = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, null);
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(type, contributor1, contributor2));
+        var dublinCoreScraper = new DublinCoreScraper(false);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getEntityDescription().getContributors(), is(empty()));
     }
 
     @ParameterizedTest
