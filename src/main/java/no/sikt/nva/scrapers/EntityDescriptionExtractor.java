@@ -59,6 +59,14 @@ public final class EntityDescriptionExtractor {
         return entityDescription;
     }
 
+    public static List<Contributor> extractContributors(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isContributor)
+                   .map(EntityDescriptionExtractor::createContributorFromDcValue)
+                   .flatMap(Optional::stream)
+                   .collect(Collectors.toList());
+    }
+
     private static PublicationDate extractPublicationDate(DublinCore dublinCore) {
         var date = dublinCore.getDcValues().stream()
                        .filter(DcValue::isPublicationDate)
@@ -115,14 +123,6 @@ public final class EntityDescriptionExtractor {
                    .collect(Collectors.toList());
     }
 
-    public static List<Contributor> extractContributors(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isContributor)
-                   .map(EntityDescriptionExtractor::createContributorFromDcValue)
-                   .flatMap(Optional::stream)
-                   .collect(Collectors.toList());
-    }
-
     private static PublicationInstance extractPublicationInstance(DublinCore dublinCore) {
         var publicationInstance = new PublicationInstance();
         publicationInstance.setIssue(extractIssue(dublinCore));
@@ -146,6 +146,9 @@ public final class EntityDescriptionExtractor {
 
     private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
         Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped());
+        if (isNull(identity.getName()) || identity.getName().isEmpty()) {
+            return Optional.empty();
+        }
         String brageRole = dcValue.getQualifier().getValue();
         if (dcValue.isAuthor()) {
             return Optional.of(new Contributor(identity, AUTHOR, brageRole));

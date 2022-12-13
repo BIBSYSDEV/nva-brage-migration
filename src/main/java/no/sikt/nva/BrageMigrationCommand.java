@@ -194,7 +194,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     @SuppressWarnings("PMD.UseVarargs")
     private void pushExistingResourcesToNva(String[] collections) {
-        S3Storage storage = new S3StorageImpl(s3Client, "CUSTOMER", awsEnvironment.getValue());
+        S3Storage storage = new S3StorageImpl(s3Client, customer, awsEnvironment.getValue());
         storage.storeProcessedCollections(collections);
     }
 
