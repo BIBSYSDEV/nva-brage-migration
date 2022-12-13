@@ -57,8 +57,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
-    private static final String NVE_DEV_CUSTOMER_ID =
-        "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
     private final S3Client s3Client;
@@ -67,8 +65,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private CommandSpec spec;
 
     @Option(names = {"-c", "--customer"},
-        defaultValue = NVE_DEV_CUSTOMER_ID,
-        description = "customer id in NVA")
+        defaultValue = StringUtils.EMPTY_STRING,
+        description = "customer shortName in NVA")
     private String customer;
     @Option(names = {"-ov", "--online-validator"}, description = "enable online validator, disabled if not present")
     private boolean enableOnlineValidation;
@@ -237,20 +235,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void storeFileToNVA(Record record) {
-        S3Storage storage = new S3StorageImpl(s3Client, getCustomerShortName(), awsEnvironment.getValue());
+        S3Storage storage = new S3StorageImpl(s3Client, customer, awsEnvironment.getValue());
         storage.storeRecord(record);
     }
 
-    private String getCustomerShortName() {
-        if (NVE_DEV_CUSTOMER_ID.equals(customer)) {
-            return "NVE";
-        } else {
-            return "CUSTOMER";
-        }
-    }
-
     private void storeLogsToNva() {
-        S3Storage storage = new S3StorageImpl(s3Client, getCustomerShortName(), awsEnvironment.getValue());
+        S3Storage storage = new S3StorageImpl(s3Client, customer, awsEnvironment.getValue());
         storage.storeLogs();
     }
 
