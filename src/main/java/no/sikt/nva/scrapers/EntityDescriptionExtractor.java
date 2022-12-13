@@ -1,7 +1,6 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -147,10 +146,10 @@ public final class EntityDescriptionExtractor {
 
     private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
         Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped());
-        String brageRole = dcValue.getQualifier().getValue();
         if (isNull(identity.getName()) || identity.getName().isEmpty()) {
             return Optional.empty();
         }
+        String brageRole = dcValue.getQualifier().getValue();
         if (dcValue.isAuthor()) {
             return Optional.of(new Contributor(identity, AUTHOR, brageRole));
         }
