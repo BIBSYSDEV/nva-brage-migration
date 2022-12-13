@@ -65,7 +65,7 @@ public final class EntityDescriptionExtractor {
                    .filter(DcValue::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
-                   .filter(EntityDescriptionExtractor::isMissingName)
+                   .filter(EntityDescriptionExtractor::hasName)
                    .collect(Collectors.toList());
     }
 
@@ -125,7 +125,7 @@ public final class EntityDescriptionExtractor {
                    .collect(Collectors.toList());
     }
 
-    private static boolean isMissingName(Contributor contributor) {
+    private static boolean hasName(Contributor contributor) {
         return nonNull(contributor.getIdentity().getName()) && !contributor.getIdentity().getName().isEmpty();
     }
 

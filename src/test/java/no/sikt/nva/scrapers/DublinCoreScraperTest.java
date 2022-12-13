@@ -515,7 +515,7 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldRemoveForContributorsWithoutNameFromContributors() {
+    void shouldRemoveContributorsWithoutNameFromContributors() {
         var type = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
         var contributor1 = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, "");
         var contributor2 = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, null);
