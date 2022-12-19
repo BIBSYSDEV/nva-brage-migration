@@ -126,6 +126,26 @@ public class DcValue {
         return Element.DATE.equals(this.element) && Qualifier.ISSUED.equals(this.qualifier);
     }
 
+    public boolean isSourceNone() {
+        return Element.SOURCE.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
+    }
+
+    public boolean isCreatorNone() {
+        return Element.CREATOR.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
+    }
+
+    public boolean isFormatExtent() {
+        return Element.FORMAT.equals(this.element) && Qualifier.EXTENT.equals(this.qualifier);
+    }
+
+    public boolean isFormatMimeType() {
+        return Element.FORMAT.equals(this.element) && Qualifier.MIME_TYPE.equals(this.qualifier);
+    }
+
+    public boolean isIdentifierNone() {
+        return Element.IDENTIFIER.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
+    }
+
     public boolean isAvailableDate() {
         return Element.DATE.equals(this.element) && Qualifier.AVAILABLE.equals(this.qualifier);
     }

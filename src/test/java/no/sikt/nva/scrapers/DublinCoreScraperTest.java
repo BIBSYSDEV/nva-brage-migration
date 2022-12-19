@@ -528,6 +528,17 @@ public class DublinCoreScraperTest {
         assertThat(record.getEntityDescription().getContributors(), is(empty()));
     }
 
+    @Test
+    void some() {
+        var type = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
+        var dateIssued1 = new DcValue(Element.DATE, Qualifier.ISSUED, "");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(type, dateIssued1));
+        var dublinCoreScraper = new DublinCoreScraper(false);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"9788293091172(PDF)", "9788293091172(trykt)", "ISBN9788293091172"})
     void shouldRemoveAllSpecialCharactersAndLettersFromIsbn(String isbn) {

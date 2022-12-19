@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,7 +35,6 @@ import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
-import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,10 +51,10 @@ public final class DublinCoreScraper {
     public static final String SCRAPING_HAS_FAILED = "Scraping has failed: ";
     public static final String CRISTIN_POST = "[CRISTIN_POST]";
     public static final String DELIMITER = "-";
+    public static final String REGEX_ISSN = "[^0-9-xX]";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
 
-    @JacocoGenerated
     public DublinCoreScraper(boolean enableOnlineValidation) {
         this.enableOnlineValidation = enableOnlineValidation;
     }
@@ -64,8 +64,7 @@ public final class DublinCoreScraper {
                    .stream()
                    .filter(DcValue::isIssnValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .map(issn -> issn.replaceAll("[^0-9-xX]", ""))
-                   .map(issn -> issn.replaceAll("x", "X"))
+                   .map(issn -> issn.replaceAll(REGEX_ISSN, StringUtils.EMPTY_STRING).toUpperCase(Locale.ROOT))
                    .map(DublinCoreScraper::addDelimiter)
                    .collect(Collectors.toList());
     }
@@ -76,10 +75,19 @@ public final class DublinCoreScraper {
         dcValues.add(new DcValue(Element.RELATION, Qualifier.PROJECT, null));
         dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.PROVENANCE, null));
         dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.SPONSORSHIP, null));
+        dcValues.add(new DcValue(Element.DESCRIPTION, Qualifier.LOCAL_CODE, null));
         dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.CITATION, null));
         dcValues.add(new DcValue(Element.SUBJECT, Qualifier.NORWEGIAN_SCIENCE_INDEX, null));
         dcValues.add(new DcValue(Element.DATE, Qualifier.CREATED, null));
         dcValues.add(new DcValue(Element.DATE, Qualifier.UPDATED, null));
+        dcValues.add(new DcValue(Element.DATE, Qualifier.NONE, null));
+        dcValues.add(new DcValue(Element.RELATION, Qualifier.URI, null));
+        dcValues.add(new DcValue(Element.DATE, Qualifier.EMBARGO, null));
+        dcValues.add(new DcValue(Element.SOURCE, Qualifier.NONE, null));
+        dcValues.add(new DcValue(Element.CREATOR, Qualifier.NONE, null));
+        dcValues.add(new DcValue(Element.FORMAT, Qualifier.EXTENT, null));
+        dcValues.add(new DcValue(Element.FORMAT, Qualifier.MIME_TYPE, null));
+        dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.NONE, null));
         return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(NEW_LINE_DELIMITER));
     }
 
@@ -161,7 +169,7 @@ public final class DublinCoreScraper {
     }
 
     private static String addDelimiter(String issn) {
-         return nonNull(issn) && issn.length() >= 8 && !issn.contains(DELIMITER)
+        return nonNull(issn) && issn.length() >= 8 && !issn.contains(DELIMITER)
                    ? issn.substring(0, 4) + DELIMITER + issn.substring(4)
                    : issn;
     }
@@ -351,7 +359,12 @@ public final class DublinCoreScraper {
                || dcValue.isRelationUri()
                || dcValue.isNoneDate()
                || dcValue.isLocalCode()
-               || dcValue.isEmbargo();
+               || dcValue.isEmbargo()
+               || dcValue.isSourceNone()
+               || dcValue.isCreatorNone()
+               || dcValue.isFormatExtent()
+               || dcValue.isFormatMimeType()
+               || dcValue.isIdentifierNone();
     }
 
     private static String extractCristinId(DublinCore dublinCore) {

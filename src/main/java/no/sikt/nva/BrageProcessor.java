@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.Customer;
 import no.sikt.nva.brage.migration.common.model.record.Record;
-import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.exceptions.HandleException;
@@ -104,7 +104,7 @@ public class BrageProcessor implements Runnable {
         return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
     }
 
-    private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings) {
+    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> warnings) {
         if (!warnings.isEmpty()) {
             logger.warn(warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
@@ -156,10 +156,10 @@ public class BrageProcessor implements Runnable {
             record.setResourceOwner(ResourceOwnerMapper.getResourceOwner(customer));
             record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper, dublinCore));
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
-            var warnings = BrageProcessorValidator.getBrageProcessorWarnings(entryDirectory, dublinCore);
-            record.getWarnings().addAll(warnings);
+            var errors = BrageProcessorValidator.getBrageProcessorErrors(entryDirectory, dublinCore);
+            record.getErrors().addAll(errors);
             EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(record, embargoes);
-            logWarningsIfNotEmpty(brageLocation, warnings);
+            logErrorsIfNotEmpty(brageLocation, errors);
             return Optional.of(record);
         } catch (Exception e) {
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
