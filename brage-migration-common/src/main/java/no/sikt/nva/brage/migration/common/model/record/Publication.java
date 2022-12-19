@@ -10,7 +10,7 @@ public class Publication {
 
     private String journal;
     private List<String> issnList;
-    private String isbn;
+    private List<String> isbnList;
     private PublicationContext publicationContext;
     private String partOfSeries;
 
@@ -29,7 +29,7 @@ public class Publication {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(journal, issnList, isbn, publicationContext, partOfSeries);
+        return Objects.hash(journal, issnList, isbnList, publicationContext, partOfSeries);
     }
 
     @JacocoGenerated
@@ -44,7 +44,7 @@ public class Publication {
         Publication that = (Publication) o;
         return Objects.equals(journal, that.journal)
                && Objects.equals(issnList, that.issnList)
-               && Objects.equals(isbn, that.isbn)
+               && Objects.equals(isbnList, that.isbnList)
                && Objects.equals(publicationContext, that.publicationContext)
                && Objects.equals(partOfSeries, that.partOfSeries);
     }
@@ -70,13 +70,13 @@ public class Publication {
     }
 
     @JacocoGenerated
-    @JsonProperty("isbn")
-    public String getIsbn() {
-        return isbn;
+    @JsonProperty("isbnList")
+    public List<String> getIsbnList() {
+        return isbnList;
     }
 
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
+    public void setIsbnList(List<String> isbnList) {
+        this.isbnList = isbnList;
     }
 
     @JacocoGenerated

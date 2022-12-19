@@ -26,7 +26,6 @@ import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.Series;
 import no.sikt.nva.brage.migration.common.model.record.Type;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
-import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.dublincore.DcValue;
@@ -47,10 +46,11 @@ public final class DublinCoreScraper {
 
     public static final String SUBMITTED_VERSION = "submittedVersion";
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
-    public static final String DELIMITER = "\n";
+    public static final String NEW_LINE_DELIMITER = "\n";
     public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
     public static final String SCRAPING_HAS_FAILED = "Scraping has failed: ";
     public static final String CRISTIN_POST = "[CRISTIN_POST]";
+    public static final String DELIMITER = "-";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
 
@@ -64,6 +64,9 @@ public final class DublinCoreScraper {
                    .stream()
                    .filter(DcValue::isIssnValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(issn -> issn.replaceAll("[^0-9-xX]", ""))
+                   .map(issn -> issn.replaceAll("x", "X"))
+                   .map(DublinCoreScraper::addDelimiter)
                    .collect(Collectors.toList());
     }
 
@@ -77,18 +80,17 @@ public final class DublinCoreScraper {
         dcValues.add(new DcValue(Element.SUBJECT, Qualifier.NORWEGIAN_SCIENCE_INDEX, null));
         dcValues.add(new DcValue(Element.DATE, Qualifier.CREATED, null));
         dcValues.add(new DcValue(Element.DATE, Qualifier.UPDATED, null));
-        return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(DELIMITER));
+        return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(NEW_LINE_DELIMITER));
     }
 
-    public static String extractIsbn(DublinCore dublinCore, BrageLocation brageLocation) {
-        var isbnList = dublinCore.getDcValues()
-                           .stream()
-                           .filter(DcValue::isIsbnAndNotEmptyValue)
-                           .map(DcValue::scrapeValueAndSetToScraped)
-                           .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
-                           .collect(Collectors.toList());
-
-        return handleIsbnList(isbnList, brageLocation);
+    public static List<String> extractIsbn(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isIsbnAndNotEmptyValue)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
+                   .map(isbn -> isbn.replaceAll("[^0-9]", ""))
+                   .collect(Collectors.toList());
     }
 
     public static String extractMainTitle(DublinCore dublinCore) {
@@ -125,10 +127,10 @@ public final class DublinCoreScraper {
                    .scrapeValueAndSetToScraped();
     }
 
-    public static Publication extractPublication(DublinCore dublinCore, BrageLocation brageLocation) {
+    public static Publication extractPublication(DublinCore dublinCore) {
         var publication = new Publication();
         publication.setIssnList(extractIssn(dublinCore));
-        publication.setIsbn(extractIsbn(dublinCore, brageLocation));
+        publication.setIsbnList(extractIsbn(dublinCore));
         publication.setJournal(extractJournal(dublinCore));
         publication.setPartOfSeries(extractPartOfSeries(dublinCore));
         return publication;
@@ -156,6 +158,12 @@ public final class DublinCoreScraper {
 
     public boolean onlineValidationIsEnabled() {
         return enableOnlineValidation;
+    }
+
+    private static String addDelimiter(String issn) {
+         return nonNull(issn) && issn.length() >= 8 && !issn.contains(DELIMITER)
+                   ? issn.substring(0, 4) + DELIMITER + issn.substring(4)
+                   : issn;
     }
 
     private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings,
@@ -200,7 +208,7 @@ public final class DublinCoreScraper {
 
     private static Publication createPublicationWithIdentifier(DublinCore dublinCore, BrageLocation brageLocation,
                                                                Record record) {
-        var publication = extractPublication(dublinCore, brageLocation);
+        var publication = extractPublication(dublinCore);
         publication.setPublicationContext(new PublicationContext());
         publication.getPublicationContext().setBragePublisher(extractPublisher(dublinCore));
         record.setPublication(publication);
@@ -306,8 +314,8 @@ public final class DublinCoreScraper {
     private static void logUnscrapedFields(BrageLocation brageLocation, List<String> unscrapedDcValues) {
         if (!unscrapedDcValues.isEmpty()) {
             logger.info(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE
-                        + String.join(DELIMITER, unscrapedDcValues)
-                        + DELIMITER
+                        + String.join(NEW_LINE_DELIMITER, unscrapedDcValues)
+                        + NEW_LINE_DELIMITER
                         + brageLocation.getOriginInformation());
         }
     }
@@ -422,19 +430,6 @@ public final class DublinCoreScraper {
         } else {
             return null;
         }
-    }
-
-    @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-    private static String handleIsbnList(List<String> isbnList, BrageLocation brageLocation) {
-        if (isbnList.size() > 1) {
-            logger.warn(new WarningDetails(Warning.MULTIPLE_ISBN_VALUES_WARNING, isbnList)
-                        + StringUtils.SPACE
-                        + brageLocation.getOriginInformation());
-        }
-        if (isbnList.isEmpty()) {
-            return null;
-        }
-        return isbnList.get(0);
     }
 
     private static PublisherAuthority extractVersion(DublinCore dublinCore, BrageLocation brageLocation) {

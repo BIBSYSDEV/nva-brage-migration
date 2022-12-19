@@ -55,7 +55,7 @@ public final class DublinCoreValidator {
         DoiValidator.getDoiErrorDetailsOffline(dublinCore).ifPresent(errors::addAll);
         getInvalidTypes(dublinCore).ifPresent(errors::add);
         getIssnErrors(dublinCore).ifPresent(errors::add);
-        getIsbnErrors(dublinCore, brageLocation).ifPresent(errors::add);
+        getIsbnErrors(dublinCore).ifPresent(errors::add);
         getDateError(dublinCore).ifPresent(errors::add);
         getChannelRegisterErrors(dublinCore, brageLocation).ifPresent(errors::add);
         getNonContributorsError(dublinCore).ifPresent(errors::add);
@@ -116,7 +116,7 @@ public final class DublinCoreValidator {
     @SuppressWarnings("PMD.PrematureDeclaration")
     private static Optional<ErrorDetails> getErrorDetailsForJournalArticle(DublinCore dublinCore,
                                                                            BrageLocation brageLocation) {
-        var publication = DublinCoreScraper.extractPublication(dublinCore, brageLocation);
+        var publication = DublinCoreScraper.extractPublication(dublinCore);
         var possibleIdentifier = channelRegister.lookUpInJournal(publication, brageLocation);
         if (nonNull(possibleIdentifier)) {
             return Optional.empty();
@@ -129,7 +129,7 @@ public final class DublinCoreValidator {
     @SuppressWarnings("PMD.PrematureDeclaration")
     private static Optional<ErrorDetails> getErrorDetailsForReport(DublinCore dublinCore, BrageLocation brageLocation) {
         var publisher = DublinCoreScraper.extractPublisher(dublinCore);
-        var publication = DublinCoreScraper.extractPublication(dublinCore, brageLocation);
+        var publication = DublinCoreScraper.extractPublication(dublinCore);
         var journalIdentifier = channelRegister.lookUpInJournal(publication, brageLocation);
         var publisherIdentifier = channelRegister.lookUpInPublisher(publisher);
         if (nonNull(journalIdentifier)
@@ -173,6 +173,21 @@ public final class DublinCoreValidator {
                                       .collect(Collectors.toList());
             return !invalidIssnList.isEmpty()
                        ? Optional.of(new ErrorDetails(INVALID_ISSN, invalidIssnList))
+                       : Optional.empty();
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<ErrorDetails> getIsbnErrors(DublinCore dublinCore) {
+        if (hasIsbn(dublinCore)) {
+            var invalidIsbnList = DublinCoreScraper.extractIsbn(dublinCore)
+                                      .stream()
+                                      .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
+                                      .map(isbn -> isbn.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING))
+                                      .filter(isbn -> !ISBNValidator.getInstance().isValid(isbn))
+                                      .collect(Collectors.toList());
+            return !invalidIsbnList.isEmpty()
+                       ? Optional.of(new ErrorDetails(INVALID_ISBN, invalidIsbnList))
                        : Optional.empty();
         }
         return Optional.empty();
@@ -335,20 +350,6 @@ public final class DublinCoreValidator {
     private static boolean typeIsPresentInDublinCore(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .anyMatch(DcValue::isType);
-    }
-
-    private static Optional<ErrorDetails> getIsbnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
-        if (hasIsbn(dublinCore)) {
-            var isbn = DublinCoreScraper.extractIsbn(dublinCore, brageLocation)
-                           .replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING)
-                           .replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING);
-
-            ISBNValidator validator = new ISBNValidator();
-            if (!validator.isValid(isbn)) {
-                return Optional.of(new ErrorDetails(INVALID_ISBN, List.of(isbn)));
-            }
-        }
-        return Optional.empty();
     }
 
     private static boolean hasIssn(DublinCore dublinCore) {
