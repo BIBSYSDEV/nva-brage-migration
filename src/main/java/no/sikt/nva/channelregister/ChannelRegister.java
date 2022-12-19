@@ -10,9 +10,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.stream.Collectors;
 import no.sikt.nva.BrageProcessor;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.scrapers.PublisherMapper;
 import nva.commons.core.SingletonCollector;
@@ -57,9 +59,16 @@ public final class ChannelRegister {
         return null;
     }
 
-    public String lookUpInJournal(String issn, String title, BrageLocation brageLocation) {
-        var identifierByIssn = lookUpInJournalByIssn(issn, brageLocation);
-        return nonNull(identifierByIssn) ? identifierByIssn : lookUpInJournalByTitle(title, brageLocation);
+    public String lookUpInJournal(Publication publication, BrageLocation brageLocation) {
+        var issnList = publication.getIssnList();
+        var title = publication.getJournal();
+        var identifiersForIssnList = issnList.stream()
+                                   .map(issn -> lookUpInJournalByIssn(issn, brageLocation))
+                                   .collect(Collectors.toList());
+        var identifierByIssn = !identifiersForIssnList.isEmpty() ? identifiersForIssnList.get(0) : null;
+        return nonNull(identifierByIssn)
+                   ? identifierByIssn
+                   : lookUpInJournalByTitle(title, brageLocation);
     }
 
     public String lookUpInJournalByIssn(String issn, BrageLocation brageLocation) {
@@ -74,7 +83,7 @@ public final class ChannelRegister {
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
-                                          filterOutNullValues(issn))
+                                          filterOutNullValues(List.of(issn)))
                          + StringUtils.SPACE
                          + brageLocation.getOriginInformation());
             return null;
@@ -95,7 +104,7 @@ public final class ChannelRegister {
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
-                                          filterOutNullValues(title))
+                                          filterOutNullValues(List.of(title)))
                          + StringUtils.SPACE
                          + brageLocation.getOriginInformation());
             return null;
@@ -115,7 +124,7 @@ public final class ChannelRegister {
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
-                                          filterOutNullValues(publisher)).toString());
+                                          filterOutNullValues(List.of(publisher))).toString());
             return null;
         } catch (Exception e) {
             return null;
