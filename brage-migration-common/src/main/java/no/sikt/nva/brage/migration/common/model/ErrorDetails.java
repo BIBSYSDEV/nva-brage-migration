@@ -53,7 +53,7 @@ public class ErrorDetails {
 
     public enum Error {
         INVALID_TYPE,
-        MANY_UNMAPPABLE_TYPES,
+        MULTIPLE_UNMAPPABLE_TYPES,
         INVALID_ISSN,
         INVALID_ISBN,
         INVALID_DATE_ERROR,

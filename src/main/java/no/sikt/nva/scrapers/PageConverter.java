@@ -13,7 +13,7 @@ public class PageConverter {
     public static final String PAGE_PREFIX = "s ";
     public static final String HYPHEN = "-";
     public static final String DASH = "–";
-    private static final String intervalRegex = "^[0-9]+-[0-9]+$";
+    private static final String intervalRegex = "^[0-9]+[-|–]+[0-9]+$";
     private static final Pattern intervalPattern = Pattern.compile(intervalRegex);
     private static final String numberRegex = "^[0-9]+$";
     private static final Pattern numberPattern = Pattern.compile(numberRegex);
@@ -51,7 +51,7 @@ public class PageConverter {
         //TODO: NVA-types affects what pages attributes should be set.
         pages.setBragePages(bragePages);
         var strippedPages = bragePages.replaceAll("(\\.)|(\\[)|(\\])", "");
-        if (pagesIsInterval(strippedPages)) {
+        if (pagesIsInterval(strippedPages.replaceAll("(\\s|$)", ""))) {
             pages.setRange(calculateRange(strippedPages)); // This field depend on NVA-type
             pages.setPages(calculateNumberOfPagesFromRange(strippedPages)); // This field depend on NVA-type
         } else if (pagesIsNumber(strippedPages) || isMultiplePagesWithPostfix(strippedPages)) {
@@ -71,13 +71,14 @@ public class PageConverter {
     }
 
     private static String[] splitByDelimiter(String bragePages) {
-        if (bragePages.contains(DASH)) {
-            return bragePages.split(DASH);
+        var pages = bragePages.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING);
+        if (pages.contains(DASH)) {
+            return pages.split(DASH);
         }
-        if (bragePages.contains(HYPHEN)) {
-            return bragePages.split(HYPHEN);
+        if (pages.contains(HYPHEN)) {
+            return pages.split(HYPHEN);
         }
-        return new String[]{bragePages};
+        return new String[]{pages};
     }
 
     private static Range calculateRangeFromSinglePage(String bragePages) {
@@ -103,6 +104,7 @@ public class PageConverter {
     }
 
     private static boolean pagesIsInterval(String bragePages) {
-        return intervalPattern.matcher(bragePages).matches();
+        var pages = bragePages.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING);
+        return intervalPattern.matcher(pages).matches();
     }
 }

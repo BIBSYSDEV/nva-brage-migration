@@ -60,6 +60,7 @@ public final class DublinCoreValidator {
         getChannelRegisterErrors(dublinCore, brageLocation).ifPresent(errors::add);
         getNonContributorsError(dublinCore).ifPresent(errors::add);
         BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
+        getMultipleUnmappableTypeError(dublinCore).ifPresent(errors::add);
         return errors;
     }
 
@@ -71,7 +72,6 @@ public final class DublinCoreValidator {
         getVolumeWarning(dublinCore).ifPresent(warnings::add);
         getIssueWarning(dublinCore).ifPresent(warnings::add);
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
-        getMultipleUnmappableTypeWarning(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -244,7 +244,8 @@ public final class DublinCoreValidator {
                                  .filter(DcValue::isPageNumber)
                                  .findAny().map(DcValue::getValue)
                                  .orElse(StringUtils.EMPTY_STRING)
-                                 .replaceAll("(\\.)|(\\[)|(\\])", "");
+                                 .replaceAll("(\\.)|(\\[)|(\\])", "")
+                                 .trim();
             return PageConverter.isValidPageNumber(pageNumber)
                        ? Optional.empty()
                        : Optional.of(new WarningDetails(Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED, pageNumber));
@@ -304,12 +305,12 @@ public final class DublinCoreValidator {
     }
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-    private static Optional<WarningDetails> getMultipleUnmappableTypeWarning(DublinCore dublinCore) {
+    private static Optional<ErrorDetails> getMultipleUnmappableTypeError(DublinCore dublinCore) {
         var types = DublinCoreScraper.extractType(dublinCore);
         if (types.size() >= 2
             && !getInvalidTypes(dublinCore).isPresent()
             && !types.contains(BrageType.PEER_REVIEWED.getType())) {
-            return Optional.of(new WarningDetails(Warning.MULTIPLE_UNMAPPABLE_TYPES, types));
+            return Optional.of(new ErrorDetails(Error.MULTIPLE_UNMAPPABLE_TYPES, types));
         }
         return Optional.empty();
     }
