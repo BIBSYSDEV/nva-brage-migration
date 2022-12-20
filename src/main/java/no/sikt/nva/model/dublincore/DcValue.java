@@ -79,6 +79,10 @@ public class DcValue {
         return Element.LANGUAGE.equals(this.element);
     }
 
+    public boolean isIsoLanguage() {
+        return Element.LANGUAGE.equals(this.element) && Qualifier.ISO.equals(this.qualifier);
+    }
+
     public boolean isMainTitle() {
         return Element.TITLE.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
     }
