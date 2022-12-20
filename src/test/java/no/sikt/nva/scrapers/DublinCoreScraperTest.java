@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class DublinCoreScraperTest {
 
@@ -525,6 +526,32 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(false);
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(record.getEntityDescription().getContributors(), is(empty()));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"9788293091172(PDF)", "9788293091172(trykt)", "ISBN9788293091172"})
+    void shouldRemoveAllSpecialCharactersAndLettersFromIsbn(String isbn) {
+        var typeDcValue = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
+        var isbnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISBN, isbn);
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, isbnDcValue));
+        var dublinCoreScraper = new DublinCoreScraper(false);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getPublication().getIsbnList().get(0), is(equalTo("9788293091172")));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"1502-007x", "1502-007x (online)", "1502007x"})
+    void shouldRemoveAllLettersAndInvalidSpecialCharactersFromIssn(String isbn) {
+        var typeDcValue = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
+        var isbnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, isbn);
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, isbnDcValue));
+        var dublinCoreScraper = new DublinCoreScraper(false);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getPublication().getIssnList().get(0), is(equalTo("1502-007X")));
     }
 
     @ParameterizedTest

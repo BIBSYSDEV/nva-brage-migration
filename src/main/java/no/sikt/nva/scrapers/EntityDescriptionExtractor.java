@@ -1,6 +1,9 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -8,6 +11,7 @@ import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.EntityDescription;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.PublicationDate;
+import no.sikt.nva.brage.migration.common.model.record.PublicationDateNva;
 import no.sikt.nva.brage.migration.common.model.record.PublicationDateNva.Builder;
 import no.sikt.nva.brage.migration.common.model.record.PublicationInstance;
 import no.sikt.nva.model.dublincore.DcValue;
@@ -23,6 +27,7 @@ public final class EntityDescriptionExtractor {
     public static final String ILLUSTRATOR = "Illustrator";
     public static final String OTHER_CONTRIBUTOR = "Other";
     public static final String DATE_DELIMITER = "[-.]";
+    public static final int LOCAL_DATE_MAX_LENGTH = 12;
 
     private EntityDescriptionExtractor() {
 
@@ -67,14 +72,29 @@ public final class EntityDescriptionExtractor {
                    .collect(Collectors.toList());
     }
 
+    private static String modifyIfDateIsOfLocalDateTimeFormat(String date) {
+        try {
+            if (date.length() > LOCAL_DATE_MAX_LENGTH) {
+                var instant = Instant.parse(date);
+                return LocalDate.ofInstant(instant, ZoneOffset.UTC).toString();
+            } else {
+                return date;
+            }
+        } catch (Exception e) {
+            return date;
+        }
+    }
+
     private static PublicationDate extractPublicationDate(DublinCore dublinCore) {
         var date = dublinCore.getDcValues().stream()
                        .filter(DcValue::isPublicationDate)
-                       .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+                       .findAny()
+                       .map(DcValue::scrapeValueAndSetToScraped)
+                       .map(EntityDescriptionExtractor::modifyIfDateIsOfLocalDateTimeFormat)
+                       .orElse(null);
 
-        if (isNull(date)) {
-            var publicationDateNva = new Builder().build();
-            return new PublicationDate(null, publicationDateNva);
+        if (isNull(date) || isEmptyString(date)) {
+            return new PublicationDate(null, new PublicationDateNva.Builder().build());
         }
         if (DublinCoreValidator.containsYearOnly(date)) {
             var publicationDateNva = new Builder().withYear(date).build();
@@ -92,6 +112,11 @@ public final class EntityDescriptionExtractor {
                                      .withMonth(date.split(DATE_DELIMITER)[1])
                                      .withDay(date.split(DATE_DELIMITER)[2]).build();
         return new PublicationDate(date, publicationDateNva);
+    }
+
+    @SuppressWarnings("PMD.InefficientEmptyStringCheck")
+    private static boolean isEmptyString(String date) {
+        return date.trim().isEmpty();
     }
 
     private static List<String> extractAbstracts(DublinCore dublinCore) {
