@@ -31,7 +31,7 @@ dependencies {
     implementation project(':brage-migration-common')
 
     testImplementation group: 'com.github.bibsysdev', name: 'nvatestutils', version: '1.26.0'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.5.1'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.11.0'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
     testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: '2.2'
 
