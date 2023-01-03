@@ -4,6 +4,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLIC
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_LANGUAGES_PRESENT;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
@@ -323,6 +324,36 @@ public class DublinCoreScraperTest {
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(record.getErrors(), hasItem(new ErrorDetails(INVALID_LANGUAGE, List.of(nonIsoLanguage))));
+    }
+
+    @Test
+    void shouldApplyIsoLanguageOverLanguageWhenBothArePresentAndDoNotErrorIfSameLanguages() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var isoLanguageDcValue = new DcValue(Element.LANGUAGE, Qualifier.ISO, "ger");
+        var nonIsoLanguageDcValue = new DcValue(Element.LANGUAGE, null, "ger");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(nonIsoLanguageDcValue, isoLanguageDcValue, typeDcValue, peerReviewed));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var brageLocation = new BrageLocation(null);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_LANGUAGES_PRESENT, List.of()))));
+    }
+
+    @Test
+    void shouldApplyIsoLanguageOverLanguageWhenBothArePresentAndDoNotLogErrorIfValidIsoLanguage() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var isoLanguageDcValue = new DcValue(Element.LANGUAGE, Qualifier.ISO, "ger");
+        var nonIsoLanguageDcValue = new DcValue(Element.LANGUAGE, null, "deutsch");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(nonIsoLanguageDcValue, isoLanguageDcValue, typeDcValue, peerReviewed));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var brageLocation = new BrageLocation(null);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_LANGUAGES_PRESENT, List.of()))));
     }
 
     @Test
