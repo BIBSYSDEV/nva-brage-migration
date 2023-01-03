@@ -53,7 +53,7 @@ public class ErrorDetails {
 
     public enum Error {
         INVALID_TYPE,
-        MANY_UNMAPPABLE_TYPES,
+        MULTIPLE_UNMAPPABLE_TYPES,
         INVALID_ISSN,
         INVALID_ISBN,
         INVALID_DATE_ERROR,
@@ -66,6 +66,7 @@ public class ErrorDetails {
         INVALID_DOI_OFFLINE_CHECK,
         INVALID_DOI_ONLINE_CHECK,
         INVALID_LANGUAGE,
+        MULTIPLE_LANGUAGES_PRESENT,
         DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
         DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
         NO_CONTRIBUTORS,
