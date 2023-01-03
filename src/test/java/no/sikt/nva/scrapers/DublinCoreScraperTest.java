@@ -4,7 +4,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLIC
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
-import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
@@ -582,7 +582,11 @@ public class DublinCoreScraperTest {
             Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34-89"),
                          new Pages("34-89", new Range("34", "89"), "55")),
             Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "[86] s."),
-                         new Pages("[86] s.", null, "86"))
+                         new Pages("[86] s.", null, "86")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34–89"),
+                         new Pages("34–89", new Range("34", "89"), "55")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34 - 89"),
+                         new Pages("34 - 89", new Range("34", "89"), "55"))
 
         );
     }
