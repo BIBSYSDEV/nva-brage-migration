@@ -42,8 +42,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 )
 public class BrageMigrationCommand implements Callable<Integer> {
 
-    private AwsEnvironment awsEnvironment;
-
     public static final String PATH_DELIMITER = "/";
     public static final String OUTPUT_JSON_FILENAME = "records.json";
     public static final String FAILURE_IN_BRAGE_MIGRATION_COMMAND = "Failure in BrageMigration command";
@@ -62,7 +60,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
     private final S3Client s3Client;
-
+    private AwsEnvironment awsEnvironment;
     @Spec
     private CommandSpec spec;
 
@@ -105,6 +103,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
         this.s3Client = s3Client;
     }
 
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
+        System.exit(exitCode);
+    }
+
     @Option(names = {"-j", "--aws-bucket"}, description = "Name of AWS bucket to push result in  'experimental', "
                                                           + "'sandbox', and 'develop' are valid",
         defaultValue = "experimental")
@@ -114,11 +117,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
             throw new ParameterException(spec.commandLine(), String.format("Invalid value '%s' for option "
                                                                            + "'--aws-bucket'", value));
         }
-    }
-
-    public static void main(String[] args) {
-        int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
-        System.exit(exitCode);
     }
 
     @Override
@@ -151,7 +149,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 startProcessors(brageProcessorThreads);
                 waitForAllProcesses(brageProcessorThreads);
                 writeRecordsToFiles(brageProcessors);
-
                 if (shouldWriteToAws) {
                     pushToNva(brageProcessors);
                     storeLogsToNva();
@@ -162,7 +159,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             }
             return NORMAL_EXIT_CODE;
         } catch (Exception e) {
-            var logger = LoggerFactory.getLogger(BrageProcessor.class);
+            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
         }
@@ -199,10 +196,16 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void pushToNva(List<BrageProcessor> brageProcessors) {
-        brageProcessors.stream()
-            .map(BrageProcessor::getRecords)
-            .filter(Objects::nonNull)
-            .forEach(list -> list.forEach(this::storeFileToNVA));
+        var recordList = brageProcessors.stream()
+                             .map(BrageProcessor::getRecords)
+                             .filter(Objects::nonNull).flatMap(List::stream).collect(Collectors.toList());
+        var counter = 0;
+        for (Record record : recordList) {
+            storeFileToNVA(record);
+            counter++;
+        }
+        var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+        logger.info("Records pushed to AWS: " + counter);
     }
 
     private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
@@ -237,20 +240,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void storeFileToNVA(Record record) {
-        S3Storage storage = new S3StorageImpl(s3Client, getCustomerShortName(), awsEnvironment.getValue());
+        S3Storage storage = new S3StorageImpl(s3Client, customer, awsEnvironment.getValue());
         storage.storeRecord(record);
     }
 
-    private String getCustomerShortName() {
-        if (NVE_DEV_CUSTOMER_ID.equals(customer)) {
-            return "NVE";
-        } else {
-            return "CUSTOMER";
-        }
-    }
-
     private void storeLogsToNva() {
-        S3Storage storage = new S3StorageImpl(s3Client, getCustomerShortName(), awsEnvironment.getValue());
+        S3Storage storage = new S3StorageImpl(s3Client, customer, awsEnvironment.getValue());
         storage.storeLogs();
     }
 
@@ -267,7 +262,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 }
             }
         }
-        var logger = LoggerFactory.getLogger(BrageProcessor.class);
+        var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
         logger.info(RECORDS_WITHOUT_ERRORS + counterWithoutErrors + SLASH + totalCounter);
     }
 
