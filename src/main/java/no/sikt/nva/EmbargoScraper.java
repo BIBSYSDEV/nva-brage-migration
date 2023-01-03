@@ -60,7 +60,9 @@ public final class EmbargoScraper {
 
     private static List<Embargo> convertStringToEmbargoObjects(String contentFileAsString) {
         var listOfStringObjects = Arrays.asList(
-            contentFileAsString.replaceAll(EMPTY_LINE_REGEX, StringUtils.EMPTY_STRING).split("\n"));
+            contentFileAsString.replaceAll(EMPTY_LINE_REGEX, StringUtils.EMPTY_STRING)
+                .replace("|", ";")
+                .split("\n"));
         var embargoes = listOfStringObjects.stream()
                             .map(EmbargoScraper::convertToEmbargo)
                             .collect(Collectors.toList());
@@ -69,9 +71,9 @@ public final class EmbargoScraper {
 
     private static Embargo convertToEmbargo(String string) {
         var embargoAsList = Arrays.asList(string.split(";"));
-        String handle = embargoAsList.get(0);
-        String filename = embargoAsList.get(1);
-        String date = embargoAsList.get(2);
+        String handle = embargoAsList.get(0).trim();
+        String filename = embargoAsList.get(1).trim();
+        String date = embargoAsList.get(2).trim();
         return new Embargo(handle, filename, date);
     }
 

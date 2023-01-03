@@ -77,7 +77,7 @@ public class S3StorageImpl implements S3Storage {
         try {
             writeAssociatedFilesToS3(record);
             writeRecordToS3(record);
-            logger.info("record" + record.getId() + "stored to bucket" + bucketName);
+            logger.info("record" + record.getId() + " stored to bucket " + bucketName);
         } catch (Exception e) {
             logger.info(COULD_NOT_WRITE_RECORD_MESSAGE + record.getBrageLocation() + " " + e);
         }
