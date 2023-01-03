@@ -16,11 +16,20 @@ public class EmbargoScraperTest {
                                           + " precipitation fields with variance consistent interpolation.pdf";
     public static final String DATE = "2023-10-01";
     public static final String TEST_FILE_LOCATION = "src/test/resources/FileEmbargo.txt";
+    public static final String TEST_FILE_LOCATION_V2 = "src/test/resources/FileEmbargoV2.txt";
+
 
     @Test
     void shouldExtractEmbargoWithPdfFileOnly() throws IOException {
         var expectedEmbargo = new Embargo(HANDLE, FILENAME, DATE);
         var actualEmbargo = Objects.requireNonNull(EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION))).get(0);
+        assertThat(actualEmbargo, is(equalTo(expectedEmbargo)));
+    }
+
+    @Test
+    void shouldExtractEmbargoWithPdfFileOnlyWhen() throws IOException {
+        var expectedEmbargo = new Embargo(HANDLE, FILENAME, DATE);
+        var actualEmbargo = Objects.requireNonNull(EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION_V2))).get(0);
         assertThat(actualEmbargo, is(equalTo(expectedEmbargo)));
     }
 }
