@@ -7,12 +7,16 @@ import java.util.Objects;
 public class ErrorDetails {
 
     private final Error errorCode;
-    private final List<String> details;
+    private List<String> details;
 
     public ErrorDetails(@JsonProperty("errorCode") Error errorCode,
                         @JsonProperty("details") List<String> details) {
         this.errorCode = errorCode;
         this.details = details;
+    }
+
+    public ErrorDetails(Error errorCode) {
+        this.errorCode = errorCode;
     }
 
     @JsonProperty("errorCode")
@@ -49,7 +53,7 @@ public class ErrorDetails {
 
     public enum Error {
         INVALID_TYPE,
-        MANY_UNMAPPABLE_TYPES,
+        MULTIPLE_UNMAPPABLE_TYPES,
         INVALID_ISSN,
         INVALID_ISBN,
         INVALID_DATE_ERROR,
@@ -65,6 +69,7 @@ public class ErrorDetails {
         MULTIPLE_LANGUAGES_PRESENT,
         DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
         DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
-        NO_CONTRIBUTORS
+        NO_CONTRIBUTORS,
+        INVALID_CC_LICENSE
     }
 }

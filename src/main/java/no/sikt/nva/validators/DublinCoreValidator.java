@@ -47,6 +47,7 @@ public final class DublinCoreValidator {
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final String NO_ISSN_OR_JOURNAL_FOUND = "No issn or journal found";
     public static final String NO_PUBLISHER_FOUND = "No publisher found";
+    public static final String REGEX_BRACKETS_AND_DOT = "(\\.)|(\\[)|(\\])";
     private static final int ONE_DESCRIPTION = 1;
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -54,12 +55,13 @@ public final class DublinCoreValidator {
         var errors = new ArrayList<ErrorDetails>();
         DoiValidator.getDoiErrorDetailsOffline(dublinCore).ifPresent(errors::addAll);
         getInvalidTypes(dublinCore).ifPresent(errors::add);
-        getIssnErrors(dublinCore, brageLocation).ifPresent(errors::add);
-        getIsbnErrors(dublinCore, brageLocation).ifPresent(errors::add);
+        getIssnErrors(dublinCore).ifPresent(errors::add);
+        getIsbnErrors(dublinCore).ifPresent(errors::add);
         getDateError(dublinCore).ifPresent(errors::add);
         getChannelRegisterErrors(dublinCore, brageLocation).ifPresent(errors::add);
         getNonContributorsError(dublinCore).ifPresent(errors::add);
         BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
+        getMultipleUnmappableTypeError(dublinCore).ifPresent(errors::add);
         return errors;
     }
 
@@ -71,7 +73,6 @@ public final class DublinCoreValidator {
         getVolumeWarning(dublinCore).ifPresent(warnings::add);
         getIssueWarning(dublinCore).ifPresent(warnings::add);
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
-        getMultipleUnmappableTypeWarning(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -84,9 +85,8 @@ public final class DublinCoreValidator {
         return date.matches("\\d{4}");
     }
 
-    public static List<String> filterOutNullValues(String... values) {
-        var valuesList = Arrays.asList(values);
-        return valuesList.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
+    public static List<String> filterOutNullValues(List<String> values) {
+        return values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
     }
 
     private static Optional<ErrorDetails> getNonContributorsError(DublinCore dublinCore) {
@@ -117,22 +117,21 @@ public final class DublinCoreValidator {
     @SuppressWarnings("PMD.PrematureDeclaration")
     private static Optional<ErrorDetails> getErrorDetailsForJournalArticle(DublinCore dublinCore,
                                                                            BrageLocation brageLocation) {
-        var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
-        var title = DublinCoreScraper.extractJournal(dublinCore);
-        var possibleIdentifier = channelRegister.lookUpInJournal(issn, title, brageLocation);
+        var publication = DublinCoreScraper.extractPublication(dublinCore);
+        var possibleIdentifier = channelRegister.lookUpInJournal(publication, brageLocation);
         if (nonNull(possibleIdentifier)) {
             return Optional.empty();
         } else {
-            return getChannelRegisterErrorDetailsWhenSearchingForJournals(issn, title);
+            return getChannelRegisterErrorDetailsWhenSearchingForJournals(publication.getIssnList(),
+                                                                          publication.getJournal());
         }
     }
 
     @SuppressWarnings("PMD.PrematureDeclaration")
     private static Optional<ErrorDetails> getErrorDetailsForReport(DublinCore dublinCore, BrageLocation brageLocation) {
         var publisher = DublinCoreScraper.extractPublisher(dublinCore);
-        var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
-        var title = DublinCoreScraper.extractJournal(dublinCore);
-        var journalIdentifier = channelRegister.lookUpInJournal(issn, title, brageLocation);
+        var publication = DublinCoreScraper.extractPublication(dublinCore);
+        var journalIdentifier = channelRegister.lookUpInJournal(publication, brageLocation);
         var publisherIdentifier = channelRegister.lookUpInPublisher(publisher);
         if (nonNull(journalIdentifier)
             || nonNull(publisherIdentifier)) {
@@ -143,10 +142,13 @@ public final class DublinCoreValidator {
     }
 
     @NotNull
-    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForJournals(String issn,
+    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForJournals(List<String> issnList,
                                                                                                  String title) {
-        if (!filterOutNullValues(issn, title).isEmpty()) {
-            return Optional.of(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(issn, title)));
+        List<String> valuesToLog = new ArrayList<>();
+        valuesToLog.add(title);
+        valuesToLog.addAll(issnList);
+        if (!filterOutNullValues(valuesToLog).isEmpty()) {
+            return Optional.of(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(valuesToLog)));
         } else {
             return Optional.of(
                 new ErrorDetails(MISSING_ISSN_AND_JOURNAL, Collections.singletonList(NO_ISSN_OR_JOURNAL_FOUND)));
@@ -154,22 +156,40 @@ public final class DublinCoreValidator {
     }
 
     private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String publisher) {
-        if (!filterOutNullValues(publisher).isEmpty()) {
+        if (!filterOutNullValues(Collections.singletonList(publisher)).isEmpty()) {
             return Optional.of(
-                new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(publisher)));
+                new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER,
+                                 filterOutNullValues(Collections.singletonList(publisher))));
         } else {
             return Optional.of(new ErrorDetails(MISSING_PUBLISHER,
                                                 Collections.singletonList(NO_PUBLISHER_FOUND)));
         }
     }
 
-    private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
+    private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore) {
         if (hasIssn(dublinCore)) {
-            var issn = DublinCoreScraper.extractIssn(dublinCore, brageLocation);
-            ISSNValidator validator = new ISSNValidator();
-            if (!validator.isValid(issn)) {
-                return Optional.of(new ErrorDetails(INVALID_ISSN, List.of(issn)));
-            }
+            var invalidIssnList = DublinCoreScraper.extractIssn(dublinCore)
+                                      .stream()
+                                      .filter(issn -> !ISSNValidator.getInstance().isValid(issn))
+                                      .collect(Collectors.toList());
+            return !invalidIssnList.isEmpty()
+                       ? Optional.of(new ErrorDetails(INVALID_ISSN, invalidIssnList))
+                       : Optional.empty();
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<ErrorDetails> getIsbnErrors(DublinCore dublinCore) {
+        if (hasIsbn(dublinCore)) {
+            var invalidIsbnList = DublinCoreScraper.extractIsbn(dublinCore)
+                                      .stream()
+                                      .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
+                                      .map(isbn -> isbn.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING))
+                                      .filter(isbn -> !ISBNValidator.getInstance().isValid(isbn))
+                                      .collect(Collectors.toList());
+            return !invalidIsbnList.isEmpty()
+                       ? Optional.of(new ErrorDetails(INVALID_ISBN, invalidIsbnList))
+                       : Optional.empty();
         }
         return Optional.empty();
     }
@@ -225,7 +245,8 @@ public final class DublinCoreValidator {
                                  .filter(DcValue::isPageNumber)
                                  .findAny().map(DcValue::getValue)
                                  .orElse(StringUtils.EMPTY_STRING)
-                                 .replaceAll("(\\.)|(\\[)|(\\])", "");
+                                 .replaceAll(REGEX_BRACKETS_AND_DOT, StringUtils.EMPTY_STRING)
+                                 .trim();
             return PageConverter.isValidPageNumber(pageNumber)
                        ? Optional.empty()
                        : Optional.of(new WarningDetails(Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED, pageNumber));
@@ -285,12 +306,12 @@ public final class DublinCoreValidator {
     }
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-    private static Optional<WarningDetails> getMultipleUnmappableTypeWarning(DublinCore dublinCore) {
+    private static Optional<ErrorDetails> getMultipleUnmappableTypeError(DublinCore dublinCore) {
         var types = DublinCoreScraper.extractType(dublinCore);
         if (types.size() >= 2
             && !getInvalidTypes(dublinCore).isPresent()
             && !types.contains(BrageType.PEER_REVIEWED.getType())) {
-            return Optional.of(new WarningDetails(Warning.MULTIPLE_UNMAPPABLE_TYPES, types));
+            return Optional.of(new ErrorDetails(Error.MULTIPLE_UNMAPPABLE_TYPES, types));
         }
         return Optional.empty();
     }
@@ -331,20 +352,6 @@ public final class DublinCoreValidator {
     private static boolean typeIsPresentInDublinCore(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .anyMatch(DcValue::isType);
-    }
-
-    private static Optional<ErrorDetails> getIsbnErrors(DublinCore dublinCore, BrageLocation brageLocation) {
-        if (hasIsbn(dublinCore)) {
-            var isbn = DublinCoreScraper.extractIsbn(dublinCore, brageLocation)
-                           .replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING)
-                           .replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING);
-
-            ISBNValidator validator = new ISBNValidator();
-            if (!validator.isValid(isbn)) {
-                return Optional.of(new ErrorDetails(INVALID_ISBN, List.of(isbn)));
-            }
-        }
-        return Optional.empty();
     }
 
     private static boolean hasIssn(DublinCore dublinCore) {

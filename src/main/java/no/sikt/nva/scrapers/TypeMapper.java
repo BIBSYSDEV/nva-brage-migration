@@ -3,7 +3,7 @@ package no.sikt.nva.scrapers;
 import static java.util.Map.entry;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MANY_UNMAPPABLE_TYPES;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +38,10 @@ public final class TypeMapper {
         entry(Set.of(BrageType.STUDENT_PAPER_OTHERS), NvaType.STUDENT_PAPER_OTHERS),
         entry(Set.of(BrageType.DESIGN_PRODUCT), NvaType.DESIGN_PRODUCT),
         entry(Set.of(BrageType.CHRONICLE), NvaType.CHRONICLE),
-        entry(Set.of(BrageType.SOFTWARE), NvaType.SOFTWARE),
+        //        entry(Set.of(BrageType.SOFTWARE), NvaType.SOFTWARE),
+        //        entry(Set.of(BrageType.RECORDING_ORAL), NvaType.RECORDING_ORAL),
         entry(Set.of(BrageType.LECTURE), NvaType.LECTURE),
         entry(Set.of(BrageType.RECORDING_MUSICAL), NvaType.RECORDING_MUSICAL),
-        entry(Set.of(BrageType.RECORDING_ORAL), NvaType.RECORDING_ORAL),
         entry(Set.of(BrageType.PLAN_OR_BLUEPRINT), NvaType.PLAN_OR_BLUEPRINT),
         entry(Set.of(BrageType.MAP), NvaType.MAP)
     );
@@ -71,7 +71,7 @@ public final class TypeMapper {
         } else {
             for (BrageType type : brageTypes) {
                 if (hasValidType(type.toString())) {
-                    logger.error(String.valueOf(new ErrorDetails(MANY_UNMAPPABLE_TYPES, inputTypes)));
+                    logger.error(String.valueOf(new ErrorDetails(MULTIPLE_UNMAPPABLE_TYPES, inputTypes)));
                     return TYPE_MAP.get(Collections.singleton(type)).getValue();
                 } else {
                     return null;

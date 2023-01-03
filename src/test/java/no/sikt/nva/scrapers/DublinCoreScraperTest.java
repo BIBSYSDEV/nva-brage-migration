@@ -5,7 +5,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALI
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_LANGUAGES_PRESENT;
-import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MULTIPLE_UNMAPPABLE_TYPES;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
@@ -41,6 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class DublinCoreScraperTest {
 
@@ -559,6 +560,32 @@ public class DublinCoreScraperTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = {"9788293091172(PDF)", "9788293091172(trykt)", "ISBN9788293091172"})
+    void shouldRemoveAllSpecialCharactersAndLettersFromIsbn(String isbn) {
+        var typeDcValue = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
+        var isbnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISBN, isbn);
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, isbnDcValue));
+        var dublinCoreScraper = new DublinCoreScraper(false);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getPublication().getIsbnList().get(0), is(equalTo("9788293091172")));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"1502-007x", "1502-007x (online)", "1502007x"})
+    void shouldRemoveAllLettersAndInvalidSpecialCharactersFromIssn(String isbn) {
+        var typeDcValue = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
+        var isbnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, isbn);
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, isbnDcValue));
+        var dublinCoreScraper = new DublinCoreScraper(false);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getPublication().getIssnList().get(0), is(equalTo("1502-007X")));
+    }
+
+    @ParameterizedTest
     @MethodSource("provideDcValueAndExpectedPages")
     void shouldExtractPagesWithDifferentFormats(DcValue pageNumber, Pages expectedPages) {
         var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
@@ -586,7 +613,11 @@ public class DublinCoreScraperTest {
             Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34-89"),
                          new Pages("34-89", new Range("34", "89"), "55")),
             Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "[86] s."),
-                         new Pages("[86] s.", null, "86"))
+                         new Pages("[86] s.", null, "86")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34–89"),
+                         new Pages("34–89", new Range("34", "89"), "55")),
+            Arguments.of(new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "34 - 89"),
+                         new Pages("34 - 89", new Range("34", "89"), "55"))
 
         );
     }

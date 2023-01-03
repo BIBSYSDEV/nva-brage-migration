@@ -1,14 +1,16 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
 public class Publication {
 
     private String journal;
-    private String issn;
-    private String isbn;
+    private List<String> issnList;
+    private List<String> isbnList;
     private PublicationContext publicationContext;
     private String partOfSeries;
 
@@ -27,7 +29,7 @@ public class Publication {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(journal, issn, isbn, publicationContext, partOfSeries);
+        return Objects.hash(journal, issnList, isbnList, publicationContext, partOfSeries);
     }
 
     @JacocoGenerated
@@ -41,8 +43,8 @@ public class Publication {
         }
         Publication that = (Publication) o;
         return Objects.equals(journal, that.journal)
-               && Objects.equals(issn, that.issn)
-               && Objects.equals(isbn, that.isbn)
+               && Objects.equals(issnList, that.issnList)
+               && Objects.equals(isbnList, that.isbnList)
                && Objects.equals(publicationContext, that.publicationContext)
                && Objects.equals(partOfSeries, that.partOfSeries);
     }
@@ -58,23 +60,23 @@ public class Publication {
     }
 
     @JacocoGenerated
-    @JsonProperty("issn")
-    public String getIssn() {
-        return issn;
+    @JsonProperty("issnList")
+    public List<String> getIssnList() {
+        return !issnList.isEmpty() ? issnList : Collections.emptyList();
     }
 
-    public void setIssn(String issn) {
-        this.issn = issn;
+    public void setIssnList(List<String> issnList) {
+        this.issnList = issnList;
     }
 
     @JacocoGenerated
-    @JsonProperty("isbn")
-    public String getIsbn() {
-        return isbn;
+    @JsonProperty("isbnList")
+    public List<String> getIsbnList() {
+        return isbnList;
     }
 
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
+    public void setIsbnList(List<String> isbnList) {
+        this.isbnList = isbnList;
     }
 
     @JacocoGenerated

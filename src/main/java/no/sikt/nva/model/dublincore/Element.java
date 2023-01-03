@@ -14,11 +14,11 @@ public enum Element {
     @XmlEnumValue("contributor")
     CONTRIBUTOR("contributor"),
 
+    @XmlEnumValue("creator")
+    CREATOR("creator"),
+
     @XmlEnumValue("coverage")
     COVERAGE("coverage"),
-
-    @XmlEnumValue("creator")
-    creator("creator"),
 
     @XmlEnumValue("date")
     DATE("date"),
