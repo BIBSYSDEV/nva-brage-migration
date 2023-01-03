@@ -149,7 +149,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 startProcessors(brageProcessorThreads);
                 waitForAllProcesses(brageProcessorThreads);
                 writeRecordsToFiles(brageProcessors);
-
                 if (shouldWriteToAws) {
                     pushToNva(brageProcessors);
                     storeLogsToNva();
@@ -160,7 +159,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             }
             return NORMAL_EXIT_CODE;
         } catch (Exception e) {
-            var logger = LoggerFactory.getLogger(BrageProcessor.class);
+            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
         }
@@ -197,10 +196,16 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void pushToNva(List<BrageProcessor> brageProcessors) {
-        brageProcessors.stream()
-            .map(BrageProcessor::getRecords)
-            .filter(Objects::nonNull)
-            .forEach(list -> list.forEach(this::storeFileToNVA));
+        var recordList = brageProcessors.stream()
+                             .map(BrageProcessor::getRecords)
+                             .filter(Objects::nonNull).flatMap(List::stream).collect(Collectors.toList());
+        var counter = 0;
+        for (Record record : recordList) {
+            storeFileToNVA(record);
+            counter++;
+        }
+        var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+        logger.info("Records pushed to AWS: " + counter);
     }
 
     private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
@@ -257,7 +262,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 }
             }
         }
-        var logger = LoggerFactory.getLogger(BrageProcessor.class);
+        var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
         logger.info(RECORDS_WITHOUT_ERRORS + counterWithoutErrors + SLASH + totalCounter);
     }
 
