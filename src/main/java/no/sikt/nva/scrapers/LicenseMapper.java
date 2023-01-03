@@ -17,7 +17,8 @@ public class LicenseMapper {
                BrageLicense.CC_BY_ND, NvaLicenseIdentifier.CC_BY_ND,
                BrageLicense.CC_BY_SA, NvaLicenseIdentifier.CC_BY_SA,
                BrageLicense.CC_BY_NC_ND, NvaLicenseIdentifier.CC_BY_NC_ND,
-               BrageLicense.CC_BY_NC_SA, NvaLicenseIdentifier.CC_BY_NC_SA);
+               BrageLicense.CC_BY_NC_SA, NvaLicenseIdentifier.CC_BY_NC_SA,
+               BrageLicense.CC_ZERO, NvaLicenseIdentifier.CC_ZERO);
 
     public static Optional<NvaLicenseIdentifier> mapLicenseToNva(String licenseUri) {
         var licenseName = getLicenseName(licenseUri);
