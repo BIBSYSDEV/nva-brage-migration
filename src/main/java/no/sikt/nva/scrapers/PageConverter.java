@@ -48,18 +48,16 @@ public class PageConverter {
 
     private static Pages createPages(String bragePages) {
         var pages = new Pages();
-        //TODO: NVA-types affects what pages attributes should be set.
         pages.setBragePages(bragePages);
         var strippedPages = bragePages.replaceAll("(\\.)|(\\[)|(\\])", "");
-        if (pagesIsInterval(strippedPages.replaceAll("(\\s|$)", ""))) {
-            pages.setRange(calculateRange(strippedPages)); // This field depend on NVA-type
-            pages.setPages(calculateNumberOfPagesFromRange(strippedPages)); // This field depend on NVA-type
+        if (pagesIsInterval(strippedPages)) {
+            pages.setRange(calculateRange(strippedPages));
+            pages.setPages(calculateNumberOfPagesFromRange(strippedPages));
         } else if (pagesIsNumber(strippedPages) || isMultiplePagesWithPostfix(strippedPages)) {
-            pages.setPages(
-                strippedPages.replace(PAGE_POSTFIX, StringUtils.EMPTY_STRING)); // This field depend on NVA-type
+            pages.setPages(strippedPages.replace(PAGE_POSTFIX, StringUtils.EMPTY_STRING));
         } else if (pageIsSingleSpecifiedPage(strippedPages)) {
-            pages.setRange(calculateRangeFromSinglePage(strippedPages)); // This field depend on NVA-type
-            pages.setPages(SINGLE_PAGE); // This field depend on NVA-type
+            pages.setRange(calculateRangeFromSinglePage(strippedPages));
+            pages.setPages(SINGLE_PAGE);
         }
         return pages;
     }
@@ -104,7 +102,8 @@ public class PageConverter {
     }
 
     private static boolean pagesIsInterval(String bragePages) {
-        var pages = bragePages.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING);
+        var pages = bragePages.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING)
+                        .replaceAll("(\\s|$)", "");
         return intervalPattern.matcher(pages).matches();
     }
 }

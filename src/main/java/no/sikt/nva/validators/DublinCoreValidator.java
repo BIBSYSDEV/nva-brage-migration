@@ -47,6 +47,7 @@ public final class DublinCoreValidator {
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final String NO_ISSN_OR_JOURNAL_FOUND = "No issn or journal found";
     public static final String NO_PUBLISHER_FOUND = "No publisher found";
+    public static final String REGEX_BRACKETS_AND_DOT = "(\\.)|(\\[)|(\\])";
     private static final int ONE_DESCRIPTION = 1;
 
     public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -244,7 +245,7 @@ public final class DublinCoreValidator {
                                  .filter(DcValue::isPageNumber)
                                  .findAny().map(DcValue::getValue)
                                  .orElse(StringUtils.EMPTY_STRING)
-                                 .replaceAll("(\\.)|(\\[)|(\\])", "")
+                                 .replaceAll(REGEX_BRACKETS_AND_DOT, StringUtils.EMPTY_STRING)
                                  .trim();
             return PageConverter.isValidPageNumber(pageNumber)
                        ? Optional.empty()
