@@ -341,6 +341,21 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldApplyIsoLanguageOverLanguageWhenBothArePresentAndDoNotLogErrorIfValidIsoLanguage() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var isoLanguageDcValue = new DcValue(Element.LANGUAGE, Qualifier.ISO, "ger");
+        var nonIsoLanguageDcValue = new DcValue(Element.LANGUAGE, null, "deutsch");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(nonIsoLanguageDcValue, isoLanguageDcValue, typeDcValue, peerReviewed));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled);
+        var brageLocation = new BrageLocation(null);
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_LANGUAGES_PRESENT, List.of()))));
+    }
+
+    @Test
     void shouldNotLookInChannelRegisterForOtherType() {
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var publisherDcValue = new DcValue(Element.PUBLISHER, null, "Publisher");

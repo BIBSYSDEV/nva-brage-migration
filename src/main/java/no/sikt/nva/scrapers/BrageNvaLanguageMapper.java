@@ -1,6 +1,8 @@
 package no.sikt.nva.scrapers;
 
 import static nva.commons.core.language.LanguageMapper.LEXVO_URI_UNDEFINED;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -50,7 +52,7 @@ public class BrageNvaLanguageMapper {
                             .distinct()
                             .collect(Collectors.toList());
         if (languages.size() > ONE_ELEMENT) {
-            return Optional.of(new ErrorDetails(Error.MULTIPLE_LANGUAGES_PRESENT, languages));
+            return getMultipleLanguageError(languages);
         }
         if (languages.size() == ONE_ELEMENT) {
             var mappedToNvaLanguage = LanguageMapper.toUri(languages.get(0));
@@ -59,6 +61,24 @@ public class BrageNvaLanguageMapper {
             }
         }
         return Optional.empty();
+    }
+
+    private static Optional<ErrorDetails> getMultipleLanguageError(List<String> languages) {
+        return getIsoLanguages(languages).isEmpty()
+                   ? Optional.of(new ErrorDetails(Error.MULTIPLE_LANGUAGES_PRESENT, languages))
+                   : Optional.empty();
+    }
+
+    @NotNull
+    private static List<URI> getIsoLanguages(List<String> languages) {
+        List<URI> isoLanguages = new ArrayList<>();
+        for (String language : languages) {
+            var isoLanguageUri = LanguageMapper.toUri(language);
+            if (!isoLanguageUri.equals(LEXVO_URI_UNDEFINED)) {
+                isoLanguages.add(isoLanguageUri);
+            }
+        }
+        return isoLanguages;
     }
 
     private static List<String> getLanguageValues(List<DcValue> languagesDcValues) {
