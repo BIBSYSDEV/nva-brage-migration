@@ -14,4 +14,11 @@ public class LicenseMapperTest {
         var actual = LicenseMapper.mapLicenseToNva("https://creativecommons.org/licenses/by-nc-sa/4.0/deed.no");
         assertThat(actual.get(), is(equalTo(expected)));
     }
+
+    @Test
+    void shouldMapBrageZeroLicenseToNvaLicenseCorrectly() {
+        var expected = NvaLicenseIdentifier.CC_ZERO;
+        var actual = LicenseMapper.mapLicenseToNva("https://creativecommons.org/publicdomain/zero/1.0/");
+        assertThat(actual.get(), is(equalTo(expected)));
+    }
 }

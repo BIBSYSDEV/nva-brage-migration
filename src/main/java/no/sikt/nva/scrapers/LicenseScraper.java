@@ -66,8 +66,7 @@ public class LicenseScraper {
 
     private static License constructLicense(NvaLicenseIdentifier nvaLicenseIdentifier, String brageLicense) {
         var nvaLicenseLabels = getLicenseLabels(nvaLicenseIdentifier);
-        return new License(brageLicense,
-                           new NvaLicense(nvaLicenseIdentifier, nvaLicenseLabels));
+        return new License(brageLicense, new NvaLicense(nvaLicenseIdentifier, nvaLicenseLabels));
     }
 
     private static Optional<License> extractLicenseFromDublinCore(DublinCore dublinCore) {

@@ -8,7 +8,8 @@ public enum BrageLicense {
     CC_BY_NC_ND("by-nc-nd"),
     CC_BY_NC_SA("by-nc-sa"),
     CC_BY_ND("by-nd"),
-    CC_BY_SA("by-sa");
+    CC_BY_SA("by-sa"),
+    CC_ZERO("zero");
 
     private final String value;
 
