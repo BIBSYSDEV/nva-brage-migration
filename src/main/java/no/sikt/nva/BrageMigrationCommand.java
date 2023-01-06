@@ -88,7 +88,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private boolean shouldWriteToAws;
 
     @Option(names = {"-r", "--should-look-up-in-channel-register"}, description = "If this flag is set, will look "
-                                                                                  + "look in channel register")
+                                                                                  + "up in channel register")
     private boolean shouldLookUpInChannelRegister;
 
     @Option(names = {"-b", "--write-processed-import-to-aws"}, description = "If this flag is set, processed result"
