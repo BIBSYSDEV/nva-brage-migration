@@ -106,9 +106,9 @@ public class BrageProcessor implements Runnable {
         return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
     }
 
-    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> warnings) {
-        if (!warnings.isEmpty()) {
-            logger.error(warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
+    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> errors) {
+        if (!errors.isEmpty()) {
+            logger.error(errors + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
 

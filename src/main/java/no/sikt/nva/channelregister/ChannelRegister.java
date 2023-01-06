@@ -66,7 +66,6 @@ public final class ChannelRegister {
         return register;
     }
 
-    @SuppressWarnings("PMD.PrematureDeclaration")
     public static Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore, BrageLocation brageLocation) {
         if (typeIsPresentInDublinCore(dublinCore)) {
             if (isJournalArticle(dublinCore)) {
@@ -203,7 +202,6 @@ public final class ChannelRegister {
         return nonNull(publisher);
     }
 
-    @SuppressWarnings("PMD.PrematureDeclaration")
     private static Optional<ErrorDetails> getErrorDetailsForJournalArticle(DublinCore dublinCore,
                                                                            BrageLocation brageLocation) {
         var publication = DublinCoreScraper.extractPublication(dublinCore);
@@ -216,7 +214,6 @@ public final class ChannelRegister {
         }
     }
 
-    @SuppressWarnings("PMD.PrematureDeclaration")
     private static Optional<ErrorDetails> getErrorDetailsForReport(DublinCore dublinCore, BrageLocation brageLocation) {
         var publisher = DublinCoreScraper.extractPublisher(dublinCore);
         var publication = DublinCoreScraper.extractPublication(dublinCore);
