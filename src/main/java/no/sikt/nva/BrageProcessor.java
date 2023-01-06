@@ -28,7 +28,6 @@ import no.sikt.nva.scrapers.ResourceOwnerMapper;
 import no.sikt.nva.validators.BrageProcessorValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +47,7 @@ public class BrageProcessor implements Runnable {
     private final String destinationDirectory;
     private final HandleScraper handleScraper;
     private final boolean enableOnlineValidation;
+    private final boolean shouldLookUpInChannelRegister;
     private final boolean noHandleCheck;
     private final List<Embargo> embargoes;
     private List<Record> records;
@@ -57,11 +57,13 @@ public class BrageProcessor implements Runnable {
                           String destinationDirectory,
                           final Map<String, String> rescueTitleAndHandleMap,
                           boolean enableOnlineValidation,
+                          boolean shouldLookUpInChannelRegister,
                           boolean noHandleCheck,
                           List<Embargo> embargoes) {
         this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
+        this.shouldLookUpInChannelRegister = shouldLookUpInChannelRegister;
         this.destinationDirectory = destinationDirectory;
         this.handleScraper = new HandleScraper(rescueTitleAndHandleMap);
         this.noHandleCheck = noHandleCheck;
@@ -104,9 +106,9 @@ public class BrageProcessor implements Runnable {
         return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
     }
 
-    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> warnings) {
-        if (!warnings.isEmpty()) {
-            logger.warn(warnings + StringUtils.SPACE + brageLocation.getOriginInformation());
+    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> errors) {
+        if (!errors.isEmpty()) {
+            logger.error(errors + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
 
@@ -150,7 +152,7 @@ public class BrageProcessor implements Runnable {
             }
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
-            var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation);
+            var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation, shouldLookUpInChannelRegister);
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setCustomer(generateCustomer());
             record.setResourceOwner(ResourceOwnerMapper.getResourceOwner(customer));
@@ -167,7 +169,6 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    @NotNull
     private Customer generateCustomer() {
         return new Customer(customer, CustomerMapper.getCustomerUri(customer));
     }

@@ -118,6 +118,10 @@ public class DcValue {
         return Element.IDENTIFIER.equals(this.element) && Qualifier.CRISTIN.equals(this.qualifier);
     }
 
+    public boolean isOtherIdentifier() {
+        return Element.IDENTIFIER.equals(this.element) && Qualifier.OTHER.equals(this.qualifier);
+    }
+
     public boolean isVersion() {
         return Element.DESCRIPTION.equals(this.element) && Qualifier.VERSION.equals(this.qualifier);
     }

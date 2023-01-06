@@ -54,9 +54,11 @@ public final class DublinCoreScraper {
     public static final String REGEX_ISSN = "[^0-9-xX]";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
+    private final boolean shouldLookUpInChannelRegister;
 
-    public DublinCoreScraper(boolean enableOnlineValidation) {
+    public DublinCoreScraper(boolean enableOnlineValidation, boolean shouldLookUpInChannelRegister) {
         this.enableOnlineValidation = enableOnlineValidation;
+        this.shouldLookUpInChannelRegister = shouldLookUpInChannelRegister;
     }
 
     public static List<String> extractIssn(DublinCore dublinCore) {
@@ -88,6 +90,7 @@ public final class DublinCoreScraper {
         dcValues.add(new DcValue(Element.FORMAT, Qualifier.EXTENT, null));
         dcValues.add(new DcValue(Element.FORMAT, Qualifier.MIME_TYPE, null));
         dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.NONE, null));
+        dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.OTHER, null));
         return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(NEW_LINE_DELIMITER));
     }
 
@@ -146,7 +149,10 @@ public final class DublinCoreScraper {
 
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         try {
-            var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+            var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
+            if (lookUpInChannelRegisterIsEnabled()) {
+                ChannelRegister.getChannelRegisterErrors(dublinCore, brageLocation).ifPresent(errors::add);
+            }
             if (onlineValidationIsEnabled()) {
                 DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
             }
@@ -166,6 +172,10 @@ public final class DublinCoreScraper {
 
     public boolean onlineValidationIsEnabled() {
         return enableOnlineValidation;
+    }
+
+    public boolean lookUpInChannelRegisterIsEnabled() {
+        return shouldLookUpInChannelRegister;
     }
 
     private static String addDelimiter(String issn) {
@@ -364,16 +374,27 @@ public final class DublinCoreScraper {
                || dcValue.isCreatorNone()
                || dcValue.isFormatExtent()
                || dcValue.isFormatMimeType()
-               || dcValue.isIdentifierNone();
+               || dcValue.isIdentifierNone()
+               || dcValue.isOtherIdentifier();
     }
 
     private static String extractCristinId(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isCristinDcValue)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .filter(DublinCoreScraper::isNumeric)
                    .findAny()
-                   .orElse(new DcValue())
-                   .scrapeValueAndSetToScraped();
+                   .orElse(null);
+    }
+
+    private static boolean isNumeric(String value) {
+        try {
+            Double.parseDouble(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     private static String extractPartOfSeries(DublinCore dublinCore) {
