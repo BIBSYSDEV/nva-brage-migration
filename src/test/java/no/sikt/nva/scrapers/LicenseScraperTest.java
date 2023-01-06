@@ -4,6 +4,7 @@ import static no.sikt.nva.ResourceNameConstants.EMPTY_LICENSE_RDF_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.FIRST_VALID_LICENSE_RDF_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.INVALID_LICENSE_RDF_FILE_NAME;
 import static no.sikt.nva.ResourceNameConstants.SECOND_VALID_LICENSE_RDF_FILE_NAME;
+import static no.sikt.nva.ResourceNameConstants.THIRD_VALID_LICENSE_RDF_FILE_NAME;
 import static no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentifier.DEFAULT_LICENSE;
 import static no.sikt.nva.scrapers.LicenseScraper.NORWEGIAN_BOKMAAL;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -97,6 +98,24 @@ public class LicenseScraperTest {
         var license = licenseScraper.extractLicense(new File(PATH_TO_FILES), new DublinCore(List.of()));
         var expectedResult = false;
         assertThat(LicenseScraper.isValidCCLicense(license), is(equalTo(expectedResult)));
+    }
+
+    @Test
+    void shouldExtractLicenseFromOtherXmlFormat() {
+        LicenseScraper licenseScraper = new LicenseScraper(SECOND_VALID_LICENSE_RDF_FILE_NAME);
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
+        var actualLicense = licenseScraper.extractLicense(new File(PATH_TO_FILES), dublinCore);
+        assertThat(actualLicense.getBrageLicense(), is(equalTo("http://creativecommons.org/licenses/by/4.0/deed.no")));
+    }
+
+    @Test
+    void shouldExtractLicenseFromThirdXmlFormat() {
+        LicenseScraper licenseScraper = new LicenseScraper(THIRD_VALID_LICENSE_RDF_FILE_NAME);
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
+        var actualLicense = licenseScraper.extractLicense(new File(PATH_TO_FILES), dublinCore);
+        assertThat(actualLicense.getBrageLicense(), is(equalTo("http://creativecommons.org/publicdomain/zero/1.0/")));
     }
 }
 

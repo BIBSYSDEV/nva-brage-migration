@@ -107,7 +107,7 @@ public class DublinCoreValidatorTest {
     }
 
     @ParameterizedTest()
-    @ValueSource(strings = {"1991-02-14", "2008-12-31", "2021-10-16"})
+    @ValueSource(strings = {"1991-02-14", "2008-12-31", "2021-10-16", "2007-08-21T11:17:48Z"})
     void shouldNotReturnDateErrorWhenDateIsValid(String date) {
         var dcValues = List.of(new DcValue(Element.DATE, Qualifier.ISSUED, date));
         var dublinCore = new DublinCore(dcValues);

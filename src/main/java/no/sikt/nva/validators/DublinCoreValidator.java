@@ -5,6 +5,10 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALI
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISBN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.scrapers.EntityDescriptionExtractor.LOCAL_DATE_MAX_LENGTH;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -241,8 +245,10 @@ public final class DublinCoreValidator {
                            .stream()
                            .filter(DcValue::isPublicationDate)
                            .findAny()
-                           .orElse(new DcValue())
-                           .getValue();
+                           .map(DcValue::getValue)
+                           .map(DublinCoreValidator::modifyIfDateIsOfLocalDateTimeFormat)
+                           .orElse(new DcValue().scrapeValueAndSetToScraped());
+
 
             if (containsYearOnly(date)) {
                 return Optional.empty();
@@ -256,6 +262,19 @@ public final class DublinCoreValidator {
             return Optional.of(new ErrorDetails(INVALID_DATE_ERROR, List.of(date)));
         }
         return Optional.of(new ErrorDetails(DATE_NOT_PRESENT_ERROR, List.of()));
+    }
+
+    private static String modifyIfDateIsOfLocalDateTimeFormat(String date) {
+        try {
+            if (date.length() > LOCAL_DATE_MAX_LENGTH) {
+                var instant = Instant.parse(date);
+                return LocalDate.ofInstant(instant, ZoneOffset.UTC).toString();
+            } else {
+                return date;
+            }
+        } catch (Exception e) {
+            return date;
+        }
     }
 
     private static boolean containsYearAndMonthAndDate(String date) {
