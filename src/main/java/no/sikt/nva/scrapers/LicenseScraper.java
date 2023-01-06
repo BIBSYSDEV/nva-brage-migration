@@ -3,6 +3,7 @@ package no.sikt.nva.scrapers;
 import static java.util.Objects.isNull;
 import static no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentifier.DEFAULT_LICENSE;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -17,6 +18,7 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.SingletonCollector;
 import nva.commons.core.StringUtils;
+import nva.commons.core.ioutils.IoUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -41,6 +43,8 @@ public class LicenseScraper {
 
     public static final License FALLBACK_LICENSE =
         new License(null, new NvaLicense(DEFAULT_LICENSE, getLicenseLabels(DEFAULT_LICENSE)));
+    public static final String RDF_RESOURCE_ELEMENT = "rdf:resource";
+    public static final String LICENSE_TAG = "license";
 
     private final String customLicenseFilename;
 
@@ -98,13 +102,31 @@ public class LicenseScraper {
 
     private static Model createModel(File file) {
         Model model = ModelFactory.createDefaultModel();
-
         try (InputStream inputStream = Files.newInputStream(Paths.get(file.getAbsolutePath()))) {
             RDFDataMgr.read(model, inputStream, Lang.RDFXML);
             return model;
         } catch (Exception e) {
             throw new LicenseExtractingException(READING_LICENSE_FILE_EXCEPTION_MESSAGE, e);
         }
+    }
+
+    private static String extractLicense(File file) {
+        try (InputStream inputStream = Files.newInputStream(Paths.get(file.getAbsolutePath()))) {
+            var licenseXmlAsString = IoUtils.streamToString(inputStream);
+            var lines = licenseXmlAsString.split("\n");
+            for (String line : lines) {
+                if (containsLicense(line)) {
+                    return line.split("rdf:resource=")[1].split("\"")[1];
+                }
+            }
+            return null;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static boolean containsLicense(String line) {
+        return line.contains(LICENSE_TAG) && line.contains(RDF_RESOURCE_ELEMENT) && line.contains(CC_BASE_URL);
     }
 
     private Optional<License> extractLicenseFromFile(File bundleDirectory) {
@@ -123,6 +145,17 @@ public class LicenseScraper {
             return LicenseMapper.mapLicenseToNva(brageLicense)
                        .map(nvaLicenseIdentifier -> constructLicense(nvaLicenseIdentifier, brageLicense));
         } catch (Exception e) {
+            return attemptToExtractLicenseFromPossiblyInvalidXml(bundleDirectory);
+        }
+    }
+
+    private Optional<License> attemptToExtractLicenseFromPossiblyInvalidXml(File bundleDirectory) {
+        try {
+            var licenseFromPossiblyInvalidXml = extractLicense(new File(bundleDirectory, customLicenseFilename));
+            return LicenseMapper.mapLicenseToNva(licenseFromPossiblyInvalidXml)
+                       .map(nvaLicenseIdentifier -> constructLicense(nvaLicenseIdentifier,
+                                                                     licenseFromPossiblyInvalidXml));
+        } catch (Exception exception) {
             return Optional.empty();
         }
     }

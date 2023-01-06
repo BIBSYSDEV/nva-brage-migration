@@ -8,7 +8,8 @@ public class ResourceNameConstants {
     public static final String TITLES_HANDLES_CSV_FILE_NAME = "title_handles.csv";
     public static final String VALID_DUBLIN_CORE_XML_FILE_NAME = "valid_dublin_core.xml";
     public static final String FIRST_VALID_LICENSE_RDF_FILE_NAME = "valid_license_rdf";
-    public static final String SECOND_VALID_LICENSE_RDF_FILE_NAME = "valid_license_rdf_v2";
+    public static final String SECOND_VALID_LICENSE_RDF_FILE_NAME = "valid_license_rdf_2";
+    public static final String THIRD_VALID_LICENSE_RDF_FILE_NAME = "valid_license_rdf_3";
     public static final String EMPTY_LICENSE_RDF_FILE_NAME = "license_rdf";
     public static final String INPUT_WITH_LICENSE_ZIP_FILE_NAME = "inputWithLicense.zip";
     public static final String INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME = "inputWithoutHandle.zip";
