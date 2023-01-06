@@ -157,10 +157,12 @@ public final class EntityDescriptionExtractor {
         return publicationInstance;
     }
 
-    private static String extractIssue(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isIssue)
-                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+    public static String extractIssue(DublinCore dublinCore) {
+        var issues = dublinCore.getDcValues().stream()
+                         .filter(DcValue::isIssue)
+                         .map(DcValue::scrapeValueAndSetToScraped)
+                         .collect(Collectors.toList());
+        return !issues.isEmpty() ? issues.get(0) : null;
     }
 
     private static String extractVolume(DublinCore dublinCore) {

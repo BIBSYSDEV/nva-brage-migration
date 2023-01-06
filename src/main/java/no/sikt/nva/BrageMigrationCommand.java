@@ -87,6 +87,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                                    + "to S3")
     private boolean shouldWriteToAws;
 
+    @Option(names = {"-r", "--should-look-up-in-channel-register"}, description = "If this flag is set, will look "
+                                                                                  + "be pushed "
+                                                                                  + "to S3")
+    private boolean shouldLookUpInChannelRegister;
+
     @Option(names = {"-b", "--write-processed-import-to-aws"}, description = "If this flag is set, processed result"
                                                                              + "will be pushed to S3")
     private boolean writeProcessedImportToAws;
@@ -213,6 +218,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return createBrageProcessorThread(zipFiles,
                                           customer,
                                           enableOnlineValidation,
+                                          shouldLookUpInChannelRegister,
                                           noHandleCheck,
                                           outputDirectory, embargoes);
     }
@@ -330,7 +336,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, String customer,
-                                                            boolean enableOnlineValidation, boolean noHandleCheck,
+                                                            boolean enableOnlineValidation,
+                                                            boolean shouldLookUpInChannelRegister,
+                                                            boolean noHandleCheck,
                                                             String outputDirectory, List<Embargo> embargoes) {
         var handleTitleMapReader = new HandleTitleMapReader();
         var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch(),
@@ -338,6 +346,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return
             Arrays.stream(zipFiles)
                 .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,
+                                                                           shouldLookUpInChannelRegister,
                                                                            noHandleCheck, outputDirectory))
                 .collect(Collectors.toList());
     }

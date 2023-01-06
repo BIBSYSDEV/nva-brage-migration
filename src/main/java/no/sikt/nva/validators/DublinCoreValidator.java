@@ -1,16 +1,10 @@
 package no.sikt.nva.validators;
 
-import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_NOT_PRESENT_ERROR;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DATE_ERROR;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISBN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.JOURNAL_NOT_IN_CHANNEL_REGISTER;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_ISSN_AND_JOURNAL;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_PUBLISHER;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.PUBLISHER_NOT_IN_CHANNEL_REGISTER;
-import static no.sikt.nva.scrapers.DublinCoreScraper.channelRegister;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,7 +13,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails.Error;
@@ -37,7 +30,6 @@ import nva.commons.core.StringUtils;
 import org.apache.commons.validator.routines.DateValidator;
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.commons.validator.routines.ISSNValidator;
-import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("PMD.GodClass")
 public final class DublinCoreValidator {
@@ -45,12 +37,10 @@ public final class DublinCoreValidator {
     public static final String PUBLISHED_VERSION_STRING = "publishedVersion";
     public static final String ACCEPTED_VERSION_STRING = "acceptedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
-    public static final String NO_ISSN_OR_JOURNAL_FOUND = "No issn or journal found";
-    public static final String NO_PUBLISHER_FOUND = "No publisher found";
     public static final String REGEX_BRACKETS_AND_DOT = "(\\.)|(\\[)|(\\])";
     private static final int ONE_DESCRIPTION = 1;
 
-    public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, BrageLocation brageLocation) {
+    public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore) {
 
         var errors = new ArrayList<ErrorDetails>();
         DoiValidator.getDoiErrorDetailsOffline(dublinCore).ifPresent(errors::addAll);
@@ -58,10 +48,10 @@ public final class DublinCoreValidator {
         getIssnErrors(dublinCore).ifPresent(errors::add);
         getIsbnErrors(dublinCore).ifPresent(errors::add);
         getDateError(dublinCore).ifPresent(errors::add);
-        getChannelRegisterErrors(dublinCore, brageLocation).ifPresent(errors::add);
         getNonContributorsError(dublinCore).ifPresent(errors::add);
         BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
         getMultipleUnmappableTypeError(dublinCore).ifPresent(errors::add);
+        getDuplicates(dublinCore).ifPresent(errors::addAll);
         return errors;
     }
 
@@ -89,6 +79,62 @@ public final class DublinCoreValidator {
         return values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
     }
 
+    private static Optional<List<ErrorDetails>> getDuplicates(DublinCore dublinCore) {
+        var duplicates = new ArrayList<ErrorDetails>();
+        checkForIssuesDuplicates(dublinCore, duplicates);
+        checkForPublicationDateDuplicates(dublinCore, duplicates);
+        checkForCristinDuplicates(dublinCore, duplicates);
+        return !duplicates.isEmpty() ? Optional.of(duplicates) : Optional.empty();
+    }
+
+    private static void checkForPublicationDateDuplicates(DublinCore dublinCore, List<ErrorDetails> duplicates) {
+        var dates = getDates(dublinCore);
+        if (hasManyValues(dates)) {
+            duplicates.add(new ErrorDetails(Error.DUPLICATE_VALUE, dates));
+        }
+    }
+
+    private static void checkForIssuesDuplicates(DublinCore dublinCore, List<ErrorDetails> duplicates) {
+        var issues = getIssues(dublinCore);
+        if (hasManyValues(issues)) {
+            duplicates.add(new ErrorDetails(Error.DUPLICATE_VALUE, issues));
+        }
+    }
+
+    private static void checkForCristinDuplicates(DublinCore dublinCore, List<ErrorDetails> duplicates) {
+        var cristinIds = getCristinIds(dublinCore);
+        if (hasManyValues(cristinIds)) {
+            duplicates.add(new ErrorDetails(Error.DUPLICATE_VALUE, cristinIds));
+        }
+    }
+
+    private static List<String> getCristinIds(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isCristinDcValue)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
+    }
+
+    private static boolean hasManyValues(List<String> issues) {
+        return issues.size() > 1;
+    }
+
+    private static List<String> getDates(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isPublicationDate)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
+    }
+
+    private static List<String> getIssues(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isIssue)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
+    }
+
     private static Optional<ErrorDetails> getNonContributorsError(DublinCore dublinCore) {
         if (hasContributors(dublinCore)) {
             return Optional.empty();
@@ -99,71 +145,6 @@ public final class DublinCoreValidator {
 
     private static boolean hasContributors(DublinCore dublinCore) {
         return !EntityDescriptionExtractor.extractContributors(dublinCore).isEmpty();
-    }
-
-    @SuppressWarnings("PMD.PrematureDeclaration")
-    private static Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore, BrageLocation brageLocation) {
-        if (typeIsPresentInDublinCore(dublinCore)) {
-            if (isJournalArticle(dublinCore)) {
-                return getErrorDetailsForJournalArticle(dublinCore, brageLocation);
-            }
-            if (hasPublisher(dublinCore) && isReport(dublinCore) || isBook(dublinCore)) {
-                return getErrorDetailsForReport(dublinCore, brageLocation);
-            }
-        }
-        return Optional.empty();
-    }
-
-    @SuppressWarnings("PMD.PrematureDeclaration")
-    private static Optional<ErrorDetails> getErrorDetailsForJournalArticle(DublinCore dublinCore,
-                                                                           BrageLocation brageLocation) {
-        var publication = DublinCoreScraper.extractPublication(dublinCore);
-        var possibleIdentifier = channelRegister.lookUpInJournal(publication, brageLocation);
-        if (nonNull(possibleIdentifier)) {
-            return Optional.empty();
-        } else {
-            return getChannelRegisterErrorDetailsWhenSearchingForJournals(publication.getIssnList(),
-                                                                          publication.getJournal());
-        }
-    }
-
-    @SuppressWarnings("PMD.PrematureDeclaration")
-    private static Optional<ErrorDetails> getErrorDetailsForReport(DublinCore dublinCore, BrageLocation brageLocation) {
-        var publisher = DublinCoreScraper.extractPublisher(dublinCore);
-        var publication = DublinCoreScraper.extractPublication(dublinCore);
-        var journalIdentifier = channelRegister.lookUpInJournal(publication, brageLocation);
-        var publisherIdentifier = channelRegister.lookUpInPublisher(publisher);
-        if (nonNull(journalIdentifier)
-            || nonNull(publisherIdentifier)) {
-            return Optional.empty();
-        } else {
-            return getChannelRegisterErrorDetailsWhenSearchingForPublisher(publisher);
-        }
-    }
-
-    @NotNull
-    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForJournals(List<String> issnList,
-                                                                                                 String title) {
-        List<String> valuesToLog = new ArrayList<>();
-        valuesToLog.add(title);
-        valuesToLog.addAll(issnList);
-        if (!filterOutNullValues(valuesToLog).isEmpty()) {
-            return Optional.of(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(valuesToLog)));
-        } else {
-            return Optional.of(
-                new ErrorDetails(MISSING_ISSN_AND_JOURNAL, Collections.singletonList(NO_ISSN_OR_JOURNAL_FOUND)));
-        }
-    }
-
-    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String publisher) {
-        if (!filterOutNullValues(Collections.singletonList(publisher)).isEmpty()) {
-            return Optional.of(
-                new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER,
-                                 filterOutNullValues(Collections.singletonList(publisher))));
-        } else {
-            return Optional.of(new ErrorDetails(MISSING_PUBLISHER,
-                                                Collections.singletonList(NO_PUBLISHER_FOUND)));
-        }
     }
 
     private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore) {
@@ -330,28 +311,6 @@ public final class DublinCoreValidator {
             return Optional.empty();
         }
         return Optional.of(new ErrorDetails(INVALID_TYPE, types));
-    }
-
-    private static boolean isJournalArticle(DublinCore dublinCore) {
-        return DublinCoreScraper.extractType(dublinCore).contains(BrageType.JOURNAL_ARTICLE.getValue());
-    }
-
-    private static boolean isReport(DublinCore dublinCore) {
-        return DublinCoreScraper.extractType(dublinCore).contains(BrageType.REPORT.getValue());
-    }
-
-    private static boolean hasPublisher(DublinCore dublinCore) {
-        var publisher = DublinCoreScraper.extractPublisher(dublinCore);
-        return nonNull(publisher);
-    }
-
-    private static boolean isBook(DublinCore dublinCore) {
-        return DublinCoreScraper.extractType(dublinCore).contains(BrageType.BOOK.getValue());
-    }
-
-    private static boolean typeIsPresentInDublinCore(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .anyMatch(DcValue::isType);
     }
 
     private static boolean hasIssn(DublinCore dublinCore) {

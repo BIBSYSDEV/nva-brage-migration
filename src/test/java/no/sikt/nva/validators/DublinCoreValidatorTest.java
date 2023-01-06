@@ -13,10 +13,11 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSIN
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
@@ -24,6 +25,7 @@ import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
+import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
@@ -39,8 +41,7 @@ public class DublinCoreValidatorTest {
     void validIssnAndIsbnDoesNotAppendProblemsToProblemList() {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
             TEST_RESOURCE_PATH + VALID_DUBLIN_CORE_XML_FILE_NAME));
-        var brageLocation = new BrageLocation(null);
-        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualProblemsList, not(contains(new ErrorDetails(INVALID_ISSN, List.of()),
                                                     new ErrorDetails(INVALID_ISBN, List.of()))));
@@ -50,8 +51,7 @@ public class DublinCoreValidatorTest {
     void shouldNotAppendEmptyIsbnXmlTagsInDublinCoreToProblemList() {
         var emtpyIsbnTag = new DcValue(Element.IDENTIFIER, Qualifier.ISBN, null);
         var dublinCore = new DublinCore(List.of(emtpyIsbnTag));
-        var brageLocation = new BrageLocation(null);
-        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualProblemsList, not(contains(new ErrorDetails(INVALID_ISBN, List.of()))));
     }
@@ -62,8 +62,7 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "invalid_issn"),
                                new DcValue(Element.IDENTIFIER, Qualifier.ISBN, "invalid_isbn"));
         var dublinCore = new DublinCore(dcValues);
-        var brageLocation = new BrageLocation(null);
-        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualProblemsList,
                    hasItems(new ErrorDetails(INVALID_ISSN, List.of()), new ErrorDetails(INVALID_ISBN, List.of())));
@@ -83,8 +82,7 @@ public class DublinCoreValidatorTest {
     void shouldReturnErrorDetailsWithDoiErrorIfDoiIsInvalid() {
         var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.DOI, randomString()));
         var dublinCore = new DublinCore(dcValues);
-        var brageLocation = new BrageLocation(Path.of("some", "ignored"));
-        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualErrorList, hasItems(new ErrorDetails(INVALID_DOI_OFFLINE_CHECK, List.of())));
     }
@@ -94,8 +92,7 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10"
                                                                               + ".5194/tc-8-1885-2014"));
         var dublinCore = new DublinCore(dcValues);
-        var brageLocation = new BrageLocation(Path.of("some", "ignored"));
-        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualErrorList, not(hasItems(new ErrorDetails(INVALID_DOI_OFFLINE_CHECK, List.of()))));
     }
@@ -104,8 +101,7 @@ public class DublinCoreValidatorTest {
     void shouldReturnErrorWhenInvalidDate() {
         var dcValues = List.of(new DcValue(Element.DATE, Qualifier.ISSUED, "someDate"));
         var dublinCore = new DublinCore(dcValues);
-        var brageLocation = new BrageLocation(null);
-        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualErrorList, hasItems(new ErrorDetails(INVALID_DATE_ERROR, List.of())));
     }
@@ -115,8 +111,7 @@ public class DublinCoreValidatorTest {
     void shouldNotReturnDateErrorWhenDateIsValid(String date) {
         var dcValues = List.of(new DcValue(Element.DATE, Qualifier.ISSUED, date));
         var dublinCore = new DublinCore(dcValues);
-        var brageLocation = new BrageLocation(null);
-        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualErrorList, not(hasItems(new ErrorDetails(INVALID_DATE_ERROR, List.of()))));
     }
@@ -125,8 +120,7 @@ public class DublinCoreValidatorTest {
     void shouldReturnErrorDateNotPresent() {
         var dcValues = List.of(new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "some advisor"));
         var dublinCore = new DublinCore(dcValues);
-        var brageLocation = new BrageLocation(null);
-        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualErrorList, hasItems(new ErrorDetails(DATE_NOT_PRESENT_ERROR, List.of())));
     }
@@ -187,8 +181,7 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.IDENTIFIER, Qualifier.DOI, inputDoi),
             new DcValue(Element.TYPE, null, "Book"));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var brageLocation = new BrageLocation(null);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(INVALID_DOI_ONLINE_CHECK, List.of()))));
     }
@@ -198,11 +191,13 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(
             new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-0678"),
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var brageLocation = new BrageLocation(null);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualError =
+            ChannelRegister.getChannelRegisterErrors(DublinCoreFactory.createDublinCoreWithDcValues(dcValues),
+                                                     brageLocation);
 
-        assertThat(actualErrors, hasItems(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of())));
+        assertThat(actualError.get(),
+                   is(equalTo(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, List.of("1501-0678")))));
     }
 
     @Test
@@ -211,8 +206,7 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "2038-324X"),
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var brageLocation = new BrageLocation(null);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(MISSING_ISSN_AND_JOURNAL, List.of()))));
     }
@@ -223,8 +217,7 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Fisheries management and ecology"),
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var brageLocation = new BrageLocation(null);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, brageLocation);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(MISSING_ISSN_AND_JOURNAL, List.of()))));
     }

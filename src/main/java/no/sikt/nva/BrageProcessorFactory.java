@@ -19,12 +19,13 @@ public class BrageProcessorFactory {
     }
 
     public BrageProcessor createBrageProcessor(String zipfile, String customer, boolean enableOnlineValidation,
+                                               boolean shouldLookUpInChannelRegister,
                                                boolean noHandleCheck, String outputDirectory) {
         var destinationDirectory = outputDirectory + zipfile.replace(ZIP_EXTENSION, StringUtils.EMPTY_STRING);
         if (StringUtils.isEmpty(destinationDirectory)) {
             throw new RuntimeException(INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE);
         }
         return new BrageProcessor(zipfile, customer, destinationDirectory, rescueTitleAndHandleMap,
-                                  enableOnlineValidation, noHandleCheck, embargoes);
+                                  enableOnlineValidation, shouldLookUpInChannelRegister, noHandleCheck, embargoes);
     }
 }
