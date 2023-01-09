@@ -3,7 +3,7 @@ plugins {
     id 'checkstyle'
     id 'pmd'
     id 'jacoco'
-    id 'nebula.lint' version '17.7.0'
+    id 'nebula.lint' version '17.8.0'
 }
 
 group 'no.sikt.nva.brage.migration.lambda'
