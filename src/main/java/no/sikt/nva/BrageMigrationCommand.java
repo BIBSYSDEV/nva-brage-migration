@@ -87,7 +87,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                                    + "to S3")
     private boolean shouldWriteToAws;
 
-    @Option(names = {"-r", "--should-look-up-in-channel-register"}, description = "If this flag is set, will not look "
+    @Option(names = {"-r", "--should-look-up-in-channel-register"}, description = "If this flag is set, will look "
                                                                                   + "up in channel register")
     private boolean shouldLookUpInChannelRegister;
 
