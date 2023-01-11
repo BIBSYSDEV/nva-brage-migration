@@ -350,6 +350,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public enum AwsEnvironment {
         EXPERIMENTAL("experimental"),
         SANDBOX("sandbox"),
+        TEST("test"),
         DEVELOP("develop");
 
         private final String value;
