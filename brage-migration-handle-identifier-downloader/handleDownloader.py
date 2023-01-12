@@ -7,7 +7,7 @@ text_file = open("handles.csv", "w")
 time = sys.argv[-1]
 
 
-def list_all_files():
+def write_to_file():
   for object in bucket.objects.filter(Prefix="HANDLE_REPORTS/" + time):
     handle = "/".join(
       object.get()["Body"].read().decode("utf-8").split("/")[-2:])
@@ -16,5 +16,5 @@ def list_all_files():
 
 
 if __name__ == '__main__':
-  list_all_files()
+  write_to_file()
 
