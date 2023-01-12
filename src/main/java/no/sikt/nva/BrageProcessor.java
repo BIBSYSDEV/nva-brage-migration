@@ -28,6 +28,8 @@ import no.sikt.nva.scrapers.ResourceOwnerMapper;
 import no.sikt.nva.validators.BrageProcessorValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +77,18 @@ public class BrageProcessor implements Runnable {
         return Path.of(bundlePath, CONTENT_FILE_DEFAULT_NAME);
     }
 
+    public static boolean hasEmbargoEndDateWhichIsNotExpired(DublinCore dublinCore) {
+        if (getEmbargoEndDate(dublinCore).isPresent()) {
+            var today = LocalDate.now();
+            try {
+                return new LocalDate(getEmbargoEndDate(dublinCore)).isAfter(today);
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     public String getDestinationDirectory() {
         return destinationDirectory;
     }
@@ -118,6 +132,15 @@ public class BrageProcessor implements Runnable {
                    .anyMatch(DcValue::isEmbargo);
     }
 
+    @NotNull
+    private static Optional<Boolean> getEmbargoEndDate(DublinCore dublinCore) {
+        var embargoEndDate = dublinCore.getDcValues()
+                                 .stream()
+                                 .map(DcValue::isEmbargoEndDate)
+                                 .findFirst();
+        return embargoEndDate;
+    }
+
     private static String getEmbargoDate(DublinCore dublinCore) {
         return String.valueOf(dublinCore.getDcValues()
                                   .stream()
@@ -146,7 +169,7 @@ public class BrageProcessor implements Runnable {
         var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
         try {
             var dublinCore = DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
-            if (hasEmbargo(dublinCore)) {
+            if (hasEmbargo(dublinCore) || hasEmbargoEndDateWhichIsNotExpired(dublinCore)) {
                 logEmbargoMessage(brageLocation, dublinCore);
                 return Optional.empty();
             }

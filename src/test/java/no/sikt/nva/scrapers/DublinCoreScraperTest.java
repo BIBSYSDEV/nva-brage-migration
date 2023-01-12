@@ -7,6 +7,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALI
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_LANGUAGES_PRESENT;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_VERSIONS;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
@@ -28,6 +29,7 @@ import static org.hamcrest.Matchers.nullValue;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
+import no.sikt.nva.BrageProcessor;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
@@ -76,6 +78,43 @@ public class DublinCoreScraperTest {
                                                                   new BrageLocation(null));
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
+    }
+
+    @Test
+    void shouldConvertMultipleIdenticalValidVersionsToPublisherAuthority() {
+        var expectedPublisherAuthority = true;
+        var firstVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
+        var secondVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(firstVersionDcValue, secondVersionDcValue, typeDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore,
+                                                                  new BrageLocation(null));
+        var actualPublisherAuthority = record.getPublisherAuthority().getNva();
+        assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
+        assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_VERSIONS))));
+    }
+
+    @Test
+    void shouldConvertDifferentValidVersionsToPublisherAuthority() {
+        var expectedPublisherAuthority = true;
+        var firstVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
+        var secondVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "submittedVersion");
+        var thirdVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "acceptedVersion");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(firstVersionDcValue, secondVersionDcValue, thirdVersionDcValue, typeDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore,
+                                                                  new BrageLocation(null));
+        var actualPublisherAuthority = record.getPublisherAuthority().getNva();
+        assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
+        assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_VERSIONS))));
     }
 
     @Test
@@ -211,6 +250,21 @@ public class DublinCoreScraperTest {
         var typeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(typeDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), not(containsString(MULTIPLE_UNMAPPABLE_TYPES.toString())));
+        assertThat(record.getType(), is(notNullValue()));
+    }
+
+    @Test
+    void shouldNotLogMultipleSameTypeValues() {
+        var firstTypeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var secondTypeDcValue = new DcValue(Element.TYPE, null, "Journal Article");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(firstTypeDcValue, secondTypeDcValue));
         var onlineValidationDisabled = false;
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister);
         var appender = LogUtils.getTestingAppenderForRootLogger();
