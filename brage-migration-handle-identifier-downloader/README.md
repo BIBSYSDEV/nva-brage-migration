@@ -13,6 +13,8 @@ some/handle,identifier
 To run the script you have to run handleDownloader.py and send in subpath from s3 bucket as parameter 
 which will be used to get all the files from this s3 location. 
 
+Script runs properly with Python 3.10.6
+
 Example script:
 ```shell
 python.3 handleDownloader.py 2022-12-12:07/
