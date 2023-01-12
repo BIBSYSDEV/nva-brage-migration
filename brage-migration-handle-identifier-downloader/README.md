@@ -17,7 +17,7 @@ Script runs properly with Python 3.10.6
 
 Example script:
 ```shell
-python.3 handleDownloader.py 2022-12-12:07/
+python3 handleDownloader.py 2022-12-12:07/
 ```
 
 
