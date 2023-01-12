@@ -56,7 +56,7 @@ public final class DublinCoreValidator {
         getNonContributorsError(dublinCore).ifPresent(errors::add);
         BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
         getMultipleUnmappableTypeError(dublinCore).ifPresent(errors::add);
-        getDuplicates(dublinCore).ifPresent(errors::addAll);
+        getMultipleValues(dublinCore).ifPresent(errors::addAll);
         return errors;
     }
 
@@ -84,16 +84,16 @@ public final class DublinCoreValidator {
         return values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
     }
 
-    private static Optional<List<ErrorDetails>> getDuplicates(DublinCore dublinCore) {
+    private static Optional<List<ErrorDetails>> getMultipleValues(DublinCore dublinCore) {
         var duplicates = new ArrayList<ErrorDetails>();
-        checkForIssuesDuplicates(dublinCore, duplicates);
-        checkForPublicationDateDuplicates(dublinCore, duplicates);
-        checkForCristinDuplicates(dublinCore, duplicates);
-        checkForMainTitleDuplicates(dublinCore, duplicates);
+        checkIssuesForMultipleValues(dublinCore, duplicates);
+        checkPublicationDateForMultipleValues(dublinCore, duplicates);
+        checkCristinIdentifierForMultipleValues(dublinCore, duplicates);
+        checkMainTitleForMultipleValues(dublinCore, duplicates);
         return !duplicates.isEmpty() ? Optional.of(duplicates) : Optional.empty();
     }
 
-    private static void checkForMainTitleDuplicates(DublinCore dublinCore, List<ErrorDetails> duplicates) {
+    private static void checkMainTitleForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var titles = getTitles(dublinCore);
         if (hasManyValues(titles)) {
             duplicates.add(new ErrorDetails(Error.DUPLICATE_VALUE, titles));
@@ -108,21 +108,21 @@ public final class DublinCoreValidator {
                    .collect(Collectors.toList());
     }
 
-    private static void checkForPublicationDateDuplicates(DublinCore dublinCore, List<ErrorDetails> duplicates) {
+    private static void checkPublicationDateForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var dates = getDates(dublinCore);
         if (hasManyValues(dates)) {
             duplicates.add(new ErrorDetails(Error.DUPLICATE_VALUE, dates));
         }
     }
 
-    private static void checkForIssuesDuplicates(DublinCore dublinCore, List<ErrorDetails> duplicates) {
+    private static void checkIssuesForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var issues = getIssues(dublinCore);
         if (hasManyValues(issues)) {
             duplicates.add(new ErrorDetails(Error.DUPLICATE_VALUE, issues));
         }
     }
 
-    private static void checkForCristinDuplicates(DublinCore dublinCore, List<ErrorDetails> duplicates) {
+    private static void checkCristinIdentifierForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var cristinIds = getCristinIds(dublinCore);
         if (hasManyValues(cristinIds)) {
             duplicates.add(new ErrorDetails(Error.DUPLICATE_VALUE, cristinIds));
