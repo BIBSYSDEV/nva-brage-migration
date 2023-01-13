@@ -8,10 +8,10 @@ time = sys.argv[-1]
 
 
 def write_to_file():
-  for object in bucket.objects.filter(Prefix="HANDLE_REPORTS/" + time):
+  for bucket_object in bucket.objects.filter(Prefix="HANDLE_REPORTS/" + time):
     handle = "/".join(
-      object.get()["Body"].read().decode("utf-8").split("/")[-2:])
-    identifier = object.key.split("/")[-1]
+      bucket_object.get()["Body"].read().decode("utf-8").split("/")[-2:])
+    identifier = bucket_object.key.split("/")[-1]
     text_file.write(handle + "," + identifier + "\n")
 
 
