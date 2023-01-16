@@ -2,6 +2,7 @@ package no.sikt.nva;
 
 import java.util.List;
 import java.util.Map;
+import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.model.Embargo;
 import nva.commons.core.StringUtils;
 
@@ -12,10 +13,14 @@ public class BrageProcessorFactory {
 
     private final Map<String, String> rescueTitleAndHandleMap;
     private final List<Embargo> embargoes;
+    private final List<Contributor> contributors;
 
-    public BrageProcessorFactory(Map<String, String> rescueTitleAndHandleMap, List<Embargo> embargoes) {
+    public BrageProcessorFactory(Map<String, String> rescueTitleAndHandleMap,
+                                 List<Embargo> embargoes,
+                                 List<Contributor> contributors) {
         this.rescueTitleAndHandleMap = rescueTitleAndHandleMap;
         this.embargoes = embargoes;
+        this.contributors = contributors;
     }
 
     public BrageProcessor createBrageProcessor(String zipfile, String customer, boolean enableOnlineValidation,
@@ -26,6 +31,7 @@ public class BrageProcessorFactory {
             throw new RuntimeException(INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE);
         }
         return new BrageProcessor(zipfile, customer, destinationDirectory, rescueTitleAndHandleMap,
-                                  enableOnlineValidation, shouldLookUpInChannelRegister, noHandleCheck, embargoes);
+                                  enableOnlineValidation, shouldLookUpInChannelRegister, noHandleCheck, embargoes,
+                                  contributors);
     }
 }

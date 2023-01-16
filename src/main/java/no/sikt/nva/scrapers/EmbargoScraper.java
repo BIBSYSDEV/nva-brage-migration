@@ -1,4 +1,4 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.scrapers.ContentScraper.EMPTY_LINE_REGEX;
 import java.io.File;

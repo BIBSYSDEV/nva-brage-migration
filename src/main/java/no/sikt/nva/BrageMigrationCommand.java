@@ -16,10 +16,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.aws.S3Storage;
 import no.sikt.nva.brage.migration.aws.S3StorageImpl;
+import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.logutils.LogSetup;
 import no.sikt.nva.model.Embargo;
+import no.sikt.nva.scrapers.ContributorScraper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.EmbargoScraper;
 import no.sikt.nva.scrapers.HandleTitleMapReader;
 import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
@@ -52,6 +55,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String RECORDS_WITHOUT_ERRORS = "Records without errors: ";
     public static final String SLASH = "/";
     public static final String DUPLICATE_MESSAGE = "Record was removed from import because of duplicate: ";
+    public static final String DEFAULT_CONTRIBUTORS_FILE_NAME = "contributors.txt";
+    public static final String COULD_NOT_EXTRACT_CONTRIBUTORS = "Could not extract contributors";
     private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
@@ -147,8 +152,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 } else {
                     embargoes = getEmbargoes(Arrays.stream(zipFiles));
                 }
+                var contributors = getContributors(inputDirectory);
                 printIgnoredDcValuesFieldsInInfoLog();
-                var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes);
+                var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes, contributors);
                 var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
                 startProcessors(brageProcessorThreads);
                 waitForAllProcesses(brageProcessorThreads);
@@ -213,13 +219,16 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
-                                                         List<Embargo> embargoes) {
+                                                         List<Embargo> embargoes,
+                                                         List<Contributor> contributors) {
         return createBrageProcessorThread(zipFiles,
                                           customer,
                                           enableOnlineValidation,
                                           shouldLookUpInChannelRegister,
                                           noHandleCheck,
-                                          outputDirectory, embargoes);
+                                          outputDirectory,
+                                          embargoes,
+                                          contributors);
     }
 
     private List<Embargo> getEmbargoes(String directory) {
@@ -228,6 +237,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
             return EmbargoScraper.getEmbargoList(embargoFile);
         } catch (IOException e) {
             //TODO: do something with this exception
+            return List.of();
+        }
+    }
+
+    private List<Contributor> getContributors(String directory) {
+        try {
+            var contributorsFile = new File(directory + DEFAULT_CONTRIBUTORS_FILE_NAME);
+            return ContributorScraper.getContributors(contributorsFile);
+        } catch (Exception e) {
+            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+            logger.info(COULD_NOT_EXTRACT_CONTRIBUTORS + e);
             return List.of();
         }
     }
@@ -338,10 +358,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                             boolean enableOnlineValidation,
                                                             boolean shouldLookUpInChannelRegister,
                                                             boolean noHandleCheck,
-                                                            String outputDirectory, List<Embargo> embargoes) {
+                                                            String outputDirectory,
+                                                            List<Embargo> embargoes,
+                                                            List<Contributor> contributors) {
         var handleTitleMapReader = new HandleTitleMapReader();
         var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch(),
-                                                              embargoes);
+                                                              embargoes,
+                                                              contributors);
         return
             Arrays.stream(zipFiles)
                 .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,

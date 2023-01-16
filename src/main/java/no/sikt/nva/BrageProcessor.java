@@ -10,7 +10,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.record.Affiliation;
+import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Customer;
+import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.sikt.nva.exceptions.ContentException;
@@ -18,17 +21,18 @@ import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.Embargo;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.scrapers.AffiliationsScraper;
 import no.sikt.nva.scrapers.ContentScraper;
 import no.sikt.nva.scrapers.CustomerMapper;
 import no.sikt.nva.scrapers.DublinCoreFactory;
 import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.EmbargoScraper;
 import no.sikt.nva.scrapers.HandleScraper;
 import no.sikt.nva.scrapers.LicenseScraper;
 import no.sikt.nva.scrapers.ResourceOwnerMapper;
 import no.sikt.nva.validators.BrageProcessorValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +56,7 @@ public class BrageProcessor implements Runnable {
     private final boolean shouldLookUpInChannelRegister;
     private final boolean noHandleCheck;
     private final List<Embargo> embargoes;
+    private final List<Contributor> contributors;
     private List<Record> records;
 
     public BrageProcessor(String zipfile,
@@ -61,7 +66,8 @@ public class BrageProcessor implements Runnable {
                           boolean enableOnlineValidation,
                           boolean shouldLookUpInChannelRegister,
                           boolean noHandleCheck,
-                          List<Embargo> embargoes) {
+                          List<Embargo> embargoes,
+                          List<Contributor> contributors) {
         this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
@@ -70,6 +76,7 @@ public class BrageProcessor implements Runnable {
         this.handleScraper = new HandleScraper(rescueTitleAndHandleMap);
         this.noHandleCheck = noHandleCheck;
         this.embargoes = embargoes;
+        this.contributors = contributors;
     }
 
     public static Path getContentFilePath(File entryDirectory) {
@@ -132,13 +139,11 @@ public class BrageProcessor implements Runnable {
                    .anyMatch(DcValue::isEmbargo);
     }
 
-    @NotNull
     private static Optional<Boolean> getEmbargoEndDate(DublinCore dublinCore) {
-        var embargoEndDate = dublinCore.getDcValues()
-                                 .stream()
-                                 .map(DcValue::isEmbargoEndDate)
-                                 .findFirst();
-        return embargoEndDate;
+        return dublinCore.getDcValues()
+                   .stream()
+                   .map(DcValue::isEmbargoEndDate)
+                   .findFirst();
     }
 
     private static String getEmbargoDate(DublinCore dublinCore) {
@@ -154,6 +159,14 @@ public class BrageProcessor implements Runnable {
                      + getEmbargoDate(dublinCore)
                      + StringUtils.SPACE
                      + brageLocation.getOriginInformation());
+    }
+
+    private static boolean haveIdenticalNames(Contributor contributor, Contributor c) {
+        return c.getIdentity().getName().equals(contributor.getIdentity().getName());
+    }
+
+    private static boolean isSingleton(List<Contributor> contributorsToMerge) {
+        return contributorsToMerge.size() == 1;
     }
 
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
@@ -177,10 +190,12 @@ public class BrageProcessor implements Runnable {
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
             var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation, shouldLookUpInChannelRegister);
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-            record.setCustomer(generateCustomer());
+            record.setCustomer(new Customer(customer, CustomerMapper.getCustomerUri(customer)));
             record.setResourceOwner(ResourceOwnerMapper.getResourceOwner(customer));
             record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper, dublinCore));
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
+            injectAffiliationsToContributors(record);
+            injectCristinIdentifiers(record);
             var errors = BrageProcessorValidator.getBrageProcessorErrors(entryDirectory, dublinCore);
             record.getErrors().addAll(errors);
             EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(record, embargoes);
@@ -192,8 +207,39 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private Customer generateCustomer() {
-        return new Customer(customer, CustomerMapper.getCustomerUri(customer));
+    private void injectCristinIdentifiers(Record record) {
+        record.getEntityDescription()
+            .getContributors()
+            .forEach(this::updateContributor);
+    }
+
+    private void updateContributor(Contributor contributor) {
+        var contributorsToMerge = contributors.stream()
+                                      .filter(c -> haveIdenticalNames(contributor, c))
+                                      .collect(Collectors.toList());
+        if (isSingleton(contributorsToMerge)) {
+            var contributorWithCristinIdentifier = contributorsToMerge.get(0);
+            contributor.setIdentity(new Identity(contributorWithCristinIdentifier.getIdentity().getName(),
+                                                 contributorWithCristinIdentifier.getIdentity().getIdentifier()));
+            contributor.setAffiliations(contributorWithCristinIdentifier.getAffiliations());
+        }
+    }
+
+    private void injectAffiliationsToContributors(Record record) {
+        var affiliations = AffiliationsScraper.getAffiliations(new File("affiliations.txt"));
+        if (!affiliations.isEmpty()) {
+            var matchingAffiliations = affiliations.stream()
+                                           .filter(affiliation -> hasMatchingOrigins(affiliation, record))
+                                           .collect(Collectors.toList());
+            record.getEntityDescription()
+                .getContributors()
+                .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));
+        }
+    }
+
+    private boolean hasMatchingOrigins(Affiliation affiliation, Record record) {
+        var recordOriginCollection = record.getBrageLocation().split("/")[0];
+        return affiliation.getHandle().split("/")[0].equals(recordOriginCollection);
     }
 
     private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,
