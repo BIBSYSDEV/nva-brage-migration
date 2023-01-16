@@ -133,7 +133,7 @@ public class DublinCoreScraperTest {
     void shouldCreateContributor() {
 
         List<Contributor> expectedContributors = List.of(
-            new Contributor(new Identity("Some Person"), ADVISOR, Qualifier.ADVISOR.getValue()));
+            new Contributor(new Identity("Some Person"), ADVISOR, Qualifier.ADVISOR.getValue(), List.of()));
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Some Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));

@@ -20,6 +20,7 @@ import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.logutils.LogSetup;
 import no.sikt.nva.model.Embargo;
 import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.EmbargoScraper;
 import no.sikt.nva.scrapers.HandleTitleMapReader;
 import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;

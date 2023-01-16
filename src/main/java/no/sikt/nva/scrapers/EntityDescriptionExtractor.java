@@ -180,19 +180,19 @@ public final class EntityDescriptionExtractor {
         }
         String brageRole = dcValue.getQualifier().getValue();
         if (dcValue.isAuthor()) {
-            return Optional.of(new Contributor(identity, AUTHOR, brageRole));
+            return Optional.of(new Contributor(identity, AUTHOR, brageRole, List.of()));
         }
         if (dcValue.isAdvisor()) {
-            return Optional.of(new Contributor(identity, ADVISOR, brageRole));
+            return Optional.of(new Contributor(identity, ADVISOR, brageRole, List.of()));
         }
         if (dcValue.isEditor()) {
-            return Optional.of(new Contributor(identity, EDITOR, brageRole));
+            return Optional.of(new Contributor(identity, EDITOR, brageRole, List.of()));
         }
         if (dcValue.isIllustrator()) {
-            return Optional.of(new Contributor(identity, ILLUSTRATOR, brageRole));
+            return Optional.of(new Contributor(identity, ILLUSTRATOR, brageRole, List.of()));
         }
         if (dcValue.isOtherContributor()) {
-            return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole));
+            return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole, List.of()));
         }
         return Optional.empty();
     }

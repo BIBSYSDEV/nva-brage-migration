@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import no.sikt.nva.brage.migration.common.model.record.Customer;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
@@ -18,10 +19,12 @@ import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.Embargo;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.scrapers.AffiliationsScraper;
 import no.sikt.nva.scrapers.ContentScraper;
 import no.sikt.nva.scrapers.CustomerMapper;
 import no.sikt.nva.scrapers.DublinCoreFactory;
 import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.EmbargoScraper;
 import no.sikt.nva.scrapers.HandleScraper;
 import no.sikt.nva.scrapers.LicenseScraper;
 import no.sikt.nva.scrapers.ResourceOwnerMapper;
@@ -177,10 +180,11 @@ public class BrageProcessor implements Runnable {
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
             var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation, shouldLookUpInChannelRegister);
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-            record.setCustomer(generateCustomer());
+            record.setCustomer(new Customer(customer, CustomerMapper.getCustomerUri(customer)));
             record.setResourceOwner(ResourceOwnerMapper.getResourceOwner(customer));
             record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper, dublinCore));
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
+            injectAffiliationsToContributors(record);
             var errors = BrageProcessorValidator.getBrageProcessorErrors(entryDirectory, dublinCore);
             record.getErrors().addAll(errors);
             EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(record, embargoes);
@@ -192,8 +196,21 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private Customer generateCustomer() {
-        return new Customer(customer, CustomerMapper.getCustomerUri(customer));
+    private void injectAffiliationsToContributors(Record record) {
+        var affiliations = AffiliationsScraper.getAffiliations(new File("affiliations.txt"));
+        if (!affiliations.isEmpty()) {
+            var matchingAffiliations = affiliations.stream()
+                                           .filter(affiliation -> hasMatchingOrigins(affiliation, record))
+                                           .collect(Collectors.toList());
+            record.getEntityDescription()
+                .getContributors()
+                .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));
+        }
+    }
+
+    private boolean hasMatchingOrigins(Affiliation affiliation, Record record) {
+        var recordOriginCollection = record.getBrageLocation().split("/")[0];
+        return affiliation.getHandle().split("/")[0].equals(recordOriginCollection);
     }
 
     private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,
