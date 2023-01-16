@@ -34,12 +34,12 @@ public final class EntityDescriptionExtractor {
     }
 
     public static String extractMainTitle(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isMainTitle)
-                   .findAny()
-                   .orElse(new DcValue())
-                   .scrapeValueAndSetToScraped();
+        var titles = dublinCore.getDcValues()
+                         .stream()
+                         .filter(DcValue::isMainTitle)
+                         .map(DcValue::scrapeValueAndSetToScraped)
+                         .collect(Collectors.toList());
+        return titles.isEmpty() ? null : titles.get(0);
     }
 
     public static List<String> extractAlternativeTitles(DublinCore dublinCore) {
@@ -70,6 +70,14 @@ public final class EntityDescriptionExtractor {
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
                    .collect(Collectors.toList());
+    }
+
+    public static String extractIssue(DublinCore dublinCore) {
+        var issues = dublinCore.getDcValues().stream()
+                         .filter(DcValue::isIssue)
+                         .map(DcValue::scrapeValueAndSetToScraped)
+                         .collect(Collectors.toList());
+        return !issues.isEmpty() ? issues.get(0) : null;
     }
 
     private static String modifyIfDateIsOfLocalDateTimeFormat(String date) {
@@ -157,18 +165,12 @@ public final class EntityDescriptionExtractor {
         return publicationInstance;
     }
 
-    public static String extractIssue(DublinCore dublinCore) {
-        var issues = dublinCore.getDcValues().stream()
-                         .filter(DcValue::isIssue)
-                         .map(DcValue::scrapeValueAndSetToScraped)
-                         .collect(Collectors.toList());
-        return !issues.isEmpty() ? issues.get(0) : null;
-    }
-
     private static String extractVolume(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isVolume)
-                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+        var volumes = dublinCore.getDcValues().stream()
+                          .filter(DcValue::isVolume)
+                          .map(DcValue::scrapeValueAndSetToScraped)
+                          .collect(Collectors.toList());
+        return volumes.isEmpty() ? null : volumes.get(0);
     }
 
     private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {

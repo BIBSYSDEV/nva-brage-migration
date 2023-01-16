@@ -9,6 +9,7 @@ import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -36,7 +37,6 @@ import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,12 +114,12 @@ public final class DublinCoreScraper {
     }
 
     public static String extractJournal(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isJournal)
-                   .findAny()
-                   .orElse(new DcValue())
-                   .scrapeValueAndSetToScraped();
+        var journals = dublinCore.getDcValues()
+                           .stream()
+                           .filter(DcValue::isJournal)
+                           .map(DcValue::scrapeValueAndSetToScraped)
+                           .collect(Collectors.toList());
+        return journals.isEmpty() ? null : journals.get(0);
     }
 
     public static List<String> extractType(DublinCore dublinCore) {
@@ -418,13 +418,12 @@ public final class DublinCoreScraper {
                    .scrapeValueAndSetToScraped();
     }
 
-    private static String extractHasPart(DublinCore dublinCore) {
+    private static List<String> extractHasPart(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isHasPart)
-                   .findAny()
-                   .orElse(new DcValue())
-                   .scrapeValueAndSetToScraped();
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
     }
 
     private static String extractRightsholder(DublinCore dublinCore) {
@@ -475,14 +474,12 @@ public final class DublinCoreScraper {
     }
 
     private static PublisherAuthority mapToNvaVersion(List<String> versions, BrageLocation brageLocation) {
-        if (isSingleton(versions)) {
-            return mapSingleVersion(versions);
+        var uniqueVersions = new ArrayList<>(new HashSet<>(versions));
+        if (isSingleton(uniqueVersions)) {
+            return mapSingleVersion(uniqueVersions);
         }
-        if (containsMultipleValues(versions)) {
-            logger.error(new ErrorDetails(MULTIPLE_VERSIONS, versions)
-                         + StringUtils.SPACE
-                         + brageLocation.getOriginInformation());
-            return mapMultipleVersions(versions);
+        if (containsMultipleValues(uniqueVersions)) {
+            return mapMultipleVersions(versions, brageLocation);
         }
         return new PublisherAuthority(versions, null);
     }
@@ -495,20 +492,23 @@ public final class DublinCoreScraper {
         return versions.size() == 1;
     }
 
-    private static PublisherAuthority mapMultipleVersions(List<String> versions) {
-        if (versions.contains(List.of(PUBLISHED_VERSION_STRING, ACCEPTED_VERSION_STRING))) {
+    private static PublisherAuthority mapMultipleVersions(List<String> versions, BrageLocation brageLocation) {
+        if (versions.contains(PUBLISHED_VERSION_STRING)) {
             return new PublisherAuthority(Collections.singletonList(PUBLISHED_VERSION_STRING), true);
         }
-        if (versions.contains(List.of(PUBLISHED_VERSION_STRING, SUBMITTED_VERSION))) {
-            return new PublisherAuthority(Collections.singletonList(PUBLISHED_VERSION_STRING), true);
-        }
-        if (versions.contains(List.of(ACCEPTED_VERSION_STRING, SUBMITTED_VERSION))) {
+        if (versions.contains(ACCEPTED_VERSION_STRING)) {
             return new PublisherAuthority(Collections.singletonList(ACCEPTED_VERSION_STRING), false);
         }
-        return new PublisherAuthority(versions, null);
+        if (versions.contains(SUBMITTED_VERSION)) {
+            return new PublisherAuthority(Collections.singletonList(SUBMITTED_VERSION), false);
+        } else {
+            logger.error(new ErrorDetails(MULTIPLE_VERSIONS, versions)
+                         + StringUtils.SPACE
+                         + brageLocation.getOriginInformation());
+            return new PublisherAuthority(versions, null);
+        }
     }
 
-    @NotNull
     private static PublisherAuthority mapSingleVersion(List<String> versions) {
         var version = versions.get(0);
         if (PUBLISHED_VERSION_STRING.equals(version)) {
@@ -521,7 +521,8 @@ public final class DublinCoreScraper {
     }
 
     private static Type mapOriginTypeToNvaType(List<String> types) {
-        return new Type(types, TypeMapper.convertBrageTypeToNvaType(types));
+        var uniqueTypes = new ArrayList<>(new HashSet<>(types));
+        return new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
     }
 
     private static boolean isInCristin(DublinCore dublinCore) {

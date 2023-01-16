@@ -1,8 +1,8 @@
 package no.sikt.nva.brage.migration.common.model;
 
+import static java.util.Objects.nonNull;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.Objects;
 
 public class BrageLocation {
 
@@ -26,7 +26,9 @@ public class BrageLocation {
     }
 
     public Path getBrageBundlePath() {
-        return brageBundlePath;
+        return nonNull(brageBundlePath)
+                   ? Path.of(getCollectionDirectory(), getResourceDirectory())
+                   : null;
     }
 
     public URI getHandle() {
@@ -38,8 +40,18 @@ public class BrageLocation {
     }
 
     public String getOriginInformation() {
-        return Objects.nonNull(handle)
+        return nonNull(handle)
                    ? String.format(ORIGIN_INFORMATION_STRING_TEMPLATE, getBrageBundlePath(), getHandle())
                    : String.format(ORIGIN_INFORMATION, getBrageBundlePath(), getTitle());
+    }
+
+    private String getCollectionDirectory() {
+        var brageLocation = brageBundlePath.toString().split("/");
+        return brageLocation[brageLocation.length - 2];
+    }
+
+    private String getResourceDirectory() {
+        var brageLocation = brageBundlePath.toString().split("/");
+        return brageLocation[brageLocation.length - 1];
     }
 }

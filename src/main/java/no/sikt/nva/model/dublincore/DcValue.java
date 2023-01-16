@@ -292,6 +292,10 @@ public class DcValue {
         return Element.DESCRIPTION.equals(this.element) && Qualifier.EMBARGO.equals(this.qualifier);
     }
 
+    public boolean isEmbargoEndDate() {
+        return Element.DATE.equals(this.element) && Qualifier.EMBARGO_DATE.equals(this.qualifier);
+    }
+
     public String toXmlString() {
         StringWriter sw = new StringWriter();
         JAXB.marshal(this, sw);
