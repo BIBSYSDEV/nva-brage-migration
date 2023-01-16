@@ -8,16 +8,17 @@ import java.util.Objects;
 public class Identity {
 
     private final String name;
+    private final String identifier;
 
-    public Identity(@JsonProperty("name") String name) {
+    public Identity(@JsonProperty("name") String name,
+                    @JsonProperty("identifier") String identifier) {
         this.name = name;
+        this.identifier = identifier;
     }
-
 
     public String getName() {
         return name;
     }
-
 
     @Override
     public int hashCode() {

@@ -174,7 +174,7 @@ public final class EntityDescriptionExtractor {
     }
 
     private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
-        Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped());
+        Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped(), null);
         if (isNull(identity.getName()) || identity.getName().isEmpty()) {
             return Optional.empty();
         }
