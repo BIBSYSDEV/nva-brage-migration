@@ -67,6 +67,10 @@ public class Contributor {
         affiliations.add(affiliation);
     }
 
+    public boolean hasName(String name) {
+        return name.equals(this.getIdentity().getName());
+    }
+
     @JacocoGenerated
     @Override
     public int hashCode() {

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
@@ -15,7 +16,7 @@ public class ContributorScraper {
 
     public static final String COULD_NOT_EXTRACT_CONTRIBUTORS = "Could not extract contributors";
 
-    public static List<Contributor> getContributors(File file) {
+    public static Map<String, Contributor> getContributors(File file) {
         try {
             var string = Files.readString(file.toPath());
             return convertStringToContributors(string);
@@ -24,11 +25,12 @@ public class ContributorScraper {
         }
     }
 
-    private static List<Contributor> convertStringToContributors(String string) {
+    private static Map<String, Contributor> convertStringToContributors(String string) {
         List<String> list = Arrays.asList(string.split("\n"));
         return list.stream()
                    .map(ContributorScraper::toContributor)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toMap(contributor -> contributor.getIdentity().getName(),
+                                             contributor -> contributor));
     }
 
     private static Contributor toContributor(String string) {

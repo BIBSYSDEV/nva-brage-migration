@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
@@ -220,7 +221,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
                                                          List<Embargo> embargoes,
-                                                         List<Contributor> contributors) {
+                                                         Map<String, Contributor> contributors) {
         return createBrageProcessorThread(zipFiles,
                                           customer,
                                           enableOnlineValidation,
@@ -241,14 +242,14 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
     }
 
-    private List<Contributor> getContributors(String directory) {
+    private Map<String, Contributor> getContributors(String directory) {
         try {
             var contributorsFile = new File(directory + DEFAULT_CONTRIBUTORS_FILE_NAME);
             return ContributorScraper.getContributors(contributorsFile);
         } catch (Exception e) {
             var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             logger.info(COULD_NOT_EXTRACT_CONTRIBUTORS + e);
-            return List.of();
+            return Map.of();
         }
     }
 
@@ -360,7 +361,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                             boolean noHandleCheck,
                                                             String outputDirectory,
                                                             List<Embargo> embargoes,
-                                                            List<Contributor> contributors) {
+                                                            Map<String, Contributor> contributors) {
         var handleTitleMapReader = new HandleTitleMapReader();
         var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch(),
                                                               embargoes,

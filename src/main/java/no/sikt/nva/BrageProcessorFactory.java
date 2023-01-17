@@ -13,11 +13,11 @@ public class BrageProcessorFactory {
 
     private final Map<String, String> rescueTitleAndHandleMap;
     private final List<Embargo> embargoes;
-    private final List<Contributor> contributors;
+    private final Map<String, Contributor> contributors;
 
     public BrageProcessorFactory(Map<String, String> rescueTitleAndHandleMap,
                                  List<Embargo> embargoes,
-                                 List<Contributor> contributors) {
+                                 Map<String, Contributor> contributors) {
         this.rescueTitleAndHandleMap = rescueTitleAndHandleMap;
         this.embargoes = embargoes;
         this.contributors = contributors;

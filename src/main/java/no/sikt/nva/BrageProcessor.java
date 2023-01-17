@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static no.sikt.nva.scrapers.DublinCoreScraper.isSingleton;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -10,7 +11,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
-import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Customer;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
@@ -56,7 +56,7 @@ public class BrageProcessor implements Runnable {
     private final boolean shouldLookUpInChannelRegister;
     private final boolean noHandleCheck;
     private final List<Embargo> embargoes;
-    private final List<Contributor> contributors;
+    private final Map<String, Contributor> contributors;
     private List<Record> records;
 
     public BrageProcessor(String zipfile,
@@ -67,7 +67,7 @@ public class BrageProcessor implements Runnable {
                           boolean shouldLookUpInChannelRegister,
                           boolean noHandleCheck,
                           List<Embargo> embargoes,
-                          List<Contributor> contributors) {
+                          Map<String, Contributor> contributors) {
         this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
@@ -161,14 +161,6 @@ public class BrageProcessor implements Runnable {
                      + brageLocation.getOriginInformation());
     }
 
-    private static boolean haveIdenticalNames(Contributor contributor, Contributor c) {
-        return c.getIdentity().getName().equals(contributor.getIdentity().getName());
-    }
-
-    private static boolean isSingleton(List<Contributor> contributorsToMerge) {
-        return contributorsToMerge.size() == 1;
-    }
-
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories.stream()
@@ -214,11 +206,11 @@ public class BrageProcessor implements Runnable {
     }
 
     private void updateContributor(Contributor contributor) {
-        var contributorsToMerge = contributors.stream()
-                                      .filter(c -> haveIdenticalNames(contributor, c))
+        var contributorsToMerge = contributors.keySet().stream()
+                                      .filter(contributor::hasName)
                                       .collect(Collectors.toList());
         if (isSingleton(contributorsToMerge)) {
-            var contributorWithCristinIdentifier = contributorsToMerge.get(0);
+            var contributorWithCristinIdentifier = contributors.get(contributorsToMerge.get(0));
             contributor.setIdentity(new Identity(contributorWithCristinIdentifier.getIdentity().getName(),
                                                  contributorWithCristinIdentifier.getIdentity().getIdentifier()));
             contributor.setAffiliations(contributorWithCristinIdentifier.getAffiliations());
@@ -228,18 +220,16 @@ public class BrageProcessor implements Runnable {
     private void injectAffiliationsToContributors(Record record) {
         var affiliations = AffiliationsScraper.getAffiliations(new File("affiliations.txt"));
         if (!affiliations.isEmpty()) {
-            var matchingAffiliations = affiliations.stream()
-                                           .filter(affiliation -> hasMatchingOrigins(affiliation, record))
+            var matchingAffiliationKeys = affiliations.keySet().stream()
+                                              .filter(record::hasOrigin)
+                                              .collect(Collectors.toList());
+            var matchingAffiliations = matchingAffiliationKeys.stream()
+                                           .map(affiliations::get)
                                            .collect(Collectors.toList());
             record.getEntityDescription()
                 .getContributors()
                 .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));
         }
-    }
-
-    private boolean hasMatchingOrigins(Affiliation affiliation, Record record) {
-        var recordOriginCollection = record.getBrageLocation().split("/")[0];
-        return affiliation.getHandle().split("/")[0].equals(recordOriginCollection);
     }
 
     private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,
