@@ -95,19 +95,23 @@ public final class EntityDescriptionExtractor {
 
     private static PublicationDate extractPublicationDate(DublinCore dublinCore) {
         var date = extractDate(dublinCore);
-        if (isNull(date) || isEmptyString(date)) {
-            return new PublicationDate(null, new PublicationDateNva.Builder().build());
+        try {
+            if (isNull(date) || isEmptyString(date)) {
+                return new PublicationDate(null, new PublicationDateNva.Builder().build());
+            }
+            if (DublinCoreValidator.containsYearOnly(date)) {
+                return new PublicationDate(date, constructDateWithYearOnly(date));
+            }
+            if (DublinCoreValidator.containsTwoDigitYearOnly(date)) {
+                return new PublicationDate(date, constructPublicationDateForTwoDigitYear(date));
+            }
+            if (DublinCoreValidator.containsYearAndMonth(date)) {
+                return new PublicationDate(date, constructDateWithYearAndMonth(date));
+            }
+            return new PublicationDate(date, constructFullDate(date));
+        } catch (Exception e) {
+            return new PublicationDate(date, new PublicationDateNva.Builder().build());
         }
-        if (DublinCoreValidator.containsYearOnly(date)) {
-            return new PublicationDate(date, constructDateWithYearOnly(date));
-        }
-        if (DublinCoreValidator.containsTwoDigitYearOnly(date)) {
-            return new PublicationDate(date, constructPublicationDateForTwoDigitYear(date));
-        }
-        if (DublinCoreValidator.containsYearAndMonth(date)) {
-            return new PublicationDate(date, constructDateWithYearAndMonth(date));
-        }
-        return new PublicationDate(date, constructFullDate(date));
     }
 
     private static PublicationDateNva constructDateWithYearOnly(String date) {

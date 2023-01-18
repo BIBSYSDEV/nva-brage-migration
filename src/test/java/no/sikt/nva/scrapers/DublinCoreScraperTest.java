@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails.Error;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Pages;
@@ -474,6 +475,19 @@ public class DublinCoreScraperTest {
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(record.getEntityDescription().getPublicationDate().getNva().getYear(), is(equalTo("2022")));
+    }
+
+    @Test
+    void shouldNotThroughExceptionWhenInvalidDateButLogAsError() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var date = new DcValue(Element.DATE, Qualifier.ISSUED, "222");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, date));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(appender.getMessages(), containsString(Error.INVALID_DATE_ERROR.toString()));
     }
 
     @Test
