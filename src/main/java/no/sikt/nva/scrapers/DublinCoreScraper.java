@@ -488,7 +488,7 @@ public final class DublinCoreScraper {
         return versions.size() >= 2;
     }
 
-    private static boolean isSingleton(List<String> versions) {
+    public static boolean isSingleton(List<String> versions) {
         return versions.size() == 1;
     }
 

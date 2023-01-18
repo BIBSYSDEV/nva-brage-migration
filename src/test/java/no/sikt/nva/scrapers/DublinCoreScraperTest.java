@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.nullValue;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
-import no.sikt.nva.BrageProcessor;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
@@ -133,7 +132,7 @@ public class DublinCoreScraperTest {
     void shouldCreateContributor() {
 
         List<Contributor> expectedContributors = List.of(
-            new Contributor(new Identity("Some Person"), ADVISOR, Qualifier.ADVISOR.getValue(), List.of()));
+            new Contributor(new Identity("Some Person", null), ADVISOR, Qualifier.ADVISOR.getValue(), List.of()));
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Some Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
