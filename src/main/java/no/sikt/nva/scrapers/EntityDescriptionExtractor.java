@@ -42,14 +42,6 @@ public final class EntityDescriptionExtractor {
         return titles.isEmpty() ? null : titles.get(0);
     }
 
-    public static List<String> extractAlternativeTitles(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isAlternativeTitle)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
-    }
-
     public static EntityDescription extractEntityDescription(DublinCore dublinCore) {
         var entityDescription = new EntityDescription();
         entityDescription.setAbstracts(extractAbstracts(dublinCore));
@@ -62,6 +54,14 @@ public final class EntityDescriptionExtractor {
         entityDescription.setPublicationDate(extractPublicationDate(dublinCore));
         entityDescription.setLanguage(BrageNvaLanguageMapper.extractLanguage(dublinCore));
         return entityDescription;
+    }
+
+    public static List<String> extractAlternativeTitles(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isAlternativeTitle)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
     }
 
     public static List<Contributor> extractContributors(DublinCore dublinCore) {

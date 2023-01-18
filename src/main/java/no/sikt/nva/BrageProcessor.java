@@ -31,7 +31,6 @@ import no.sikt.nva.scrapers.ResourceOwnerMapper;
 import no.sikt.nva.validators.BrageProcessorValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +55,7 @@ public class BrageProcessor implements Runnable {
     private final boolean noHandleCheck;
     private final List<Embargo> embargoes;
     private List<Record> records;
+    private final static Counter counter = new Counter();
 
     public BrageProcessor(String zipfile,
                           String customer,
@@ -109,6 +109,9 @@ public class BrageProcessor implements Runnable {
     public List<Record> getRecords() {
         return records;
     }
+    public int getEmbargoCounter() {
+        return counter.getEmbargoCounter();
+    }
 
     private static boolean isBundle(File entryDirectory) {
         return entryDirectory.isDirectory();
@@ -135,13 +138,10 @@ public class BrageProcessor implements Runnable {
                    .anyMatch(DcValue::isEmbargo);
     }
 
-    @NotNull
     private static Optional<Boolean> getEmbargoEndDate(DublinCore dublinCore) {
-        var embargoEndDate = dublinCore.getDcValues()
-                                 .stream()
-                                 .map(DcValue::isEmbargoEndDate)
-                                 .findFirst();
-        return embargoEndDate;
+        return dublinCore.getDcValues().stream()
+                   .map(DcValue::isEmbargoEndDate)
+                   .findFirst();
     }
 
     private static String getEmbargoDate(DublinCore dublinCore) {
@@ -159,6 +159,10 @@ public class BrageProcessor implements Runnable {
                      + brageLocation.getOriginInformation());
     }
 
+    private static boolean containsEmbargo(DublinCore dublinCore) {
+        return hasEmbargo(dublinCore) || hasEmbargoEndDateWhichIsNotExpired(dublinCore);
+    }
+
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories.stream()
@@ -172,8 +176,9 @@ public class BrageProcessor implements Runnable {
         var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
         try {
             var dublinCore = DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
-            if (hasEmbargo(dublinCore) || hasEmbargoEndDateWhichIsNotExpired(dublinCore)) {
+            if (containsEmbargo(dublinCore)) {
                 logEmbargoMessage(brageLocation, dublinCore);
+                counter.countRecordWithEmbargo();
                 return Optional.empty();
             }
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));

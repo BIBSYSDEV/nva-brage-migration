@@ -53,6 +53,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String RECORDS_WITHOUT_ERRORS = "Records without errors: ";
     public static final String SLASH = "/";
     public static final String DUPLICATE_MESSAGE = "Record was removed from import because of duplicate: ";
+    public static final String EMBARGO_COUNTER_MESSAGE = "Records removed from import because of embargo: ";
+    public static final String RECORDS_WRITER_MESSAGE = "Records written to file: ";
     private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
@@ -158,9 +160,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                     pushToNva(brageProcessors);
                     storeLogsToNva();
                 }
-                var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
-                logger.info("Records written to file: " + RecordsWriter.getCounter());
-                logRecordCounter(brageProcessors);
+                log(brageProcessors);
             }
             return NORMAL_EXIT_CODE;
         } catch (Exception e) {
@@ -168,6 +168,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
         }
+    }
+
+    private static Integer getEmbargoCounter(List<BrageProcessor> brageProcessors) {
+        return brageProcessors.stream().map(BrageProcessor::getEmbargoCounter).reduce(0, Integer::sum);
     }
 
     private static String getLogOutputDirectory(String inputDirectory, String outputDirectory) {
@@ -192,6 +196,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
             throw new RuntimeException(e);
         }
         return zipfiles.toArray(new String[0]);
+    }
+
+    private void log(List<BrageProcessor> brageProcessors) {
+        var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+        logger.info(RECORDS_WRITER_MESSAGE + RecordsWriter.getCounter());
+        logger.info(EMBARGO_COUNTER_MESSAGE + getEmbargoCounter(brageProcessors));
+        logRecordCounter(brageProcessors);
     }
 
     @SuppressWarnings("PMD.UseVarargs")
