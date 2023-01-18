@@ -11,6 +11,7 @@ import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.exceptions.ContributorExtractorException;
+import nva.commons.core.StringUtils;
 
 public class ContributorScraper {
 
@@ -39,7 +40,12 @@ public class ContributorScraper {
     }
 
     private static List<Affiliation> getAffiliations(String... contributorValues) {
-        return List.of(new Affiliation(contributorValues[2], null, null));
+        return List.of(new Affiliation(extractAffiliationIdentifier(contributorValues), null, null));
+    }
+
+    private static String extractAffiliationIdentifier(String[] contributorValues) {
+        return contributorValues[2].replaceAll(StringUtils.SPACE, StringUtils.EMPTY_STRING)
+                   .replaceAll("\r", StringUtils.EMPTY_STRING);
     }
 
     private static Identity getIdentity(String... contributorValues) {
