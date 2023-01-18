@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
@@ -66,11 +67,12 @@ public final class EntityDescriptionExtractor {
         return entityDescription;
     }
 
-    public static List<Contributor> extractContributors(DublinCore dublinCore, List<Contributor> contributors) {
+    public static List<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
+                   .map(contributor -> updateContributor(contributor, contributors))
                    .collect(Collectors.toList());
     }
 
@@ -199,13 +201,7 @@ public final class EntityDescriptionExtractor {
         return Optional.empty();
     }
 
-    private void injectCristinIdentifiers(Record record, List<Contributor> contributor) {
-        record.getEntityDescription()
-            .getContributors()
-            .forEach(this::updateContributor);
-    }
-
-    private void updateContributor(Contributor contributor, List<Contributor>contributors) {
+    private static void updateContributor(Contributor contributor, Map<String, Contributor> contributors) {
         var contributorsToMerge = contributors.keySet().stream()
                                       .filter(contributor::hasName)
                                       .collect(Collectors.toList());
