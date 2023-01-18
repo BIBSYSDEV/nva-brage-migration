@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
+import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Journal;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
@@ -55,10 +56,13 @@ public final class DublinCoreScraper {
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
+    private static final List<Contributor> contributors;
 
-    public DublinCoreScraper(boolean enableOnlineValidation, boolean shouldLookUpInChannelRegister) {
+    public DublinCoreScraper(boolean enableOnlineValidation, boolean shouldLookUpInChannelRegister,
+                             List<Contributor> contributors) {
         this.enableOnlineValidation = enableOnlineValidation;
         this.shouldLookUpInChannelRegister = shouldLookUpInChannelRegister;
+        this.contributors = contributors;
     }
 
     public static List<String> extractIssn(DublinCore dublinCore) {
@@ -214,7 +218,7 @@ public final class DublinCoreScraper {
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore, brageLocation));
         record.setDoi(extractDoi(dublinCore));
-        record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore));
+        record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore, contributors));
         record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
         record.setPublication(createPublicationWithIdentifier(dublinCore, brageLocation, record));
         record.setPublishedDate(extractAvailableDate(dublinCore));

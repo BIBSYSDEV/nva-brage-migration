@@ -180,7 +180,9 @@ public class BrageProcessor implements Runnable {
             }
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
-            var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation, shouldLookUpInChannelRegister);
+            var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation,
+                                                          shouldLookUpInChannelRegister,
+                                                          contributors);
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setCustomer(new Customer(customer, CustomerMapper.getCustomerUri(customer)));
             record.setResourceOwner(ResourceOwnerMapper.getResourceOwner(customer));
@@ -199,38 +201,7 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private void injectCristinIdentifiers(Record record) {
-        record.getEntityDescription()
-            .getContributors()
-            .forEach(this::updateContributor);
-    }
 
-    private void updateContributor(Contributor contributor) {
-        var contributorsToMerge = contributors.keySet().stream()
-                                      .filter(contributor::hasName)
-                                      .collect(Collectors.toList());
-        if (isSingleton(contributorsToMerge)) {
-            var contributorWithCristinIdentifier = contributors.get(contributorsToMerge.get(0));
-            contributor.setIdentity(new Identity(contributorWithCristinIdentifier.getIdentity().getName(),
-                                                 contributorWithCristinIdentifier.getIdentity().getIdentifier()));
-            contributor.setAffiliations(contributorWithCristinIdentifier.getAffiliations());
-        }
-    }
-
-    private void injectAffiliationsToContributors(Record record) {
-        var affiliations = AffiliationsScraper.getAffiliations(new File("affiliations.txt"));
-        if (!affiliations.isEmpty()) {
-            var matchingAffiliationKeys = affiliations.keySet().stream()
-                                              .filter(record::hasOrigin)
-                                              .collect(Collectors.toList());
-            var matchingAffiliations = matchingAffiliationKeys.stream()
-                                           .map(affiliations::get)
-                                           .collect(Collectors.toList());
-            record.getEntityDescription()
-                .getContributors()
-                .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));
-        }
-    }
 
     private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,
                                        LicenseScraper licenseScraper, DublinCore dublinCore)

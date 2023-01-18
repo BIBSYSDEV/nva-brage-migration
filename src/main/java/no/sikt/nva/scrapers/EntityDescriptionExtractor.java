@@ -1,6 +1,8 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
+import static no.sikt.nva.scrapers.DublinCoreScraper.isSingleton;
+import java.io.File;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -14,6 +16,7 @@ import no.sikt.nva.brage.migration.common.model.record.PublicationDate;
 import no.sikt.nva.brage.migration.common.model.record.PublicationDateNva;
 import no.sikt.nva.brage.migration.common.model.record.PublicationDateNva.Builder;
 import no.sikt.nva.brage.migration.common.model.record.PublicationInstance;
+import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.validators.DublinCoreValidator;
@@ -30,7 +33,6 @@ public final class EntityDescriptionExtractor {
     public static final int LOCAL_DATE_MAX_LENGTH = 12;
 
     private EntityDescriptionExtractor() {
-
     }
 
     public static String extractMainTitle(DublinCore dublinCore) {
@@ -50,13 +52,13 @@ public final class EntityDescriptionExtractor {
                    .collect(Collectors.toList());
     }
 
-    public static EntityDescription extractEntityDescription(DublinCore dublinCore) {
+    public static EntityDescription extractEntityDescription(DublinCore dublinCore, List<Contributor> contributors) {
         var entityDescription = new EntityDescription();
         entityDescription.setAbstracts(extractAbstracts(dublinCore));
         entityDescription.setDescriptions(extractDescriptions(dublinCore));
         entityDescription.setMainTitle(extractMainTitle(dublinCore));
         entityDescription.setAlternativeTitles(extractAlternativeTitles(dublinCore));
-        entityDescription.setContributors(extractContributors(dublinCore));
+        entityDescription.setContributors(extractContributors(dublinCore, contributors));
         entityDescription.setTags(SubjectScraper.extractTags(dublinCore));
         entityDescription.setPublicationInstance(extractPublicationInstance(dublinCore));
         entityDescription.setPublicationDate(extractPublicationDate(dublinCore));
@@ -64,7 +66,7 @@ public final class EntityDescriptionExtractor {
         return entityDescription;
     }
 
-    public static List<Contributor> extractContributors(DublinCore dublinCore) {
+    public static List<Contributor> extractContributors(DublinCore dublinCore, List<Contributor> contributors) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
@@ -195,5 +197,38 @@ public final class EntityDescriptionExtractor {
             return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole, List.of()));
         }
         return Optional.empty();
+    }
+
+    private void injectCristinIdentifiers(Record record, List<Contributor> contributor) {
+        record.getEntityDescription()
+            .getContributors()
+            .forEach(this::updateContributor);
+    }
+
+    private void updateContributor(Contributor contributor, List<Contributor>contributors) {
+        var contributorsToMerge = contributors.keySet().stream()
+                                      .filter(contributor::hasName)
+                                      .collect(Collectors.toList());
+        if (isSingleton(contributorsToMerge)) {
+            var contributorWithCristinIdentifier = contributors.get(contributorsToMerge.get(0));
+            contributor.setIdentity(new Identity(contributorWithCristinIdentifier.getIdentity().getName(),
+                                                 contributorWithCristinIdentifier.getIdentity().getIdentifier()));
+            contributor.setAffiliations(contributorWithCristinIdentifier.getAffiliations());
+        }
+    }
+
+    private void injectAffiliationsToContributors(Record record) {
+        var affiliations = AffiliationsScraper.getAffiliations(new File("affiliations.txt"));
+        if (!affiliations.isEmpty()) {
+            var matchingAffiliationKeys = affiliations.keySet().stream()
+                                              .filter(record::hasOrigin)
+                                              .collect(Collectors.toList());
+            var matchingAffiliations = matchingAffiliationKeys.stream()
+                                           .map(affiliations::get)
+                                           .collect(Collectors.toList());
+            record.getEntityDescription()
+                .getContributors()
+                .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));
+        }
     }
 }

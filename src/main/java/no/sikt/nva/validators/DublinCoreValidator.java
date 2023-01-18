@@ -165,7 +165,7 @@ public final class DublinCoreValidator {
     }
 
     private static boolean hasContributors(DublinCore dublinCore) {
-        return !EntityDescriptionExtractor.extractContributors(dublinCore).isEmpty();
+        return !EntityDescriptionExtractor.extractContributors(dublinCore, contributors).isEmpty();
     }
 
     private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore) {
