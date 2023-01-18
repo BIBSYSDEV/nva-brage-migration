@@ -90,7 +90,6 @@ public final class DublinCoreScraper {
         dcValues.add(new DcValue(Element.FORMAT, Qualifier.MIME_TYPE, null));
         dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.NONE, null));
         dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.OTHER, null));
-        dcValues.add(new DcValue(Element.TYPE, Qualifier.VERSION, null));
         return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(NEW_LINE_DELIMITER));
     }
 
@@ -374,7 +373,6 @@ public final class DublinCoreScraper {
                || dcValue.isFormatExtent()
                || dcValue.isFormatMimeType()
                || dcValue.isIdentifierNone()
-               || dcValue.isTypeAndVersion()
                || dcValue.isOtherIdentifier();
     }
 
@@ -467,7 +465,7 @@ public final class DublinCoreScraper {
 
     private static PublisherAuthority extractVersion(DublinCore dublinCore, BrageLocation brageLocation) {
         var version = dublinCore.getDcValues().stream()
-                          .filter(DcValue::isVersion)
+                          .filter(DcValue::isOneOfTwoPossibleVersions)
                           .map(DcValue::scrapeValueAndSetToScraped)
                           .collect(Collectors.toList());
         return mapToNvaVersion(version, brageLocation);

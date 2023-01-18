@@ -117,6 +117,24 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldExtractVersionFromDescriptionVersionAndTypeVersionDcValues() {
+        var expectedPublisherAuthority = true;
+        var firstVersionDcValue = new DcValue(Element.TYPE, Qualifier.VERSION, "publishedVersion");
+        var secondVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "submittedVersion");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(firstVersionDcValue, secondVersionDcValue, typeDcValue));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore,
+                                                                  new BrageLocation(null));
+        var actualPublisherAuthority = record.getPublisherAuthority().getNva();
+        assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
+        assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_VERSIONS))));
+    }
+
+    @Test
     void shouldCreatePublisherAuthorityIfVersionIsNotPresent() {
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var dublinCoreWithoutVersion = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
@@ -443,6 +461,19 @@ public class DublinCoreScraperTest {
         dublinCoreScraper
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
         assertThat(appender.getMessages(), not(containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE)));
+    }
+
+    @Test
+    void shouldConvertTwoDigitYearToFourDigitYear() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var date = new DcValue(Element.DATE, Qualifier.ISSUED, "22");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, date));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister);
+        var record = dublinCoreScraper
+                         .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        assertThat(record.getEntityDescription().getPublicationDate().getNva().getYear(), is(equalTo("2022")));
     }
 
     @Test

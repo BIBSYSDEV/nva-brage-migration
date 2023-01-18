@@ -84,6 +84,10 @@ public final class DublinCoreValidator {
         return values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
     }
 
+    public static boolean containsTwoDigitYearOnly(String date) {
+        return date.matches("\\d{2}");
+    }
+
     private static Optional<List<ErrorDetails>> getMultipleValues(DublinCore dublinCore) {
         var duplicates = new ArrayList<ErrorDetails>();
         checkIssuesForMultipleValues(dublinCore, duplicates);

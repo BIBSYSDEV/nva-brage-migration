@@ -129,6 +129,10 @@ public class DcValue {
         return Element.DESCRIPTION.equals(this.element) && Qualifier.VERSION.equals(this.qualifier);
     }
 
+    public boolean isOneOfTwoPossibleVersions() {
+        return isVersion() || isTypeAndVersion();
+    }
+
     public boolean isRightsholder() {
         return Element.RIGHTS.equals(this.element) && Qualifier.HOLDER.equals(this.qualifier);
     }
