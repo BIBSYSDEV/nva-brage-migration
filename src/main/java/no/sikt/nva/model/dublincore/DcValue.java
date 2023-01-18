@@ -94,6 +94,9 @@ public class DcValue {
     public boolean isType() {
         return Element.TYPE.equals(this.element);
     }
+    public boolean isTypeAndVersion() {
+        return Element.TYPE.equals(this.element) && Qualifier.VERSION.equals(this.qualifier);
+    }
 
     public boolean isJournal() {
         return Element.SOURCE.equals(this.element) && Qualifier.JOURNAL.equals(this.qualifier);

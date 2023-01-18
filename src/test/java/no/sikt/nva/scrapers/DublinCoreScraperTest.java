@@ -29,7 +29,6 @@ import static org.hamcrest.Matchers.nullValue;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
-import no.sikt.nva.BrageProcessor;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
@@ -484,6 +483,19 @@ public class DublinCoreScraperTest {
         new DublinCoreScraper(false, shouldLookUpInChannelRegister)
             .validateAndParseDublinCore(dublinCoreWithDoi, new BrageLocation(null));
         assertThat(appender.getMessages(), containsString(INVALID_DOI_OFFLINE_CHECK.toString()));
+    }
+
+    @Test
+    void shouldNotLoggInvalidDoiWhenDoiIsFixedDuringScraping() {
+        var doi = "doi:10.1007/s12062-016-9157-z";
+        var dcType = new DcValue(Element.TYPE, null, "Book");
+        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doi);
+        var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = new DublinCoreScraper(false, shouldLookUpInChannelRegister)
+                         .validateAndParseDublinCore(dublinCoreWithDoi, new BrageLocation(null));
+        assertThat(record.getDoi().toString(), is(equalTo("https://doi.org/10.1007/s12062-016-9157-z")));
+        assertThat(appender.getMessages(), not(containsString(INVALID_DOI_OFFLINE_CHECK.toString())));
     }
 
     @Test

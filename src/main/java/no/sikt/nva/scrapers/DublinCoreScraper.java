@@ -37,7 +37,6 @@ import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,6 +90,7 @@ public final class DublinCoreScraper {
         dcValues.add(new DcValue(Element.FORMAT, Qualifier.MIME_TYPE, null));
         dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.NONE, null));
         dcValues.add(new DcValue(Element.IDENTIFIER, Qualifier.OTHER, null));
+        dcValues.add(new DcValue(Element.TYPE, Qualifier.VERSION, null));
         return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(NEW_LINE_DELIMITER));
     }
 
@@ -262,7 +262,6 @@ public final class DublinCoreScraper {
             new Series(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
     }
 
-    @Nullable
     private static String extractChannelRegisterIdentifierForSeriesJournal(BrageLocation brageLocation,
                                                                            Publication publication) {
         return publication.getIssnList().stream()
@@ -375,6 +374,7 @@ public final class DublinCoreScraper {
                || dcValue.isFormatExtent()
                || dcValue.isFormatMimeType()
                || dcValue.isIdentifierNone()
+               || dcValue.isTypeAndVersion()
                || dcValue.isOtherIdentifier();
     }
 
