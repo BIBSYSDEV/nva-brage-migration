@@ -114,7 +114,7 @@ public class DublinCoreValidatorTest {
 
     @Test
     void shouldReturnErrorDateNotPresent() {
-        var dcValues = List.of(new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "some advisor"));
+        var dcValues = List.of(new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "someLastName, someFirstName"));
         var dublinCore = new DublinCore(dcValues);
         var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 

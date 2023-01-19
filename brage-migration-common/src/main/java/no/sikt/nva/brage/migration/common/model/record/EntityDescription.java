@@ -3,6 +3,7 @@ package no.sikt.nva.brage.migration.common.model.record;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Objects;
+import nva.commons.core.JacocoGenerated;
 
 public class EntityDescription {
 
@@ -101,12 +102,15 @@ public class EntityDescription {
         this.alternativeTitles = alternativeTitles;
     }
 
+    @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(publicationDate, descriptions, abstracts, mainTitle, alternativeTitles, contributors, tags,
-                            publicationInstance);
+        return Objects.hash(getPublicationDate(), getDescriptions(), getAbstracts(), getMainTitle(),
+                            getAlternativeTitles(),
+                            getContributors(), getTags(), getPublicationInstance(), getLanguage());
     }
 
+    @JacocoGenerated
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -116,13 +120,14 @@ public class EntityDescription {
             return false;
         }
         EntityDescription that = (EntityDescription) o;
-        return Objects.equals(publicationDate, that.publicationDate)
-               && Objects.equals(descriptions, that.descriptions)
-               && Objects.equals(abstracts, that.abstracts)
-               && Objects.equals(mainTitle, that.mainTitle)
-               && Objects.equals(alternativeTitles, that.alternativeTitles)
-               && Objects.equals(contributors, that.contributors)
-               && Objects.equals(tags, that.tags)
-               && Objects.equals(publicationInstance, that.publicationInstance);
+        return Objects.equals(getPublicationDate(), that.getPublicationDate())
+               && Objects.equals(getDescriptions(), that.getDescriptions())
+               && Objects.equals(getAbstracts(), that.getAbstracts())
+               && Objects.equals(getMainTitle(), that.getMainTitle())
+               && Objects.equals(getAlternativeTitles(), that.getAlternativeTitles())
+               && Objects.equals(getContributors(), that.getContributors())
+               && Objects.equals(getTags(), that.getTags())
+               && Objects.equals(getPublicationInstance(), that.getPublicationInstance())
+               && Objects.equals(getLanguage(), that.getLanguage());
     }
 }

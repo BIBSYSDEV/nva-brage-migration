@@ -216,6 +216,11 @@ public class Record {
         return JsonUtils.dtoObjectMapper.writeValueAsString(this);
     }
 
+    public boolean hasOrigin(String handle) {
+        var recordOriginCollection = this.getBrageLocation().split("/")[0];
+        return handle.split("/")[0].equals(recordOriginCollection);
+    }
+
     @JacocoGenerated
     @Override
     public int hashCode() {

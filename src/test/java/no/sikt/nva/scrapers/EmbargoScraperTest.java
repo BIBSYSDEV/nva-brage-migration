@@ -1,4 +1,4 @@
-package no.sikt.nva;
+package no.sikt.nva.scrapers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
