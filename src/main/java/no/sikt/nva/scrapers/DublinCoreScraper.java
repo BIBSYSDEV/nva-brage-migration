@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -54,12 +55,13 @@ public final class DublinCoreScraper {
     public static final String DELIMITER = "-";
     public static final String REGEX_ISSN = "[^0-9-xX]";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
+    private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
-    private static final List<Contributor> contributors;
 
+    @SuppressWarnings("PMD.AssignmentToNonFinalStatic")
     public DublinCoreScraper(boolean enableOnlineValidation, boolean shouldLookUpInChannelRegister,
-                             List<Contributor> contributors) {
+                             Map<String, Contributor> contributors) {
         this.enableOnlineValidation = enableOnlineValidation;
         this.shouldLookUpInChannelRegister = shouldLookUpInChannelRegister;
         this.contributors = contributors;
@@ -149,6 +151,10 @@ public final class DublinCoreScraper {
         publication.setJournal(extractJournal(dublinCore));
         publication.setPartOfSeries(extractPartOfSeries(dublinCore));
         return publication;
+    }
+
+    public static boolean isSingleton(List<String> versions) {
+        return versions.size() == 1;
     }
 
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -490,10 +496,6 @@ public final class DublinCoreScraper {
 
     private static boolean containsMultipleValues(List<String> versions) {
         return versions.size() >= 2;
-    }
-
-    public static boolean isSingleton(List<String> versions) {
-        return versions.size() == 1;
     }
 
     private static PublisherAuthority mapMultipleVersions(List<String> versions, BrageLocation brageLocation) {

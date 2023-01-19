@@ -2,10 +2,10 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
 import static no.sikt.nva.scrapers.DublinCoreScraper.isSingleton;
-import java.io.File;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,10 +17,11 @@ import no.sikt.nva.brage.migration.common.model.record.PublicationDate;
 import no.sikt.nva.brage.migration.common.model.record.PublicationDateNva;
 import no.sikt.nva.brage.migration.common.model.record.PublicationDateNva.Builder;
 import no.sikt.nva.brage.migration.common.model.record.PublicationInstance;
-import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.validators.DublinCoreValidator;
+import nva.commons.core.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 public final class EntityDescriptionExtractor {
 
@@ -53,7 +54,8 @@ public final class EntityDescriptionExtractor {
                    .collect(Collectors.toList());
     }
 
-    public static EntityDescription extractEntityDescription(DublinCore dublinCore, List<Contributor> contributors) {
+    public static EntityDescription extractEntityDescription(DublinCore dublinCore,
+                                                             Map<String, Contributor> contributors) {
         var entityDescription = new EntityDescription();
         entityDescription.setAbstracts(extractAbstracts(dublinCore));
         entityDescription.setDescriptions(extractDescriptions(dublinCore));
@@ -73,6 +75,7 @@ public final class EntityDescriptionExtractor {
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
                    .map(contributor -> updateContributor(contributor, contributors))
+                   .map(EntityDescriptionExtractor::updateNameOrder)
                    .collect(Collectors.toList());
     }
 
@@ -82,6 +85,34 @@ public final class EntityDescriptionExtractor {
                          .map(DcValue::scrapeValueAndSetToScraped)
                          .collect(Collectors.toList());
         return !issues.isEmpty() ? issues.get(0) : null;
+    }
+
+    private static Contributor updateNameOrder(Contributor contributor) {
+        return fullNameIsSeparatedByComa(contributor)
+                   ? switchNames(contributor)
+                   : contributor;
+    }
+
+    private static Contributor switchNames(Contributor contributor) {
+        var fullNameValues = Arrays.asList(contributor.getIdentity().getName().split(","));
+        contributor.getIdentity().setName(getFirstName(fullNameValues)
+                                          + StringUtils.SPACE
+                                          + getLastName(fullNameValues));
+        return contributor;
+    }
+
+    private static boolean fullNameIsSeparatedByComa(Contributor contributor) {
+        return contributor.getIdentity().getName().contains(",");
+    }
+
+    @NotNull
+    private static String getLastName(List<String> fullNameValues) {
+        return fullNameValues.get(0).trim();
+    }
+
+    @NotNull
+    private static String getFirstName(List<String> fullNameValues) {
+        return fullNameValues.get(1).trim();
     }
 
     private static String modifyIfDateIsOfLocalDateTimeFormat(String date) {
@@ -201,7 +232,7 @@ public final class EntityDescriptionExtractor {
         return Optional.empty();
     }
 
-    private static void updateContributor(Contributor contributor, Map<String, Contributor> contributors) {
+    private static Contributor updateContributor(Contributor contributor, Map<String, Contributor> contributors) {
         var contributorsToMerge = contributors.keySet().stream()
                                       .filter(contributor::hasName)
                                       .collect(Collectors.toList());
@@ -210,21 +241,8 @@ public final class EntityDescriptionExtractor {
             contributor.setIdentity(new Identity(contributorWithCristinIdentifier.getIdentity().getName(),
                                                  contributorWithCristinIdentifier.getIdentity().getIdentifier()));
             contributor.setAffiliations(contributorWithCristinIdentifier.getAffiliations());
+            return contributor;
         }
-    }
-
-    private void injectAffiliationsToContributors(Record record) {
-        var affiliations = AffiliationsScraper.getAffiliations(new File("affiliations.txt"));
-        if (!affiliations.isEmpty()) {
-            var matchingAffiliationKeys = affiliations.keySet().stream()
-                                              .filter(record::hasOrigin)
-                                              .collect(Collectors.toList());
-            var matchingAffiliations = matchingAffiliationKeys.stream()
-                                           .map(affiliations::get)
-                                           .collect(Collectors.toList());
-            record.getEntityDescription()
-                .getContributors()
-                .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));
-        }
+        return contributor;
     }
 }

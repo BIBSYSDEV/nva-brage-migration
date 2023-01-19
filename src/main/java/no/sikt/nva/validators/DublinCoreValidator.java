@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -165,7 +166,7 @@ public final class DublinCoreValidator {
     }
 
     private static boolean hasContributors(DublinCore dublinCore) {
-        return !EntityDescriptionExtractor.extractContributors(dublinCore, contributors).isEmpty();
+        return !EntityDescriptionExtractor.extractContributors(dublinCore, Map.of()).isEmpty();
     }
 
     private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore) {

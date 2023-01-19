@@ -1,6 +1,5 @@
 package no.sikt.nva;
 
-import static no.sikt.nva.scrapers.DublinCoreScraper.isSingleton;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -13,7 +12,6 @@ import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Customer;
-import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.sikt.nva.exceptions.ContentException;
@@ -188,9 +186,8 @@ public class BrageProcessor implements Runnable {
             record.setResourceOwner(ResourceOwnerMapper.getResourceOwner(customer));
             record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper, dublinCore));
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
-            injectAffiliationsToContributors(record);
-            injectCristinIdentifiers(record);
             var errors = BrageProcessorValidator.getBrageProcessorErrors(entryDirectory, dublinCore);
+            injectAffiliationsFromExternalFile(record);
             record.getErrors().addAll(errors);
             EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(record, embargoes);
             logErrorsIfNotEmpty(brageLocation, errors);
@@ -201,7 +198,20 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-
+    private void injectAffiliationsFromExternalFile(Record record) {
+        var affiliations = AffiliationsScraper.getAffiliations(new File("affiliations.txt"));
+        if (!affiliations.isEmpty()) {
+            var matchingAffiliationKeys = affiliations.keySet().stream()
+                                              .filter(record::hasOrigin)
+                                              .collect(Collectors.toList());
+            var matchingAffiliations = matchingAffiliationKeys.stream()
+                                           .map(affiliations::get)
+                                           .collect(Collectors.toList());
+            record.getEntityDescription()
+                .getContributors()
+                .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));
+        }
+    }
 
     private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,
                                        LicenseScraper licenseScraper, DublinCore dublinCore)
