@@ -8,6 +8,7 @@ public enum BrageType {
     JOURNAL_ARTICLE("Journal article"),
     JOURNAL_ISSUE("Journal issue"),
     OTHERS("Others"),
+    OTHER("Other"),
     REPORT("Report"),
     RESEARCH_REPORT("Research report"),
     BACHELOR_THESIS("Bachelor thesis"),

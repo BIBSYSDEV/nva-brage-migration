@@ -6,7 +6,6 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_N
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DATE_ERROR;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISBN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.JOURNAL_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_ISSN_AND_JOURNAL;
@@ -44,7 +43,7 @@ public class DublinCoreValidatorTest {
         var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualProblemsList, not(contains(new ErrorDetails(INVALID_ISSN, List.of()),
-                                                    new ErrorDetails(INVALID_ISBN, List.of()))));
+                                                    new WarningDetails(Warning.INVALID_ISBN_WARNING, List.of()))));
     }
 
     @Test
@@ -52,8 +51,7 @@ public class DublinCoreValidatorTest {
         var emtpyIsbnTag = new DcValue(Element.IDENTIFIER, Qualifier.ISBN, null);
         var dublinCore = new DublinCore(List.of(emtpyIsbnTag));
         var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
-
-        assertThat(actualProblemsList, not(contains(new ErrorDetails(INVALID_ISBN, List.of()))));
+        assertThat(actualProblemsList, not(contains(new WarningDetails(Warning.INVALID_ISBN_WARNING, List.of()))));
     }
 
     @Test
@@ -63,9 +61,7 @@ public class DublinCoreValidatorTest {
                                new DcValue(Element.IDENTIFIER, Qualifier.ISBN, "invalid_isbn"));
         var dublinCore = new DublinCore(dcValues);
         var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore);
-
-        assertThat(actualProblemsList,
-                   hasItems(new ErrorDetails(INVALID_ISSN, List.of()), new ErrorDetails(INVALID_ISBN, List.of())));
+        assertThat(actualProblemsList, hasItems(new ErrorDetails(INVALID_ISSN, List.of())));
     }
 
     @Test

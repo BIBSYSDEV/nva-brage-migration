@@ -18,6 +18,7 @@ public class DoiValidator {
     public static final String HTTP_STRING = "http";
     public static final String HTTPS_STRING = "https://";
     public static final String DOI_DOMAIN_NAME = "doi.org/";
+    public static final String COLON = ":";
 
     public static Optional<ArrayList<ErrorDetails>> getDoiErrorDetailsOnline(DublinCore dublinCore) {
         var doiList = extractDoiList(dublinCore);
@@ -52,8 +53,23 @@ public class DoiValidator {
         }
         if (doi.contains(DOI_DOMAIN_NAME)) {
             return HTTPS_STRING + doi;
+        }
+        if (doi.contains(COLON)) {
+            return handleDoiWithColon(doi);
         } else {
             return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
+        }
+    }
+
+    private static String handleDoiWithColon(String doi) {
+        var doiPath = doi.split(COLON)[1];
+        if (doiPath.contains(HTTPS_STRING)) {
+            return doiPath;
+        }
+        if (doiPath.contains(DOI_DOMAIN_NAME)) {
+            return HTTPS_STRING + doiPath;
+        } else {
+            return HTTPS_STRING + DOI_DOMAIN_NAME + doiPath;
         }
     }
 

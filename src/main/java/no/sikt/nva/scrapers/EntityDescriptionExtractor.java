@@ -23,6 +23,7 @@ import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("PMD.GodClass")
 public final class EntityDescriptionExtractor {
 
     public static final String FIRST_DAY_OF_A_MONTH = "01";
@@ -129,32 +130,62 @@ public final class EntityDescriptionExtractor {
     }
 
     private static PublicationDate extractPublicationDate(DublinCore dublinCore) {
-        var date = dublinCore.getDcValues().stream()
-                       .filter(DcValue::isPublicationDate)
-                       .findAny()
-                       .map(DcValue::scrapeValueAndSetToScraped)
-                       .map(EntityDescriptionExtractor::modifyIfDateIsOfLocalDateTimeFormat)
-                       .orElse(null);
+        var date = extractDate(dublinCore);
+        try {
+            if (isNull(date) || isEmptyString(date)) {
+                return new PublicationDate(null, new PublicationDateNva.Builder().build());
+            }
+            if (DublinCoreValidator.containsYearOnly(date)) {
+                return new PublicationDate(date, constructDateWithYearOnly(date));
+            }
+            if (DublinCoreValidator.containsTwoDigitYearOnly(date)) {
+                return new PublicationDate(date, constructPublicationDateForTwoDigitYear(date));
+            }
+            if (DublinCoreValidator.containsYearAndMonth(date)) {
+                return new PublicationDate(date, constructDateWithYearAndMonth(date));
+            }
+            return new PublicationDate(date, constructFullDate(date));
+        } catch (Exception e) {
+            return new PublicationDate(date, new PublicationDateNva.Builder().build());
+        }
+    }
 
-        if (isNull(date) || isEmptyString(date)) {
-            return new PublicationDate(null, new PublicationDateNva.Builder().build());
+    private static PublicationDateNva constructDateWithYearOnly(String date) {
+        return new Builder().withYear(date).build();
+    }
+
+    private static String extractDate(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isPublicationDate)
+                   .findAny()
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(EntityDescriptionExtractor::modifyIfDateIsOfLocalDateTimeFormat)
+                   .orElse(null);
+    }
+
+    private static PublicationDateNva constructDateWithYearAndMonth(String date) {
+        return new Builder()
+                   .withYear(date.split(DATE_DELIMITER)[0])
+                   .withMonth(date.split(DATE_DELIMITER)[1])
+                   .withDay(FIRST_DAY_OF_A_MONTH).build();
+    }
+
+    private static PublicationDateNva constructFullDate(String date) {
+        return new Builder()
+                   .withYear(date.split(DATE_DELIMITER)[0])
+                   .withMonth(date.split(DATE_DELIMITER)[1])
+                   .withDay(date.split(DATE_DELIMITER)[2]).build();
+    }
+
+    private static PublicationDateNva constructPublicationDateForTwoDigitYear(String date) {
+        if (isYearFromLastCentury(date)) {
+            return constructDateWithYearOnly("19" + date);
         }
-        if (DublinCoreValidator.containsYearOnly(date)) {
-            var publicationDateNva = new Builder().withYear(date).build();
-            return new PublicationDate(date, publicationDateNva);
-        }
-        if (DublinCoreValidator.containsYearAndMonth(date)) {
-            var publicationDateNva = new Builder()
-                                         .withYear(date.split(DATE_DELIMITER)[0])
-                                         .withMonth(date.split(DATE_DELIMITER)[1])
-                                         .withDay(FIRST_DAY_OF_A_MONTH).build();
-            return new PublicationDate(date, publicationDateNva);
-        }
-        var publicationDateNva = new Builder()
-                                     .withYear(date.split(DATE_DELIMITER)[0])
-                                     .withMonth(date.split(DATE_DELIMITER)[1])
-                                     .withDay(date.split(DATE_DELIMITER)[2]).build();
-        return new PublicationDate(date, publicationDateNva);
+        return constructDateWithYearOnly("20" + date);
+    }
+
+    private static boolean isYearFromLastCentury(String date) {
+        return Integer.parseInt(date) > 24;
     }
 
     @SuppressWarnings("PMD.InefficientEmptyStringCheck")

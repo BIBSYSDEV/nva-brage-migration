@@ -55,7 +55,6 @@ public class ErrorDetails {
         INVALID_TYPE,
         MULTIPLE_UNMAPPABLE_TYPES,
         INVALID_ISSN,
-        INVALID_ISBN,
         INVALID_DATE_ERROR,
         DATE_NOT_PRESENT_ERROR,
         MISSING_ISSN_AND_JOURNAL,

@@ -39,7 +39,6 @@ import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DoiValidator;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -272,7 +271,6 @@ public final class DublinCoreScraper {
             new Series(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
     }
 
-    @Nullable
     private static String extractChannelRegisterIdentifierForSeriesJournal(BrageLocation brageLocation,
                                                                            Publication publication) {
         return publication.getIssnList().stream()
@@ -477,7 +475,7 @@ public final class DublinCoreScraper {
 
     private static PublisherAuthority extractVersion(DublinCore dublinCore, BrageLocation brageLocation) {
         var version = dublinCore.getDcValues().stream()
-                          .filter(DcValue::isVersion)
+                          .filter(DcValue::isOneOfTwoPossibleVersions)
                           .map(DcValue::scrapeValueAndSetToScraped)
                           .collect(Collectors.toList());
         return mapToNvaVersion(version, brageLocation);

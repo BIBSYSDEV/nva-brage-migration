@@ -2,9 +2,9 @@ package no.sikt.nva.validators;
 
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_NOT_PRESENT_ERROR;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DATE_ERROR;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISBN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.INVALID_ISBN_WARNING;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.LOCAL_DATE_MAX_LENGTH;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -52,7 +52,6 @@ public final class DublinCoreValidator {
         DoiValidator.getDoiErrorDetailsOffline(dublinCore).ifPresent(errors::addAll);
         getInvalidTypes(dublinCore).ifPresent(errors::add);
         getIssnErrors(dublinCore).ifPresent(errors::add);
-        getIsbnErrors(dublinCore).ifPresent(errors::add);
         getDateError(dublinCore).ifPresent(errors::add);
         getNonContributorsError(dublinCore).ifPresent(errors::add);
         BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
@@ -68,6 +67,7 @@ public final class DublinCoreValidator {
         getDescriptionsWarning(dublinCore).ifPresent(warnings::add);
         getVolumeWarning(dublinCore).ifPresent(warnings::add);
         getIssueWarning(dublinCore).ifPresent(warnings::add);
+        getIsbnWarnings(dublinCore).ifPresent(warnings::add);
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
@@ -83,6 +83,10 @@ public final class DublinCoreValidator {
 
     public static List<String> filterOutNullValues(List<String> values) {
         return values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
+    }
+
+    public static boolean containsTwoDigitYearOnly(String date) {
+        return date.matches("\\d{2}");
     }
 
     private static Optional<List<ErrorDetails>> getMultipleValues(DublinCore dublinCore) {
@@ -182,7 +186,7 @@ public final class DublinCoreValidator {
         return Optional.empty();
     }
 
-    private static Optional<ErrorDetails> getIsbnErrors(DublinCore dublinCore) {
+    private static Optional<WarningDetails> getIsbnWarnings(DublinCore dublinCore) {
         if (hasIsbn(dublinCore)) {
             var invalidIsbnList = DublinCoreScraper.extractIsbn(dublinCore)
                                       .stream()
@@ -191,7 +195,7 @@ public final class DublinCoreValidator {
                                       .filter(isbn -> !ISBNValidator.getInstance().isValid(isbn))
                                       .collect(Collectors.toList());
             return !invalidIsbnList.isEmpty()
-                       ? Optional.of(new ErrorDetails(INVALID_ISBN, invalidIsbnList))
+                       ? Optional.of(new WarningDetails(INVALID_ISBN_WARNING, invalidIsbnList))
                        : Optional.empty();
         }
         return Optional.empty();

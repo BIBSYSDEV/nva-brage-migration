@@ -55,7 +55,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
         + "the same time";
     public static final String RECORDS_WITHOUT_ERRORS = "Records without errors: ";
     public static final String SLASH = "/";
-    public static final String DUPLICATE_MESSAGE = "Record was removed from import because of duplicate: ";
     public static final String EMBARGO_COUNTER_MESSAGE = "Records removed from import because of embargo: ";
     public static final String RECORDS_WRITER_MESSAGE = "Records written to file: ";
     public static final String DEFAULT_CONTRIBUTORS_FILE_NAME = "contributors.txt";
@@ -339,11 +338,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                .map(Record::getId)
                                                .collect(Collectors.toList());
             if (alreadyRegisteredHandles.contains(record.getId())) {
-                var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
-                logger.info(DUPLICATE_MESSAGE
-                            + record.getId() + " " + record.getBrageLocation()
-                            + "  =>  EXISTING RESOURCE IS: "
-                            + recordStorage.getRecordLocationStringById(record.getId()));
                 recordsToRemove.add(record);
             } else {
                 recordStorage.getRecords().add(record);
