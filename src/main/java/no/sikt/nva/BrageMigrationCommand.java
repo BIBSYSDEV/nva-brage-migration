@@ -202,14 +202,18 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     @SuppressWarnings("PMD.UseVarargs")
     private void pushExistingResourcesToNva(String[] collections) {
-        S3Storage storage = new S3StorageImpl(s3Client, customer, awsEnvironment.getValue());
+        S3Storage storage = new S3StorageImpl(s3Client, startingDirectory + "/" + userSpecifiedOutputDirectory,
+                                              customer,
+                                              awsEnvironment.getValue());
         storage.storeProcessedCollections(collections);
     }
 
     private void pushToNva(List<BrageProcessor> brageProcessors) {
         var recordList = brageProcessors.stream()
                              .map(BrageProcessor::getRecords)
-                             .filter(Objects::nonNull).flatMap(List::stream).collect(Collectors.toList());
+                             .filter(Objects::nonNull)
+                             .flatMap(List::stream)
+                             .collect(Collectors.toList());
         var counter = 0;
         for (Record record : recordList) {
             storeFileToNVA(record);
@@ -266,12 +270,14 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void storeFileToNVA(Record record) {
-        S3Storage storage = new S3StorageImpl(s3Client, customer, awsEnvironment.getValue());
+        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/" + startingDirectory, customer,
+                                              awsEnvironment.getValue());
         storage.storeRecord(record);
     }
 
     private void storeLogsToNva() {
-        S3Storage storage = new S3StorageImpl(s3Client, customer, awsEnvironment.getValue());
+        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/" + startingDirectory, customer,
+                                              awsEnvironment.getValue());
         storage.storeLogs();
     }
 
