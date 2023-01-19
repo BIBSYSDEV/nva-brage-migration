@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
-import no.sikt.nva.brage.migration.common.model.record.Affiliation;
+import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Customer;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
@@ -54,6 +54,7 @@ public class BrageProcessor implements Runnable {
     private final boolean shouldLookUpInChannelRegister;
     private final boolean noHandleCheck;
     private final List<Embargo> embargoes;
+    private final Map<String, Contributor> contributors;
     private List<Record> records;
     private final static Counter counter = new Counter();
 
@@ -64,7 +65,8 @@ public class BrageProcessor implements Runnable {
                           boolean enableOnlineValidation,
                           boolean shouldLookUpInChannelRegister,
                           boolean noHandleCheck,
-                          List<Embargo> embargoes) {
+                          List<Embargo> embargoes,
+                          Map<String, Contributor> contributors) {
         this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
@@ -73,6 +75,7 @@ public class BrageProcessor implements Runnable {
         this.handleScraper = new HandleScraper(rescueTitleAndHandleMap);
         this.noHandleCheck = noHandleCheck;
         this.embargoes = embargoes;
+        this.contributors = contributors;
     }
 
     public static Path getContentFilePath(File entryDirectory) {
@@ -183,14 +186,16 @@ public class BrageProcessor implements Runnable {
             }
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
-            var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation, shouldLookUpInChannelRegister);
+            var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation,
+                                                          shouldLookUpInChannelRegister,
+                                                          contributors);
             var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
             record.setCustomer(new Customer(customer, CustomerMapper.getCustomerUri(customer)));
             record.setResourceOwner(ResourceOwnerMapper.getResourceOwner(customer));
             record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper, dublinCore));
             record.setBrageLocation(String.valueOf(brageLocation.getBrageBundlePath()));
-            injectAffiliationsToContributors(record);
             var errors = BrageProcessorValidator.getBrageProcessorErrors(entryDirectory, dublinCore);
+            injectAffiliationsFromExternalFile(record);
             record.getErrors().addAll(errors);
             EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(record, embargoes);
             logErrorsIfNotEmpty(brageLocation, errors);
@@ -201,21 +206,19 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private void injectAffiliationsToContributors(Record record) {
+    private void injectAffiliationsFromExternalFile(Record record) {
         var affiliations = AffiliationsScraper.getAffiliations(new File("affiliations.txt"));
         if (!affiliations.isEmpty()) {
-            var matchingAffiliations = affiliations.stream()
-                                           .filter(affiliation -> hasMatchingOrigins(affiliation, record))
+            var matchingAffiliationKeys = affiliations.keySet().stream()
+                                              .filter(record::hasOrigin)
+                                              .collect(Collectors.toList());
+            var matchingAffiliations = matchingAffiliationKeys.stream()
+                                           .map(affiliations::get)
                                            .collect(Collectors.toList());
             record.getEntityDescription()
                 .getContributors()
                 .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));
         }
-    }
-
-    private boolean hasMatchingOrigins(Affiliation affiliation, Record record) {
-        var recordOriginCollection = record.getBrageLocation().split("/")[0];
-        return affiliation.getHandle().split("/")[0].equals(recordOriginCollection);
     }
 
     private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,

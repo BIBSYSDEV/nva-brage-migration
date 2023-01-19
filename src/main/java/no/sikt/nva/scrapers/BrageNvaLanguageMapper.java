@@ -15,7 +15,6 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.StringUtils;
 import nva.commons.core.language.LanguageMapper;
-import org.jetbrains.annotations.NotNull;
 
 public class BrageNvaLanguageMapper {
 
@@ -69,7 +68,6 @@ public class BrageNvaLanguageMapper {
                    : Optional.empty();
     }
 
-    @NotNull
     private static List<URI> getIsoLanguages(List<String> languages) {
         List<URI> isoLanguages = new ArrayList<>();
         for (String language : languages) {
@@ -87,7 +85,6 @@ public class BrageNvaLanguageMapper {
                    .collect(Collectors.toList());
     }
 
-    @NotNull
     private static List<DcValue> getLanguagesAsDcValues(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isLanguage)

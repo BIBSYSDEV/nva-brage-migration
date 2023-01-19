@@ -12,12 +12,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
+import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Journal;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
@@ -53,12 +55,16 @@ public final class DublinCoreScraper {
     public static final String DELIMITER = "-";
     public static final String REGEX_ISSN = "[^0-9-xX]";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
+    private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
 
-    public DublinCoreScraper(boolean enableOnlineValidation, boolean shouldLookUpInChannelRegister) {
+    @SuppressWarnings("PMD.AssignmentToNonFinalStatic")
+    public DublinCoreScraper(boolean enableOnlineValidation, boolean shouldLookUpInChannelRegister,
+                             Map<String, Contributor> contributors) {
         this.enableOnlineValidation = enableOnlineValidation;
         this.shouldLookUpInChannelRegister = shouldLookUpInChannelRegister;
+        DublinCoreScraper.contributors = contributors;
     }
 
     public static List<String> extractIssn(DublinCore dublinCore) {
@@ -147,6 +153,10 @@ public final class DublinCoreScraper {
         return publication;
     }
 
+    public static boolean isSingleton(List<String> versions) {
+        return versions.size() == 1;
+    }
+
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         try {
             var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
@@ -214,7 +224,7 @@ public final class DublinCoreScraper {
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore, brageLocation));
         record.setDoi(extractDoi(dublinCore));
-        record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore));
+        record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore, contributors));
         record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
         record.setPublication(createPublicationWithIdentifier(dublinCore, brageLocation, record));
         record.setPublishedDate(extractAvailableDate(dublinCore));
@@ -486,10 +496,6 @@ public final class DublinCoreScraper {
 
     private static boolean containsMultipleValues(List<String> versions) {
         return versions.size() >= 2;
-    }
-
-    private static boolean isSingleton(List<String> versions) {
-        return versions.size() == 1;
     }
 
     private static PublisherAuthority mapMultipleVersions(List<String> versions, BrageLocation brageLocation) {

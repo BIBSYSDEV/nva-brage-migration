@@ -1,10 +1,13 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
+import static no.sikt.nva.scrapers.DublinCoreScraper.isSingleton;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
@@ -17,6 +20,8 @@ import no.sikt.nva.brage.migration.common.model.record.PublicationInstance;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.validators.DublinCoreValidator;
+import nva.commons.core.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 public final class EntityDescriptionExtractor {
 
@@ -30,7 +35,6 @@ public final class EntityDescriptionExtractor {
     public static final int LOCAL_DATE_MAX_LENGTH = 12;
 
     private EntityDescriptionExtractor() {
-
     }
 
     public static String extractMainTitle(DublinCore dublinCore) {
@@ -42,20 +46,6 @@ public final class EntityDescriptionExtractor {
         return titles.isEmpty() ? null : titles.get(0);
     }
 
-    public static EntityDescription extractEntityDescription(DublinCore dublinCore) {
-        var entityDescription = new EntityDescription();
-        entityDescription.setAbstracts(extractAbstracts(dublinCore));
-        entityDescription.setDescriptions(extractDescriptions(dublinCore));
-        entityDescription.setMainTitle(extractMainTitle(dublinCore));
-        entityDescription.setAlternativeTitles(extractAlternativeTitles(dublinCore));
-        entityDescription.setContributors(extractContributors(dublinCore));
-        entityDescription.setTags(SubjectScraper.extractTags(dublinCore));
-        entityDescription.setPublicationInstance(extractPublicationInstance(dublinCore));
-        entityDescription.setPublicationDate(extractPublicationDate(dublinCore));
-        entityDescription.setLanguage(BrageNvaLanguageMapper.extractLanguage(dublinCore));
-        return entityDescription;
-    }
-
     public static List<String> extractAlternativeTitles(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
@@ -64,11 +54,28 @@ public final class EntityDescriptionExtractor {
                    .collect(Collectors.toList());
     }
 
-    public static List<Contributor> extractContributors(DublinCore dublinCore) {
+    public static EntityDescription extractEntityDescription(DublinCore dublinCore,
+                                                             Map<String, Contributor> contributors) {
+        var entityDescription = new EntityDescription();
+        entityDescription.setAbstracts(extractAbstracts(dublinCore));
+        entityDescription.setDescriptions(extractDescriptions(dublinCore));
+        entityDescription.setMainTitle(extractMainTitle(dublinCore));
+        entityDescription.setAlternativeTitles(extractAlternativeTitles(dublinCore));
+        entityDescription.setContributors(extractContributors(dublinCore, contributors));
+        entityDescription.setTags(SubjectScraper.extractTags(dublinCore));
+        entityDescription.setPublicationInstance(extractPublicationInstance(dublinCore));
+        entityDescription.setPublicationDate(extractPublicationDate(dublinCore));
+        entityDescription.setLanguage(BrageNvaLanguageMapper.extractLanguage(dublinCore));
+        return entityDescription;
+    }
+
+    public static List<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
+                   .map(contributor -> updateContributor(contributor, contributors))
+                   .map(EntityDescriptionExtractor::updateNameOrder)
                    .collect(Collectors.toList());
     }
 
@@ -78,6 +85,34 @@ public final class EntityDescriptionExtractor {
                          .map(DcValue::scrapeValueAndSetToScraped)
                          .collect(Collectors.toList());
         return !issues.isEmpty() ? issues.get(0) : null;
+    }
+
+    private static Contributor updateNameOrder(Contributor contributor) {
+        return fullNameIsSeparatedByComa(contributor)
+                   ? switchNames(contributor)
+                   : contributor;
+    }
+
+    private static Contributor switchNames(Contributor contributor) {
+        var fullNameValues = Arrays.asList(contributor.getIdentity().getName().split(","));
+        contributor.getIdentity().setName(getFirstName(fullNameValues)
+                                          + StringUtils.SPACE
+                                          + getLastName(fullNameValues));
+        return contributor;
+    }
+
+    private static boolean fullNameIsSeparatedByComa(Contributor contributor) {
+        return contributor.getIdentity().getName().contains(",");
+    }
+
+    @NotNull
+    private static String getLastName(List<String> fullNameValues) {
+        return fullNameValues.get(0).trim();
+    }
+
+    @NotNull
+    private static String getFirstName(List<String> fullNameValues) {
+        return fullNameValues.get(1).trim();
     }
 
     private static String modifyIfDateIsOfLocalDateTimeFormat(String date) {
@@ -174,7 +209,7 @@ public final class EntityDescriptionExtractor {
     }
 
     private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
-        Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped());
+        Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped(), null);
         if (isNull(identity.getName()) || identity.getName().isEmpty()) {
             return Optional.empty();
         }
@@ -195,5 +230,19 @@ public final class EntityDescriptionExtractor {
             return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole, List.of()));
         }
         return Optional.empty();
+    }
+
+    private static Contributor updateContributor(Contributor contributor, Map<String, Contributor> contributors) {
+        var contributorsToMerge = contributors.keySet().stream()
+                                      .filter(contributor::hasName)
+                                      .collect(Collectors.toList());
+        if (isSingleton(contributorsToMerge)) {
+            var contributorWithCristinIdentifier = contributors.get(contributorsToMerge.get(0));
+            contributor.setIdentity(new Identity(contributorWithCristinIdentifier.getIdentity().getName(),
+                                                 contributorWithCristinIdentifier.getIdentity().getIdentifier()));
+            contributor.setAffiliations(contributorWithCristinIdentifier.getAffiliations());
+            return contributor;
+        }
+        return contributor;
     }
 }
