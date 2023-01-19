@@ -64,7 +64,7 @@ public final class DublinCoreScraper {
                              Map<String, Contributor> contributors) {
         this.enableOnlineValidation = enableOnlineValidation;
         this.shouldLookUpInChannelRegister = shouldLookUpInChannelRegister;
-        this.contributors = contributors;
+        DublinCoreScraper.contributors = contributors;
     }
 
     public static List<String> extractIssn(DublinCore dublinCore) {
