@@ -56,6 +56,7 @@ public class BrageProcessor implements Runnable {
     private final List<Embargo> embargoes;
     private final Map<String, Contributor> contributors;
     private List<Record> records;
+    private final static Counter counter = new Counter();
 
     public BrageProcessor(String zipfile,
                           String customer,
@@ -111,6 +112,9 @@ public class BrageProcessor implements Runnable {
     public List<Record> getRecords() {
         return records;
     }
+    public int getEmbargoCounter() {
+        return counter.getEmbargoCounter();
+    }
 
     private static boolean isBundle(File entryDirectory) {
         return entryDirectory.isDirectory();
@@ -138,8 +142,7 @@ public class BrageProcessor implements Runnable {
     }
 
     private static Optional<Boolean> getEmbargoEndDate(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
+        return dublinCore.getDcValues().stream()
                    .map(DcValue::isEmbargoEndDate)
                    .findFirst();
     }
@@ -159,6 +162,10 @@ public class BrageProcessor implements Runnable {
                      + brageLocation.getOriginInformation());
     }
 
+    private static boolean containsEmbargo(DublinCore dublinCore) {
+        return hasEmbargo(dublinCore) || hasEmbargoEndDateWhichIsNotExpired(dublinCore);
+    }
+
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories.stream()
@@ -172,8 +179,9 @@ public class BrageProcessor implements Runnable {
         var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
         try {
             var dublinCore = DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
-            if (hasEmbargo(dublinCore) || hasEmbargoEndDateWhichIsNotExpired(dublinCore)) {
+            if (containsEmbargo(dublinCore)) {
                 logEmbargoMessage(brageLocation, dublinCore);
+                counter.countRecordWithEmbargo();
                 return Optional.empty();
             }
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
