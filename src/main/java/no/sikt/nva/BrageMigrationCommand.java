@@ -270,13 +270,15 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void storeFileToNVA(Record record) {
-        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/" + startingDirectory, customer,
+        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/" + startingDirectory,
+                                              customer,
                                               awsEnvironment.getValue());
         storage.storeRecord(record);
     }
 
     private void storeLogsToNva() {
-        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/" + startingDirectory, customer,
+        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/" + startingDirectory,
+                                              customer,
                                               awsEnvironment.getValue());
         storage.storeLogs();
     }
