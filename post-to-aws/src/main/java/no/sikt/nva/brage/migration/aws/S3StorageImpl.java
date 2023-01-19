@@ -38,6 +38,7 @@ public class S3StorageImpl implements S3Storage {
     public static final String APPLICATION_JSON = "application/json";
     public static final String EXPERIMENTAL_BUCKET_NAME = "anette-kir-brage-migration-experiment";
     public static final String SANDBOX_BUCKET_NAME = "brage-migration-input-files-750639270376";
+    public static final String PROD_BUCKET_NAME = "brage-migration-input-files-755923822223";
     public static final String RECORDS_JSON_FILE_NAME = "records.json";
     public static final String PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 = "Problem pushing processed records to S3: ";
     private static final String DEVELOP_BUCKET_NAME = "brage-migration-input-files-884807050265";
@@ -108,6 +109,8 @@ public class S3StorageImpl implements S3Storage {
                 return SANDBOX_BUCKET_NAME;
             case "develop":
                 return DEVELOP_BUCKET_NAME;
+            case "prod":
+                return PROD_BUCKET_NAME;
             default:
                 return EXPERIMENTAL_BUCKET_NAME;
         }
