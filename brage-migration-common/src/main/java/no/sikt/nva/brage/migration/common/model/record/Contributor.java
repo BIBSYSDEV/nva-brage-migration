@@ -73,12 +73,6 @@ public class Contributor {
 
     @JacocoGenerated
     @Override
-    public int hashCode() {
-        return Objects.hash(getAffiliations(), getIdentity(), getRole(), getBrageRole());
-    }
-
-    @JacocoGenerated
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -91,5 +85,11 @@ public class Contributor {
                && Objects.equals(getIdentity(), that.getIdentity())
                && Objects.equals(getRole(), that.getRole())
                && Objects.equals(getBrageRole(), that.getBrageRole());
+    }
+
+    @JacocoGenerated
+    @Override
+    public int hashCode() {
+        return Objects.hash(getAffiliations(), getIdentity(), getRole(), getBrageRole());
     }
 }

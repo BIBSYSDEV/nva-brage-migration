@@ -43,7 +43,7 @@ public class ContributorScraper {
         return List.of(new Affiliation(extractAffiliationIdentifier(contributorValues), null, null));
     }
 
-    private static String extractAffiliationIdentifier(String[] contributorValues) {
+    private static String extractAffiliationIdentifier(String... contributorValues) {
         return contributorValues[2].replaceAll(StringUtils.SPACE, StringUtils.EMPTY_STRING)
                    .replaceAll("\r", StringUtils.EMPTY_STRING);
     }
