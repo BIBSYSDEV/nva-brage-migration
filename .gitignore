@@ -50,8 +50,8 @@ nva-brage-migration/application-info.log
 nva-brage-migration/app-info*
 nva-brage-migration/application-warn.log
 
-nva-brage-migration/src/test/resources/app-info*
-nva-brage-migration/src/test/resources/application-*
+src/test/resources/app-info*
+src/test/resources/application-*
 
 ### tmp folder containing unzipped result
 /tmp/
