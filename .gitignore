@@ -52,6 +52,7 @@ nva-brage-migration/application-warn.log
 
 src/test/resources/app-info*
 src/test/resources/application-*
+src/test/resources/resourceWithEmbargo/app*
 
 ### tmp folder containing unzipped result
 /tmp/
