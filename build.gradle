@@ -61,12 +61,12 @@ dependencies {
 
     implementation  group : "software.amazon.awssdk", name : "s3", version : "2.17.191"
 
-    implementation group: 'com.github.bibsysdev', name: 'core', version: '1.27.1'
-    implementation group: 'com.github.bibsysdev', name: 'json', version: '1.27.1'
-    implementation group: 'com.github.bibsysdev', name: 'doi', version: '1.27.1'
-    implementation group: 'com.github.bibsysdev', name: 's3', version: '1.27.1'
-    testImplementation group: 'com.github.bibsysdev', name: 'nvatestutils', version: '1.27.1'
-    implementation group: 'com.github.bibsysdev', name: 'logutils', version: '1.27.1'
+    implementation group: 'com.github.bibsysdev', name: 'core', version: '1.27.2'
+    implementation group: 'com.github.bibsysdev', name: 'json', version: '1.27.2'
+    implementation group: 'com.github.bibsysdev', name: 'doi', version: '1.27.2'
+    implementation group: 'com.github.bibsysdev', name: 's3', version: '1.27.2'
+    testImplementation group: 'com.github.bibsysdev', name: 'nvatestutils', version: '1.27.2'
+    implementation group: 'com.github.bibsysdev', name: 'logutils', version: '1.27.2'
 
     implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.0'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.1'
