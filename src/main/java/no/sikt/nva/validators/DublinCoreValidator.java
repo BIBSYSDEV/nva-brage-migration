@@ -32,6 +32,7 @@ import no.sikt.nva.scrapers.EntityDescriptionExtractor;
 import no.sikt.nva.scrapers.PageConverter;
 import no.sikt.nva.scrapers.SubjectScraper;
 import no.sikt.nva.scrapers.TypeMapper;
+import no.sikt.nva.scrapers.TypeTranslator;
 import nva.commons.core.StringUtils;
 import org.apache.commons.validator.routines.DateValidator;
 import org.apache.commons.validator.routines.ISBNValidator;
@@ -309,7 +310,10 @@ public final class DublinCoreValidator {
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     private static Optional<ErrorDetails> getInvalidTypes(DublinCore dublinCore) {
-        var uniqueTypes = new ArrayList<>(new HashSet<>(DublinCoreScraper.extractType(dublinCore)));
+        var uniqueTypes = new ArrayList<>(new HashSet<>(DublinCoreScraper.extractType(dublinCore)))
+                              .stream()
+                              .map(TypeTranslator::translateToEnglish)
+                              .collect(Collectors.toList());
         if (uniqueTypes.isEmpty()) {
             return Optional.of(new ErrorDetails(INVALID_TYPE, uniqueTypes));
         }
@@ -325,7 +329,8 @@ public final class DublinCoreValidator {
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     private static Optional<ErrorDetails> getMultipleUnmappableTypeError(DublinCore dublinCore) {
-        var types = new ArrayList<>(new HashSet<>(DublinCoreScraper.extractType(dublinCore)));
+        var types = new ArrayList<>(new HashSet<>(
+            DublinCoreScraper.translateTypesInNorwegian(DublinCoreScraper.extractType(dublinCore))));
         if (types.size() >= 2
             && !getInvalidTypes(dublinCore).isPresent()
             && !types.contains(BrageType.PEER_REVIEWED.getValue())) {

@@ -530,7 +530,7 @@ public final class DublinCoreScraper {
         return new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
     }
 
-    private static List<String> translateTypesInNorwegian(List<String> types) {
+    public static List<String> translateTypesInNorwegian(List<String> types) {
         return types.stream()
                    .map(TypeTranslator::translateToEnglish)
                    .collect(Collectors.toList());
