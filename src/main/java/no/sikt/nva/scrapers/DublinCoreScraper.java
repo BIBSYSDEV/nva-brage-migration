@@ -399,6 +399,7 @@ public final class DublinCoreScraper {
                    .filter(DcValue::isCristinDcValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .map(DublinCoreScraper::removeAllUnnecessaryStrings)
+                   .filter(Objects::nonNull)
                    .filter(DublinCoreScraper::isNumeric)
                    .findAny()
                    .orElse(null);

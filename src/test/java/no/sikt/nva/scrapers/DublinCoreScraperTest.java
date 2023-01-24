@@ -753,8 +753,8 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(record.getType().getNva(), is(equalTo(NvaType.SCIENTIFIC_ARTICLE.getValue())));
-    }
 
+    }
     @Test
     void shouldExtractCristinIdContainingFridaIdIdentifier() {
         var type = new DcValue(Element.TYPE, null, "Tidsskriftartikkel");
@@ -765,6 +765,22 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(record.getCristinId(), is(equalTo("932785")));
+    }
+
+    @Test
+    void some() {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "submittedVersion");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var date = new DcValue(Element.DATE, Qualifier.ISSUED, "2010");
+        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "doi: 10.3402/polar.v30i0.7379");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, versionDcValue, date, doi));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
+                                                      Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getPublisherAuthority().getNva(), is(nullValue()));
     }
 
     @ParameterizedTest
