@@ -14,7 +14,6 @@ import java.util.zip.ZipInputStream;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import nva.commons.core.JacocoGenerated;
-import nva.commons.core.StringUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,34 +21,24 @@ import org.slf4j.LoggerFactory;
 @JacocoGenerated
 public final class UnZipper {
 
-
-    public static final String HANDLE_FORMAT =
-        "https://hdl.handle.net/11250/%s";
     private static final String UNZIPPING_WENT_WRONG_WITH_EXCEPTION =
         "Unzipping went wrong with exception :";
     private static final Logger logger = LoggerFactory.getLogger(UnZipper.class);
-    private static final String ZIP_FILE_ENDING = ".zip";
 
     private UnZipper() {
     }
 
     public static List<File> extractResourceDirectories(String pathToZip, String destinationDirectory) {
-        File initialFile = new File(pathToZip);
+        File initialFile = new File(pathToZip.replaceAll(" ", ""));
         try (InputStream fileToUnzip = FileUtils.openInputStream(initialFile)) {
             var destinationFile = new File(destinationDirectory);
             var unzippedFile = unzip(fileToUnzip, destinationFile);
             return Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles())).collect(Collectors.toList());
         } catch (Exception e) {
-            String collectionHandle = getCollectionHandle(pathToZip);
-            logger.warn(new WarningDetails(Warning.EMPTY_OR_NONEXISTENT_COLLECTION, collectionHandle).toString());
+            logger.warn(
+                new WarningDetails(Warning.EMPTY_OR_NONEXISTENT_COLLECTION, Path.of(pathToZip).toString()).toString());
             throw new RuntimeException(e);
         }
-    }
-
-    private static String getCollectionHandle(String pathToZip) {
-        var path = Path.of(pathToZip);
-        var fileName = path.getFileName().toString();
-        return String.format(HANDLE_FORMAT, fileName.replace(ZIP_FILE_ENDING, StringUtils.EMPTY_STRING));
     }
 
     private static File unzip(InputStream fileToUnzip, File destinationDirectory) {
@@ -81,7 +70,7 @@ public final class UnZipper {
 
     @SuppressWarnings("PMD.AssignmentInOperand")
     private static void createFile(ZipInputStream inputStream, File newFile) throws IOException {
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[4096];
         File parent = newFile.getParentFile();
         handleUnknownFileType(parent);
         var outputStream = Files.newOutputStream(Path.of(String.valueOf(newFile)));
