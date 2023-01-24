@@ -1,7 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
-import static no.sikt.nva.scrapers.DublinCoreScraper.isSingleton;
+import static java.util.Objects.nonNull;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -264,11 +264,8 @@ public final class EntityDescriptionExtractor {
     }
 
     private static Contributor updateContributor(Contributor contributor, Map<String, Contributor> contributors) {
-        var contributorsToMerge = contributors.keySet().stream()
-                                      .filter(contributor::hasName)
-                                      .collect(Collectors.toList());
-        if (isSingleton(contributorsToMerge)) {
-            var contributorWithCristinIdentifier = contributors.get(contributorsToMerge.get(0));
+        var contributorWithCristinIdentifier = contributors.get(contributor.getIdentity().getName());
+        if (nonNull(contributorWithCristinIdentifier)) {
             contributor.setIdentity(new Identity(contributorWithCristinIdentifier.getIdentity().getName(),
                                                  contributorWithCristinIdentifier.getIdentity().getIdentifier()));
             contributor.setAffiliations(contributorWithCristinIdentifier.getAffiliations());
