@@ -53,7 +53,6 @@ public final class DublinCoreValidator {
         getInvalidTypes(dublinCore).ifPresent(errors::add);
         getIssnErrors(dublinCore).ifPresent(errors::add);
         getDateError(dublinCore).ifPresent(errors::add);
-        getNonContributorsError(dublinCore).ifPresent(errors::add);
         BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
         getMultipleUnmappableTypeError(dublinCore).ifPresent(errors::add);
         getMultipleValues(dublinCore).ifPresent(errors::addAll);
@@ -69,6 +68,7 @@ public final class DublinCoreValidator {
         getIssueWarning(dublinCore).ifPresent(warnings::add);
         getIsbnWarnings(dublinCore).ifPresent(warnings::add);
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
+        getNonContributorsError(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -161,11 +161,11 @@ public final class DublinCoreValidator {
                    .collect(Collectors.toList());
     }
 
-    private static Optional<ErrorDetails> getNonContributorsError(DublinCore dublinCore) {
+    private static Optional<WarningDetails> getNonContributorsError(DublinCore dublinCore) {
         if (hasContributors(dublinCore)) {
             return Optional.empty();
         } else {
-            return Optional.of(new ErrorDetails(Error.NO_CONTRIBUTORS, Collections.emptyList()));
+            return Optional.of(new WarningDetails(Warning.NO_CONTRIBUTORS, Collections.emptyList()));
         }
     }
 

@@ -16,10 +16,6 @@ public class WarningDetails {
         this.details = details;
     }
 
-    public WarningDetails(Warning warningCode) {
-        this.warningCode = warningCode;
-    }
-
     public WarningDetails(Warning warningCode, String detail) {
         this.warningCode = warningCode;
         this.details = Collections.singletonList(detail);
@@ -71,6 +67,7 @@ public class WarningDetails {
         MULTIPLE_ISBN_VALUES_WARNING,
         EMPTY_OR_NONEXISTENT_COLLECTION,
         INVALID_ISBN_WARNING,
+        NO_CONTRIBUTORS
 
     }
 }
