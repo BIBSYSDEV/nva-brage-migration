@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails.Error;
+import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Pages;
@@ -715,7 +716,7 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldLogWhenMultipleSearchResultsInChannelRegister() {
-        var type = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
+        var type = new DcValue(Element.TYPE, null, "Journal article");
         var journal = new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Earth System Science Data");
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
@@ -738,6 +739,20 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(record.getEntityDescription().getContributors(), is(empty()));
+    }
+
+    @Test
+    void shouldMapTypesContainingMultipleLanguagesTypesAndPeerReviewedToValidType() {
+        var type0 = new DcValue(Element.TYPE, null, "Peer reviewed");
+        var type1 = new DcValue(Element.TYPE, null, "Tidsskriftartikkel");
+        var type2 = new DcValue(Element.TYPE, null, "Journal article");
+        var type3 = new DcValue(Element.TYPE, Qualifier.VERSION, "publishedVersion");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(type0, type1, type2, type3));
+        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getType().getNva(), is(equalTo(NvaType.SCIENTIFIC_ARTICLE.getValue())));
     }
 
     @ParameterizedTest

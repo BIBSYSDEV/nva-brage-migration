@@ -106,7 +106,7 @@ public class S3StorageImplTest {
 
     private Record createValidTestRecord() {
         var record = new Record();
-        record.setType(new Type(List.of(BrageType.BOOK.getType()), NvaType.BOOK.getValue()));
+        record.setType(new Type(List.of(BrageType.BOOK.getValue()), NvaType.BOOK.getValue()));
         record.setPartOf("partOfSomethingBigger");
         record.setCristinId("cristinId");
         record.setBrageLocation("11/1");

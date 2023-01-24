@@ -483,6 +483,7 @@ public final class DublinCoreScraper {
 
     private static PublisherAuthority mapToNvaVersion(List<String> versions, BrageLocation brageLocation) {
         var uniqueVersions = new ArrayList<>(new HashSet<>(versions));
+
         if (isSingleton(uniqueVersions)) {
             return mapSingleVersion(uniqueVersions);
         }
@@ -525,8 +526,14 @@ public final class DublinCoreScraper {
     }
 
     private static Type mapOriginTypeToNvaType(List<String> types) {
-        var uniqueTypes = new ArrayList<>(new HashSet<>(types));
+        var uniqueTypes = new ArrayList<>(new HashSet<>(translateTypesInNorwegian(types)));
         return new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
+    }
+
+    private static List<String> translateTypesInNorwegian(List<String> types) {
+        return types.stream()
+                   .map(TypeTranslator::translateToEnglish)
+                   .collect(Collectors.toList());
     }
 
     private static boolean isInCristin(DublinCore dublinCore) {

@@ -92,7 +92,7 @@ public class DcValue {
     }
 
     public boolean isType() {
-        return Element.TYPE.equals(this.element);
+        return Element.TYPE.equals(this.element) && !isTypeAndVersion();
     }
     public boolean isTypeAndVersion() {
         return Element.TYPE.equals(this.element) && Qualifier.VERSION.equals(this.qualifier);

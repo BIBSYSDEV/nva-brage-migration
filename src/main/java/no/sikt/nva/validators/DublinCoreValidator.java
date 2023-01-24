@@ -328,7 +328,7 @@ public final class DublinCoreValidator {
         var types = new ArrayList<>(new HashSet<>(DublinCoreScraper.extractType(dublinCore)));
         if (types.size() >= 2
             && !getInvalidTypes(dublinCore).isPresent()
-            && !types.contains(BrageType.PEER_REVIEWED.getType())) {
+            && !types.contains(BrageType.PEER_REVIEWED.getValue())) {
             return Optional.of(new ErrorDetails(Error.MULTIPLE_UNMAPPABLE_TYPES, types));
         }
         return Optional.empty();
