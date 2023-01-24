@@ -10,7 +10,6 @@ public class BrageLocation {
     public static final String ORIGIN_INFORMATION = "Bundle location: %s, title: \"%s\"";
     private final Path brageBundlePath;
     private URI handle;
-
     private String title;
 
     public BrageLocation(Path brageBundlePath) {
@@ -47,11 +46,11 @@ public class BrageLocation {
 
     private String getCollectionDirectory() {
         var brageLocation = brageBundlePath.toString().split("/");
-        return brageLocation[brageLocation.length - 2];
+        return brageLocation[brageLocation.length - 2].replaceAll(" ", "");
     }
 
     private String getResourceDirectory() {
         var brageLocation = brageBundlePath.toString().split("/");
-        return brageLocation[brageLocation.length - 1];
+        return brageLocation[brageLocation.length - 1].replaceAll(" ", "");
     }
 }
