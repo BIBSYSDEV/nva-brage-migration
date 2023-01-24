@@ -326,7 +326,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void writeRecordToFile(BrageProcessor brageProcessor) {
-        var outputFileName = brageProcessor.getDestinationDirectory() + PATH_DELIMITER + OUTPUT_JSON_FILENAME;
+        var outputFileName = brageProcessor.getDestinationDirectory()
+                                 .replaceAll(StringUtils.SPACE, StringUtils.EMPTY_STRING)
+                             + PATH_DELIMITER
+                             + OUTPUT_JSON_FILENAME;
         var records = removeIdenticalRecords(brageProcessor.getRecords());
         RecordsWriter.writeRecordsToFile(outputFileName, records);
     }
