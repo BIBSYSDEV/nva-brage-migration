@@ -474,7 +474,7 @@ public class DublinCoreScraperTest {
     void shouldSetAccessionedDateAsScraped() {
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var publisherDcValue = new DcValue(Element.PUBLISHER, null, "Publisher");
-        var cristinDcValue = new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN, "cristin");
+        var cristinDcValue = new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN, "12345");
         var availableDateDcValue = new DcValue(Element.DATE, Qualifier.AVAILABLE, "date");
         var accessDateDcValue = new DcValue(Element.DATE, Qualifier.ACCESSIONED, "date");
         var accessDateDcValue2 = new DcValue(Element.DATE, Qualifier.ACCESSIONED, "date2");
@@ -753,6 +753,18 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(record.getType().getNva(), is(equalTo(NvaType.SCIENTIFIC_ARTICLE.getValue())));
+    }
+
+    @Test
+    void shouldExtractCristinIdContainingFridaIdIdentifier() {
+        var type = new DcValue(Element.TYPE, null, "Tidsskriftartikkel");
+        var cristinId = new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN_ID_MUNIN, "FRIDAID 932785");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(cristinId, type));
+        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getCristinId(), is(equalTo("932785")));
     }
 
     @ParameterizedTest

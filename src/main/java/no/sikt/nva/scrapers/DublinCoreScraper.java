@@ -8,6 +8,7 @@ import static no.sikt.nva.validators.DublinCoreValidator.PUBLISHED_VERSION_STRIN
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -154,6 +155,12 @@ public final class DublinCoreScraper {
 
     public static boolean isSingleton(List<String> versions) {
         return versions.size() == 1;
+    }
+
+    public static List<String> translateTypesInNorwegian(List<String> types) {
+        return types.stream()
+                   .map(TypeTranslator::translateToEnglish)
+                   .collect(Collectors.toList());
     }
 
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -391,9 +398,17 @@ public final class DublinCoreScraper {
                    .stream()
                    .filter(DcValue::isCristinDcValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(DublinCoreScraper::removeAllUnnecessaryStrings)
                    .filter(DublinCoreScraper::isNumeric)
                    .findAny()
                    .orElse(null);
+    }
+
+    private static String removeAllUnnecessaryStrings(String s) {
+        return Arrays.stream(s.split(StringUtils.SPACE))
+                   .filter(Objects::nonNull)
+                   .filter(DublinCoreScraper::isNumeric)
+                   .findFirst().orElse(null);
     }
 
     private static boolean isNumeric(String value) {
@@ -528,12 +543,6 @@ public final class DublinCoreScraper {
     private static Type mapOriginTypeToNvaType(List<String> types) {
         var uniqueTypes = new ArrayList<>(new HashSet<>(translateTypesInNorwegian(types)));
         return new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
-    }
-
-    public static List<String> translateTypesInNorwegian(List<String> types) {
-        return types.stream()
-                   .map(TypeTranslator::translateToEnglish)
-                   .collect(Collectors.toList());
     }
 
     private static boolean isInCristin(DublinCore dublinCore) {

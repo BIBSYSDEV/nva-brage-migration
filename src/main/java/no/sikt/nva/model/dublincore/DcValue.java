@@ -94,6 +94,7 @@ public class DcValue {
     public boolean isType() {
         return Element.TYPE.equals(this.element) && !isTypeAndVersion();
     }
+
     public boolean isTypeAndVersion() {
         return Element.TYPE.equals(this.element) && Qualifier.VERSION.equals(this.qualifier);
     }
@@ -118,7 +119,8 @@ public class DcValue {
     }
 
     public boolean isCristinDcValue() {
-        return Element.IDENTIFIER.equals(this.element) && Qualifier.CRISTIN.equals(this.qualifier);
+        return Element.IDENTIFIER.equals(this.element) && Qualifier.CRISTIN.equals(this.qualifier)
+               || Element.IDENTIFIER.equals(this.element) && Qualifier.CRISTIN_ID_MUNIN.equals(this.qualifier);
     }
 
     public boolean isOtherIdentifier() {
