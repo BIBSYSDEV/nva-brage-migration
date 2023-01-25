@@ -103,7 +103,8 @@ public final class EntityDescriptionExtractor {
     }
 
     /**
-     * Should switch names when they are separated by coma, but do not contain "og" in between
+     * Should switch names when they are separated by coma, but do not contain "og" in between.
+     * "Fullname" can be a name, but also a role to person. Role containing coma and "og" should not be switched.
      * Example:
      * Lennon, John => John Lennon
      * Fagansvarlig i Oslo, Trondheim og Bergen => no changes
