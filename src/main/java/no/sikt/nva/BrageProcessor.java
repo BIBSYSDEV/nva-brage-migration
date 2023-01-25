@@ -20,6 +20,7 @@ import no.sikt.nva.model.Embargo;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.AffiliationsScraper;
+import no.sikt.nva.scrapers.AlreadyImportedHandlesScraper;
 import no.sikt.nva.scrapers.ContentScraper;
 import no.sikt.nva.scrapers.CustomerMapper;
 import no.sikt.nva.scrapers.DublinCoreFactory;
@@ -218,6 +219,10 @@ public class BrageProcessor implements Runnable {
         return Optional.empty();
     }
 
+    private static DublinCore parseDublinCore(File entryDirectory) {
+        return DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
+    }
+
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories.stream()
@@ -228,16 +233,20 @@ public class BrageProcessor implements Runnable {
     }
 
     private Optional<Record> processBundle(LicenseScraper licenseScraper, File entryDirectory) {
-        var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
         try {
-            var dublinCore = DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
+            var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
+            var dublinCore = parseDublinCore(entryDirectory);
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
+            if (isAlreadyImported(brageLocation.getHandle().toString())) {
+                return Optional.empty();
+            }
             if (containsEmbargo(dublinCore)) {
                 return logAndReturnOptionalEmpty(brageLocation, dublinCore);
             }
             return createRecord(licenseScraper, entryDirectory, brageLocation, dublinCore);
         } catch (Exception e) {
+            var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
             return Optional.empty();
         }
@@ -256,10 +265,7 @@ public class BrageProcessor implements Runnable {
                    .map(r -> injectBrageLocation(r, brageLocation))
                    .map(this::injectAffiliationsFromExternalFile)
                    .map(r -> injectErrorsFromBrageProcessorValidator(entryDirectory, dublinCore, r, brageLocation))
-                   .map(r -> EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(r, embargoes))
-                   .flatMap(r -> isAlreadyImported(r)
-                                     ? Optional.empty()
-                                     : Optional.of(r));
+                   .map(r -> EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(r, embargoes));
     }
 
     private Record injectBrageLocation(Record record, BrageLocation brageLocation) {
@@ -283,9 +289,9 @@ public class BrageProcessor implements Runnable {
         return record;
     }
 
-    private boolean isAlreadyImported(Record record) {
-        var importedHandles = new HandleScraper().scrapeHandlesFromSuppliedExternalFile(new File("handles.csv"));
-        return importedHandles.contains(record.getId().toString());
+    private boolean isAlreadyImported(String handle) {
+        var importedHandles = AlreadyImportedHandlesScraper.scrapeHandlesFromSuppliedExternalFile(new File("handles.csv"));
+        return importedHandles.contains(handle);
     }
 
     private URI getHandle(File entryDirectory, DublinCore dublinCore) throws HandleException {
