@@ -325,6 +325,7 @@ public final class DublinCoreScraper {
                    .findFirst()
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .map(DoiValidator::updateDoiStructureIfNeeded)
+                   .map(DoiValidator::replaceCharactersIfNeeded)
                    .map(convertToUriAttempt())
                    .orElse(null);
     }

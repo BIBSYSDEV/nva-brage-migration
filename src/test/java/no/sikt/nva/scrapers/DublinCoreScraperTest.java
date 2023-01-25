@@ -768,19 +768,16 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void some() {
-        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "submittedVersion");
+    void shouldRepairDoiWithoutSlash() {
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var date = new DcValue(Element.DATE, Qualifier.ISSUED, "2010");
-        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "doi: 10.3402/polar.v30i0.7379");
+        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1177%2F1757975910383936");
         var brageLocation = new BrageLocation(null);
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(typeDcValue, versionDcValue, date, doi));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, date, doi));
         var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(record.getPublisherAuthority().getNva(), is(nullValue()));
+        assertThat(record.getDoi().toString(), is(equalTo("https://doi.org/10.1177/1757975910383936")));
     }
 
     @ParameterizedTest
