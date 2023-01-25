@@ -391,6 +391,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         EXPERIMENTAL("experimental"),
         SANDBOX("sandbox"),
         DEVELOP("develop"),
+        TEST("test"),
         PROD("prod");
 
         private final String value;

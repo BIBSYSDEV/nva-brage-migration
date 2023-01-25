@@ -7,8 +7,11 @@ import java.util.Map;
 public final class CustomerMapper {
 
     public static final String NVE = "NVE";
-    public static final URI NVE_CUSTOMER_URI_PROD = URI.create(
-        "https://api.nva.unit.no/customer/4ba5f697-2056-4292-b0a3-f81ccf21ea22");
+//    public static final URI NVE_CUSTOMER_URI_PROD = URI.create(
+//        "https://api.nva.unit.no/customer/4ba5f697-2056-4292-b0a3-f81ccf21ea22");
+
+    public static final URI NVE_CUSTOMER_URI_TEST = URI.create(
+        "https://api.test.nva.aws.unit.no/customer/4406dcea-9382-4e9d-929f-c981b5ffbb90");
     public static final String KRUS = "KRUS";
     public static final URI KRUS_CUSTOMER_URI_DEVELOPMENT = URI.create(
         "https://api.dev.nva.aws.unit.no/customer/a768727e-4ecb-41c1-a616-1fec000cac1c");
@@ -31,7 +34,7 @@ public final class CustomerMapper {
     public static final URI NIH_CUSTOMER_URI_DEVELOPMENT = URI.create(
         "https://api.dev.nva.aws.unit.no/customer/b5ff15a1-0e58-44bf-b137-d5c5389ef63f");
     private static final Map<String, URI> CUSTOMER_MAP = Map.ofEntries(
-        entry(NVE, NVE_CUSTOMER_URI_PROD),
+        entry(NVE, NVE_CUSTOMER_URI_TEST),
         entry(KRUS, KRUS_CUSTOMER_URI_DEVELOPMENT),
         entry(KRISTIANIA, KRISTIANIA_CUSTOMER_URI_DEVELOPMENT),
         entry(FHS, FHS_CUSTOMER_URI_DEVELOPMENT),
