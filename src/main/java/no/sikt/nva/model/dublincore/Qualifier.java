@@ -199,6 +199,9 @@ public enum Qualifier {
     @XmlEnumValue("cristin")
     CRISTIN("cristin"),
 
+    @XmlEnumValue("cristinID")
+    CRISTIN_ID_MUNIN("cristinID"),
+
     @XmlEnumValue("none")
     NONE("none");
 

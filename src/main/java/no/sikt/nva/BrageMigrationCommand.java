@@ -203,6 +203,14 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return zipfiles.toArray(new String[0]);
     }
 
+    private static Map<String, Contributor> extractContributorsFromFile(File contributorsFile) {
+        if (contributorsFile.exists()) {
+            return ContributorScraper.getContributors(contributorsFile);
+        } else {
+            return Map.of();
+        }
+    }
+
     private void log(List<BrageProcessor> brageProcessors) {
         var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
         logger.info(RECORDS_WRITER_MESSAGE + RecordsWriter.getCounter());
@@ -259,7 +267,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private Map<String, Contributor> getContributors(String directory) {
         try {
             var contributorsFile = new File(directory + DEFAULT_CONTRIBUTORS_FILE_NAME);
-            return ContributorScraper.getContributors(contributorsFile);
+            return extractContributorsFromFile(contributorsFile);
         } catch (Exception e) {
             var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             logger.info(COULD_NOT_EXTRACT_CONTRIBUTORS + e);
@@ -326,7 +334,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void writeRecordToFile(BrageProcessor brageProcessor) {
-        var outputFileName = brageProcessor.getDestinationDirectory() + PATH_DELIMITER + OUTPUT_JSON_FILENAME;
+        var outputFileName = brageProcessor.getDestinationDirectory()
+                                 .replaceAll(StringUtils.SPACE, StringUtils.EMPTY_STRING)
+                             + PATH_DELIMITER
+                             + OUTPUT_JSON_FILENAME;
         var records = removeIdenticalRecords(brageProcessor.getRecords());
         RecordsWriter.writeRecordsToFile(outputFileName, records);
     }

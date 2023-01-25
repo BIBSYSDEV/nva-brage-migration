@@ -12,7 +12,6 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,6 +31,7 @@ import no.sikt.nva.scrapers.EntityDescriptionExtractor;
 import no.sikt.nva.scrapers.PageConverter;
 import no.sikt.nva.scrapers.SubjectScraper;
 import no.sikt.nva.scrapers.TypeMapper;
+import no.sikt.nva.scrapers.TypeTranslator;
 import nva.commons.core.StringUtils;
 import org.apache.commons.validator.routines.DateValidator;
 import org.apache.commons.validator.routines.ISBNValidator;
@@ -309,7 +309,10 @@ public final class DublinCoreValidator {
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     private static Optional<ErrorDetails> getInvalidTypes(DublinCore dublinCore) {
-        var uniqueTypes = new ArrayList<>(new HashSet<>(DublinCoreScraper.extractType(dublinCore)));
+        var uniqueTypes = DublinCoreScraper.extractType(dublinCore).stream()
+                              .distinct()
+                              .map(TypeTranslator::translateToEnglish)
+                              .collect(Collectors.toList());
         if (uniqueTypes.isEmpty()) {
             return Optional.of(new ErrorDetails(INVALID_TYPE, uniqueTypes));
         }
@@ -325,10 +328,13 @@ public final class DublinCoreValidator {
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     private static Optional<ErrorDetails> getMultipleUnmappableTypeError(DublinCore dublinCore) {
-        var types = new ArrayList<>(new HashSet<>(DublinCoreScraper.extractType(dublinCore)));
+        var types = DublinCoreScraper.translateTypesInNorwegian(DublinCoreScraper.extractType(dublinCore))
+                        .stream()
+                        .distinct()
+                        .collect(Collectors.toList());
         if (types.size() >= 2
             && !getInvalidTypes(dublinCore).isPresent()
-            && !types.contains(BrageType.PEER_REVIEWED.getType())) {
+            && !types.contains(BrageType.PEER_REVIEWED.getValue())) {
             return Optional.of(new ErrorDetails(Error.MULTIPLE_UNMAPPABLE_TYPES, types));
         }
         return Optional.empty();

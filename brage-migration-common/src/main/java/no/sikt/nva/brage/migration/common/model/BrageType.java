@@ -49,7 +49,4 @@ public enum BrageType {
         return value;
     }
 
-    public String getType() {
-        return value;
-    }
 }

@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 public final class ContentScraper {
 
-    public static final String CONTENT_FILE_PARSING_ERROR_MESSAGE = "could not parse content file";
+    public static final String CONTENT_FILE_PARSING_ERROR_MESSAGE = "Could not parse content file: ";
     public static final String UNKNOWN_FILE_LOG_MESSAGE = "Unknown file in contents: ";
     public static final List<String> KNOWN_CONTENT_FILE_TYPES = List.of(BundleType.CCLICENSE.getValue(),
                                                                         BundleType.LICENSE.getValue(),
@@ -47,7 +47,7 @@ public final class ContentScraper {
         try {
             return createResourceContent();
         } catch (Exception e) {
-            throw new ContentException(CONTENT_FILE_PARSING_ERROR_MESSAGE);
+            throw new ContentException(CONTENT_FILE_PARSING_ERROR_MESSAGE + e.getMessage());
         }
     }
 
@@ -64,7 +64,15 @@ public final class ContentScraper {
     }
 
     private static String getDescription(List<String> list) {
-        return Arrays.asList(list.get(list.size() - 1).split(":")).get(1);
+        if (hasMoreThanThreeItems(list)) {
+            return list.get(list.size() - 1);
+        } else {
+            return Arrays.asList(list.get(list.size() - 1).split(":")).get(1);
+        }
+    }
+
+    private static boolean hasMoreThanThreeItems(List<String> list) {
+        return list.size() > 3;
     }
 
     private static String getBundleType(List<String> list) {
