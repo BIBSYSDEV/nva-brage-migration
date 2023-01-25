@@ -102,6 +102,13 @@ public final class EntityDescriptionExtractor {
         return contributor;
     }
 
+    /**
+     * Should switch names when they are separated by coma, but do not contain "og" in between
+     * Example:
+     * Lennon, John => John Lennon
+     * Fagansvarlig i Oslo, Trondheim og Bergen => no changes
+     */
+
     private static boolean fullNameIsSeparatedByComa(Contributor contributor) {
         String fullname = contributor.getIdentity().getName();
         return fullname.contains(",") && !fullname.contains(" og ");
