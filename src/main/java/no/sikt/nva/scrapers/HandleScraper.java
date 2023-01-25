@@ -1,11 +1,15 @@
 package no.sikt.nva.scrapers;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -21,10 +25,13 @@ public class HandleScraper {
     public static final URI HANDLE_DOMAIN = UriWrapper.fromHost("https://hdl.handle.net").getUri();
     private static final String ERROR_MESSAGE_HANDLE_IN_DUBLIN_CORE_IS_MALFORMED = "Handle in dublin_core.xml is "
                                                                                    + "invalid: %s";
-    private final Map<String, String> titlesAndHandles;
+    private Map<String, String> titlesAndHandles;
 
     public HandleScraper(Map<String, String> titlesAndHandles) {
         this.titlesAndHandles = titlesAndHandles;
+    }
+
+    public HandleScraper() {
     }
 
     /**
@@ -47,6 +54,24 @@ public class HandleScraper {
         } catch (Exception e) {
             throw new HandleException(COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV, e);
         }
+    }
+
+    public List<String> scrapeHandlesFromSuppliedExternalFile(File file) {
+        try {
+            return convertFileToHandlelist(Files.readString(file.toPath()));
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    private List<String> convertFileToHandlelist(String string) {
+        return Arrays.stream(string.split("\n"))
+                   .map(this::constructHandle)
+                   .collect(Collectors.toList());
+    }
+
+    private String constructHandle(String line) {
+        return UriWrapper.fromUri(HANDLE_DOMAIN).addChild(line.split(",")[0]).toString();
     }
 
     private URI extractHandleFromHandlePath(final Path handlePath) throws HandleException {

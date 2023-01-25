@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class HandleScraperTest {
 
+    public static final String TEST_FILE_LOCATION = "src/test/resources/handles.csv";
     private final Path handleFile = Path.of(TEST_RESOURCE_PATH + HANDLE_FILE_NAME);
 
     @Test
@@ -84,6 +86,16 @@ public class HandleScraperTest {
                                                               + "/ignored"),
                                                       dublinCore);
         assertThat(actualHandle, is(equalTo(expectedHandle)));
+    }
+
+    @Test
+    void shouldCreateListOfHandlesFromExternalHandleFile() {
+        var scraper = new HandleScraper();
+        var expectedHandles = List.of("https://hdl.handle.net/11250/2759567",
+                                      "https://hdl.handle.net/11250/2738884",
+                                      "https://hdl.handle.net/11250/2738802");
+        var actualHandles = scraper.scrapeHandlesFromSuppliedExternalFile(new File(TEST_FILE_LOCATION));
+        assertThat(actualHandles, is(equalTo(expectedHandles)));
     }
 
     private DublinCore generateDublinCoreWithTitle(String title) {

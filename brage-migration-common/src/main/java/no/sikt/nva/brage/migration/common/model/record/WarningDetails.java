@@ -71,6 +71,7 @@ public class WarningDetails {
         MULTIPLE_ISBN_VALUES_WARNING,
         EMPTY_OR_NONEXISTENT_COLLECTION,
         INVALID_ISBN_WARNING,
+        NO_CONTRIBUTORS
 
     }
 }
