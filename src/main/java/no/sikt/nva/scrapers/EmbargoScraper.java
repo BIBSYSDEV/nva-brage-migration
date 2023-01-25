@@ -40,7 +40,7 @@ public final class EmbargoScraper {
         }
     }
 
-    public static void checkForEmbargoFromSuppliedEmbargoFile(Record record, List<Embargo> embargoes) {
+    public static Record checkForEmbargoFromSuppliedEmbargoFile(Record record, List<Embargo> embargoes) {
         var handle = record.getId().toString();
         if (containsHandle(embargoes, handle)) {
             var potentialEmbargo = embargoes.stream()
@@ -52,6 +52,7 @@ public final class EmbargoScraper {
                     .setEmbargoDate(potentialEmbargo.getDate());
             }
         }
+        return record;
     }
 
     private static boolean containsHandle(List<Embargo> embargoes, String handle) {
