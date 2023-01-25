@@ -103,7 +103,8 @@ public final class EntityDescriptionExtractor {
     }
 
     private static boolean fullNameIsSeparatedByComa(Contributor contributor) {
-        return contributor.getIdentity().getName().contains(",");
+        String fullname = contributor.getIdentity().getName();
+        return fullname.contains(",") && !fullname.contains(" og ");
     }
 
     @NotNull
