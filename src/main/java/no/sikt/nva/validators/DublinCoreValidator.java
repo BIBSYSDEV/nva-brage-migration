@@ -12,7 +12,6 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -310,8 +309,8 @@ public final class DublinCoreValidator {
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     private static Optional<ErrorDetails> getInvalidTypes(DublinCore dublinCore) {
-        var uniqueTypes = new ArrayList<>(new HashSet<>(DublinCoreScraper.extractType(dublinCore)))
-                              .stream()
+        var uniqueTypes = DublinCoreScraper.extractType(dublinCore).stream()
+                              .distinct()
                               .map(TypeTranslator::translateToEnglish)
                               .collect(Collectors.toList());
         if (uniqueTypes.isEmpty()) {
@@ -329,8 +328,10 @@ public final class DublinCoreValidator {
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     private static Optional<ErrorDetails> getMultipleUnmappableTypeError(DublinCore dublinCore) {
-        var types = new ArrayList<>(new HashSet<>(
-            DublinCoreScraper.translateTypesInNorwegian(DublinCoreScraper.extractType(dublinCore))));
+        var types = DublinCoreScraper.translateTypesInNorwegian(DublinCoreScraper.extractType(dublinCore))
+                        .stream()
+                        .distinct()
+                        .collect(Collectors.toList());
         if (types.size() >= 2
             && !getInvalidTypes(dublinCore).isPresent()
             && !types.contains(BrageType.PEER_REVIEWED.getValue())) {
