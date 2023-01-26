@@ -19,6 +19,8 @@ public class DoiValidator {
     public static final String HTTPS_STRING = "https://";
     public static final String DOI_DOMAIN_NAME = "doi.org/";
     public static final String COLON = ":";
+    public static final String ENCODED_SLASH = "%2F";
+    public static final String SLASH = "/";
 
     public static Optional<ArrayList<ErrorDetails>> getDoiErrorDetailsOnline(DublinCore dublinCore) {
         var doiList = extractDoiList(dublinCore);
@@ -41,6 +43,7 @@ public class DoiValidator {
         } else {
             var updatedUriDoiList = filteredDoiList.stream()
                                         .map(DoiValidator::updateDoiStructureIfNeeded)
+                                        .map(DoiValidator::replaceCharactersIfNeeded)
                                         .collect(Collectors.toList());
             return validateDoiListOffline(updatedUriDoiList);
         }
@@ -59,6 +62,13 @@ public class DoiValidator {
         } else {
             return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
         }
+    }
+
+    public static String replaceCharactersIfNeeded(String doi) {
+        if (doi.contains(ENCODED_SLASH)) {
+            return doi.replace(ENCODED_SLASH, SLASH);
+        }
+        return doi;
     }
 
     private static String handleDoiWithColon(String doi) {

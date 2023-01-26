@@ -1,5 +1,7 @@
 package no.sikt.nva;
 
+import static java.util.Objects.nonNull;
+import static no.sikt.nva.scrapers.DublinCoreScraper.CRISTIN_POST;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -36,6 +38,7 @@ import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.GodClass")
 @JacocoGenerated
 public class BrageProcessor implements Runnable {
 
@@ -135,10 +138,18 @@ public class BrageProcessor implements Runnable {
         return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
     }
 
-    private void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> errors) {
+    private void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> errors, Record record) {
         if (!errors.isEmpty()) {
-            logger.error(errors + StringUtils.SPACE + brageLocation.getOriginInformation());
+            if (isCristinPost(record)) {
+                logger.error(CRISTIN_POST + errors + StringUtils.SPACE + brageLocation.getOriginInformation());
+            } else {
+                logger.error(errors + StringUtils.SPACE + brageLocation.getOriginInformation());
+            }
         }
+    }
+
+    private static boolean isCristinPost(Record record) {
+        return nonNull(record.getCristinId()) && !record.getCristinId().isEmpty();
     }
 
     private boolean hasEmbargo(DublinCore dublinCore) {
@@ -190,8 +201,10 @@ public class BrageProcessor implements Runnable {
 
     private Record injectErrorsFromBrageProcessorValidator(File entryDirectory, DublinCore dublinCore,
                                                            Record record, BrageLocation brageLocation) {
-        record.getErrors().addAll(BrageProcessorValidator.getBrageProcessorErrors(entryDirectory, dublinCore));
-        logErrorsIfNotEmpty(brageLocation, record.getErrors());
+        var errorsFromBrageProcessorValidator = BrageProcessorValidator.getBrageProcessorErrors(entryDirectory,
+                                                                                                dublinCore);
+        record.getErrors().addAll(errorsFromBrageProcessorValidator);
+        logErrorsIfNotEmpty(brageLocation, errorsFromBrageProcessorValidator, record);
         return record;
     }
 
