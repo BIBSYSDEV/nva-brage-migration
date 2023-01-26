@@ -178,7 +178,7 @@ public class BrageProcessor implements Runnable {
     }
 
     private static Record injectResourceOwner(Record record) {
-        record.setResourceOwner(ResourceOwnerMapper.getResourceOwner(customer));
+        record.setResourceOwner(ResourceOwnerMapper.getResourceOwner(customer, awsEnvironment));
         return record;
     }
 
