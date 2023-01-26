@@ -49,6 +49,7 @@ public class BrageProcessor implements Runnable {
     private final static Counter counter = new Counter();
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private static String customer;
+    private static String awsEnvironment;
     private final String zipfile;
     private final String destinationDirectory;
     private final HandleScraper handleScraper;
@@ -59,7 +60,7 @@ public class BrageProcessor implements Runnable {
     private final Map<String, Contributor> contributors;
     private List<Record> records;
 
-    @SuppressWarnings("PMD.AssignmentToNonFinalStatic")
+    @SuppressWarnings({"PMD.AssignmentToNonFinalStatic", "PMD.ExcessiveParameterList"})
     public BrageProcessor(String zipfile,
                           String customer,
                           String destinationDirectory,
@@ -67,6 +68,7 @@ public class BrageProcessor implements Runnable {
                           boolean enableOnlineValidation,
                           boolean shouldLookUpInChannelRegister,
                           boolean noHandleCheck,
+                          String awsEnvironment,
                           List<Embargo> embargoes,
                           Map<String, Contributor> contributors) {
         BrageProcessor.customer = customer;
@@ -76,6 +78,7 @@ public class BrageProcessor implements Runnable {
         this.destinationDirectory = destinationDirectory;
         this.handleScraper = new HandleScraper(rescueTitleAndHandleMap);
         this.noHandleCheck = noHandleCheck;
+        BrageProcessor.awsEnvironment = awsEnvironment;
         this.embargoes = embargoes;
         this.contributors = contributors;
     }
@@ -170,7 +173,7 @@ public class BrageProcessor implements Runnable {
     }
 
     private static Record injectCustomer(Record record) {
-        record.setCustomer(new Customer(customer, CustomerMapper.getCustomerUri(customer)));
+        record.setCustomer(new Customer(customer, CustomerMapper.getCustomerUri(customer, awsEnvironment)));
         return record;
     }
 
@@ -290,7 +293,8 @@ public class BrageProcessor implements Runnable {
     }
 
     private boolean isAlreadyImported(String handle) {
-        var importedHandles = AlreadyImportedHandlesScraper.scrapeHandlesFromSuppliedExternalFile(new File("handles.csv"));
+        var importedHandles = AlreadyImportedHandlesScraper.scrapeHandlesFromSuppliedExternalFile(
+            new File("handles.csv"));
         return importedHandles.contains(handle);
     }
 

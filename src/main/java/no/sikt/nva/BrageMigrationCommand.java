@@ -394,14 +394,15 @@ public class BrageMigrationCommand implements Callable<Integer> {
             Arrays.stream(zipFiles)
                 .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,
                                                                            shouldLookUpInChannelRegister,
-                                                                           noHandleCheck, outputDirectory))
+                                                                           noHandleCheck, awsEnvironment.getValue(),
+                                                                           outputDirectory))
                 .collect(Collectors.toList());
     }
 
     public enum AwsEnvironment {
         EXPERIMENTAL("experimental"),
         SANDBOX("sandbox"),
-        DEVELOP("develop"),
+        DEVELOP("dev"),
         TEST("test"),
         PROD("prod");
 
