@@ -47,9 +47,6 @@ public class BrageProcessor implements Runnable {
     private static final String DUBLIN_CORE_XML_DEFAULT_NAME = "dublin_core.xml";
     private static final String CONTENT_FILE_DEFAULT_NAME = "contents";
     private final static Counter counter = new Counter();
-    @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
-    private static String customer;
-    private static String awsEnvironment;
     private final String zipfile;
     private final String destinationDirectory;
     private final HandleScraper handleScraper;
@@ -58,6 +55,9 @@ public class BrageProcessor implements Runnable {
     private final boolean noHandleCheck;
     private final List<Embargo> embargoes;
     private final Map<String, Contributor> contributors;
+    @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
+    private final String customer;
+    private final String awsEnvironment;
     private List<Record> records;
 
     @SuppressWarnings({"PMD.AssignmentToNonFinalStatic", "PMD.ExcessiveParameterList"})
@@ -71,24 +71,24 @@ public class BrageProcessor implements Runnable {
                           String awsEnvironment,
                           List<Embargo> embargoes,
                           Map<String, Contributor> contributors) {
-        BrageProcessor.customer = customer;
+        this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
         this.shouldLookUpInChannelRegister = shouldLookUpInChannelRegister;
         this.destinationDirectory = destinationDirectory;
         this.handleScraper = new HandleScraper(rescueTitleAndHandleMap);
         this.noHandleCheck = noHandleCheck;
-        BrageProcessor.awsEnvironment = awsEnvironment;
+        this.awsEnvironment = awsEnvironment;
         this.embargoes = embargoes;
         this.contributors = contributors;
     }
 
-    public static Path getContentFilePath(File entryDirectory) {
+    public Path getContentFilePath(File entryDirectory) {
         var bundlePath = entryDirectory.getPath();
         return Path.of(bundlePath, CONTENT_FILE_DEFAULT_NAME);
     }
 
-    public static boolean hasEmbargoEndDateWhichIsNotExpired(DublinCore dublinCore) {
+    public boolean hasEmbargoEndDateWhichIsNotExpired(DublinCore dublinCore) {
         if (getEmbargoEndDate(dublinCore).isPresent()) {
             var today = LocalDate.now();
             try {
@@ -122,38 +122,38 @@ public class BrageProcessor implements Runnable {
         return counter.getEmbargoCounter();
     }
 
-    private static boolean isBundle(File entryDirectory) {
+    private boolean isBundle(File entryDirectory) {
         return entryDirectory.isDirectory();
     }
 
-    private static Path getHandlePath(File entryDirectory) {
+    private Path getHandlePath(File entryDirectory) {
         var bundlePath = entryDirectory.getPath();
         return Path.of(bundlePath, HANDLE_DEFAULT_NAME);
     }
 
-    private static File getDublinCoreFile(File entryDirectory) {
+    private File getDublinCoreFile(File entryDirectory) {
         return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
     }
 
-    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> errors) {
+    private void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> errors) {
         if (!errors.isEmpty()) {
             logger.error(errors + StringUtils.SPACE + brageLocation.getOriginInformation());
         }
     }
 
-    private static boolean hasEmbargo(DublinCore dublinCore) {
+    private boolean hasEmbargo(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .anyMatch(DcValue::isEmbargo);
     }
 
-    private static Optional<Boolean> getEmbargoEndDate(DublinCore dublinCore) {
+    private Optional<Boolean> getEmbargoEndDate(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .map(DcValue::isEmbargoEndDate)
                    .findFirst();
     }
 
-    private static String getEmbargoDate(DublinCore dublinCore) {
+    private String getEmbargoDate(DublinCore dublinCore) {
         return String.valueOf(dublinCore.getDcValues()
                                   .stream()
                                   .filter(DcValue::isEmbargo)
@@ -161,53 +161,43 @@ public class BrageProcessor implements Runnable {
                                   .map(DcValue::scrapeValueAndSetToScraped));
     }
 
-    private static void logEmbargoMessage(BrageLocation brageLocation, DublinCore dublinCore) {
+    private void logEmbargoMessage(BrageLocation brageLocation, DublinCore dublinCore) {
         logger.error(RECORD_REMOVED_BECAUSE_OF_EMBARGO
                      + getEmbargoDate(dublinCore)
                      + StringUtils.SPACE
                      + brageLocation.getOriginInformation());
     }
 
-    private static boolean containsEmbargo(DublinCore dublinCore) {
+    private boolean containsEmbargo(DublinCore dublinCore) {
         return hasEmbargo(dublinCore) || hasEmbargoEndDateWhichIsNotExpired(dublinCore);
     }
 
-    private static Record injectCustomer(Record record) {
-        record.setCustomer(new Customer(customer, CustomerMapper.getCustomerUri(customer, awsEnvironment)));
-        return record;
-    }
-
-    private static Record injectResourceOwner(Record record) {
-        record.setResourceOwner(ResourceOwnerMapper.getResourceOwner(customer, awsEnvironment));
-        return record;
-    }
-
-    private static Record injectContentBundle(Record record, File entryDirectory, BrageLocation brageLocation,
-                                              LicenseScraper licenseScraper, DublinCore dublinCore)
+    private Record injectContentBundle(Record record, File entryDirectory, BrageLocation brageLocation,
+                                       LicenseScraper licenseScraper, DublinCore dublinCore)
         throws ContentException {
         record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper,
                                            dublinCore));
         return record;
     }
 
-    private static ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,
-                                              LicenseScraper licenseScraper, DublinCore dublinCore)
+    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,
+                                       LicenseScraper licenseScraper, DublinCore dublinCore)
         throws ContentException {
         var license = licenseScraper.extractLicense(entryDirectory, dublinCore);
         var contentScraper = new ContentScraper(getContentFilePath(entryDirectory), brageLocation, license);
         return contentScraper.scrapeContent();
     }
 
-    private static Record injectErrorsFromBrageProcessorValidator(File entryDirectory, DublinCore dublinCore,
-                                                                  Record record, BrageLocation brageLocation) {
+    private Record injectErrorsFromBrageProcessorValidator(File entryDirectory, DublinCore dublinCore,
+                                                           Record record, BrageLocation brageLocation) {
         record.getErrors().addAll(BrageProcessorValidator.getBrageProcessorErrors(entryDirectory, dublinCore));
         logErrorsIfNotEmpty(brageLocation, record.getErrors());
         return record;
     }
 
-    private static Record injectResourceContent(LicenseScraper licenseScraper, File entryDirectory,
-                                                BrageLocation brageLocation,
-                                                DublinCore dublinCore, Record r) {
+    private Record injectResourceContent(LicenseScraper licenseScraper, File entryDirectory,
+                                         BrageLocation brageLocation,
+                                         DublinCore dublinCore, Record r) {
         try {
             return injectContentBundle(r, entryDirectory, brageLocation,
                                        licenseScraper, dublinCore);
@@ -216,20 +206,30 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private static Optional<Record> logAndReturnOptionalEmpty(BrageLocation brageLocation, DublinCore dublinCore) {
+    private Optional<Record> logAndReturnOptionalEmpty(BrageLocation brageLocation, DublinCore dublinCore) {
         logEmbargoMessage(brageLocation, dublinCore);
         counter.countRecordWithEmbargo();
         return Optional.empty();
     }
 
-    private static DublinCore parseDublinCore(File entryDirectory) {
+    private DublinCore parseDublinCore(File entryDirectory) {
         return DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
+    }
+
+    private Record injectCustomer(Record record) {
+        record.setCustomer(new Customer(customer, new CustomerMapper().getCustomerUri(customer, awsEnvironment)));
+        return record;
+    }
+
+    private Record injectResourceOwner(Record record) {
+        record.setResourceOwner(new ResourceOwnerMapper().getResourceOwner(customer, awsEnvironment));
+        return record;
     }
 
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories.stream()
-                   .filter(BrageProcessor::isBundle)
+                   .filter(file -> isBundle(file))
                    .map(bundleDirectory -> processBundle(licenseScraper, bundleDirectory))
                    .flatMap(Optional::stream)
                    .collect(Collectors.toList());
@@ -262,8 +262,8 @@ public class BrageProcessor implements Runnable {
                                                       shouldLookUpInChannelRegister,
                                                       contributors);
         return Optional.of(dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation))
-                   .map(BrageProcessor::injectCustomer)
-                   .map(BrageProcessor::injectResourceOwner)
+                   .map(record -> injectCustomer(record))
+                   .map(record -> injectResourceOwner(record))
                    .map(r -> injectResourceContent(licenseScraper, entryDirectory, brageLocation, dublinCore, r))
                    .map(r -> injectBrageLocation(r, brageLocation))
                    .map(this::injectAffiliationsFromExternalFile)

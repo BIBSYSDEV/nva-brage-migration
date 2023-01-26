@@ -5,7 +5,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
-public final class CustomerMapper {
+public class CustomerMapper {
 
     public static final String NVE = "NVE";
     public static final String KRUS = "KRUS";
@@ -20,7 +20,6 @@ public final class CustomerMapper {
     public static final String DEVELOP = "dev";
     public static final String TEST = "test";
     public static final String PROD = "prod";
-    public static final String CUSTOMER_BASE_PATH_PROD = "https://api.nva.unit.no/customer/";
 
     private static final Map<String, Map<String, String>> CUSTOMER_MAP = Map.ofEntries(
         entry(NVE, Map.ofEntries(entry(SANDBOX, "5eb7ca32-0e6b-4819-b794-c31a4b16ea6b"),
@@ -73,11 +72,11 @@ public final class CustomerMapper {
         entry(TEST, TEST_URI),
         entry(PROD, PROD_URI));
 
-    private CustomerMapper() {
+    public CustomerMapper() {
 
     }
 
-    public static URI getCustomerUri(String customerShortName, String environment) {
+    public URI getCustomerUri(String customerShortName, String environment) {
         return Optional.ofNullable(CUSTOMER_MAP)
                    .map(customerMap -> customerMap.getOrDefault(customerShortName, null))
                    .map(environmentMap -> environmentMap.get(environment))
@@ -85,7 +84,7 @@ public final class CustomerMapper {
                    .orElse(null);
     }
 
-    private static URI constructCustomerUri(String environment, String customerIdentifier) {
+    private URI constructCustomerUri(String environment, String customerIdentifier) {
         return URI.create(ENVIRONMENT_URI_MAP.get(environment) + customerIdentifier);
     }
 }

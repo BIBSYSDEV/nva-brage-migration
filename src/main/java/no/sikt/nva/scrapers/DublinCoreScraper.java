@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.GodClass")
-public final class DublinCoreScraper {
+public class DublinCoreScraper {
 
     public static final String SUBMITTED_VERSION = "submittedVersion";
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";

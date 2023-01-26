@@ -7,7 +7,7 @@ import java.util.Optional;
 import no.sikt.nva.brage.migration.common.model.record.ResourceOwner;
 
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
-public final class ResourceOwnerMapper {
+public class ResourceOwnerMapper {
 
     public static final String SANDBOX = "sandbox";
     public static final String DEVELOP = "dev";
@@ -67,21 +67,21 @@ public final class ResourceOwnerMapper {
         entry(TEST, TEST_URI),
         entry(PROD, PROD_URI));
 
-    private ResourceOwnerMapper() {
+    public ResourceOwnerMapper() {
     }
 
-    public static ResourceOwner getResourceOwner(String customerShortName, String environment) {
+    public ResourceOwner getResourceOwner(String customerShortName, String environment) {
         return Optional.ofNullable(RESOURCE_OWNER_MAP)
                    .map(ownerMap -> ownerMap.get(customerShortName))
                    .map(valueMap -> constructResourceOwner(valueMap, environment))
                    .orElse(null);
     }
 
-    private static ResourceOwner constructResourceOwner(Map<String, String> valueMap, String environment) {
+    private ResourceOwner constructResourceOwner(Map<String, String> valueMap, String environment) {
         return new ResourceOwner(valueMap.get(OWNER_VALUE), constructCristinOrganizationUri(valueMap, environment));
     }
 
-    private static URI constructCristinOrganizationUri(Map<String, String> valueMap, String environment) {
+    private URI constructCristinOrganizationUri(Map<String, String> valueMap, String environment) {
         return URI.create(ENVIRONMENT_URI_MAP.get(environment) + valueMap.get(CRISTIN_IDENTIFIER));
     }
 }
