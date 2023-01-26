@@ -4,7 +4,6 @@ import static java.util.Map.entry;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
-import no.sikt.nva.BrageMigrationCommand.AwsEnvironment;
 
 public final class CustomerMapper {
 
@@ -64,6 +63,16 @@ public final class CustomerMapper {
                                  entry(TEST, ""),
                                  entry(PROD, ""))));
 
+    private static final String SANDBOX_URI = "https://api.sandbox.nva.aws.unit.no/customer/";
+    private static final String DEVELOP_URI = "https://api.dev.nva.aws.unit.no/customer/";
+    private static final String TEST_URI = "https://api.test.nva.aws.unit.no/customer/";
+    private static final String PROD_URI = "https://api.nva.aws.unit.no/customer/";
+    private static final Map<String, String> ENVIRONMENT_URI_MAP = Map.ofEntries(
+        entry(SANDBOX, SANDBOX_URI),
+        entry(DEVELOP, DEVELOP_URI),
+        entry(TEST, TEST_URI),
+        entry(PROD, PROD_URI));
+
     private CustomerMapper() {
 
     }
@@ -77,20 +86,6 @@ public final class CustomerMapper {
     }
 
     private static URI constructCustomerUri(String environment, String customerIdentifier) {
-        return isProd(environment)
-                   ? createProdUri(customerIdentifier)
-                   : createUriForOtherEnvironments(environment, customerIdentifier);
-    }
-
-    private static URI createUriForOtherEnvironments(String environment, String customerIdentifier) {
-        return URI.create("https://api." + environment + ".nva.aws.unit.no/customer/" + customerIdentifier);
-    }
-
-    private static URI createProdUri(String customerIdentifier) {
-        return URI.create(CUSTOMER_BASE_PATH_PROD + customerIdentifier);
-    }
-
-    private static boolean isProd(String environment) {
-        return AwsEnvironment.PROD.getValue().equals(environment);
+        return URI.create(ENVIRONMENT_URI_MAP.get(environment) + customerIdentifier);
     }
 }
