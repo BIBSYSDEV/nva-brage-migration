@@ -170,11 +170,10 @@ public final class ChannelRegister {
     }
 
     private static boolean isSearchableInPublishers(DublinCore dublinCore) {
-        var type = TypeMapper.convertBrageTypeToNvaType(DublinCoreScraper.extractType(dublinCore));
         return SEARCHABLE_TYPES_IN_PUBLISHERS.stream()
                    .map(NvaType::getValue)
                    .collect(Collectors.toList())
-                   .contains(type);
+                   .contains(TypeMapper.convertBrageTypeToNvaType(DublinCoreScraper.extractType(dublinCore)));
     }
 
     private static List<ChannelRegisterPublisher> getPublishersFromCsv() {
