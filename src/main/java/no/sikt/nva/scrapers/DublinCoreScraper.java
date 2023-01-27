@@ -2,6 +2,8 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_VERSIONS;
+import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JOURNALS;
+import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PUBLISHERS;
 import static no.sikt.nva.validators.DublinCoreValidator.ACCEPTED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.validators.DublinCoreValidator.PUBLISHED_VERSION_STRING;
@@ -254,7 +256,7 @@ public class DublinCoreScraper {
     }
 
     private static void searchForSeriesAndJournalsInChannelRegister(BrageLocation brageLocation, Record record) {
-        if (isSearchableInJournals(record.getType().getNva())) {
+        if (isSearchableInJournals(record)) {
             setIdFromJournals(brageLocation, record);
         }
     }
@@ -305,17 +307,18 @@ public class DublinCoreScraper {
         }
     }
 
-    private static boolean isSearchableInJournals(String nvaType) {
-        return nvaType.equals(NvaType.JOURNAL_ARTICLE.getValue())
-               || nvaType.equals(NvaType.SCIENTIFIC_ARTICLE.getValue())
-               || nvaType.equals(NvaType.REPORT.getValue());
+    private static boolean isSearchableInJournals(Record record) {
+        return SEARCHABLE_TYPES_IN_JOURNALS.stream()
+                   .map(NvaType::getValue)
+                   .collect(Collectors.toList())
+                   .contains(record.getType().getNva());
     }
 
     private static boolean isSearchableInPublishers(Record record) {
-        return nonNull(record.getPublication().getPublicationContext().getBragePublisher())
-               && record.getType().getNva().equals(NvaType.REPORT.getValue())
-               || record.getType().getNva().equals(NvaType.BOOK.getValue())
-               || record.getType().getNva().equals(NvaType.SCIENTIFIC_MONOGRAPH.getValue());
+        return SEARCHABLE_TYPES_IN_PUBLISHERS.stream()
+                   .map(NvaType::getValue)
+                   .collect(Collectors.toList())
+                   .contains(record.getType().getNva());
     }
 
     private static URI extractDoi(DublinCore dublinCore) {

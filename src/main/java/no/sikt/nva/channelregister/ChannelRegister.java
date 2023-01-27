@@ -23,12 +23,14 @@ import no.sikt.nva.BrageProcessor;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.PublisherMapper;
+import no.sikt.nva.scrapers.TypeMapper;
 import nva.commons.core.SingletonCollector;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
@@ -41,6 +43,15 @@ public final class ChannelRegister {
     public static final String NO_PUBLISHER_FOUND = "No publisher found";
     public static final String KANALREGISTER_READING_ERROR_MESSAGE = "Fatal error, could not read kanalregister";
     public static final String NOT_FOUND_IN_CHANNEL_REGISTER = "NOT_FOUND_IN_CHANNEL_REGISTER: ";
+    public static final List<NvaType> SEARCHABLE_TYPES_IN_JOURNALS = List.of(NvaType.JOURNAL_ARTICLE,
+                                                                             NvaType.SCIENTIFIC_ARTICLE,
+                                                                             NvaType.REPORT);
+    public final static List<NvaType> SEARCHABLE_TYPES_IN_PUBLISHERS = List.of(
+        NvaType.BOOK, NvaType.DATASET, NvaType.REPORT, NvaType.BACHELOR_THESIS, NvaType.MASTER_THESIS,
+        NvaType.DOCTORAL_THESIS, NvaType.WORKING_PAPER, NvaType.STUDENT_PAPER, NvaType.STUDENT_PAPER_OTHERS,
+        NvaType.RESEARCH_REPORT, NvaType.DESIGN_PRODUCT, NvaType.CHRONICLE, NvaType.SOFTWARE, NvaType.LECTURE,
+        NvaType.RECORDING_MUSICAL, NvaType.PLAN_OR_BLUEPRINT, NvaType.MAP, NvaType.CONFERENCE_POSTER,
+        NvaType.SCIENTIFIC_MONOGRAPH, NvaType.SCIENTIFIC_CHAPTER);
     private static final String JOURNAL_PATH = "journals.csv";
     private static final String PUBLISHERS_PATH = "publishers.csv";
     private static final char SEPARATOR = ';';
@@ -71,8 +82,8 @@ public final class ChannelRegister {
             if (isJournalArticle(dublinCore)) {
                 return getErrorDetailsForJournalArticle(dublinCore, brageLocation);
             }
-            if (hasPublisher(dublinCore) && isReport(dublinCore) || isBook(dublinCore)) {
-                return getErrorDetailsForReport(dublinCore, brageLocation);
+            if (hasPublisher(dublinCore) && isSearchableInPublishers(dublinCore)) {
+                return getErrorDetailsForPublisher(dublinCore, brageLocation);
             }
         }
         return Optional.empty();
@@ -158,6 +169,14 @@ public final class ChannelRegister {
         }
     }
 
+    private static boolean isSearchableInPublishers(DublinCore dublinCore) {
+        var type = TypeMapper.convertBrageTypeToNvaType(DublinCoreScraper.extractType(dublinCore));
+        return SEARCHABLE_TYPES_IN_PUBLISHERS.stream()
+                   .map(NvaType::getValue)
+                   .collect(Collectors.toList())
+                   .contains(type);
+    }
+
     private static List<ChannelRegisterPublisher> getPublishersFromCsv() {
         try (var inputStream = Thread.currentThread().getContextClassLoader()
                                    .getResourceAsStream(PUBLISHERS_PATH);
@@ -189,14 +208,6 @@ public final class ChannelRegister {
         }
     }
 
-    private static boolean isBook(DublinCore dublinCore) {
-        return DublinCoreScraper.extractType(dublinCore).contains(BrageType.BOOK.getValue());
-    }
-
-    private static boolean isReport(DublinCore dublinCore) {
-        return DublinCoreScraper.extractType(dublinCore).contains(BrageType.REPORT.getValue());
-    }
-
     private static boolean hasPublisher(DublinCore dublinCore) {
         var publisher = DublinCoreScraper.extractPublisher(dublinCore);
         return nonNull(publisher);
@@ -214,7 +225,8 @@ public final class ChannelRegister {
         }
     }
 
-    private static Optional<ErrorDetails> getErrorDetailsForReport(DublinCore dublinCore, BrageLocation brageLocation) {
+    private static Optional<ErrorDetails> getErrorDetailsForPublisher(DublinCore dublinCore,
+                                                                      BrageLocation brageLocation) {
         var publisher = DublinCoreScraper.extractPublisher(dublinCore);
         var publication = DublinCoreScraper.extractPublication(dublinCore);
         var journalIdentifier = channelRegister.lookUpInJournal(publication, brageLocation);
