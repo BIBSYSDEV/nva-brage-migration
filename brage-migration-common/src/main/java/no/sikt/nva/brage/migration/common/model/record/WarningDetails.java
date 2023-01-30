@@ -11,7 +11,7 @@ public class WarningDetails {
     private List<String> details;
 
     public WarningDetails(@JsonProperty("warningCode") Warning warningCode,
-                          @JsonProperty("details")List<String> details) {
+                          @JsonProperty("details") List<String> details) {
         this.warningCode = warningCode;
         this.details = details;
     }
@@ -65,9 +65,9 @@ public class WarningDetails {
         ISSUE_NOT_NUMBER_WARNING,
         PAGE_NUMBER_FORMAT_NOT_RECOGNIZED,
         MULTIPLE_ISBN_VALUES_WARNING,
-        EMPTY_OR_NONEXISTENT_COLLECTION,
         INVALID_ISBN_WARNING,
+        NONEXISTENT_COLLECTION,
+        EMPTY_COLLECTION,
         NO_CONTRIBUTORS
-
     }
 }

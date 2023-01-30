@@ -97,7 +97,7 @@ public class BrageMigrationCommandTest {
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
         assertThat(appender.getMessages(),
-                   containsString(Warning.EMPTY_OR_NONEXISTENT_COLLECTION.toString()));
+                   containsString(Warning.EMPTY_COLLECTION.toString()));
         assertThat(appender.getMessages(),
                    not(containsString(WRITING_TO_JSON_FILE_HAS_FAILED)));
     }
