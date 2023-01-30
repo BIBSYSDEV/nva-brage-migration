@@ -50,7 +50,7 @@ test {
     finalizedBy jacocoTestReport
 }
 
-tasks.withType(Checkstyle) {
+tasks.withType(Checkstyle).configureEach {
     reports {
         xml.enabled false
         html.enabled true
