@@ -125,6 +125,10 @@ public class BrageProcessor implements Runnable {
         return counter.getEmbargoCounter();
     }
 
+    private static boolean isCristinPost(Record record) {
+        return nonNull(record.getCristinId()) && !record.getCristinId().isEmpty();
+    }
+
     private boolean isBundle(File entryDirectory) {
         return entryDirectory.isDirectory();
     }
@@ -148,14 +152,10 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private static boolean isCristinPost(Record record) {
-        return nonNull(record.getCristinId()) && !record.getCristinId().isEmpty();
-    }
-
     private boolean hasEmbargo(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
-                   .anyMatch(DcValue::isEmbargo);
+                   .anyMatch(dcValue -> dcValue.isEmbargo() && !dcValue.getValue().isEmpty());
     }
 
     private Optional<Boolean> getEmbargoEndDate(DublinCore dublinCore) {
@@ -242,7 +242,7 @@ public class BrageProcessor implements Runnable {
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
         LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories.stream()
-                   .filter(file -> isBundle(file))
+                   .filter(this::isBundle)
                    .map(bundleDirectory -> processBundle(licenseScraper, bundleDirectory))
                    .flatMap(Optional::stream)
                    .collect(Collectors.toList());
@@ -275,8 +275,8 @@ public class BrageProcessor implements Runnable {
                                                       shouldLookUpInChannelRegister,
                                                       contributors);
         return Optional.of(dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation))
-                   .map(record -> injectCustomer(record))
-                   .map(record -> injectResourceOwner(record))
+                   .map(this::injectCustomer)
+                   .map(this::injectResourceOwner)
                    .map(r -> injectResourceContent(licenseScraper, entryDirectory, brageLocation, dublinCore, r))
                    .map(r -> injectBrageLocation(r, brageLocation))
                    .map(this::injectAffiliationsFromExternalFile)

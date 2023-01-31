@@ -175,12 +175,22 @@ public final class DublinCoreValidator {
 
     private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore) {
         if (hasIssn(dublinCore)) {
-            var invalidIssnList = DublinCoreScraper.extractIssn(dublinCore)
+            var invalidIssnList = dublinCore.getDcValues()
                                       .stream()
+                                      .filter(DcValue::isIssnValue)
+                                      .map(DcValue::scrapeValueAndSetToScraped)
+                                      .map(DublinCoreScraper::removeWrongPlacedDelimiters)
+                                      .map(DublinCoreScraper::addDelimiter)
                                       .filter(issn -> !ISSNValidator.getInstance().isValid(issn))
+                                      .filter(value -> !value.isEmpty())
                                       .collect(Collectors.toList());
+            var originalIssnValues = dublinCore.getDcValues()
+                                         .stream()
+                                         .filter(DcValue::isIssnValue)
+                                         .map(DcValue::getValue)
+                                         .collect(Collectors.toList());
             return !invalidIssnList.isEmpty()
-                       ? Optional.of(new ErrorDetails(INVALID_ISSN, invalidIssnList))
+                       ? Optional.of(new ErrorDetails(INVALID_ISSN, originalIssnValues))
                        : Optional.empty();
         }
         return Optional.empty();
@@ -206,8 +216,7 @@ public final class DublinCoreValidator {
                                .stream()
                                .filter(DcValue::isDescription)
                                .map(DcValue::getValue)
-                               .collect(
-                                   Collectors.toList());
+                               .collect(Collectors.toList());
         if (descriptions.size() > ONE_DESCRIPTION) {
             return Optional.of(new WarningDetails(Warning.MULTIPLE_DESCRIPTION_PRESENT, descriptions));
         } else {

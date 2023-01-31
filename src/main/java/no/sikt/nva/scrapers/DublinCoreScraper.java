@@ -75,6 +75,8 @@ public class DublinCoreScraper {
                    .filter(DcValue::isIssnValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .map(issn -> issn.replaceAll(REGEX_ISSN, StringUtils.EMPTY_STRING).toUpperCase(Locale.ROOT))
+                   .filter(value -> !value.isEmpty())
+                   .map(DublinCoreScraper::removeWrongPlacedDelimiters)
                    .map(DublinCoreScraper::addDelimiter)
                    .collect(Collectors.toList());
     }
@@ -165,6 +167,25 @@ public class DublinCoreScraper {
                    .collect(Collectors.toList());
     }
 
+    public static String removeWrongPlacedDelimiters(String value) {
+        if (firstLetterIsDelimiter(value)) {
+            return value.substring(1);
+        }
+        if (lastLetterIsDelimiter(value)) {
+            return value.substring(0, value.length() - 1);
+        }
+        if (firstLetterIsDelimiter(value) && lastLetterIsDelimiter(value)) {
+            return value.substring(1).substring(0, value.length() - 1);
+        }
+        return value;
+    }
+
+    public static String addDelimiter(String issn) {
+        return nonNull(issn) && issn.length() >= 8 && !issn.contains(DELIMITER)
+                   ? issn.substring(0, 4) + DELIMITER + issn.substring(4)
+                   : issn;
+    }
+
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         try {
             var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
@@ -196,10 +217,8 @@ public class DublinCoreScraper {
         return shouldLookUpInChannelRegister;
     }
 
-    private static String addDelimiter(String issn) {
-        return nonNull(issn) && issn.length() >= 8 && !issn.contains(DELIMITER)
-                   ? issn.substring(0, 4) + DELIMITER + issn.substring(4)
-                   : issn;
+    private static boolean lastLetterIsDelimiter(String value) {
+        return DELIMITER.equals(String.valueOf(value.toCharArray()[value.length() - 1]));
     }
 
     private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings,
@@ -553,5 +572,9 @@ public class DublinCoreScraper {
     private static boolean isInCristin(DublinCore dublinCore) {
         var cristinId = extractCristinId(dublinCore);
         return nonNull(cristinId) && !cristinId.isEmpty();
+    }
+
+    private static boolean firstLetterIsDelimiter(String value) {
+        return DELIMITER.equals(String.valueOf(value.toCharArray()[0]));
     }
 }

@@ -313,7 +313,7 @@ public class DublinCoreScraperTest {
     void shouldNotLogConvertiblePeerReviewedValues() {
         var typeDcValue = new DcValue(Element.TYPE, null, "Journal article");
         var peerReviewed = new DcValue(Element.TYPE, null, "Peer reviewed");
-        var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
+        var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "-1501-2832-");
 
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(typeDcValue, peerReviewed, issnDcValue));
