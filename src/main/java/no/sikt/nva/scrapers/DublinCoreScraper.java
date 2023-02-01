@@ -1,7 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_VERSIONS;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JOURNALS;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PUBLISHERS;
 import static no.sikt.nva.validators.DublinCoreValidator.ACCEPTED_VERSION_STRING;
@@ -546,7 +546,7 @@ public class DublinCoreScraper {
         if (versions.contains(SUBMITTED_VERSION)) {
             return new PublisherAuthority(Collections.singletonList(SUBMITTED_VERSION), false);
         } else {
-            logger.error(new ErrorDetails(MULTIPLE_VERSIONS, versions)
+            logger.error(new ErrorDetails(MULTIPLE_DC_VERSION_VALUES, versions)
                          + StringUtils.SPACE
                          + brageLocation.getOriginInformation());
             return new PublisherAuthority(versions, null);

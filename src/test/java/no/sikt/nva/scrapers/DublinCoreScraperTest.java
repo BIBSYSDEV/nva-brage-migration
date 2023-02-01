@@ -2,12 +2,12 @@ package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_VALUE;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_OFFLINE_CHECK;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_LANGUAGE;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_LANGUAGES_PRESENT;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_LANGUAGE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_LANGUAGES_PRESENT;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_VERSIONS;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
@@ -100,7 +100,7 @@ public class DublinCoreScraperTest {
                                                                   new BrageLocation(null));
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
-        assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_VERSIONS))));
+        assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_DC_VERSION_VALUES))));
     }
 
     @Test
@@ -120,7 +120,7 @@ public class DublinCoreScraperTest {
                                                                   new BrageLocation(null));
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
-        assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_VERSIONS))));
+        assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_DC_VERSION_VALUES))));
     }
 
     @Test
@@ -139,7 +139,7 @@ public class DublinCoreScraperTest {
                                                                   new BrageLocation(null));
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
-        assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_VERSIONS))));
+        assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_DC_VERSION_VALUES))));
     }
 
     @Test
@@ -421,7 +421,7 @@ public class DublinCoreScraperTest {
                                                       Map.of());
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getErrors(), hasItem(new ErrorDetails(INVALID_LANGUAGE, List.of(nonIsoLanguage))));
+        assertThat(record.getErrors(), hasItem(new ErrorDetails(INVALID_DC_LANGUAGE, List.of(nonIsoLanguage))));
     }
 
     @Test
@@ -437,7 +437,7 @@ public class DublinCoreScraperTest {
                                                       Map.of());
         var brageLocation = new BrageLocation(null);
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_LANGUAGES_PRESENT, List.of()))));
+        assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_DC_LANGUAGES_PRESENT, List.of()))));
     }
 
     @Test
@@ -453,7 +453,7 @@ public class DublinCoreScraperTest {
                                                       Map.of());
         var brageLocation = new BrageLocation(null);
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_LANGUAGES_PRESENT, List.of()))));
+        assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_DC_LANGUAGES_PRESENT, List.of()))));
     }
 
     @Test
@@ -516,7 +516,7 @@ public class DublinCoreScraperTest {
                                                       Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
         dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(appender.getMessages(), containsString(Error.INVALID_DATE_ERROR.toString()));
+        assertThat(appender.getMessages(), containsString(Error.INVALID_DC_DATE_ISSUED.toString()));
     }
 
     @Test
@@ -546,7 +546,7 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         dublinCoreScraper
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(appender.getMessages(), containsString(INVALID_TYPE.toString()));
+        assertThat(appender.getMessages(), containsString(INVALID_DC_TYPE.toString()));
     }
 
     @Test
@@ -558,7 +558,7 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of())
             .validateAndParseDublinCore(dublinCoreWithDoi, new BrageLocation(null));
-        assertThat(appender.getMessages(), containsString(INVALID_DOI_OFFLINE_CHECK.toString()));
+        assertThat(appender.getMessages(), containsString(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK.toString()));
     }
 
     @Test
@@ -571,7 +571,7 @@ public class DublinCoreScraperTest {
         var record = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of())
                          .validateAndParseDublinCore(dublinCoreWithDoi, new BrageLocation(null));
         assertThat(record.getDoi().toString(), is(equalTo("https://doi.org/10.1007/s12062-016-9157-z")));
-        assertThat(appender.getMessages(), not(containsString(INVALID_DOI_OFFLINE_CHECK.toString())));
+        assertThat(appender.getMessages(), not(containsString(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK.toString())));
     }
 
     @Test

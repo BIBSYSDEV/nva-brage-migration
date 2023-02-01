@@ -1,10 +1,10 @@
 package no.sikt.nva.validators;
 
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_NOT_PRESENT_ERROR;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_CC_LICENSE;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DATE_ERROR;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_NOT_PRESENT_DC_DATE_ISSUED;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_RIGHTS_URI;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_DATE_ISSUED;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_TYPE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.INVALID_ISBN_WARNING;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.LOCAL_DATE_MAX_LENGTH;
 import java.time.Instant;
@@ -100,7 +100,7 @@ public final class DublinCoreValidator {
                 return Optional.empty();
             } else {
                 return Optional.of(
-                    new ErrorDetails(INVALID_CC_LICENSE,
+                    new ErrorDetails(INVALID_DC_RIGHTS_URI,
                                      Collections.singletonList(licenseScraper.extractLicense(dublinCore))));
             }
         }
@@ -316,9 +316,9 @@ public final class DublinCoreValidator {
             if (containsYearAndMonthAndDate(date)) {
                 return Optional.empty();
             }
-            return Optional.of(new ErrorDetails(INVALID_DATE_ERROR, List.of(date)));
+            return Optional.of(new ErrorDetails(INVALID_DC_DATE_ISSUED, List.of(date)));
         }
-        return Optional.of(new ErrorDetails(DATE_NOT_PRESENT_ERROR, List.of()));
+        return Optional.of(new ErrorDetails(DATE_NOT_PRESENT_DC_DATE_ISSUED, List.of()));
     }
 
     private static String modifyIfDateIsOfLocalDateTimeFormat(String date) {
@@ -351,7 +351,7 @@ public final class DublinCoreValidator {
                               .map(TypeTranslator::translateToEnglish)
                               .collect(Collectors.toList());
         if (uniqueTypes.isEmpty()) {
-            return Optional.of(new ErrorDetails(INVALID_TYPE, uniqueTypes));
+            return Optional.of(new ErrorDetails(INVALID_DC_TYPE, uniqueTypes));
         }
         if (uniqueTypes.size() >= 2) {
             return mapMultipleTypes(uniqueTypes);
@@ -359,7 +359,7 @@ public final class DublinCoreValidator {
         if (TypeMapper.hasValidType(uniqueTypes.get(0))) {
             return Optional.empty();
         } else {
-            return Optional.of(new ErrorDetails(INVALID_TYPE, uniqueTypes));
+            return Optional.of(new ErrorDetails(INVALID_DC_TYPE, uniqueTypes));
         }
     }
 
@@ -383,13 +383,13 @@ public final class DublinCoreValidator {
             if (TypeMapper.hasValidType(nextTypeToMap)) {
                 return Optional.empty();
             } else {
-                return Optional.of(new ErrorDetails(INVALID_TYPE, types));
+                return Optional.of(new ErrorDetails(INVALID_DC_TYPE, types));
             }
         }
         if (TypeMapper.hasValidType(firstTypeToMap)) {
             return Optional.empty();
         }
-        return Optional.of(new ErrorDetails(INVALID_TYPE, types));
+        return Optional.of(new ErrorDetails(INVALID_DC_TYPE, types));
     }
 
     private static boolean hasIssn(DublinCore dublinCore) {
