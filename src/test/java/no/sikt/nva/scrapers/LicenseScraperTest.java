@@ -25,24 +25,24 @@ public class LicenseScraperTest {
 
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var licenseDcValue = new DcValue(Element.RIGHTS, Qualifier.URI, CC_BY_NC_ND);
-        var dublinCoreWithCcByNcNdLicense = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue,
-                                                                                                   licenseDcValue));
-        LicenseScraper licenseScraper = new LicenseScraper();
-        var expectedLicense =
-            new License(CC_BY_NC_ND,
-                        new NvaLicense(NvaLicenseIdentifier.CC_BY_NC_ND,
-                                       Map.of(NORWEGIAN_BOKMAAL,
-                                              NvaLicenseIdentifier.CC_BY_NC_ND.getValue())));
-        var actualLicense = licenseScraper.extractLicense(dublinCoreWithCcByNcNdLicense);
+        var dublinCoreWithCcByNcNdLicense = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, licenseDcValue));
+        LicenseScraper licenseScraper = new LicenseScraper(dublinCoreWithCcByNcNdLicense);
+        var expectedLicense = new License(CC_BY_NC_ND, new NvaLicense(NvaLicenseIdentifier.CC_BY_NC_ND,
+                                                                      Map.of(NORWEGIAN_BOKMAAL,
+                                                                             NvaLicenseIdentifier.CC_BY_NC_ND.getValue())));
+        var actualLicense = licenseScraper.generateLicense();
         assertThat(actualLicense, is(equalTo(expectedLicense)));
     }
 
     @Test
     void shouldDetectInvalidLicense() {
-        LicenseScraper licenseScraper = new LicenseScraper();
-        var license = licenseScraper.extractLicense(new DublinCore(List.of()));
+        LicenseScraper licenseScraper = new LicenseScraper(new DublinCore(List.of(new DcValue(Element.RIGHTS,
+                                                                                              Qualifier.URI,
+                                                                                              "SomeLicense"))));
+        var license = licenseScraper.generateLicense();
         var expectedResult = false;
-        assertThat(LicenseScraper.isValidCCLicense(license), is(equalTo(expectedResult)));
+        assertThat(licenseScraper.isValidCCLicense(license), is(equalTo(expectedResult)));
     }
 }
 

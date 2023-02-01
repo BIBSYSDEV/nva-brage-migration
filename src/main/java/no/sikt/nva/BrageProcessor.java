@@ -1,7 +1,5 @@
 package no.sikt.nva;
 
-import static java.util.Objects.nonNull;
-import static no.sikt.nva.scrapers.DublinCoreScraper.CRISTIN_POST;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -11,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
-import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Customer;
 import no.sikt.nva.brage.migration.common.model.record.Record;
@@ -117,10 +114,6 @@ public class BrageProcessor implements Runnable {
         return counter.getEmbargoCounter();
     }
 
-    private static boolean isCristinPost(Record record) {
-        return nonNull(record.getCristinId()) && !record.getCristinId().isEmpty();
-    }
-
     private boolean isBundle(File entryDirectory) {
         return entryDirectory.isDirectory();
     }
@@ -132,16 +125,6 @@ public class BrageProcessor implements Runnable {
 
     private File getDublinCoreFile(File entryDirectory) {
         return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
-    }
-
-    private void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> errors, Record record) {
-        if (!errors.isEmpty()) {
-            if (isCristinPost(record)) {
-                logger.error(CRISTIN_POST + errors + StringUtils.SPACE + brageLocation.getOriginInformation());
-            } else {
-                logger.error(errors + StringUtils.SPACE + brageLocation.getOriginInformation());
-            }
-        }
     }
 
     private boolean hasEmbargo(DublinCore dublinCore) {
@@ -174,22 +157,22 @@ public class BrageProcessor implements Runnable {
     }
 
     private Record injectContentBundle(Record record, File entryDirectory, BrageLocation brageLocation,
-                                       LicenseScraper licenseScraper, DublinCore dublinCore) throws ContentException {
-        record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper, dublinCore));
+                                       DublinCore dublinCore) throws ContentException {
+        record.setContentBundle(getContent(entryDirectory, brageLocation, dublinCore));
         return record;
     }
 
-    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation, LicenseScraper licenseScraper,
-                                       DublinCore dublinCore) throws ContentException {
-        var license = licenseScraper.extractLicense(dublinCore);
+    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation, DublinCore dublinCore)
+        throws ContentException {
+        var license = new LicenseScraper(dublinCore).generateLicense();
         var contentScraper = new ContentScraper(getContentFilePath(entryDirectory), brageLocation, license);
         return contentScraper.scrapeContent();
     }
 
-    private Record injectResourceContent(LicenseScraper licenseScraper, File entryDirectory,
-                                         BrageLocation brageLocation, DublinCore dublinCore, Record r) {
+    private Record injectResourceContent(File entryDirectory, BrageLocation brageLocation, DublinCore dublinCore,
+                                         Record r) {
         try {
-            return injectContentBundle(r, entryDirectory, brageLocation, licenseScraper, dublinCore);
+            return injectContentBundle(r, entryDirectory, brageLocation, dublinCore);
         } catch (ContentException e) {
             throw new RuntimeException(e);
         }
@@ -216,15 +199,14 @@ public class BrageProcessor implements Runnable {
     }
 
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
-        LicenseScraper licenseScraper = new LicenseScraper();
         return resourceDirectories.stream()
                    .filter(this::isBundle)
-                   .map(bundleDirectory -> processBundle(licenseScraper, bundleDirectory))
+                   .map(this::processBundle)
                    .flatMap(Optional::stream)
                    .collect(Collectors.toList());
     }
 
-    private Optional<Record> processBundle(LicenseScraper licenseScraper, File entryDirectory) {
+    private Optional<Record> processBundle(File entryDirectory) {
         try {
             var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
             var dublinCore = parseDublinCore(entryDirectory);
@@ -236,7 +218,7 @@ public class BrageProcessor implements Runnable {
             if (containsEmbargo(dublinCore)) {
                 return logAndReturnOptionalEmpty(brageLocation, dublinCore);
             }
-            return createRecord(licenseScraper, entryDirectory, brageLocation, dublinCore);
+            return createRecord(entryDirectory, brageLocation, dublinCore);
         } catch (Exception e) {
             var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
@@ -244,14 +226,13 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private Optional<Record> createRecord(LicenseScraper licenseScraper, File entryDirectory,
-                                          BrageLocation brageLocation, DublinCore dublinCore) {
+    private Optional<Record> createRecord(File entryDirectory, BrageLocation brageLocation, DublinCore dublinCore) {
         var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation, shouldLookUpInChannelRegister,
                                                       contributors);
         return Optional.of(dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation))
                    .map(this::injectCustomer)
                    .map(this::injectResourceOwner)
-                   .map(r -> injectResourceContent(licenseScraper, entryDirectory, brageLocation, dublinCore, r))
+                   .map(r -> injectResourceContent(entryDirectory, brageLocation, dublinCore, r))
                    .map(r -> injectBrageLocation(r, brageLocation))
                    .map(this::injectAffiliationsFromExternalFile)
                    .map(r -> EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(r, embargoes));
@@ -276,7 +257,6 @@ public class BrageProcessor implements Runnable {
                 .getContributors()
                 .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));
         }
-        logErrorsIfNotEmpty(new BrageLocation(Path.of(record.getBrageLocation())), record.getErrors(), record);
         return record;
     }
 
