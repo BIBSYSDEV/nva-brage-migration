@@ -4,10 +4,10 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.JOURNAL_NOT_IN_CHANNEL_REGISTER;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_ISSN_AND_JOURNAL;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_PUBLISHER;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.PUBLISHER_NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_JOURNAL_NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_ISSN_AND_DC_JOURNAL;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_PUBLISHER;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.DublinCoreScraper.channelRegister;
 import static no.sikt.nva.validators.DublinCoreValidator.filterOutNullValues;
 import com.opencsv.bean.CsvToBeanBuilder;
@@ -241,10 +241,10 @@ public final class ChannelRegister {
     private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String publisher) {
         if (!filterOutNullValues(Collections.singletonList(publisher)).isEmpty()) {
             return Optional.of(
-                new ErrorDetails(PUBLISHER_NOT_IN_CHANNEL_REGISTER,
+                new ErrorDetails(DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER,
                                  filterOutNullValues(Collections.singletonList(publisher))));
         } else {
-            return Optional.of(new ErrorDetails(MISSING_PUBLISHER,
+            return Optional.of(new ErrorDetails(MISSING_DC_PUBLISHER,
                                                 Collections.singletonList(NO_PUBLISHER_FOUND)));
         }
     }
@@ -255,10 +255,10 @@ public final class ChannelRegister {
         valuesToLog.add(title);
         valuesToLog.addAll(issnList);
         if (!filterOutNullValues(valuesToLog).isEmpty()) {
-            return Optional.of(new ErrorDetails(JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(valuesToLog)));
+            return Optional.of(new ErrorDetails(DC_JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(valuesToLog)));
         } else {
             return Optional.of(
-                new ErrorDetails(MISSING_ISSN_AND_JOURNAL, Collections.singletonList(NO_ISSN_OR_JOURNAL_FOUND)));
+                new ErrorDetails(MISSING_DC_ISSN_AND_DC_JOURNAL, Collections.singletonList(NO_ISSN_OR_JOURNAL_FOUND)));
         }
     }
 

@@ -1,7 +1,5 @@
 package no.sikt.nva;
 
-import static java.util.Objects.nonNull;
-import static no.sikt.nva.scrapers.DublinCoreScraper.CRISTIN_POST;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -11,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
-import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Customer;
 import no.sikt.nva.brage.migration.common.model.record.Record;
@@ -31,7 +28,6 @@ import no.sikt.nva.scrapers.EmbargoScraper;
 import no.sikt.nva.scrapers.HandleScraper;
 import no.sikt.nva.scrapers.LicenseScraper;
 import no.sikt.nva.scrapers.ResourceOwnerMapper;
-import no.sikt.nva.validators.BrageProcessorValidator;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 import org.joda.time.LocalDate;
@@ -42,7 +38,6 @@ import org.slf4j.LoggerFactory;
 @JacocoGenerated
 public class BrageProcessor implements Runnable {
 
-    public static final String DEFAULT_LICENSE_FILE_NAME = "license_rdf";
     public static final String RECORD_REMOVED_BECAUSE_OF_EMBARGO = "Record was removed from import because of "
                                                                    + "embargo: ";
     private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
@@ -64,16 +59,10 @@ public class BrageProcessor implements Runnable {
     private List<Record> records;
 
     @SuppressWarnings({"PMD.AssignmentToNonFinalStatic", "PMD.ExcessiveParameterList"})
-    public BrageProcessor(String zipfile,
-                          String customer,
-                          String destinationDirectory,
-                          final Map<String, String> rescueTitleAndHandleMap,
-                          boolean enableOnlineValidation,
-                          boolean shouldLookUpInChannelRegister,
-                          boolean noHandleCheck,
-                          String awsEnvironment,
-                          List<Embargo> embargoes,
-                          Map<String, Contributor> contributors) {
+    public BrageProcessor(String zipfile, String customer, String destinationDirectory,
+                          final Map<String, String> rescueTitleAndHandleMap, boolean enableOnlineValidation,
+                          boolean shouldLookUpInChannelRegister, boolean noHandleCheck, String awsEnvironment,
+                          List<Embargo> embargoes, Map<String, Contributor> contributors) {
         this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
@@ -138,30 +127,14 @@ public class BrageProcessor implements Runnable {
         return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
     }
 
-    private void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> errors, Record record) {
-        if (!errors.isEmpty()) {
-            if (isCristinPost(record)) {
-                logger.error(CRISTIN_POST + errors + StringUtils.SPACE + brageLocation.getOriginInformation());
-            } else {
-                logger.error(errors + StringUtils.SPACE + brageLocation.getOriginInformation());
-            }
-        }
-    }
-
-    private static boolean isCristinPost(Record record) {
-        return nonNull(record.getCristinId()) && !record.getCristinId().isEmpty();
-    }
-
     private boolean hasEmbargo(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
-                   .anyMatch(DcValue::isEmbargo);
+                   .anyMatch(dcValue -> dcValue.isEmbargo() && !dcValue.getValue().isEmpty());
     }
 
     private Optional<Boolean> getEmbargoEndDate(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .map(DcValue::isEmbargoEndDate)
-                   .findFirst();
+        return dublinCore.getDcValues().stream().map(DcValue::isEmbargoEndDate).findFirst();
     }
 
     private String getEmbargoDate(DublinCore dublinCore) {
@@ -184,36 +157,22 @@ public class BrageProcessor implements Runnable {
     }
 
     private Record injectContentBundle(Record record, File entryDirectory, BrageLocation brageLocation,
-                                       LicenseScraper licenseScraper, DublinCore dublinCore)
-        throws ContentException {
-        record.setContentBundle(getContent(entryDirectory, brageLocation, licenseScraper,
-                                           dublinCore));
+                                       DublinCore dublinCore) throws ContentException {
+        record.setContentBundle(getContent(entryDirectory, brageLocation, dublinCore));
         return record;
     }
 
-    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation,
-                                       LicenseScraper licenseScraper, DublinCore dublinCore)
+    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation, DublinCore dublinCore)
         throws ContentException {
-        var license = licenseScraper.extractLicense(entryDirectory, dublinCore);
+        var license = new LicenseScraper(dublinCore).generateLicense();
         var contentScraper = new ContentScraper(getContentFilePath(entryDirectory), brageLocation, license);
         return contentScraper.scrapeContent();
     }
 
-    private Record injectErrorsFromBrageProcessorValidator(File entryDirectory, DublinCore dublinCore,
-                                                           Record record, BrageLocation brageLocation) {
-        var errorsFromBrageProcessorValidator = BrageProcessorValidator.getBrageProcessorErrors(entryDirectory,
-                                                                                                dublinCore);
-        record.getErrors().addAll(errorsFromBrageProcessorValidator);
-        logErrorsIfNotEmpty(brageLocation, errorsFromBrageProcessorValidator, record);
-        return record;
-    }
-
-    private Record injectResourceContent(LicenseScraper licenseScraper, File entryDirectory,
-                                         BrageLocation brageLocation,
-                                         DublinCore dublinCore, Record r) {
+    private Record injectResourceContent(File entryDirectory, BrageLocation brageLocation, DublinCore dublinCore,
+                                         Record r) {
         try {
-            return injectContentBundle(r, entryDirectory, brageLocation,
-                                       licenseScraper, dublinCore);
+            return injectContentBundle(r, entryDirectory, brageLocation, dublinCore);
         } catch (ContentException e) {
             throw new RuntimeException(e);
         }
@@ -240,15 +199,14 @@ public class BrageProcessor implements Runnable {
     }
 
     private List<Record> processBundles(List<File> resourceDirectories) throws IOException {
-        LicenseScraper licenseScraper = new LicenseScraper(DEFAULT_LICENSE_FILE_NAME);
         return resourceDirectories.stream()
-                   .filter(file -> isBundle(file))
-                   .map(bundleDirectory -> processBundle(licenseScraper, bundleDirectory))
+                   .filter(this::isBundle)
+                   .map(this::processBundle)
                    .flatMap(Optional::stream)
                    .collect(Collectors.toList());
     }
 
-    private Optional<Record> processBundle(LicenseScraper licenseScraper, File entryDirectory) {
+    private Optional<Record> processBundle(File entryDirectory) {
         try {
             var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
             var dublinCore = parseDublinCore(entryDirectory);
@@ -260,7 +218,7 @@ public class BrageProcessor implements Runnable {
             if (containsEmbargo(dublinCore)) {
                 return logAndReturnOptionalEmpty(brageLocation, dublinCore);
             }
-            return createRecord(licenseScraper, entryDirectory, brageLocation, dublinCore);
+            return createRecord(entryDirectory, brageLocation, dublinCore);
         } catch (Exception e) {
             var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
@@ -268,19 +226,15 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private Optional<Record> createRecord(LicenseScraper licenseScraper, File entryDirectory,
-                                          BrageLocation brageLocation,
-                                          DublinCore dublinCore) {
-        var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation,
-                                                      shouldLookUpInChannelRegister,
+    private Optional<Record> createRecord(File entryDirectory, BrageLocation brageLocation, DublinCore dublinCore) {
+        var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation, shouldLookUpInChannelRegister,
                                                       contributors);
         return Optional.of(dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation))
-                   .map(record -> injectCustomer(record))
-                   .map(record -> injectResourceOwner(record))
-                   .map(r -> injectResourceContent(licenseScraper, entryDirectory, brageLocation, dublinCore, r))
+                   .map(this::injectCustomer)
+                   .map(this::injectResourceOwner)
+                   .map(r -> injectResourceContent(entryDirectory, brageLocation, dublinCore, r))
                    .map(r -> injectBrageLocation(r, brageLocation))
                    .map(this::injectAffiliationsFromExternalFile)
-                   .map(r -> injectErrorsFromBrageProcessorValidator(entryDirectory, dublinCore, r, brageLocation))
                    .map(r -> EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(r, embargoes));
     }
 
@@ -292,7 +246,8 @@ public class BrageProcessor implements Runnable {
     private Record injectAffiliationsFromExternalFile(Record record) {
         var affiliations = AffiliationsScraper.getAffiliations(new File("affiliations.txt"));
         if (!affiliations.isEmpty()) {
-            var matchingAffiliationKeys = affiliations.keySet().stream()
+            var matchingAffiliationKeys = affiliations.keySet()
+                                              .stream()
                                               .filter(record::hasOrigin)
                                               .collect(Collectors.toList());
             var matchingAffiliations = matchingAffiliationKeys.stream()
@@ -312,8 +267,7 @@ public class BrageProcessor implements Runnable {
     }
 
     private URI getHandle(File entryDirectory, DublinCore dublinCore) throws HandleException {
-        return noHandleCheck
-                   ? getHandleAndIgnoreErrors(entryDirectory, dublinCore)
+        return noHandleCheck ? getHandleAndIgnoreErrors(entryDirectory, dublinCore)
                    : handleScraper.scrapeHandle(getHandlePath(entryDirectory), dublinCore);
     }
 

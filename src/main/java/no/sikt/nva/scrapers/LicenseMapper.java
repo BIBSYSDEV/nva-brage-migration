@@ -11,21 +11,25 @@ import org.apache.commons.validator.routines.UrlValidator;
 public class LicenseMapper {
 
     private static final String CREATIVE_COMMONS_HOST_NAME = "creativecommons.org";
-    private static final Map<BrageLicense, NvaLicenseIdentifier> LICENSE_MAP =
-        Map.of(BrageLicense.CC_BY, NvaLicenseIdentifier.CC_BY,
-               BrageLicense.CC_BY_NC, NvaLicenseIdentifier.CC_BY_NC,
-               BrageLicense.CC_BY_ND, NvaLicenseIdentifier.CC_BY_ND,
-               BrageLicense.CC_BY_SA, NvaLicenseIdentifier.CC_BY_SA,
-               BrageLicense.CC_BY_NC_ND, NvaLicenseIdentifier.CC_BY_NC_ND,
-               BrageLicense.CC_BY_NC_SA, NvaLicenseIdentifier.CC_BY_NC_SA,
-               BrageLicense.CC_ZERO, NvaLicenseIdentifier.CC_ZERO);
+    private static final Map<BrageLicense, NvaLicenseIdentifier> LICENSE_MAP = Map.of(BrageLicense.CC_BY,
+                                                                                      NvaLicenseIdentifier.CC_BY,
+                                                                                      BrageLicense.CC_BY_NC,
+                                                                                      NvaLicenseIdentifier.CC_BY_NC,
+                                                                                      BrageLicense.CC_BY_ND,
+                                                                                      NvaLicenseIdentifier.CC_BY_ND,
+                                                                                      BrageLicense.CC_BY_SA,
+                                                                                      NvaLicenseIdentifier.CC_BY_SA,
+                                                                                      BrageLicense.CC_BY_NC_ND,
+                                                                                      NvaLicenseIdentifier.CC_BY_NC_ND,
+                                                                                      BrageLicense.CC_BY_NC_SA,
+                                                                                      NvaLicenseIdentifier.CC_BY_NC_SA,
+                                                                                      BrageLicense.CC_ZERO,
+                                                                                      NvaLicenseIdentifier.CC_ZERO);
 
-    public static Optional<NvaLicenseIdentifier> mapLicenseToNva(String licenseUri) {
+    public static NvaLicenseIdentifier mapLicenseToNva(String licenseUri) {
         var licenseName = getLicenseName(licenseUri);
         var brageLicense = convertToBrageLicense(licenseName.orElse("NOT MAPPABLE"));
-        return Objects.isNull(brageLicense)
-                   ? Optional.empty()
-                   : Optional.of(LICENSE_MAP.get(brageLicense));
+        return Objects.isNull(brageLicense) ? null : LICENSE_MAP.get(brageLicense);
     }
 
     private static Optional<String> getLicenseName(String licenseUri) {

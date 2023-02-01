@@ -56,7 +56,7 @@ public class BrageNvaLanguageMapper {
         if (languages.size() == ONE_ELEMENT) {
             var mappedToNvaLanguage = LanguageMapper.toUri(languages.get(0));
             if (LEXVO_URI_UNDEFINED.equals(mappedToNvaLanguage) && StringUtils.isNotEmpty(languages.get(0))) {
-                return Optional.of(new ErrorDetails(Error.INVALID_LANGUAGE, languages));
+                return Optional.of(new ErrorDetails(Error.INVALID_DC_LANGUAGE, languages));
             }
         }
         return Optional.empty();
@@ -64,7 +64,7 @@ public class BrageNvaLanguageMapper {
 
     private static Optional<ErrorDetails> getMultipleLanguageError(List<String> languages) {
         return getIsoLanguages(languages).isEmpty()
-                   ? Optional.of(new ErrorDetails(Error.MULTIPLE_LANGUAGES_PRESENT, languages))
+                   ? Optional.of(new ErrorDetails(Error.MULTIPLE_DC_LANGUAGES_PRESENT, languages))
                    : Optional.empty();
     }
 
