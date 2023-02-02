@@ -28,7 +28,6 @@ import no.sikt.nva.scrapers.HandleTitleMapReader;
 import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -58,7 +57,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String DEFAULT_CONTRIBUTORS_FILE_NAME = "contributors.txt";
     public static final String COULD_NOT_EXTRACT_CONTRIBUTORS = "Could not extract contributors";
     public static final String DEFAULT_LOCATION = "/brageexports/";
-    public static final String OUTPUT_SUB_PATH = "output";
+    public static final String OUTPUT = "output";
     private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
@@ -89,11 +88,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                                    + "be pushed "
                                                                    + "to S3")
     private boolean shouldWriteToAws;
-
     @Option(names = {"-r", "--should-look-up-in-channel-register"}, description = "If this flag is set, will look "
                                                                                   + "up in channel register")
     private boolean shouldLookUpInChannelRegister;
-
     @Option(names = {"-b", "--write-processed-import-to-aws"}, description = "If this flag is set, processed result"
                                                                              + "will be pushed to S3")
     private boolean writeProcessedImportToAws;
@@ -131,10 +128,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
             var inputDirectory = generateInputDirectory();
-            var outputDirectory = generateOutputDirectory(inputDirectory);
+            var outputDirectory = generateOutputDirectory();
             var logOutPutDirectory = getLogOutputDirectory(inputDirectory, outputDirectory);
             /* IMPORTANT: DO NOT USE LOGGER BEFORE THIS METHOD HAS RUN: */
-            LogSetup.setupLogging(outputDirectory);
+            LogSetup.setupLogging(logOutPutDirectory);
             if (writeProcessedImportToAws) {
                 pushExistingResourcesToNva(readZipFileNamesFromCollectionFile(inputDirectory));
             } else {
@@ -174,7 +171,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         if (inputDirectory.equals(outputDirectory)) {
             return outputDirectory;
         }
-        return outputDirectory + inputDirectory.substring(1);
+        return outputDirectory + inputDirectory;
     }
 
     private static String[] readZipFileNamesFromCollectionFile(String inputDirectory) {
@@ -203,15 +200,29 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private String generateInputDirectory() {
-        return StringUtils.isEmpty(startingDirectory)
-                   ? DEFAULT_LOCATION + customer + PATH_DELIMITER
-                   : startingDirectory + PATH_DELIMITER;
+        if (StringUtils.isEmpty(startingDirectory) && StringUtils.isEmpty(customer)) {
+            return StringUtils.EMPTY_STRING;
+        }
+        if (StringUtils.isEmpty(startingDirectory)) {
+            return DEFAULT_LOCATION + customer + PATH_DELIMITER;
+        }
+        if(StringUtils.isNotEmpty(startingDirectory)) {
+            return startingDirectory + "/";
+        }
+        else {
+            return StringUtils.EMPTY_STRING;
+        }
     }
 
-    private String generateOutputDirectory(String inputDirectory) {
-        return StringUtils.isEmpty(userSpecifiedOutputDirectory)
-                   ? DEFAULT_LOCATION + OUTPUT_SUB_PATH + customer + PATH_DELIMITER
-                   : inputDirectory + PATH_DELIMITER;
+    private String generateOutputDirectory() {
+        if (StringUtils.isEmpty(userSpecifiedOutputDirectory) && StringUtils.isEmpty(customer)) {
+            return userSpecifiedOutputDirectory;
+        }
+        if (StringUtils.isEmpty(userSpecifiedOutputDirectory)) {
+            return DEFAULT_LOCATION + OUTPUT + customer + PATH_DELIMITER;
+        } else {
+            return StringUtils.EMPTY_STRING;
+        }
     }
 
     private void log(List<BrageProcessor> brageProcessors) {
