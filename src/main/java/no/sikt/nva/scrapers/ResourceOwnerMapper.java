@@ -2,6 +2,7 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Map.entry;
 import java.net.URI;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import no.sikt.nva.brage.migration.common.model.record.ResourceOwner;
@@ -13,28 +14,28 @@ public class ResourceOwnerMapper {
     public static final String DEVELOP = "dev";
     public static final String TEST = "test";
     public static final String PROD = "prod";
-    public static final String NVE = "NVE";
+    public static final String NVE = "nve";
     public static final String NVE_OWNER_VALUE = "nve@5948.0.0.0";
     public static final String NVE_CRISTIN_IDENTIFIER = "5948.0.0.0";
-    public static final String KRUS = "KRUS";
+    public static final String KRUS = "krus";
     public static final String KRUS_OWNER_VALUE = "krus@1661.0.0.0";
     public static final String KRUS_CRISTIN_IDENTIFIER = "1661.0.0.0";
-    public static final String KRISTIANIA = "KRISTIANIA";
+    public static final String KRISTIANIA = "kristiania";
     public static final String KRISTIANIA_OWNER_VALUE = "kristiania@1615.0.0.0";
     public static final String KRISTIANIA_CRISTIN_IDENTIFIER = "1615.0.0.0";
-    public static final String FHS = "FHS";
+    public static final String FHS = "fhs";
     public static final String FHS_OWNER_VALUE = "fhs@1627.0.0.0";
     public static final String FHS_CRISTIN_IDENTIFIER = "1627.0.0.0";
-    public static final String HIOF = "HIOF";
+    public static final String HIOF = "hiof";
     public static final String HIOF_OWNER_VALUE = "hiof@224.0.0.0";
     public static final String HIOF_CRISTIN_IDENTIFIER = "224.0.0.0";
-    public static final String NGI = "NGI";
+    public static final String NGI = "ngi";
     public static final String NGI_OWNER_VALUE = "ngi@7452.0.0.0";
     public static final String NGI_CRISTIN_IDENTIFIER = "7452.0.0.0";
-    public static final String NIBIO = "NIBIO";
+    public static final String NIBIO = "nibio";
     public static final String NIBIO_OWNER_VALUE = "nibio@7677.0.0.0";
     public static final String NIBIO_CRISTIN_IDENTIFIER = "7677.0.0.0";
-    public static final String NIH = "NIH";
+    public static final String NIH = "nih";
     public static final String NIH_OWNER_VALUE = "nih@150.0.0.0";
     public static final String NIH_CRISTIN_IDENTIFIER = "150.0.0.0";
     public static final String CRISTIN_IDENTIFIER = "CRISTIN_IDENTIFIER";
@@ -72,7 +73,7 @@ public class ResourceOwnerMapper {
 
     public ResourceOwner getResourceOwner(String customerShortName, String environment) {
         return Optional.ofNullable(RESOURCE_OWNER_MAP)
-                   .map(ownerMap -> ownerMap.get(customerShortName))
+                   .map(ownerMap -> ownerMap.get(customerShortName.toLowerCase(Locale.ROOT)))
                    .map(valueMap -> constructResourceOwner(valueMap, environment))
                    .orElse(null);
     }

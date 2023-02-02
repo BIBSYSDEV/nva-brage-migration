@@ -223,7 +223,7 @@ public final class EntityDescriptionExtractor {
         }
     }
 
-    private static List<String> extractDescriptions(DublinCore dublinCore) {
+    public static List<String> extractDescriptions(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isDescription)
@@ -240,7 +240,7 @@ public final class EntityDescriptionExtractor {
         return publicationInstance;
     }
 
-    private static String extractVolume(DublinCore dublinCore) {
+    public static String extractVolume(DublinCore dublinCore) {
         var volumes = dublinCore.getDcValues().stream()
                           .filter(DcValue::isVolume)
                           .map(DcValue::scrapeValueAndSetToScraped)

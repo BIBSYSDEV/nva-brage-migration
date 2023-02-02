@@ -16,7 +16,6 @@ import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.Embargo;
-import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.AffiliationsScraper;
 import no.sikt.nva.scrapers.AlreadyImportedHandlesScraper;
@@ -30,7 +29,6 @@ import no.sikt.nva.scrapers.LicenseScraper;
 import no.sikt.nva.scrapers.ResourceOwnerMapper;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +36,6 @@ import org.slf4j.LoggerFactory;
 @JacocoGenerated
 public class BrageProcessor implements Runnable {
 
-    public static final String RECORD_REMOVED_BECAUSE_OF_EMBARGO = "Record was removed from import because of "
-                                                                   + "embargo: ";
     private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
     private static final String HANDLE_DEFAULT_NAME = "handle";
     private static final String DUBLIN_CORE_XML_DEFAULT_NAME = "dublin_core.xml";
@@ -80,18 +76,6 @@ public class BrageProcessor implements Runnable {
         return Path.of(bundlePath, CONTENT_FILE_DEFAULT_NAME);
     }
 
-    public boolean hasEmbargoEndDateWhichIsNotExpired(DublinCore dublinCore) {
-        if (getEmbargoEndDate(dublinCore).isPresent()) {
-            var today = LocalDate.now();
-            try {
-                return new LocalDate(getEmbargoEndDate(dublinCore)).isAfter(today);
-            } catch (Exception e) {
-                return false;
-            }
-        }
-        return false;
-    }
-
     public String getDestinationDirectory() {
         return destinationDirectory;
     }
@@ -127,35 +111,6 @@ public class BrageProcessor implements Runnable {
         return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
     }
 
-    private boolean hasEmbargo(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .anyMatch(dcValue -> dcValue.isEmbargo() && !dcValue.getValue().isEmpty());
-    }
-
-    private Optional<Boolean> getEmbargoEndDate(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream().map(DcValue::isEmbargoEndDate).findFirst();
-    }
-
-    private String getEmbargoDate(DublinCore dublinCore) {
-        return String.valueOf(dublinCore.getDcValues()
-                                  .stream()
-                                  .filter(DcValue::isEmbargo)
-                                  .findFirst()
-                                  .map(DcValue::scrapeValueAndSetToScraped));
-    }
-
-    private void logEmbargoMessage(BrageLocation brageLocation, DublinCore dublinCore) {
-        logger.error(RECORD_REMOVED_BECAUSE_OF_EMBARGO
-                     + getEmbargoDate(dublinCore)
-                     + StringUtils.SPACE
-                     + brageLocation.getOriginInformation());
-    }
-
-    private boolean containsEmbargo(DublinCore dublinCore) {
-        return hasEmbargo(dublinCore) || hasEmbargoEndDateWhichIsNotExpired(dublinCore);
-    }
-
     private Record injectContentBundle(Record record, File entryDirectory, BrageLocation brageLocation,
                                        DublinCore dublinCore) throws ContentException {
         record.setContentBundle(getContent(entryDirectory, brageLocation, dublinCore));
@@ -176,12 +131,6 @@ public class BrageProcessor implements Runnable {
         } catch (ContentException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private Optional<Record> logAndReturnOptionalEmpty(BrageLocation brageLocation, DublinCore dublinCore) {
-        logEmbargoMessage(brageLocation, dublinCore);
-        counter.countRecordWithEmbargo();
-        return Optional.empty();
     }
 
     private DublinCore parseDublinCore(File entryDirectory) {
@@ -214,9 +163,6 @@ public class BrageProcessor implements Runnable {
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
             if (isAlreadyImported(brageLocation.getHandle().toString())) {
                 return Optional.empty();
-            }
-            if (containsEmbargo(dublinCore)) {
-                return logAndReturnOptionalEmpty(brageLocation, dublinCore);
             }
             return createRecord(entryDirectory, brageLocation, dublinCore);
         } catch (Exception e) {

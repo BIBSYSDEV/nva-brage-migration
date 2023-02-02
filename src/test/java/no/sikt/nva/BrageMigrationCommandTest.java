@@ -61,7 +61,7 @@ public class BrageMigrationCommandTest {
 
     @Test
     void shouldProcessFileWithoutHandleInHandleFile() {
-        var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
+        var arguments = new String[]{"-c", "customer", TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME};
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
         assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
     }
