@@ -40,10 +40,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 @SuppressWarnings({"PMD.DoNotUseThreads", "PMD.GodClass"})
 @JacocoGenerated
-@Command(
-    name = "Brage migration",
-    description = "Tool for migrating Brage bundles"
-)
+@Command(name = "Brage migration", description = "Tool for migrating Brage bundles")
 public class BrageMigrationCommand implements Callable<Integer> {
 
     public static final String PATH_DELIMITER = "/";
@@ -59,11 +56,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String RECORDS_WRITER_MESSAGE = "Records written to file: ";
     public static final String DEFAULT_CONTRIBUTORS_FILE_NAME = "contributors.txt";
     public static final String COULD_NOT_EXTRACT_CONTRIBUTORS = "Could not extract contributors";
+    public static final String DEFAULT_LOCATION = "/brageexports/";
+    public static final String OUTPUT = "output";
     private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
-    private static final String NVE_DEV_CUSTOMER_ID =
-        "https://api.dev.nva.aws.unit.no/customer/b4497570-2903-49a2-9c2a-d6ab8b0eacc2";
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
     private final S3Client s3Client;
@@ -71,9 +68,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Spec
     private CommandSpec spec;
 
-    @Option(names = {"-c", "--customer"},
-        defaultValue = NVE_DEV_CUSTOMER_ID,
-        description = "customer id in NVA")
+    @Option(names = {"-c", "--customer"}, description = "customer id in NVA")
     private String customer;
     @Option(names = {"-ov", "--online-validator"}, description = "enable online validator, disabled if not present")
     private boolean enableOnlineValidation;
@@ -93,11 +88,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                                    + "be pushed "
                                                                    + "to S3")
     private boolean shouldWriteToAws;
-
     @Option(names = {"-r", "--should-look-up-in-channel-register"}, description = "If this flag is set, will look "
                                                                                   + "up in channel register")
     private boolean shouldLookUpInChannelRegister;
-
     @Option(names = {"-b", "--write-processed-import-to-aws"}, description = "If this flag is set, processed result"
                                                                              + "will be pushed to S3")
     private boolean writeProcessedImportToAws;
@@ -120,13 +113,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     @Option(names = {"-j", "--aws-bucket"}, description = "Name of AWS bucket to push result in  'experimental', "
-                                                          + "'sandbox', and 'develop' are valid",
-        defaultValue = "experimental")
+                                                          + "'sandbox', and 'develop' are valid", defaultValue = "experimental")
     public void setAwsEnvironment(String value) {
         this.awsEnvironment = AwsEnvironment.fromValue(value);
         if (isNull(awsEnvironment)) {
-            throw new ParameterException(spec.commandLine(), String.format("Invalid value '%s' for option "
-                                                                           + "'--aws-bucket'", value));
+            throw new ParameterException(spec.commandLine(),
+                                         String.format("Invalid value '%s' for option " + "'--aws-bucket'", value));
         }
     }
 
@@ -135,12 +127,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
         try {
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
-            var inputDirectory = StringUtils.isNotEmpty(startingDirectory)
-                                     ? startingDirectory + "/"
-                                     : StringUtils.EMPTY_STRING;
-            var outputDirectory = StringUtils.isNotEmpty(userSpecifiedOutputDirectory)
-                                      ? userSpecifiedOutputDirectory + "/"
-                                      : inputDirectory;
+            var inputDirectory = generateInputDirectory();
+            var outputDirectory = generateOutputDirectory();
             var logOutPutDirectory = getLogOutputDirectory(inputDirectory, outputDirectory);
             /* IMPORTANT: DO NOT USE LOGGER BEFORE THIS METHOD HAS RUN: */
             LogSetup.setupLogging(logOutPutDirectory);
@@ -211,6 +199,32 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
     }
 
+    private String generateInputDirectory() {
+        if (StringUtils.isEmpty(startingDirectory) && StringUtils.isEmpty(customer)) {
+            return StringUtils.EMPTY_STRING;
+        }
+        if (StringUtils.isEmpty(startingDirectory)) {
+            return DEFAULT_LOCATION + customer + PATH_DELIMITER;
+        }
+        if(StringUtils.isNotEmpty(startingDirectory)) {
+            return startingDirectory + "/";
+        }
+        else {
+            return StringUtils.EMPTY_STRING;
+        }
+    }
+
+    private String generateOutputDirectory() {
+        if (StringUtils.isEmpty(userSpecifiedOutputDirectory) && StringUtils.isEmpty(customer)) {
+            return userSpecifiedOutputDirectory;
+        }
+        if (StringUtils.isEmpty(userSpecifiedOutputDirectory)) {
+            return DEFAULT_LOCATION + OUTPUT + customer + PATH_DELIMITER;
+        } else {
+            return StringUtils.EMPTY_STRING;
+        }
+    }
+
     private void log(List<BrageProcessor> brageProcessors) {
         var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
         logger.info(RECORDS_WRITER_MESSAGE + RecordsWriter.getCounter());
@@ -221,8 +235,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @SuppressWarnings("PMD.UseVarargs")
     private void pushExistingResourcesToNva(String[] collections) {
         S3Storage storage = new S3StorageImpl(s3Client, startingDirectory + "/" + userSpecifiedOutputDirectory,
-                                              customer,
-                                              awsEnvironment.getValue());
+                                              customer, awsEnvironment.getValue());
         storage.storeProcessedCollections(collections);
     }
 
@@ -244,14 +257,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
                                                          List<Embargo> embargoes,
                                                          Map<String, Contributor> contributors) {
-        return createBrageProcessorThread(zipFiles,
-                                          customer,
-                                          enableOnlineValidation,
-                                          shouldLookUpInChannelRegister,
-                                          noHandleCheck,
-                                          outputDirectory,
-                                          embargoes,
-                                          contributors);
+        return createBrageProcessorThread(zipFiles, customer, enableOnlineValidation, shouldLookUpInChannelRegister,
+                                          noHandleCheck, outputDirectory, embargoes, contributors);
     }
 
     private List<Embargo> getEmbargoes(String directory) {
@@ -289,15 +296,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private void storeFileToNVA(Record record) {
         S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/" + startingDirectory,
-                                              customer,
-                                              awsEnvironment.getValue());
+                                              customer, awsEnvironment.getValue());
         storage.storeRecord(record);
     }
 
     private void storeLogsToNva() {
         S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/" + startingDirectory,
-                                              customer,
-                                              awsEnvironment.getValue());
+                                              customer, awsEnvironment.getValue());
         storage.storeLogs();
     }
 
@@ -353,7 +358,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private List<Record> findDuplicates(List<Record> records) {
         List<Record> recordsToRemove = new ArrayList<>();
         for (Record record : records) {
-            var alreadyRegisteredHandles = recordStorage.getRecords().stream()
+            var alreadyRegisteredHandles = recordStorage.getRecords()
+                                               .stream()
                                                .map(Record::getId)
                                                .collect(Collectors.toList());
             if (alreadyRegisteredHandles.contains(record.getId())) {
@@ -382,29 +388,22 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, String customer,
                                                             boolean enableOnlineValidation,
                                                             boolean shouldLookUpInChannelRegister,
-                                                            boolean noHandleCheck,
-                                                            String outputDirectory,
+                                                            boolean noHandleCheck, String outputDirectory,
                                                             List<Embargo> embargoes,
                                                             Map<String, Contributor> contributors) {
         var handleTitleMapReader = new HandleTitleMapReader();
         var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch(),
-                                                              embargoes,
-                                                              contributors);
-        return
-            Arrays.stream(zipFiles)
-                .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,
-                                                                           shouldLookUpInChannelRegister,
-                                                                           noHandleCheck, awsEnvironment.getValue(),
-                                                                           outputDirectory))
-                .collect(Collectors.toList());
+                                                              embargoes, contributors);
+        return Arrays.stream(zipFiles)
+                   .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,
+                                                                              shouldLookUpInChannelRegister,
+                                                                              noHandleCheck, awsEnvironment.getValue(),
+                                                                              outputDirectory))
+                   .collect(Collectors.toList());
     }
 
     public enum AwsEnvironment {
-        EXPERIMENTAL("experimental"),
-        SANDBOX("sandbox"),
-        DEVELOP("dev"),
-        TEST("test"),
-        PROD("prod");
+        EXPERIMENTAL("experimental"), SANDBOX("sandbox"), DEVELOP("dev"), TEST("test"), PROD("prod");
 
         private final String value;
 

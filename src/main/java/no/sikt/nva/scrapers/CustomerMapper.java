@@ -2,20 +2,21 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Map.entry;
 import java.net.URI;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
 public class CustomerMapper {
 
-    public static final String NVE = "NVE";
-    public static final String KRUS = "KRUS";
-    public static final String KRISTIANIA = "KRISTIANIA";
-    public static final String FHS = "FHS";
-    public static final String HIOF = "HIOF";
-    public static final String NGI = "NGI";
-    public static final String NIBIO = "NIBIO";
+    public static final String NVE = "nve";
+    public static final String KRUS = "krus";
+    public static final String KRISTIANIA = "kristiania";
+    public static final String FHS = "fhs";
+    public static final String HIOF = "hiof";
+    public static final String NGI = "ngi";
+    public static final String NIBIO = "nibio";
 
-    public static final String NIH = "NIH";
+    public static final String NIH = "nih";
     public static final String SANDBOX = "sandbox";
     public static final String DEVELOP = "dev";
     public static final String TEST = "test";
@@ -78,7 +79,7 @@ public class CustomerMapper {
 
     public URI getCustomerUri(String customerShortName, String environment) {
         return Optional.ofNullable(CUSTOMER_MAP)
-                   .map(customerMap -> customerMap.getOrDefault(customerShortName, null))
+                   .map(customerMap -> customerMap.getOrDefault(customerShortName.toLowerCase(Locale.ROOT), null))
                    .map(environmentMap -> environmentMap.get(environment))
                    .map(customerIdentifier -> constructCustomerUri(environment, customerIdentifier))
                    .orElse(null);

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
@@ -74,10 +75,9 @@ public class DublinCoreScraper {
                    .stream()
                    .filter(DcValue::isIssnValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .map(issn -> issn.replaceAll(REGEX_ISSN, StringUtils.EMPTY_STRING).toUpperCase(Locale.ROOT))
+                   .filter(Objects::nonNull)
                    .filter(value -> !value.isEmpty())
-                   .map(DublinCoreScraper::removeWrongPlacedDelimiters)
-                   .map(DublinCoreScraper::addDelimiter)
+                   .map(DublinCoreScraper::attemptToRepairIssn)
                    .collect(Collectors.toList());
     }
 
@@ -109,9 +109,16 @@ public class DublinCoreScraper {
                    .stream()
                    .filter(DcValue::isIsbnAndNotEmptyValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(DublinCoreScraper::attemptToRepairIsbn)
+                   .collect(Collectors.toList());
+    }
+
+    public static String attemptToRepairIsbn(String value) {
+        return Optional.ofNullable(value)
                    .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
                    .map(isbn -> isbn.replaceAll("[^0-9]", ""))
-                   .collect(Collectors.toList());
+                   .map(isbn -> isbn.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING))
+                   .orElse(null);
     }
 
     public static String extractMainTitle(DublinCore dublinCore) {
@@ -133,7 +140,8 @@ public class DublinCoreScraper {
     }
 
     public static List<String> extractType(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
+        return dublinCore.getDcValues()
+                   .stream()
                    .filter(DcValue::isType)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .collect(Collectors.toList());
@@ -162,9 +170,7 @@ public class DublinCoreScraper {
     }
 
     public static List<String> translateTypesInNorwegian(List<String> types) {
-        return types.stream()
-                   .map(TypeTranslator::translateToEnglish)
-                   .collect(Collectors.toList());
+        return types.stream().map(TypeTranslator::translateToEnglish).collect(Collectors.toList());
     }
 
     public static String removeWrongPlacedDelimiters(String value) {
@@ -181,9 +187,9 @@ public class DublinCoreScraper {
     }
 
     public static String addDelimiter(String issn) {
-        return nonNull(issn) && issn.length() >= 8 && !issn.contains(DELIMITER)
-                   ? issn.substring(0, 4) + DELIMITER + issn.substring(4)
-                   : issn;
+        return nonNull(issn) && issn.length() >= 8 && !issn.contains(DELIMITER) ? issn.substring(0, 4)
+                                                                                  + DELIMITER
+                                                                                  + issn.substring(4) : issn;
     }
 
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
@@ -215,6 +221,18 @@ public class DublinCoreScraper {
 
     public boolean lookUpInChannelRegisterIsEnabled() {
         return shouldLookUpInChannelRegister;
+    }
+
+    private static String attemptToRepairIssn(String issn) {
+        return Optional.ofNullable(issn)
+                   .map(DublinCoreScraper::removeWrongPlacedDelimiters)
+                   .map(DublinCoreScraper::addDelimiter)
+                   .map(DublinCoreScraper::replaceLowerCaseCheckDigit)
+                   .orElse(null);
+    }
+
+    private static String replaceLowerCaseCheckDigit(String value) {
+        return value.replaceAll(REGEX_ISSN, StringUtils.EMPTY_STRING).toUpperCase(Locale.ROOT);
     }
 
     private static boolean lastLetterIsDelimiter(String value) {
@@ -290,18 +308,23 @@ public class DublinCoreScraper {
     }
 
     private static void setChannelRegisterIdentifierForJournal(BrageLocation brageLocation, Record record) {
-        record.getPublication().getPublicationContext().setJournal(
-            new Journal(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
+        record.getPublication()
+            .getPublicationContext()
+            .setJournal(
+                new Journal(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
     }
 
     private static void setChannelRegisterIdentifierForReport(BrageLocation brageLocation, Record record) {
-        record.getPublication().getPublicationContext().setSeries(
-            new Series(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
+        record.getPublication()
+            .getPublicationContext()
+            .setSeries(
+                new Series(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
     }
 
     private static String extractChannelRegisterIdentifierForSeriesJournal(BrageLocation brageLocation,
                                                                            Publication publication) {
-        return publication.getIssnList().stream()
+        return publication.getIssnList()
+                   .stream()
                    .map(issn -> channelRegister.lookUpInJournal(publication, brageLocation))
                    .filter(Objects::nonNull)
                    .findAny()
@@ -386,13 +409,11 @@ public class DublinCoreScraper {
 
     @SuppressWarnings("PMD")
     private static boolean shouldBeLoggedAsUnscraped(DcValue dcValue) {
-        return !dcValue.isScraped() && !fieldHasBeenScrapedFromOtherFiles(dcValue)
-               && !shouldBeIgnored(dcValue);
+        return !dcValue.isScraped() && !fieldHasBeenScrapedFromOtherFiles(dcValue) && !shouldBeIgnored(dcValue);
     }
 
     private static boolean fieldHasBeenScrapedFromOtherFiles(DcValue dcValue) {
-        return dcValue.isLicenseInformation()
-               || dcValue.isHandle();
+        return dcValue.isLicenseInformation() || dcValue.isHandle();
     }
 
     private static boolean shouldBeIgnored(DcValue dcValue) {
@@ -432,7 +453,8 @@ public class DublinCoreScraper {
         return Arrays.stream(s.split(StringUtils.SPACE))
                    .filter(Objects::nonNull)
                    .filter(DublinCoreScraper::isNumeric)
-                   .findFirst().orElse(null);
+                   .findFirst()
+                   .orElse(null);
     }
 
     private static boolean isNumeric(String value) {
@@ -451,9 +473,7 @@ public class DublinCoreScraper {
                                      .map(DcValue::scrapeValueAndSetToScraped)
                                      .collect(Collectors.toList());
 
-        return partOfSeriesValues.isEmpty()
-                   ? new DcValue().scrapeValueAndSetToScraped()
-                   : partOfSeriesValues.get(0);
+        return partOfSeriesValues.isEmpty() ? new DcValue().scrapeValueAndSetToScraped() : partOfSeriesValues.get(0);
     }
 
     private static String extractPartOf(DublinCore dublinCore) {
@@ -474,13 +494,17 @@ public class DublinCoreScraper {
     }
 
     private static String extractRightsholder(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
+        return dublinCore.getDcValues()
+                   .stream()
                    .filter(DcValue::isRightsholder)
-                   .findAny().orElse(new DcValue()).scrapeValueAndSetToScraped();
+                   .findAny()
+                   .orElse(new DcValue())
+                   .scrapeValueAndSetToScraped();
     }
 
     private static List<String> extractSpatialCoverage(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
+        return dublinCore.getDcValues()
+                   .stream()
                    .filter(DcValue::isSpatialCoverage)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .collect(Collectors.toList());
@@ -488,11 +512,13 @@ public class DublinCoreScraper {
 
     @SuppressWarnings("PMD.PrematureDeclaration")
     private static PublishedDate extractAvailableDate(DublinCore dublinCore) {
-        var availableDates = dublinCore.getDcValues().stream()
+        var availableDates = dublinCore.getDcValues()
+                                 .stream()
                                  .filter(DcValue::isAvailableDate)
                                  .map(DcValue::scrapeValueAndSetToScraped)
                                  .collect(Collectors.toList());
-        var accessionedDate = dublinCore.getDcValues().stream()
+        var accessionedDate = dublinCore.getDcValues()
+                                  .stream()
                                   .filter(DcValue::isAccessionedDate)
                                   .map(DcValue::scrapeValueAndSetToScraped)
                                   .collect(Collectors.toList());
@@ -513,7 +539,8 @@ public class DublinCoreScraper {
     }
 
     private static PublisherAuthority extractVersion(DublinCore dublinCore, BrageLocation brageLocation) {
-        var version = dublinCore.getDcValues().stream()
+        var version = dublinCore.getDcValues()
+                          .stream()
                           .filter(DcValue::isOneOfTwoPossibleVersions)
                           .map(DcValue::scrapeValueAndSetToScraped)
                           .collect(Collectors.toList());

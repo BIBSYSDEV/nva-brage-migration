@@ -6,8 +6,8 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALI
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_LANGUAGES_PRESENT;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
@@ -753,8 +753,8 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(record.getType().getNva(), is(equalTo(NvaType.SCIENTIFIC_ARTICLE.getValue())));
-
     }
+
     @Test
     void shouldExtractCristinIdContainingFridaIdIdentifier() {
         var type = new DcValue(Element.TYPE, null, "Tidsskriftartikkel");
@@ -775,7 +775,8 @@ public class DublinCoreScraperTest {
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, date, doi));
         var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister, Map.of());
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
+                                                      Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         assertThat(record.getDoi().toString(), is(equalTo("https://doi.org/10.1177/1757975910383936")));
     }
@@ -794,7 +795,7 @@ public class DublinCoreScraperTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"1502-007x", "1502-007x (online)", "1502007x"})
+    @ValueSource(strings = {"1502-007x", "1502-007x (online)", "1502007x", "1502-007x"})
     void shouldRemoveAllLettersAndInvalidSpecialCharactersFromIssn(String isbn) {
         var typeDcValue = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
         var isbnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, isbn);

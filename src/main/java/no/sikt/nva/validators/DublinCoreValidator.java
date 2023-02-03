@@ -1,10 +1,10 @@
 package no.sikt.nva.validators;
 
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_NOT_PRESENT_DC_DATE_ISSUED;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_RIGHTS_URI;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_DATE_ISSUED;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_RIGHTS_URI;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.INVALID_ISBN_WARNING;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.LOCAL_DATE_MAX_LENGTH;
 import java.time.Instant;
@@ -99,9 +99,8 @@ public final class DublinCoreValidator {
             if (licenseScraper.isValidCCLicense(license)) {
                 return Optional.empty();
             } else {
-                return Optional.of(
-                    new ErrorDetails(INVALID_DC_RIGHTS_URI,
-                                     Collections.singletonList(licenseScraper.extractLicense(dublinCore))));
+                return Optional.of(new ErrorDetails(INVALID_DC_RIGHTS_URI, Collections.singletonList(
+                    licenseScraper.extractLicense(dublinCore))));
             }
         }
         return Optional.empty();
@@ -198,48 +197,50 @@ public final class DublinCoreValidator {
 
     private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore) {
         if (hasIssn(dublinCore)) {
-            var invalidIssnList = dublinCore.getDcValues()
-                                      .stream()
-                                      .filter(DcValue::isIssnValue)
-                                      .map(DcValue::scrapeValueAndSetToScraped)
-                                      .map(DublinCoreScraper::removeWrongPlacedDelimiters)
-                                      .map(DublinCoreScraper::addDelimiter)
-                                      .filter(issn -> !ISSNValidator.getInstance().isValid(issn))
-                                      .filter(value -> !value.isEmpty())
-                                      .collect(Collectors.toList());
-            var originalIssnValues = dublinCore.getDcValues()
-                                         .stream()
-                                         .filter(DcValue::isIssnValue)
-                                         .map(DcValue::getValue)
-                                         .collect(Collectors.toList());
+            var invalidIssnList = getInvalidIssnList(dublinCore);
+            var originalIssnValues = extractOriginalIssnValues(dublinCore);
             return !invalidIssnList.isEmpty() ? Optional.of(new ErrorDetails(INVALID_ISSN, originalIssnValues))
                        : Optional.empty();
         }
         return Optional.empty();
     }
 
+    private static List<String> getInvalidIssnList(DublinCore dublinCore) {
+        return DublinCoreScraper.extractIssn(dublinCore)
+                   .stream()
+                   .filter(issn -> !ISSNValidator.getInstance().isValid(issn))
+                   .collect(Collectors.toList());
+    }
+
+    private static List<String> extractOriginalIssnValues(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isIssnValue)
+                   .map(DcValue::getValue)
+                   .filter(Objects::nonNull)
+                   .collect(Collectors.toList());
+    }
+
     private static Optional<WarningDetails> getIsbnWarnings(DublinCore dublinCore) {
         if (hasIsbn(dublinCore)) {
-            var invalidIsbnList = DublinCoreScraper.extractIsbn(dublinCore)
-                                      .stream()
-                                      .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
-                                      .map(isbn -> isbn.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING))
-                                      .filter(isbn -> !ISBNValidator.getInstance().isValid(isbn))
-                                      .collect(Collectors.toList());
+            var invalidIsbnList = getInvalidIsbnList(dublinCore);
             return !invalidIsbnList.isEmpty() ? Optional.of(new WarningDetails(INVALID_ISBN_WARNING, invalidIsbnList))
                        : Optional.empty();
         }
         return Optional.empty();
     }
 
+    private static List<String> getInvalidIsbnList(DublinCore dublinCore) {
+        return DublinCoreScraper.extractIsbn(dublinCore)
+                   .stream()
+                   .filter(isbn -> !ISBNValidator.getInstance().isValid(isbn))
+                   .collect(Collectors.toList());
+    }
+
     private static Optional<WarningDetails> getDescriptionsWarning(DublinCore dublinCore) {
-        var descriptions = dublinCore.getDcValues()
-                               .stream()
-                               .filter(DcValue::isDescription)
-                               .map(DcValue::getValue)
-                               .collect(Collectors.toList());
-        if (descriptions.size() > ONE_DESCRIPTION) {
-            return Optional.of(new WarningDetails(Warning.MULTIPLE_DESCRIPTION_PRESENT, descriptions));
+        var descriptionList = EntityDescriptionExtractor.extractDescriptions(dublinCore);
+        if (descriptionList.size() > ONE_DESCRIPTION) {
+            return Optional.of(new WarningDetails(Warning.MULTIPLE_DESCRIPTION_PRESENT, descriptionList));
         } else {
             return Optional.empty();
         }
@@ -247,13 +248,9 @@ public final class DublinCoreValidator {
 
     private static Optional<WarningDetails> getVolumeWarning(DublinCore dublinCore) {
         if (hasVolume(dublinCore)) {
-            var volume = dublinCore.getDcValues()
-                             .stream()
-                             .filter(DcValue::isVolume)
-                             .findAny()
-                             .orElse(new DcValue())
-                             .getValue();
+            var volume = EntityDescriptionExtractor.extractVolume(dublinCore);
             try {
+                assert volume != null;
                 Integer.parseInt(volume);
                 return Optional.empty();
             } catch (Exception e) {
@@ -369,7 +366,7 @@ public final class DublinCoreValidator {
                         .stream()
                         .distinct()
                         .collect(Collectors.toList());
-        if (types.size() >= 2 && !getInvalidTypes(dublinCore).isPresent() && !types.contains(
+        if (types.size() >= 2 && getInvalidTypes(dublinCore).isEmpty() && !types.contains(
             BrageType.PEER_REVIEWED.getValue())) {
             return Optional.of(new ErrorDetails(Error.MULTIPLE_UNMAPPABLE_TYPES, types));
         }

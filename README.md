@@ -36,6 +36,17 @@ With all zipfiles specified by the samlingsfil.txt:
 java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -c custommer-id
 ```
 
+Sample import from brage-instance:
+
+It is possible to run the .jar file by sending customer value only, but only when running .jar
+file on brage instance and archives are located in /brageexports/customer/
+In this case archive will be unzipped at /brageexports/outputcustomer/
+
+```shell
+java -jar build/libs/nva-brage-migration-1.0-SNAPSHOT-all.jar -c custommer
+```
+
+
 ## Run the CLI tool from brage instance
 
 Sample import pushing resources to default bucket:
