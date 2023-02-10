@@ -122,12 +122,16 @@ public final class EntityDescriptionExtractor {
 
     private static Contributor removeUnusedNameElementsIfNeeded(Contributor contributor) {
         var name = contributor.getIdentity().getName();
-        if (name.split(",").length == 1) {
+        if (canNotBeSplitted(name)) {
             var updatedName = name.replaceAll(",", StringUtils.EMPTY_STRING);
             contributor.getIdentity().setName(updatedName);
             return contributor;
         }
         return contributor;
+    }
+
+    private static boolean canNotBeSplitted(String name) {
+        return name.split(",").length == 1;
     }
 
     private static Contributor switchNames(Contributor contributor) {

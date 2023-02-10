@@ -256,7 +256,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
                                                          List<Embargo> embargoes,
                                                          Map<String, Contributor> contributors) {
-        var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
         return createBrageProcessorThread(zipFiles, customer, enableOnlineValidation, shouldLookUpInChannelRegister,
                                           noHandleCheck, outputDirectory, embargoes, contributors);
     }
