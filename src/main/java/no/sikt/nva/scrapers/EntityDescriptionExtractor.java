@@ -22,7 +22,6 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("PMD.GodClass")
 public final class EntityDescriptionExtractor {
@@ -118,7 +117,17 @@ public final class EntityDescriptionExtractor {
     private static Contributor updateNameOrder(Contributor contributor) {
         return fullNameIsSeparatedByComa(contributor)
                    ? switchNames(contributor)
-                   : contributor;
+                   : removeUnusedNameElementsIfNeeded(contributor);
+    }
+
+    private static Contributor removeUnusedNameElementsIfNeeded(Contributor contributor) {
+        var name = contributor.getIdentity().getName();
+        if (name.split(",").length == 1) {
+            var updatedName = name.replaceAll(",", StringUtils.EMPTY_STRING);
+            contributor.getIdentity().setName(updatedName);
+            return contributor;
+        }
+        return contributor;
     }
 
     private static Contributor switchNames(Contributor contributor) {
@@ -137,15 +146,15 @@ public final class EntityDescriptionExtractor {
 
     private static boolean fullNameIsSeparatedByComa(Contributor contributor) {
         String fullname = contributor.getIdentity().getName();
-        return fullname.contains(",") && !fullname.contains(" og ");
+        return fullname.contains(",")
+               && !fullname.contains(" og ")
+               && fullname.split(",").length > 1;
     }
 
-    @NotNull
     private static String getLastName(List<String> fullNameValues) {
         return fullNameValues.get(0).trim();
     }
 
-    @NotNull
     private static String getFirstName(List<String> fullNameValues) {
         return fullNameValues.get(1).trim();
     }

@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +16,7 @@ import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.B
 import no.sikt.nva.brage.migration.common.model.record.license.License;
 import no.sikt.nva.exceptions.ContentException;
 import nva.commons.core.StringUtils;
+import nva.commons.core.attempt.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,7 @@ public final class ContentScraper {
                                                                         BundleType.ORE.getValue(),
                                                                         BundleType.METADATA.getValue());
     public static final String EMPTY_LINE_REGEX = "(?m)(^\\s*$\\r?\\n)+";
+    public static final String EMPTY_CONTENT_FILE = "Content file is empty: ";
     private static final Logger logger = LoggerFactory.getLogger(ContentScraper.class);
     private final Path contentFilePath;
     private final BrageLocation brageLocation;
@@ -47,8 +50,17 @@ public final class ContentScraper {
         try {
             return createResourceContent();
         } catch (Exception e) {
-            throw new ContentException(CONTENT_FILE_PARSING_ERROR_MESSAGE + e.getMessage());
+            var stringFromFile = attempt(() -> Files.readString(contentFilePath));
+            if (isEmpty(stringFromFile)) {
+                throw new ContentException(EMPTY_CONTENT_FILE + e.getMessage());
+            } else {
+                throw new ContentException(CONTENT_FILE_PARSING_ERROR_MESSAGE + e.getMessage());
+            }
         }
+    }
+
+    private static boolean isEmpty(Try<String> stringFromFile) {
+        return stringFromFile.get().replaceAll(StringUtils.SPACE, StringUtils.EMPTY_STRING).isEmpty();
     }
 
     private static boolean isOriginalFileBundle(List<String> fileInformationList) {
@@ -81,8 +93,8 @@ public final class ContentScraper {
 
     private ResourceContent createResourceContent()
         throws IOException {
-        var contentFileAsString = Files.readString(contentFilePath).replaceAll(EMPTY_LINE_REGEX,
-                                                                               StringUtils.EMPTY_STRING);
+        var contentFileAsString = Files.readString(contentFilePath)
+                                      .replaceAll(EMPTY_LINE_REGEX, StringUtils.EMPTY_STRING);
         var contentFilesFromListAsString = contentFileAsString.split("\n");
         var contentFileList = Arrays.stream(contentFilesFromListAsString)
                                   .map(this::convertToFile)

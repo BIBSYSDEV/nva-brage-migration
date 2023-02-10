@@ -24,6 +24,8 @@ public class PageConverter {
     private static final String SINGLE_PAGE = "1";
     private static final int START_PAGE = 0;
     private static final int END_PAGE = 1;
+    public static final String DOUBLE_DASH = "––";
+    public static final String DOUBLE_HYPHEN = "--";
 
     public static Pages extractPages(DublinCore dublinCore) {
         var bragePages = dublinCore.getDcValues().stream()
@@ -69,7 +71,10 @@ public class PageConverter {
     }
 
     private static String[] splitByDelimiter(String bragePages) {
-        var pages = bragePages.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING);
+        var pages = bragePages.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING)
+                        .replaceAll(DOUBLE_DASH, DASH)
+                        .replaceAll(DOUBLE_HYPHEN, HYPHEN)
+                        .replaceAll("\\|", StringUtils.EMPTY_STRING);
         if (pages.contains(DASH)) {
             return pages.split(DASH);
         }

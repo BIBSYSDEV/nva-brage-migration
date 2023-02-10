@@ -45,6 +45,7 @@ public class BrageLocation {
     }
 
     private String getCollectionDirectory() {
+
         var brageLocation = brageBundlePath.toString().split("/");
         return brageLocation[brageLocation.length - 2].replaceAll(" ", "");
     }

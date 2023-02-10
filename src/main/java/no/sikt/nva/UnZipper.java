@@ -98,7 +98,7 @@ public final class UnZipper {
     }
 
     private static File newFile(File destinationDirectory, ZipEntry entry) throws IOException {
-        File destinationFile = new File(destinationDirectory, entry.getName());
+        File destinationFile = new File(destinationDirectory + "/" + entry.getName());
         String destinationDirectoryPath = destinationDirectory.getCanonicalPath();
         String destinationFilePath = destinationFile.getCanonicalPath();
 

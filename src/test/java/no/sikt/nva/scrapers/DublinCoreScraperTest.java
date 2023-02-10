@@ -781,6 +781,22 @@ public class DublinCoreScraperTest {
         assertThat(record.getDoi().toString(), is(equalTo("https://doi.org/10.1177/1757975910383936")));
     }
 
+    @Test
+    void shouldNotSwitchNamesWhenComaIsTheLastCharInTheString() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var author = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, "Audun Vognild,");
+        var pageNumber = new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "245|-257");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, author, pageNumber));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
+                                                      Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var expectedName = "Audun Vognild";
+        var actualName = record.getEntityDescription().getContributors().get(0).getIdentity().getName();
+        assertThat(expectedName, is(equalTo(actualName)));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"9788293091172(PDF)", "9788293091172(trykt)", "ISBN9788293091172"})
     void shouldRemoveAllSpecialCharactersAndLettersFromIsbn(String isbn) {
