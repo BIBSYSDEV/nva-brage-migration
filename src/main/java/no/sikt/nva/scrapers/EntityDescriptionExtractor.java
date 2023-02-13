@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.EntityDescription;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
@@ -21,7 +22,6 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("PMD.GodClass")
 public final class EntityDescriptionExtractor {
@@ -30,6 +30,7 @@ public final class EntityDescriptionExtractor {
     public static final String ADVISOR = "Advisor";
     public static final String AUTHOR = "Creator";
     public static final String EDITOR = "Editor";
+    public static final String DATA_COLLECTOR = "DataCollector";
     public static final String ILLUSTRATOR = "Illustrator";
     public static final String OTHER_CONTRIBUTOR = "Other";
     public static final String DATE_DELIMITER = "[-.]";
@@ -75,6 +76,7 @@ public final class EntityDescriptionExtractor {
                    .filter(DcValue::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
+                   .map(contributor -> updateRoleBasedOnType(contributor, dublinCore))
                    .map(contributor -> updateContributor(contributor, contributors))
                    .map(EntityDescriptionExtractor::updateNameOrder)
                    .collect(Collectors.toList());
@@ -88,10 +90,48 @@ public final class EntityDescriptionExtractor {
         return !issues.isEmpty() ? issues.get(0) : null;
     }
 
+    public static List<String> extractDescriptions(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isDescription)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
+    }
+
+    public static String extractVolume(DublinCore dublinCore) {
+        var volumes = dublinCore.getDcValues().stream()
+                          .filter(DcValue::isVolume)
+                          .map(DcValue::scrapeValueAndSetToScraped)
+                          .collect(Collectors.toList());
+        return volumes.isEmpty() ? null : volumes.get(0);
+    }
+
+    private static Contributor updateRoleBasedOnType(Contributor contributor, DublinCore dublinCore) {
+        var type = TypeMapper.convertBrageTypeToNvaType(DublinCoreScraper.extractType(dublinCore));
+        if (NvaType.DATASET.getValue().equals(type)) {
+            contributor.setRole(DATA_COLLECTOR);
+        }
+        return contributor;
+    }
+
     private static Contributor updateNameOrder(Contributor contributor) {
         return fullNameIsSeparatedByComa(contributor)
                    ? switchNames(contributor)
-                   : contributor;
+                   : removeUnusedNameElementsIfNeeded(contributor);
+    }
+
+    private static Contributor removeUnusedNameElementsIfNeeded(Contributor contributor) {
+        var name = contributor.getIdentity().getName();
+        if (canNotBeSplitted(name)) {
+            var updatedName = name.replaceAll(",", StringUtils.EMPTY_STRING);
+            contributor.getIdentity().setName(updatedName);
+            return contributor;
+        }
+        return contributor;
+    }
+
+    private static boolean canNotBeSplitted(String name) {
+        return name.split(",").length == 1;
     }
 
     private static Contributor switchNames(Contributor contributor) {
@@ -103,24 +143,22 @@ public final class EntityDescriptionExtractor {
     }
 
     /**
-     * Should switch names when they are separated by coma, but do not contain "og" in between.
-     * "Fullname" can be a name, but also a role to person. Role containing coma and "og" should not be switched.
-     * Example:
-     * Lennon, John => John Lennon
-     * Fagansvarlig i Oslo, Trondheim og Bergen => no changes
+     * Should switch names when they are separated by coma, but do not contain "og" in between. "Fullname" can be a
+     * name, but also a role to person. Role containing coma and "og" should not be switched. Example: Lennon, John =>
+     * John Lennon Fagansvarlig i Oslo, Trondheim og Bergen => no changes
      */
 
     private static boolean fullNameIsSeparatedByComa(Contributor contributor) {
         String fullname = contributor.getIdentity().getName();
-        return fullname.contains(",") && !fullname.contains(" og ");
+        return fullname.contains(",")
+               && !fullname.contains(" og ")
+               && fullname.split(",").length > 1;
     }
 
-    @NotNull
     private static String getLastName(List<String> fullNameValues) {
         return fullNameValues.get(0).trim();
     }
 
-    @NotNull
     private static String getFirstName(List<String> fullNameValues) {
         return fullNameValues.get(1).trim();
     }
@@ -223,14 +261,6 @@ public final class EntityDescriptionExtractor {
         }
     }
 
-    public static List<String> extractDescriptions(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isDescription)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
-    }
-
     private static PublicationInstance extractPublicationInstance(DublinCore dublinCore) {
         var publicationInstance = new PublicationInstance();
         publicationInstance.setIssue(extractIssue(dublinCore));
@@ -238,14 +268,6 @@ public final class EntityDescriptionExtractor {
         publicationInstance.setVolume(extractVolume(dublinCore));
         publicationInstance.setArticleNumber(extractArticleNumber(dublinCore));
         return publicationInstance;
-    }
-
-    public static String extractVolume(DublinCore dublinCore) {
-        var volumes = dublinCore.getDcValues().stream()
-                          .filter(DcValue::isVolume)
-                          .map(DcValue::scrapeValueAndSetToScraped)
-                          .collect(Collectors.toList());
-        return volumes.isEmpty() ? null : volumes.get(0);
     }
 
     private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {

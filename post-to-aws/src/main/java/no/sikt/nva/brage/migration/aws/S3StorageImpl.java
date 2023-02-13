@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.unit.nva.commons.json.JsonUtils;
-import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -56,10 +55,6 @@ public class S3StorageImpl implements S3Storage {
         this.pathPrefixString = pathPrefixString;
         this.customer = customer;
         this.bucketName = determineBucketFromAwsEnvironment(awsBucket);
-    }
-
-    public S3StorageImpl(S3Client s3Client, String customer, String awsBucket) {
-        this(s3Client, StringUtils.EMPTY_STRING, customer, awsBucket);
     }
 
     @Override
@@ -156,7 +151,8 @@ public class S3StorageImpl implements S3Storage {
     }
 
     private File findAssociatedFiles(Record record) {
-        return new File(getPathPrefixString() + record.getBrageLocation());
+        logger.info(getPathPrefixString() + "/" + record.getBrageLocation());
+        return new File(getPathPrefixString() + "/" + record.getBrageLocation());
     }
 
     private String getCollectionDirectory(Record record) {

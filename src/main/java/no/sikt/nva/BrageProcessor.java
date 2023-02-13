@@ -108,7 +108,7 @@ public class BrageProcessor implements Runnable {
     }
 
     private File getDublinCoreFile(File entryDirectory) {
-        return new File(entryDirectory, DUBLIN_CORE_XML_DEFAULT_NAME);
+        return new File(Path.of(entryDirectory.toString(), DUBLIN_CORE_XML_DEFAULT_NAME).toString());
     }
 
     private Record injectContentBundle(Record record, File entryDirectory, BrageLocation brageLocation,
@@ -157,7 +157,7 @@ public class BrageProcessor implements Runnable {
 
     private Optional<Record> processBundle(File entryDirectory) {
         try {
-            var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
+            var brageLocation = new BrageLocation(Path.of(entryDirectory.getPath()));
             var dublinCore = parseDublinCore(entryDirectory);
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));

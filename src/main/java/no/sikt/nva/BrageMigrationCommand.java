@@ -171,7 +171,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         if (inputDirectory.equals(outputDirectory)) {
             return outputDirectory;
         }
-        return outputDirectory + inputDirectory;
+        return "/";
     }
 
     private static String[] readZipFileNamesFromCollectionFile(String inputDirectory) {
@@ -206,10 +206,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
         if (StringUtils.isEmpty(startingDirectory)) {
             return DEFAULT_LOCATION + customer + PATH_DELIMITER;
         }
-        if(StringUtils.isNotEmpty(startingDirectory)) {
+        if (StringUtils.isNotEmpty(startingDirectory)) {
             return startingDirectory + "/";
-        }
-        else {
+        } else {
             return StringUtils.EMPTY_STRING;
         }
     }
@@ -221,7 +220,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         if (StringUtils.isEmpty(userSpecifiedOutputDirectory)) {
             return DEFAULT_LOCATION + OUTPUT + customer + PATH_DELIMITER;
         } else {
-            return StringUtils.EMPTY_STRING;
+            return userSpecifiedOutputDirectory;
         }
     }
 
@@ -234,7 +233,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     @SuppressWarnings("PMD.UseVarargs")
     private void pushExistingResourcesToNva(String[] collections) {
-        S3Storage storage = new S3StorageImpl(s3Client, startingDirectory + "/" + userSpecifiedOutputDirectory,
+        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory,
                                               customer, awsEnvironment.getValue());
         storage.storeProcessedCollections(collections);
     }
@@ -295,13 +294,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void storeFileToNVA(Record record) {
-        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/" + startingDirectory,
+        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/",
                                               customer, awsEnvironment.getValue());
         storage.storeRecord(record);
     }
 
     private void storeLogsToNva() {
-        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/" + startingDirectory,
+        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/",
                                               customer, awsEnvironment.getValue());
         storage.storeLogs();
     }
