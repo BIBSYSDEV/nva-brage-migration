@@ -811,7 +811,8 @@ public class DublinCoreScraperTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"1502-007x", "1502-007x (online)", "1502007x", "1502-007x"})
+    @ValueSource(strings = {"1502-007x", "1502-007x (online)", "1502007x", "1502-007x", "1502-007x (e-utg)",
+    "1502-007x (e-utg), 0048-5829 (trykt utg)"})
     void shouldRemoveAllLettersAndInvalidSpecialCharactersFromIssn(String isbn) {
         var typeDcValue = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
         var isbnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, isbn);

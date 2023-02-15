@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails.Error;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.BundleType;
@@ -52,6 +54,7 @@ public final class ContentScraper {
         } catch (Exception e) {
             var stringFromFile = attempt(() -> Files.readString(contentFilePath));
             if (isEmpty(stringFromFile)) {
+                logger.info(String.valueOf(new ErrorDetails(Error.EMPTY_CONTENT_FILE)));
                 throw new ContentException(EMPTY_CONTENT_FILE + e.getMessage());
             } else {
                 throw new ContentException(CONTENT_FILE_PARSING_ERROR_MESSAGE + e.getMessage());

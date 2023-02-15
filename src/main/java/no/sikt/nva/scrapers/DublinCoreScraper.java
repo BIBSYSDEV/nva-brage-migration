@@ -57,6 +57,7 @@ public class DublinCoreScraper {
     public static final String CRISTIN_POST = "[CRISTIN_POST]";
     public static final String DELIMITER = "-";
     public static final String REGEX_ISSN = "[^0-9-xX]";
+    public static final String COMA_ISSN_DELIMITER = ",";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
@@ -77,6 +78,7 @@ public class DublinCoreScraper {
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .filter(Objects::nonNull)
                    .filter(value -> !value.isEmpty())
+                   .map(DublinCoreScraper::attemptToRepairIssn)
                    .map(DublinCoreScraper::attemptToRepairIssn)
                    .collect(Collectors.toList());
     }
@@ -225,10 +227,17 @@ public class DublinCoreScraper {
 
     private static String attemptToRepairIssn(String issn) {
         return Optional.ofNullable(issn)
+                   .map(DublinCoreScraper::extractFirstIssnWhenMultipleValues)
                    .map(DublinCoreScraper::removeWrongPlacedDelimiters)
                    .map(DublinCoreScraper::addDelimiter)
                    .map(DublinCoreScraper::replaceLowerCaseCheckDigit)
                    .orElse(null);
+    }
+
+    private static String extractFirstIssnWhenMultipleValues(String string) {
+        return string.contains(COMA_ISSN_DELIMITER)
+                   ? string.split(COMA_ISSN_DELIMITER)[0]
+                   : string;
     }
 
     private static String replaceLowerCaseCheckDigit(String value) {
