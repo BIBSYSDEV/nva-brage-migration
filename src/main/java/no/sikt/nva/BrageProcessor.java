@@ -1,6 +1,5 @@
 package no.sikt.nva;
 
-import static java.util.Objects.nonNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -162,15 +161,14 @@ public class BrageProcessor implements Runnable {
             var dublinCore = parseDublinCore(entryDirectory);
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
             String handle = brageLocation.getHandle().toString();
-            if (nonNull(handle) && !BrageMigrationCommand.getHandles().contains(handle)) {
-                BrageMigrationCommand.addHandle(brageLocation.getHandle().toString());
-                brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
-                if (isAlreadyImported(brageLocation.getHandle().toString())) {
-                    return Optional.empty();
-                }
-                return createRecord(entryDirectory, brageLocation, dublinCore);
+            if (BrageMigrationCommand.alreadyProcessed(handle)) {
+                return Optional.empty();
             }
-            return Optional.empty();
+            if (isAlreadyImported(handle)) {
+                return Optional.empty();
+            }
+            brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
+            return createRecord(entryDirectory, brageLocation, dublinCore);
         } catch (Exception e) {
             var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
             logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());

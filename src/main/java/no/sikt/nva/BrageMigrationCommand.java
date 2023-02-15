@@ -113,12 +113,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
         System.exit(exitCode);
     }
 
-    public static List<String> getHandles() {
-        return handles;
-    }
-
-    public static void addHandle(String handle) {
+    @SuppressWarnings("PMD.AvoidSynchronizedAtMethodLevel")
+    public static synchronized boolean alreadyProcessed(String handle) {
+        if (handles.contains(handle)) {
+            return true;
+        }
         handles.add(handle);
+        return false;
     }
 
     @Option(names = {"-j", "--aws-bucket"}, description = "Name of AWS bucket to push result in  'experimental', "
@@ -228,6 +229,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
         if (StringUtils.isEmpty(userSpecifiedOutputDirectory)) {
             return DEFAULT_LOCATION + OUTPUT + customer + PATH_DELIMITER;
+        }
+        if (isNull(userSpecifiedOutputDirectory)) {
+            return StringUtils.EMPTY_STRING;
         } else {
             return userSpecifiedOutputDirectory;
         }
