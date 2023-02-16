@@ -145,9 +145,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 var contributors = getContributors(inputDirectory);
                 printIgnoredDcValuesFieldsInInfoLog();
                 var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes, contributors);
-                var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
-                startProcessors(brageProcessorThreads);
-                waitForAllProcesses(brageProcessorThreads);
+//                Synchronized run:
+                brageProcessors.forEach(BrageProcessor::run);
+//                Parellallization run:
+//                var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
+//                startProcessors(brageProcessorThreads);
+//                waitForAllProcesses(brageProcessorThreads);
                 writeRecordsToFiles(brageProcessors);
                 if (shouldWriteToAws) {
                     pushToNva(brageProcessors);
