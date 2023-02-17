@@ -159,11 +159,15 @@ public class BrageProcessor implements Runnable {
         try {
             var brageLocation = new BrageLocation(Path.of(entryDirectory.getPath()));
             var dublinCore = parseDublinCore(entryDirectory);
-            brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
-            if (isAlreadyImported(brageLocation.getHandle().toString())) {
+            String handle = brageLocation.getHandle().toString();
+            if (BrageMigrationCommand.alreadyProcessed(handle)) {
                 return Optional.empty();
             }
+            if (isAlreadyImported(handle)) {
+                return Optional.empty();
+            }
+            brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
             return createRecord(entryDirectory, brageLocation, dublinCore);
         } catch (Exception e) {
             var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));

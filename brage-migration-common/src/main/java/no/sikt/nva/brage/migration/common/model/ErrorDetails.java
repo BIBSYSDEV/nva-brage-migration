@@ -70,6 +70,6 @@ public class ErrorDetails {
         DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
         INVALID_DC_RIGHTS_URI,
         DUPLICATE_VALUE,
-        EMPTY_CONTENT_FILE
+        CONTENT_FILE_MISSING
     }
 }

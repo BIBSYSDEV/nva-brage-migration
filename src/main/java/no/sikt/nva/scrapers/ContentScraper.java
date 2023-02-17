@@ -1,6 +1,8 @@
 package no.sikt.nva.scrapers;
 
+import static nva.commons.core.StringUtils.isEmpty;
 import static nva.commons.core.attempt.Try.attempt;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,13 +14,14 @@ import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails.Error;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.BundleType;
 import no.sikt.nva.brage.migration.common.model.record.license.License;
 import no.sikt.nva.exceptions.ContentException;
 import nva.commons.core.StringUtils;
-import nva.commons.core.attempt.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +38,6 @@ public final class ContentScraper {
                                                                         BundleType.ORE.getValue(),
                                                                         BundleType.METADATA.getValue());
     public static final String EMPTY_LINE_REGEX = "(?m)(^\\s*$\\r?\\n)+";
-    public static final String EMPTY_CONTENT_FILE = "Content file is empty: ";
     private static final Logger logger = LoggerFactory.getLogger(ContentScraper.class);
     private final Path contentFilePath;
     private final BrageLocation brageLocation;
@@ -47,23 +49,23 @@ public final class ContentScraper {
         this.license = license;
     }
 
-    public ResourceContent scrapeContent()
-        throws ContentException {
+    public ResourceContent scrapeContent() throws ContentException {
         try {
             return createResourceContent();
         } catch (Exception e) {
-            var stringFromFile = attempt(() -> Files.readString(contentFilePath));
+            var contentFile = new File(String.valueOf(contentFilePath));
+            if (!contentFile.exists()) {
+                logger.error(new ErrorDetails(Error.CONTENT_FILE_MISSING).toString());
+                return null;
+            }
+            var stringFromFile = attempt(() -> Files.readString(contentFilePath)).orElseThrow();
             if (isEmpty(stringFromFile)) {
-                logger.info(String.valueOf(new ErrorDetails(Error.EMPTY_CONTENT_FILE)));
-                throw new ContentException(EMPTY_CONTENT_FILE + e.getMessage());
+                logger.info(new WarningDetails(Warning.MISSING_FILES).toString());
+                return null;
             } else {
                 throw new ContentException(CONTENT_FILE_PARSING_ERROR_MESSAGE + e.getMessage());
             }
         }
-    }
-
-    private static boolean isEmpty(Try<String> stringFromFile) {
-        return stringFromFile.get().replaceAll(StringUtils.SPACE, StringUtils.EMPTY_STRING).isEmpty();
     }
 
     private static boolean isOriginalFileBundle(List<String> fileInformationList) {

@@ -21,6 +21,10 @@ public class WarningDetails {
         this.details = Collections.singletonList(detail);
     }
 
+    public WarningDetails(Warning warningCode) {
+        this.warningCode = warningCode;
+    }
+
     @JsonProperty("warningCode")
     public Warning getWarningCode() {
         return warningCode;
@@ -68,6 +72,7 @@ public class WarningDetails {
         INVALID_ISBN_WARNING,
         NONEXISTENT_COLLECTION,
         EMPTY_COLLECTION,
-        NO_CONTRIBUTORS
+        NO_CONTRIBUTORS,
+        MISSING_FILES
     }
 }

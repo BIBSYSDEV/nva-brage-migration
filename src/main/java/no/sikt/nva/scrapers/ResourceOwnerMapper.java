@@ -72,8 +72,8 @@ public class ResourceOwnerMapper {
     }
 
     public ResourceOwner getResourceOwner(String customerShortName, String environment) {
-        return Optional.ofNullable(RESOURCE_OWNER_MAP)
-                   .map(ownerMap -> ownerMap.get(customerShortName.toLowerCase(Locale.ROOT)))
+        return Optional.ofNullable(customerShortName)
+                   .map(customer -> RESOURCE_OWNER_MAP.get(customer.toLowerCase(Locale.ROOT)))
                    .map(valueMap -> constructResourceOwner(valueMap, environment))
                    .orElse(null);
     }
