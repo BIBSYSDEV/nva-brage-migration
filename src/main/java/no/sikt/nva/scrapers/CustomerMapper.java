@@ -78,8 +78,8 @@ public class CustomerMapper {
     }
 
     public URI getCustomerUri(String customerShortName, String environment) {
-        return Optional.ofNullable(CUSTOMER_MAP)
-                   .map(customerMap -> customerMap.getOrDefault(customerShortName.toLowerCase(Locale.ROOT), null))
+        return Optional.ofNullable(customerShortName)
+                   .map(customer -> CUSTOMER_MAP.get(customer.toLowerCase(Locale.ROOT)))
                    .map(environmentMap -> environmentMap.get(environment))
                    .map(customerIdentifier -> constructCustomerUri(environment, customerIdentifier))
                    .orElse(null);

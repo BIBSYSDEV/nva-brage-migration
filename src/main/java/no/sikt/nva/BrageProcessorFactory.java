@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static java.util.Objects.isNull;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,9 @@ public class BrageProcessorFactory {
     private String generateDestinationDirectory(String outputDirectory, String zipfile) {
         var zipfileName = zipfile.split("/")[getLength(zipfile) - 1]
                               .replace(ZIP_EXTENSION, StringUtils.EMPTY_STRING);
+        if (isNull(outputDirectory)) {
+            return Path.of(zipfileName).toString();
+        }
         return Path.of(outputDirectory, zipfileName).toString();
     }
 }
