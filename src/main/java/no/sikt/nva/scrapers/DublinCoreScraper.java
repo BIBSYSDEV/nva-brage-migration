@@ -228,6 +228,7 @@ public class DublinCoreScraper {
                    .map(DublinCoreScraper::removeWrongPlacedDelimiters)
                    .map(DublinCoreScraper::addDelimiter)
                    .map(DublinCoreScraper::replaceLowerCaseCheckDigit)
+                   .map(Mapper::mapToHardcodedValue)
                    .orElse(null);
     }
 
