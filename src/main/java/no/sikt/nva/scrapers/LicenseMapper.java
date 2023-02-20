@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
 import no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentifier;
-import org.jetbrains.annotations.NotNull;
 
 public class LicenseMapper {
 
@@ -66,7 +65,6 @@ public class LicenseMapper {
         return null;
     }
 
-    @NotNull
     private static List<BrageLicense> extractLicenseValue(String pathContainingLicenseType) {
         return Arrays.stream(pathContainingLicenseType.split("/"))
                    .map(BrageLicense::fromValue)
