@@ -95,6 +95,7 @@ public final class EntityDescriptionExtractor {
                    .stream()
                    .filter(DcValue::isDescription)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(EntityDescriptionExtractor::trim)
                    .collect(Collectors.toList());
     }
 
@@ -104,6 +105,13 @@ public final class EntityDescriptionExtractor {
                           .map(DcValue::scrapeValueAndSetToScraped)
                           .collect(Collectors.toList());
         return volumes.isEmpty() ? null : volumes.get(0);
+    }
+
+    public static String trim(String string) {
+        return Optional.ofNullable(string)
+                   .map(s -> s.replaceAll("\\n\\r", StringUtils.SPACE))
+                   .map(s -> s.replaceAll(StringUtils.DOUBLE_WHITESPACE, StringUtils.EMPTY_STRING))
+                   .orElse(null);
     }
 
     private static Contributor updateRoleBasedOnType(Contributor contributor, DublinCore dublinCore) {
@@ -245,6 +253,7 @@ public final class EntityDescriptionExtractor {
                    .stream()
                    .filter(DcValue::isAbstract)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(EntityDescriptionExtractor::trim)
                    .collect(Collectors.toList());
     }
 

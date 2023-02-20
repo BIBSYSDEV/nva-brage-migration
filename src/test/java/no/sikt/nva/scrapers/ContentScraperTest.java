@@ -1,6 +1,8 @@
 package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.ResourceNameConstants.CONTENT_FILE_PATH;
+import static no.sikt.nva.ResourceNameConstants.EMPTY_CONTENT_FILE_PATH;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.CONTENT_FILE_MISSING;
 import static no.sikt.nva.scrapers.ContentScraper.UNKNOWN_FILE_LOG_MESSAGE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -8,6 +10,7 @@ import static org.hamcrest.Matchers.containsString;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.brage.migration.common.model.record.license.License;
 import no.sikt.nva.exceptions.ContentException;
@@ -38,5 +41,25 @@ public class ContentScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         contentScraper.scrapeContent();
         assertThat(appender.getMessages(), containsString(UNKNOWN_FILE_LOG_MESSAGE));
+    }
+
+    @Test
+    void shouldReturnMissingFilesWarningMessageWhenContentFileIsEmpty() throws ContentException {
+        var contentScraper = new ContentScraper(Path.of(EMPTY_CONTENT_FILE_PATH),
+                                                new BrageLocation(null),
+                                                someLicense);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        contentScraper.scrapeContent();
+        assertThat(appender.getMessages(), containsString(Warning.MISSING_FILES.toString()));
+    }
+
+    @Test
+    void shouldReturnContentFileMissingErrorMessageWhenContentFileIsNotPresent() throws ContentException {
+        var contentScraper = new ContentScraper(Path.of("some/Random/Path"),
+                                                new BrageLocation(null),
+                                                someLicense);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        contentScraper.scrapeContent();
+        assertThat(appender.getMessages(), containsString(String.valueOf(CONTENT_FILE_MISSING)));
     }
 }

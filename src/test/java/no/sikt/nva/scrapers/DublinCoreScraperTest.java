@@ -797,6 +797,21 @@ public class DublinCoreScraperTest {
         assertThat(expectedName, is(equalTo(actualName)));
     }
 
+    @Test
+    void shouldMapHardcodedValues() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var issn = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1502-8190");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, issn));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
+                                                      Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var expectedIssn = "1502-8143";
+        var actualIssn = record.getPublication().getIssnList().get(0);
+        assertThat(expectedIssn, is(equalTo(actualIssn)));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"9788293091172(PDF)", "9788293091172(trykt)", "ISBN9788293091172"})
     void shouldRemoveAllSpecialCharactersAndLettersFromIsbn(String isbn) {
@@ -811,7 +826,8 @@ public class DublinCoreScraperTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"1502-007x", "1502-007x (online)", "1502007x", "1502-007x"})
+    @ValueSource(strings = {"1502-007x", "1502-007x (online)", "1502007x", "1502-007x", "1502-007x (e-utg)",
+    "1502-007x (e-utg), 0048-5829 (trykt utg)"})
     void shouldRemoveAllLettersAndInvalidSpecialCharactersFromIssn(String isbn) {
         var typeDcValue = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
         var isbnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, isbn);

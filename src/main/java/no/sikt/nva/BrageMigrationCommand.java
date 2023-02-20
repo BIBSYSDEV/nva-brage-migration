@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -63,12 +64,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private static final int ERROR_EXIT_CODE = 2;
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
+    private static final List<String> handles = Collections.synchronizedList(new ArrayList<>());
     public static final String FAILURE_IN_BRAGE_PROCESS = "FAILURE IN BRAGE PROCESS";
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     @Spec
     private CommandSpec spec;
-
     @Option(names = {"-c", "--customer"}, description = "customer id in NVA")
     private String customer;
     @Option(names = {"-ov", "--online-validator"}, description = "enable online validator, disabled if not present")
@@ -111,6 +112,15 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static void main(String[] args) {
         int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
         System.exit(exitCode);
+    }
+
+    @SuppressWarnings("PMD.AvoidSynchronizedAtMethodLevel")
+    public static synchronized boolean alreadyProcessed(String handle) {
+        if (handles.contains(handle)) {
+            return true;
+        }
+        handles.add(handle);
+        return false;
     }
 
     @Option(names = {"-j", "--aws-bucket"}, description = "Name of AWS bucket to push result in  'experimental', "
@@ -232,6 +242,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
         if (StringUtils.isEmpty(userSpecifiedOutputDirectory)) {
             return DEFAULT_LOCATION + OUTPUT + customer + PATH_DELIMITER;
+        }
+        if (isNull(userSpecifiedOutputDirectory)) {
+            return StringUtils.EMPTY_STRING;
         } else {
             return userSpecifiedOutputDirectory;
         }
