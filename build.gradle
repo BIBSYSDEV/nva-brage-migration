@@ -57,7 +57,7 @@ dependencies {
     implementation group: 'info.picocli', name: 'picocli', version: '4.7.0'
     annotationProcessor 'info.picocli:picocli-codegen:4.7.0'
 
-    implementation group: "software.amazon.awssdk", name: "s3", version: "2.17.191"
+    implementation group: "software.amazon.awssdk", name: "s3", version: "2.20.7"
 
     implementation group: 'com.github.bibsysdev', name: 'core', version: '1.27.2'
     implementation group: 'com.github.bibsysdev', name: 'json', version: '1.27.2'
