@@ -18,7 +18,21 @@ public class LicenseMapperTest {
     @Test
     void shouldMapBrageZeroLicenseToNvaLicenseCorrectly() {
         var expected = NvaLicenseIdentifier.CC_ZERO;
-        var actual = LicenseMapper.mapLicenseToNva("https://creativecommons.org/publicdomain/zero/1.0/");
+        var actual = LicenseMapper.mapLicenseToNva("https://creativecommons.org/publicdomain/zero/4.0/");
         assertThat(actual, is(equalTo(expected)));
+    }
+
+    @Test
+    void shouldMapLicenseWithZeroWidthWhitespaces() {
+        var expected = NvaLicenseIdentifier.CC_BY;
+        var actual = LicenseMapper.mapLicenseToNva("http://\u200Bcreativecommons"
+                                                   + ".\u200Borg/\u200Blicenses/\u200Bby/\u200B4.\u200B0");
+        assertThat(actual, is(equalTo(expected)));
+    }
+
+    @Test
+    void shouldReturnNullForLicenseWithUnsupportedVersion() {
+        var actual = LicenseMapper.mapLicenseToNva("https://creativecommons.org/publicdomain/zero/1.0/");
+        assertThat(actual, is(equalTo(null)));
     }
 }

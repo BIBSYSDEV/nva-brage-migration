@@ -1,16 +1,18 @@
 package no.sikt.nva.scrapers;
 
-import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
 import no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentifier;
-import org.apache.commons.validator.routines.UrlValidator;
 
 public class LicenseMapper {
 
     private static final String CREATIVE_COMMONS_HOST_NAME = "creativecommons.org";
+    private static final String SUPPORTED_CC_LICENSE_VERSION = "4.0";
     private static final Map<BrageLicense, NvaLicenseIdentifier> LICENSE_MAP = Map.of(BrageLicense.CC_BY,
                                                                                       NvaLicenseIdentifier.CC_BY,
                                                                                       BrageLicense.CC_BY_NC,
@@ -27,34 +29,46 @@ public class LicenseMapper {
                                                                                       NvaLicenseIdentifier.CC_ZERO);
 
     public static NvaLicenseIdentifier mapLicenseToNva(String licenseUri) {
-        var licenseName = getLicenseName(licenseUri);
-        var brageLicense = convertToBrageLicense(licenseName.orElse("NOT MAPPABLE"));
-        return Objects.isNull(brageLicense) ? null : LICENSE_MAP.get(brageLicense);
+        return Optional.ofNullable(licenseUri)
+                   .map(LicenseMapper::trim)
+                   .map(LicenseMapper::getLicenseName)
+                   .map(LICENSE_MAP::get)
+                   .orElse(null);
     }
 
-    private static Optional<String> getLicenseName(String licenseUri) {
-        if (isValidUri(licenseUri) && hasCreativeCommonsHost(licenseUri)) {
-            return Optional.of(parseLicenseUri(licenseUri));
-        } else {
-            return Optional.empty();
-        }
+    public static boolean isSingleton(List<BrageLicense> versions) {
+        return versions.size() == 1;
     }
 
-    private static boolean isValidUri(String uri) {
-        var uriValidator = UrlValidator.getInstance();
-        return uriValidator.isValid(uri);
+    private static String trim(String licenseUri) {
+        return licenseUri.replaceAll("[\\p{Cf}]", "");
+    }
+
+    private static BrageLicense getLicenseName(String licenseUri) {
+        return hasCreativeCommonsHost(licenseUri)
+                   ? parseLicenseUri(licenseUri)
+                   : null;
     }
 
     private static boolean hasCreativeCommonsHost(String licenseUri) {
-        var uri = URI.create(licenseUri);
-        return CREATIVE_COMMONS_HOST_NAME.equals(uri.getHost());
+        return licenseUri.contains(CREATIVE_COMMONS_HOST_NAME);
     }
 
-    private static BrageLicense convertToBrageLicense(String brageLicense) {
-        return BrageLicense.fromValue(brageLicense);
+    private static BrageLicense parseLicenseUri(String licenseUri) {
+        var pathContainingLicenseType = licenseUri.split(CREATIVE_COMMONS_HOST_NAME)[1];
+        if (pathContainingLicenseType.contains(SUPPORTED_CC_LICENSE_VERSION)) {
+            var brageLicenseSingleton = extractLicenseValue(pathContainingLicenseType);
+            return isSingleton(brageLicenseSingleton)
+                       ? brageLicenseSingleton.get(0)
+                       : null;
+        }
+        return null;
     }
 
-    private static String parseLicenseUri(String licenseUri) {
-        return URI.create(licenseUri).getPath().split("/")[2];
+    private static List<BrageLicense> extractLicenseValue(String pathContainingLicenseType) {
+        return Arrays.stream(pathContainingLicenseType.split("/"))
+                   .map(BrageLicense::fromValue)
+                   .filter(Objects::nonNull)
+                   .collect(Collectors.toList());
     }
 }
