@@ -65,6 +65,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
     private static final List<String> handles = Collections.synchronizedList(new ArrayList<>());
+    public static final String FAILURE_IN_BRAGE_PROCESS = "FAILURE IN BRAGE PROCESS";
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     @Spec
@@ -155,9 +156,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 var contributors = getContributors(inputDirectory);
                 printIgnoredDcValuesFieldsInInfoLog();
                 var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes, contributors);
-                var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
-                startProcessors(brageProcessorThreads);
-                waitForAllProcesses(brageProcessorThreads);
+                //                Synchronized run:
+                brageProcessors.forEach(this::runAndIgnoreException);
+                //                Parellallization run:
+//                var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
+//                startProcessors(brageProcessorThreads);
+//                waitForAllProcesses(brageProcessorThreads);
                 writeRecordsToFiles(brageProcessors);
                 if (shouldWriteToAws) {
                     pushToNva(brageProcessors);
@@ -206,6 +210,15 @@ public class BrageMigrationCommand implements Callable<Integer> {
             return ContributorScraper.getContributors(contributorsFile);
         } else {
             return Map.of();
+        }
+    }
+
+    private void runAndIgnoreException(BrageProcessor brageProcessor) {
+        try {
+            brageProcessor.run();
+        } catch (Exception e) {
+            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+            logger.error(FAILURE_IN_BRAGE_PROCESS, e);
         }
     }
 
@@ -383,6 +396,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return recordsToRemove;
     }
 
+
+    @SuppressWarnings({"PMD.UnusedPrivateMethod"})
     private void waitForAllProcesses(List<Thread> brageProcessors) {
         brageProcessors.forEach(brageProcessor -> {
             try {
@@ -393,6 +408,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         });
     }
 
+    @SuppressWarnings({"PMD.UnusedPrivateMethod"})
     private void startProcessors(List<Thread> brageProcessors) {
         brageProcessors.forEach(Thread::start);
     }
