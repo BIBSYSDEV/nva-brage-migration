@@ -1,19 +1,19 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import nva.commons.core.JacocoGenerated;
 
 public class EntityDescription {
 
     private PublicationDate publicationDate;
-    private List<String> descriptions;
-    private List<String> abstracts;
+    private Set<String> descriptions;
+    private Set<String> abstracts;
     private String mainTitle;
-    private List<String> alternativeTitles;
-    private List<Contributor> contributors;
-    private List<String> tags;
+    private Set<String> alternativeTitles;
+    private Set<Contributor> contributors;
+    private Set<String> tags;
     private PublicationInstance publicationInstance;
     private Language language;
 
@@ -49,20 +49,20 @@ public class EntityDescription {
     }
 
     @JsonProperty("tags")
-    public List<String> getTags() {
+    public Set<String> getTags() {
         return this.tags;
     }
 
-    public void setTags(List<String> tags) {
+    public void setTags(Set<String> tags) {
         this.tags = tags;
     }
 
     @JsonProperty("contributors")
-    public List<Contributor> getContributors() {
+    public Set<Contributor> getContributors() {
         return contributors;
     }
 
-    public void setContributors(List<Contributor> contributors) {
+    public void setContributors(Set<Contributor> contributors) {
         this.contributors = contributors;
     }
 
@@ -76,29 +76,29 @@ public class EntityDescription {
     }
 
     @JsonProperty
-    public List<String> getDescriptions() {
+    public Set<String> getDescriptions() {
         return descriptions;
     }
 
-    public void setDescriptions(List<String> descriptions) {
+    public void setDescriptions(Set<String> descriptions) {
         this.descriptions = descriptions;
     }
 
     @JsonProperty
-    public List<String> getAbstracts() {
+    public Set<String> getAbstracts() {
         return abstracts;
     }
 
-    public void setAbstracts(List<String> abstracts) {
+    public void setAbstracts(Set<String> abstracts) {
         this.abstracts = abstracts;
     }
 
     @JsonProperty("alternativeTitles")
-    public List<String> getAlternativeTitles() {
+    public Set<String> getAlternativeTitles() {
         return alternativeTitles;
     }
 
-    public void setAlternativeTitles(List<String> alternativeTitles) {
+    public void setAlternativeTitles(Set<String> alternativeTitles) {
         this.alternativeTitles = alternativeTitles;
     }
 

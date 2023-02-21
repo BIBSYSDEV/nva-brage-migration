@@ -4,15 +4,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import nva.commons.core.JacocoGenerated;
 
 @JsonPropertyOrder({"brageRole", "role", "identity", "affiliations"})
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 public class Contributor {
 
-    private List<Affiliation> affiliations;
+    private Set<Affiliation> affiliations;
     private Identity identity;
     private String role;
     private String brageRole;
@@ -21,7 +21,7 @@ public class Contributor {
     public Contributor(@JsonProperty("identity") Identity identity,
                        @JsonProperty("role") String role,
                        @JsonProperty("brageRole") String brageRole,
-                       @JsonProperty("affiliations") List<Affiliation> affiliations) {
+                       @JsonProperty("affiliations") Set<Affiliation> affiliations) {
         this.identity = identity;
         this.role = role;
         this.brageRole = brageRole;
@@ -29,11 +29,11 @@ public class Contributor {
     }
 
     @JsonProperty("affiliations")
-    public List<Affiliation> getAffiliations() {
+    public Set<Affiliation> getAffiliations() {
         return affiliations;
     }
 
-    public void setAffiliations(List<Affiliation> affiliations) {
+    public void setAffiliations(Set<Affiliation> affiliations) {
         this.affiliations = affiliations;
     }
 
@@ -73,6 +73,12 @@ public class Contributor {
 
     @JacocoGenerated
     @Override
+    public int hashCode() {
+        return Objects.hash(getAffiliations(), getIdentity(), getRole(), getBrageRole());
+    }
+
+    @JacocoGenerated
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -85,11 +91,5 @@ public class Contributor {
                && Objects.equals(getIdentity(), that.getIdentity())
                && Objects.equals(getRole(), that.getRole())
                && Objects.equals(getBrageRole(), that.getBrageRole());
-    }
-
-    @JacocoGenerated
-    @Override
-    public int hashCode() {
-        return Objects.hash(getAffiliations(), getIdentity(), getRole(), getBrageRole());
     }
 }

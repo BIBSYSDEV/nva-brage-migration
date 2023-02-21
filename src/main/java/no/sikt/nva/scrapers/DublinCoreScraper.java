@@ -18,6 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
@@ -71,7 +72,7 @@ public class DublinCoreScraper {
         DublinCoreScraper.contributors = contributors;
     }
 
-    public static List<String> extractIssn(DublinCore dublinCore) {
+    public static Set<String> extractIssn(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isIssnValue)
@@ -80,7 +81,7 @@ public class DublinCoreScraper {
                    .filter(value -> !value.isEmpty())
                    .map(DublinCoreScraper::attemptToRepairIssn)
                    .map(DublinCoreScraper::attemptToRepairIssn)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     public static String getIgnoredFieldNames() {
@@ -106,13 +107,14 @@ public class DublinCoreScraper {
         return dcValues.stream().map(DcValue::toXmlString).collect(Collectors.joining(NEW_LINE_DELIMITER));
     }
 
-    public static List<String> extractIsbn(DublinCore dublinCore) {
+    public static Set<String> extractIsbn(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isIsbnAndNotEmptyValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .distinct()
                    .map(DublinCoreScraper::attemptToRepairIsbn)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     public static String attemptToRepairIsbn(String value) {
@@ -141,12 +143,12 @@ public class DublinCoreScraper {
         return journals.isEmpty() ? null : journals.get(0);
     }
 
-    public static List<String> extractType(DublinCore dublinCore) {
+    public static Set<String> extractType(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isType)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     public static String extractPublisher(DublinCore dublinCore) {
@@ -167,12 +169,12 @@ public class DublinCoreScraper {
         return publication;
     }
 
-    public static boolean isSingleton(List<String> versions) {
+    public static boolean isSingleton(Set<String> versions) {
         return versions.size() == 1;
     }
 
-    public static List<String> translateTypesInNorwegian(List<String> types) {
-        return types.stream().map(TypeTranslator::translateToEnglish).collect(Collectors.toList());
+    public static Set<String> translateTypesInNorwegian(Set<String> types) {
+        return types.stream().map(TypeTranslator::translateToEnglish).collect(Collectors.toSet());
     }
 
     public static String removeWrongPlacedDelimiters(String value) {
@@ -249,7 +251,7 @@ public class DublinCoreScraper {
         return DELIMITER.equals(String.valueOf(value.toCharArray()[value.length() - 1]));
     }
 
-    private static void logWarningsIfNotEmpty(BrageLocation brageLocation, List<WarningDetails> warnings,
+    private static void logWarningsIfNotEmpty(BrageLocation brageLocation, Set<WarningDetails> warnings,
                                               boolean isCristinPost) {
         if (!warnings.isEmpty()) {
             if (isCristinPost) {
@@ -260,7 +262,7 @@ public class DublinCoreScraper {
         }
     }
 
-    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, List<ErrorDetails> error,
+    private static void logErrorsIfNotEmpty(BrageLocation brageLocation, Set<ErrorDetails> error,
                                             boolean isCristinPost) {
         if (!error.isEmpty()) {
             if (isCristinPost) {
@@ -333,7 +335,7 @@ public class DublinCoreScraper {
 
     private static String extractChannelRegisterIdentifierForSeriesJournal(BrageLocation brageLocation,
                                                                            Publication publication) {
-        return publication.getIssnList()
+        return publication.getIssnSet()
                    .stream()
                    .map(issn -> channelRegister.lookUpInJournal(publication, brageLocation))
                    .filter(Objects::nonNull)
@@ -495,12 +497,12 @@ public class DublinCoreScraper {
                    .scrapeValueAndSetToScraped();
     }
 
-    private static List<String> extractHasPart(DublinCore dublinCore) {
+    private static Set<String> extractHasPart(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isHasPart)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     private static String extractRightsholder(DublinCore dublinCore) {
@@ -526,22 +528,22 @@ public class DublinCoreScraper {
                                  .stream()
                                  .filter(DcValue::isAvailableDate)
                                  .map(DcValue::scrapeValueAndSetToScraped)
-                                 .collect(Collectors.toList());
+                                 .collect(Collectors.toSet());
         var accessionedDate = dublinCore.getDcValues()
                                   .stream()
                                   .filter(DcValue::isAccessionedDate)
                                   .map(DcValue::scrapeValueAndSetToScraped)
-                                  .collect(Collectors.toList());
+                                  .collect(Collectors.toSet());
 
         var publishedDate = new PublishedDate();
         if (!availableDates.isEmpty()) {
             publishedDate.setBrageDates(availableDates);
-            publishedDate.setNvaDate(availableDates.get(0));
+            publishedDate.setNvaDate(availableDates.iterator().next());
             return publishedDate;
         }
         if (!accessionedDate.isEmpty()) {
             publishedDate.setBrageDates(accessionedDate);
-            publishedDate.setNvaDate(accessionedDate.get(0));
+            publishedDate.setNvaDate(accessionedDate.iterator().next());
             return publishedDate;
         } else {
             return null;
@@ -553,13 +555,12 @@ public class DublinCoreScraper {
                           .stream()
                           .filter(DcValue::isOneOfTwoPossibleVersions)
                           .map(DcValue::scrapeValueAndSetToScraped)
-                          .collect(Collectors.toList());
+                          .collect(Collectors.toSet());
         return mapToNvaVersion(version, brageLocation);
     }
 
-    private static PublisherAuthority mapToNvaVersion(List<String> versions, BrageLocation brageLocation) {
-        var uniqueVersions = new ArrayList<>(new HashSet<>(versions));
-
+    private static PublisherAuthority mapToNvaVersion(Set<String> versions, BrageLocation brageLocation) {
+        var uniqueVersions = new HashSet<>(versions);
         if (isSingleton(uniqueVersions)) {
             return mapSingleVersion(uniqueVersions);
         }
@@ -569,19 +570,19 @@ public class DublinCoreScraper {
         return new PublisherAuthority(versions, null);
     }
 
-    private static boolean containsMultipleValues(List<String> versions) {
+    private static boolean containsMultipleValues(Set<String> versions) {
         return versions.size() >= 2;
     }
 
-    private static PublisherAuthority mapMultipleVersions(List<String> versions, BrageLocation brageLocation) {
+    private static PublisherAuthority mapMultipleVersions(Set<String> versions, BrageLocation brageLocation) {
         if (versions.contains(PUBLISHED_VERSION_STRING)) {
-            return new PublisherAuthority(Collections.singletonList(PUBLISHED_VERSION_STRING), true);
+            return new PublisherAuthority(Collections.singleton(PUBLISHED_VERSION_STRING), true);
         }
         if (versions.contains(ACCEPTED_VERSION_STRING)) {
-            return new PublisherAuthority(Collections.singletonList(ACCEPTED_VERSION_STRING), false);
+            return new PublisherAuthority(Collections.singleton(ACCEPTED_VERSION_STRING), false);
         }
         if (versions.contains(SUBMITTED_VERSION)) {
-            return new PublisherAuthority(Collections.singletonList(SUBMITTED_VERSION), false);
+            return new PublisherAuthority(Collections.singleton(SUBMITTED_VERSION), false);
         } else {
             logger.error(new ErrorDetails(MULTIPLE_DC_VERSION_VALUES, versions)
                          + StringUtils.SPACE
@@ -590,19 +591,19 @@ public class DublinCoreScraper {
         }
     }
 
-    private static PublisherAuthority mapSingleVersion(List<String> versions) {
-        var version = versions.get(0);
+    private static PublisherAuthority mapSingleVersion(Set<String> versions) {
+        var version = versions.iterator().next();
         if (PUBLISHED_VERSION_STRING.equals(version)) {
-            return new PublisherAuthority(Collections.singletonList(version), true);
+            return new PublisherAuthority(Collections.singleton(version), true);
         } else if (ACCEPTED_VERSION_STRING.equals(version)) {
-            return new PublisherAuthority(Collections.singletonList(version), false);
+            return new PublisherAuthority(Collections.singleton(version), false);
         } else {
-            return new PublisherAuthority(Collections.singletonList(version), null);
+            return new PublisherAuthority(Collections.singleton(version), null);
         }
     }
 
-    private static Type mapOriginTypeToNvaType(List<String> types) {
-        var uniqueTypes = new ArrayList<>(new HashSet<>(translateTypesInNorwegian(types)));
+    private static Type mapOriginTypeToNvaType(Set<String> types) {
+        var uniqueTypes = translateTypesInNorwegian(types);
         return new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
     }
 

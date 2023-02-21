@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
@@ -47,11 +48,11 @@ public class ContributorScraper {
                                getAffiliationsIfAffiliationHascristinIdentifier(affiliationIdentifier));
     }
 
-    private static List<Affiliation> getAffiliationsIfAffiliationHascristinIdentifier(String affiliationIdentifier) {
+    private static Set<Affiliation> getAffiliationsIfAffiliationHascristinIdentifier(String affiliationIdentifier) {
         return hasCristinAffiliation(affiliationIdentifier)
-                   ? List.of(
+                   ? Set.of(
             new Affiliation(extractAffiliationIdentifier(affiliationIdentifier).orElse(null), null, null))
-                   : List.of();
+                   : Set.of();
     }
 
     private static boolean hasCristinAffiliation(String affiliationIdentifier) {

@@ -6,6 +6,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.model.dublincore.DcValue;
@@ -110,14 +111,14 @@ public class DoiValidator {
 
     private static Optional<ErrorDetails> validateDoiOnline(String doi) {
         if (!isValidDoiOnline(doi)) {
-            return Optional.of(new ErrorDetails(INVALID_DOI_ONLINE_CHECK, List.of(doi)));
+            return Optional.of(new ErrorDetails(INVALID_DOI_ONLINE_CHECK, Set.of(doi)));
         }
         return Optional.empty();
     }
 
     private static Optional<ErrorDetails> validateDoiOffline(String doi) {
         if (!isValidDoiOffline(doi)) {
-            return Optional.of(new ErrorDetails(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK, List.of(doi)));
+            return Optional.of(new ErrorDetails(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK, Set.of(doi)));
         }
         return Optional.empty();
     }

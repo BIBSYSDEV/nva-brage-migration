@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import java.util.List;
+import java.util.Set;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ public class ChannelRegisterTest {
         var register = ChannelRegister.getRegister();
         var brageLocation = new BrageLocation(null);
         var publication = new Publication();
-        publication.setIssnList(List.of(issn));
+        publication.setIssnList(Set.of(issn));
         publication.setJournal("someTitle");
         var actual = register.lookUpInJournal(publication, brageLocation);
         var expectedIdentifier = "503077";
@@ -36,7 +36,7 @@ public class ChannelRegisterTest {
         var register = ChannelRegister.getRegister();
         var brageLocation = new BrageLocation(null);
         var publication = new Publication();
-        publication.setIssnList(List.of(issn));
+        publication.setIssnList(Set.of(issn));
         publication.setJournal("someTitle");
         var actual = register.lookUpInJournal(publication, brageLocation);
 
@@ -48,7 +48,7 @@ public class ChannelRegisterTest {
         var register = ChannelRegister.getRegister();
         var brageLocation = new BrageLocation(null);
         var publication = new Publication();
-        publication.setIssnList(List.of());
+        publication.setIssnList(Set.of());
         publication.setJournal("someTitle");
         var actual = register.lookUpInJournal(publication, brageLocation);
 

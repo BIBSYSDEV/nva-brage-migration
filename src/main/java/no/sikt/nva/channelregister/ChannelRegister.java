@@ -14,10 +14,11 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import no.sikt.nva.BrageProcessor;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
@@ -98,7 +99,7 @@ public final class ChannelRegister {
     }
 
     public String lookUpInJournal(Publication publication, BrageLocation brageLocation) {
-        var issnList = publication.getIssnList();
+        var issnList = publication.getIssnSet();
         var title = publication.getJournal();
         var identifiersForIssnList = issnList.stream()
                                          .map(issn -> lookUpInJournalByIssn(issn, brageLocation))
@@ -120,8 +121,7 @@ public final class ChannelRegister {
                            .collect(SingletonCollector.collectOrElse(null));
             }
         } catch (IllegalStateException e) {
-            logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
-                                          filterOutNullValues(List.of(issn)))
+            logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER, filterOutNullValues(Set.of(issn)))
                          + StringUtils.SPACE
                          + brageLocation.getOriginInformation());
             return null;
@@ -142,7 +142,7 @@ public final class ChannelRegister {
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
-                                          filterOutNullValues(List.of(title)))
+                                          filterOutNullValues(Set.of(title)))
                          + StringUtils.SPACE
                          + brageLocation.getOriginInformation());
             return null;
@@ -162,7 +162,7 @@ public final class ChannelRegister {
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
-                                          filterOutNullValues(List.of(publisher))).toString());
+                                          filterOutNullValues(Set.of(publisher))).toString());
             return null;
         } catch (Exception e) {
             return null;
@@ -219,7 +219,7 @@ public final class ChannelRegister {
         if (nonNull(possibleIdentifier)) {
             return Optional.empty();
         } else {
-            return getChannelRegisterErrorDetailsWhenSearchingForJournals(publication.getIssnList(),
+            return getChannelRegisterErrorDetailsWhenSearchingForJournals(publication.getIssnSet(),
                                                                           publication.getJournal());
         }
     }
@@ -239,26 +239,26 @@ public final class ChannelRegister {
     }
 
     private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String publisher) {
-        if (!filterOutNullValues(Collections.singletonList(publisher)).isEmpty()) {
+        if (!filterOutNullValues(Collections.singleton(publisher)).isEmpty()) {
             return Optional.of(
                 new ErrorDetails(DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER,
-                                 filterOutNullValues(Collections.singletonList(publisher))));
+                                 filterOutNullValues(Collections.singleton(publisher))));
         } else {
             return Optional.of(new ErrorDetails(MISSING_DC_PUBLISHER,
-                                                Collections.singletonList(NO_PUBLISHER_FOUND)));
+                                                Collections.singleton(NO_PUBLISHER_FOUND)));
         }
     }
 
-    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForJournals(List<String> issnList,
+    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForJournals(Set<String> issnList,
                                                                                                  String title) {
-        List<String> valuesToLog = new ArrayList<>();
+        var valuesToLog = new HashSet<String>();
         valuesToLog.add(title);
         valuesToLog.addAll(issnList);
         if (!filterOutNullValues(valuesToLog).isEmpty()) {
             return Optional.of(new ErrorDetails(DC_JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(valuesToLog)));
         } else {
             return Optional.of(
-                new ErrorDetails(MISSING_DC_ISSN_AND_DC_JOURNAL, Collections.singletonList(NO_ISSN_OR_JOURNAL_FOUND)));
+                new ErrorDetails(MISSING_DC_ISSN_AND_DC_JOURNAL, Collections.singleton(NO_ISSN_OR_JOURNAL_FOUND)));
         }
     }
 

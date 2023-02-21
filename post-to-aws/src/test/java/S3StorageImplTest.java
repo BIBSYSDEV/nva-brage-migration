@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import no.sikt.nva.brage.migration.aws.S3StorageImpl;
 import no.sikt.nva.brage.migration.common.model.BrageType;
@@ -86,7 +87,8 @@ public class S3StorageImplTest {
     void shouldPushProcessedRecordsToS3() {
         var expectedKeyFromBucket = "CUSTOMER/2833909/1/2836938.json";
         var s3Client = new FakeS3Client();
-        var storageClient = new S3StorageImpl(s3Client, "src/test/resources/NVE/", CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
+        var storageClient = new S3StorageImpl(s3Client, "src/test/resources/NVE/", CUSTOMER,
+                                              EXPERIMENTAL_BUCKET_SETTTING);
         String[] bundles = {"2833909"};
         storageClient.storeProcessedCollections(bundles);
         var actualFileKeyFromBucket =
@@ -106,7 +108,7 @@ public class S3StorageImplTest {
 
     private Record createValidTestRecord() {
         var record = new Record();
-        record.setType(new Type(List.of(BrageType.BOOK.getValue()), NvaType.BOOK.getValue()));
+        record.setType(new Type(Set.of(BrageType.BOOK.getValue()), NvaType.BOOK.getValue()));
         record.setPartOf("partOfSomethingBigger");
         record.setCristinId("cristinId");
         record.setBrageLocation("11/1");
