@@ -6,9 +6,11 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_N
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_JOURNAL_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_DATE_ISSUED;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_ISSN_AND_DC_JOURNAL;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_VALUES;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -218,5 +220,15 @@ public class DublinCoreValidatorTest {
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(MISSING_DC_ISSN_AND_DC_JOURNAL, Set.of()))));
+    }
+
+    @Test
+    void shouldNotLogValidMultipleTypesValues() {
+        var dcValues = List.of(new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()),
+                               new DcValue(Element.TYPE, null, BrageType.PEER_REVIEWED.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
+
+        assertThat(actualErrors, not(hasItems(new ErrorDetails(INVALID_DC_TYPE, Set.of()))));
     }
 }

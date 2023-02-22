@@ -344,9 +344,7 @@ public final class DublinCoreValidator {
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     private static Optional<ErrorDetails> getInvalidTypes(DublinCore dublinCore) {
-        var uniqueTypes = DublinCoreScraper.extractType(dublinCore)
-                              .stream()
-                              .distinct()
+        var uniqueTypes = DublinCoreScraper.extractType(dublinCore).stream()
                               .map(TypeTranslator::translateToEnglish)
                               .collect(Collectors.toSet());
         if (uniqueTypes.isEmpty()) {
@@ -376,9 +374,10 @@ public final class DublinCoreValidator {
     }
 
     private static Optional<ErrorDetails> mapMultipleTypes(Set<String> types) {
-        var firstTypeToMap = types.iterator().next();
+        var typeList = new ArrayList<>(types);
+        var firstTypeToMap = typeList.get(0);
         if (firstTypeToMap.equals(BrageType.PEER_REVIEWED.getValue())) {
-            var nextTypeToMap = types.iterator().next();
+            var nextTypeToMap = typeList.get(1);
             if (TypeMapper.hasValidType(nextTypeToMap)) {
                 return Optional.empty();
             } else {
