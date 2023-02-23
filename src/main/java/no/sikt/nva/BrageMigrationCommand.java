@@ -59,13 +59,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String COULD_NOT_EXTRACT_CONTRIBUTORS = "Could not extract contributors";
     public static final String DEFAULT_LOCATION = "/brageexports/";
     public static final String OUTPUT = "output";
+    public static final String FAILURE_IN_BRAGE_PROCESS = "FAILURE IN BRAGE PROCESS";
     private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
     private static final List<String> handles = Collections.synchronizedList(new ArrayList<>());
-    public static final String FAILURE_IN_BRAGE_PROCESS = "FAILURE IN BRAGE PROCESS";
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     @Spec
@@ -159,9 +159,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 //                Synchronized run:
                 brageProcessors.forEach(this::runAndIgnoreException);
                 //                Parellallization run:
-//                var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect(Collectors.toList());
-//                startProcessors(brageProcessorThreads);
-//                waitForAllProcesses(brageProcessorThreads);
+                //                var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect
+                //                (Collectors.toList());
+                //                startProcessors(brageProcessorThreads);
+                //                waitForAllProcesses(brageProcessorThreads);
                 writeRecordsToFiles(brageProcessors);
                 if (shouldWriteToAws) {
                     pushToNva(brageProcessors);
@@ -218,6 +219,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             brageProcessor.run();
         } catch (Exception e) {
             var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+            logger.error(brageProcessor.getDestinationDirectory());
             logger.error(FAILURE_IN_BRAGE_PROCESS, e);
         }
     }
@@ -395,7 +397,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
         return recordsToRemove;
     }
-
 
     @SuppressWarnings({"PMD.UnusedPrivateMethod"})
     private void waitForAllProcesses(List<Thread> brageProcessors) {

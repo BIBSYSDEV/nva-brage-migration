@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
@@ -48,12 +49,12 @@ public final class EntityDescriptionExtractor {
         return titles.isEmpty() ? null : titles.get(0);
     }
 
-    public static List<String> extractAlternativeTitles(DublinCore dublinCore) {
+    public static Set<String> extractAlternativeTitles(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isAlternativeTitle)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     public static EntityDescription extractEntityDescription(DublinCore dublinCore,
@@ -71,7 +72,7 @@ public final class EntityDescriptionExtractor {
         return entityDescription;
     }
 
-    public static List<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors) {
+    public static Set<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
@@ -79,7 +80,7 @@ public final class EntityDescriptionExtractor {
                    .map(contributor -> updateRoleBasedOnType(contributor, dublinCore))
                    .map(contributor -> updateContributor(contributor, contributors))
                    .map(EntityDescriptionExtractor::updateNameOrder)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     public static String extractIssue(DublinCore dublinCore) {
@@ -90,13 +91,13 @@ public final class EntityDescriptionExtractor {
         return !issues.isEmpty() ? issues.get(0) : null;
     }
 
-    public static List<String> extractDescriptions(DublinCore dublinCore) {
+    public static Set<String> extractDescriptions(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isDescription)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .map(EntityDescriptionExtractor::trim)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     public static String extractVolume(DublinCore dublinCore) {
@@ -248,13 +249,13 @@ public final class EntityDescriptionExtractor {
         return date.trim().isEmpty();
     }
 
-    private static List<String> extractAbstracts(DublinCore dublinCore) {
+    private static Set<String> extractAbstracts(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isAbstract)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .map(EntityDescriptionExtractor::trim)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     private static String extractArticleNumber(DublinCore dublinCore) {
@@ -286,19 +287,19 @@ public final class EntityDescriptionExtractor {
         }
         String brageRole = dcValue.getQualifier().getValue();
         if (dcValue.isAuthor()) {
-            return Optional.of(new Contributor(identity, AUTHOR, brageRole, List.of()));
+            return Optional.of(new Contributor(identity, AUTHOR, brageRole, Set.of()));
         }
         if (dcValue.isAdvisor()) {
-            return Optional.of(new Contributor(identity, ADVISOR, brageRole, List.of()));
+            return Optional.of(new Contributor(identity, ADVISOR, brageRole, Set.of()));
         }
         if (dcValue.isEditor()) {
-            return Optional.of(new Contributor(identity, EDITOR, brageRole, List.of()));
+            return Optional.of(new Contributor(identity, EDITOR, brageRole, Set.of()));
         }
         if (dcValue.isIllustrator()) {
-            return Optional.of(new Contributor(identity, ILLUSTRATOR, brageRole, List.of()));
+            return Optional.of(new Contributor(identity, ILLUSTRATOR, brageRole, Set.of()));
         }
         if (dcValue.isOtherContributor()) {
-            return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole, List.of()));
+            return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole, Set.of()));
         }
         return Optional.empty();
     }

@@ -13,11 +13,13 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
@@ -48,9 +50,9 @@ public final class DublinCoreValidator {
     public static final String REGEX_BRACKETS_AND_DOT = "(\\.)|(\\[)|(\\])";
     private static final int ONE_DESCRIPTION = 1;
 
-    public static List<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore) {
+    public static Set<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore) {
 
-        var errors = new ArrayList<ErrorDetails>();
+        var errors = new HashSet<ErrorDetails>();
         DoiValidator.getDoiErrorDetailsOffline(dublinCore).ifPresent(errors::addAll);
         getInvalidTypes(dublinCore).ifPresent(errors::add);
         getIssnErrors(dublinCore).ifPresent(errors::add);
@@ -62,8 +64,8 @@ public final class DublinCoreValidator {
         return errors;
     }
 
-    public static List<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore) {
-        var warnings = new ArrayList<WarningDetails>();
+    public static Set<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore) {
+        var warnings = new HashSet<WarningDetails>();
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
         BrageNvaLanguageMapper.getLanguageWarning(dublinCore).ifPresent(warnings::add);
         getDescriptionsWarning(dublinCore).ifPresent(warnings::add);
@@ -84,8 +86,8 @@ public final class DublinCoreValidator {
         return date.matches("\\d{4}");
     }
 
-    public static List<String> filterOutNullValues(List<String> values) {
-        return values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toList());
+    public static Set<String> filterOutNullValues(Set<String> values) {
+        return values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.toSet());
     }
 
     public static boolean containsTwoDigitYearOnly(String date) {
@@ -99,7 +101,7 @@ public final class DublinCoreValidator {
             if (licenseScraper.isValidCCLicense(license)) {
                 return Optional.empty();
             } else {
-                return Optional.of(new ErrorDetails(INVALID_DC_RIGHTS_URI, Collections.singletonList(
+                return Optional.of(new ErrorDetails(INVALID_DC_RIGHTS_URI, Collections.singleton(
                     licenseScraper.extractLicense(dublinCore))));
             }
         }
@@ -122,72 +124,72 @@ public final class DublinCoreValidator {
     private static void checkMainTitleForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var titles = getTitles(dublinCore);
         if (hasManyValues(titles)) {
-            duplicates.add(new ErrorDetails(Error.DUPLICATE_VALUE, titles));
+            duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, titles));
         }
     }
 
-    private static List<String> getTitles(DublinCore dublinCore) {
+    private static Set<String> getTitles(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isMainTitle)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     private static void checkPublicationDateForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var dates = getDates(dublinCore);
         if (hasManyValues(dates)) {
-            duplicates.add(new ErrorDetails(Error.DUPLICATE_VALUE, dates));
+            duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, dates));
         }
     }
 
     private static void checkIssuesForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var issues = getIssues(dublinCore);
         if (hasManyValues(issues)) {
-            duplicates.add(new ErrorDetails(Error.DUPLICATE_VALUE, issues));
+            duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, issues));
         }
     }
 
     private static void checkCristinIdentifierForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var cristinIds = getCristinIds(dublinCore);
         if (hasManyValues(cristinIds)) {
-            duplicates.add(new ErrorDetails(Error.DUPLICATE_VALUE, cristinIds));
+            duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, cristinIds));
         }
     }
 
-    private static List<String> getCristinIds(DublinCore dublinCore) {
+    private static Set<String> getCristinIds(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isCristinDcValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
-    private static boolean hasManyValues(List<String> issues) {
+    private static boolean hasManyValues(Set<String> issues) {
         return issues.size() > 1;
     }
 
-    private static List<String> getDates(DublinCore dublinCore) {
+    private static Set<String> getDates(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isPublicationDate)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
-    private static List<String> getIssues(DublinCore dublinCore) {
+    private static Set<String> getIssues(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isIssue)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     private static Optional<WarningDetails> getNonContributorsError(DublinCore dublinCore) {
         if (hasContributors(dublinCore)) {
             return Optional.empty();
         } else {
-            return Optional.of(new WarningDetails(Warning.NO_CONTRIBUTORS, Collections.emptyList()));
+            return Optional.of(new WarningDetails(Warning.NO_CONTRIBUTORS, Collections.emptySet()));
         }
     }
 
@@ -212,13 +214,13 @@ public final class DublinCoreValidator {
                    .collect(Collectors.toList());
     }
 
-    private static List<String> extractOriginalIssnValues(DublinCore dublinCore) {
+    private static Set<String> extractOriginalIssnValues(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isIssnValue)
                    .map(DcValue::getValue)
                    .filter(Objects::nonNull)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     private static Optional<WarningDetails> getIsbnWarnings(DublinCore dublinCore) {
@@ -230,11 +232,11 @@ public final class DublinCoreValidator {
         return Optional.empty();
     }
 
-    private static List<String> getInvalidIsbnList(DublinCore dublinCore) {
+    private static Set<String> getInvalidIsbnList(DublinCore dublinCore) {
         return DublinCoreScraper.extractIsbn(dublinCore)
                    .stream()
                    .filter(isbn -> !ISBNValidator.getInstance().isValid(isbn))
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
     private static Optional<WarningDetails> getDescriptionsWarning(DublinCore dublinCore) {
@@ -313,9 +315,9 @@ public final class DublinCoreValidator {
             if (containsYearAndMonthAndDate(date)) {
                 return Optional.empty();
             }
-            return Optional.of(new ErrorDetails(INVALID_DC_DATE_ISSUED, List.of(date)));
+            return Optional.of(new ErrorDetails(INVALID_DC_DATE_ISSUED, Set.of(date)));
         }
-        return Optional.of(new ErrorDetails(DATE_NOT_PRESENT_DC_DATE_ISSUED, List.of()));
+        return Optional.of(new ErrorDetails(DATE_NOT_PRESENT_DC_DATE_ISSUED, Set.of()));
     }
 
     private static String modifyIfDateIsOfLocalDateTimeFormat(String date) {
@@ -342,18 +344,16 @@ public final class DublinCoreValidator {
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     private static Optional<ErrorDetails> getInvalidTypes(DublinCore dublinCore) {
-        var uniqueTypes = DublinCoreScraper.extractType(dublinCore)
-                              .stream()
-                              .distinct()
+        var uniqueTypes = DublinCoreScraper.extractType(dublinCore).stream()
                               .map(TypeTranslator::translateToEnglish)
-                              .collect(Collectors.toList());
+                              .collect(Collectors.toSet());
         if (uniqueTypes.isEmpty()) {
             return Optional.of(new ErrorDetails(INVALID_DC_TYPE, uniqueTypes));
         }
         if (uniqueTypes.size() >= 2) {
             return mapMultipleTypes(uniqueTypes);
         }
-        if (TypeMapper.hasValidType(uniqueTypes.get(0))) {
+        if (TypeMapper.hasValidType(uniqueTypes.iterator().next())) {
             return Optional.empty();
         } else {
             return Optional.of(new ErrorDetails(INVALID_DC_TYPE, uniqueTypes));
@@ -365,7 +365,7 @@ public final class DublinCoreValidator {
         var types = DublinCoreScraper.translateTypesInNorwegian(DublinCoreScraper.extractType(dublinCore))
                         .stream()
                         .distinct()
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet());
         if (types.size() >= 2 && getInvalidTypes(dublinCore).isEmpty() && !types.contains(
             BrageType.PEER_REVIEWED.getValue())) {
             return Optional.of(new ErrorDetails(Error.MULTIPLE_UNMAPPABLE_TYPES, types));
@@ -373,10 +373,11 @@ public final class DublinCoreValidator {
         return Optional.empty();
     }
 
-    private static Optional<ErrorDetails> mapMultipleTypes(List<String> types) {
-        var firstTypeToMap = types.get(0);
+    private static Optional<ErrorDetails> mapMultipleTypes(Set<String> types) {
+        var typeList = new ArrayList<>(types);
+        var firstTypeToMap = typeList.get(0);
         if (firstTypeToMap.equals(BrageType.PEER_REVIEWED.getValue())) {
-            var nextTypeToMap = types.get(1);
+            var nextTypeToMap = typeList.get(1);
             if (TypeMapper.hasValidType(nextTypeToMap)) {
                 return Optional.empty();
             } else {

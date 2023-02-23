@@ -159,6 +159,7 @@ public class BrageProcessor implements Runnable {
         try {
             var brageLocation = new BrageLocation(Path.of(entryDirectory.getPath()));
             var dublinCore = parseDublinCore(entryDirectory);
+            brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
             brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
             String handle = brageLocation.getHandle().toString();
             if (BrageMigrationCommand.alreadyProcessed(handle)) {
@@ -167,7 +168,6 @@ public class BrageProcessor implements Runnable {
             if (isAlreadyImported(handle)) {
                 return Optional.empty();
             }
-            brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
             return createRecord(entryDirectory, brageLocation, dublinCore);
         } catch (Exception e) {
             var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
@@ -202,7 +202,7 @@ public class BrageProcessor implements Runnable {
                                               .collect(Collectors.toList());
             var matchingAffiliations = matchingAffiliationKeys.stream()
                                            .map(affiliations::get)
-                                           .collect(Collectors.toList());
+                                           .collect(Collectors.toSet());
             record.getEntityDescription()
                 .getContributors()
                 .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));

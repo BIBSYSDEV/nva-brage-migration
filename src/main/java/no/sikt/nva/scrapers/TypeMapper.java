@@ -5,7 +5,6 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -52,7 +51,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.MAP), NvaType.MAP)
     );
 
-    public static String convertBrageTypeToNvaType(List<String> inputTypes) {
+    public static String convertBrageTypeToNvaType(Set<String> inputTypes) {
         try {
             return mapToNvaTypeIfMappable(inputTypes);
         } catch (Exception e) {
@@ -70,8 +69,8 @@ public final class TypeMapper {
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    private static String mapToAnyMappableNvaTypeWhenUnmappableTypePair(List<String> inputTypes) {
-        List<BrageType> brageTypes = convertToBrageTypes(inputTypes);
+    private static String mapToAnyMappableNvaTypeWhenUnmappableTypePair(Set<String> inputTypes) {
+        var brageTypes = convertToBrageTypes(inputTypes);
         if (brageTypes.isEmpty()) {
             return null;
         } else {
@@ -87,15 +86,15 @@ public final class TypeMapper {
         return null;
     }
 
-    private static List<BrageType> convertToBrageTypes(List<String> inputTypes) {
+    private static Set<BrageType> convertToBrageTypes(Set<String> inputTypes) {
         return inputTypes.stream()
                    .map(BrageType::fromValue)
                    .filter(Objects::nonNull)
-                   .collect(Collectors.toList());
+                   .collect(Collectors.toSet());
     }
 
-    private static String mapToNvaTypeIfMappable(List<String> inputTypes) {
-        List<BrageType> brageTypes = convertToBrageTypes(inputTypes);
+    private static String mapToNvaTypeIfMappable(Set<String> inputTypes) {
+        Set<BrageType> brageTypes = convertToBrageTypes(inputTypes);
         var nvaType = TYPE_MAP.get(Set.copyOf(brageTypes));
         if (isNull(nvaType) && brageTypes.size() >= 2) {
             for (BrageType type : brageTypes) {

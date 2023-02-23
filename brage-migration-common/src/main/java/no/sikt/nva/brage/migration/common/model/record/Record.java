@@ -8,6 +8,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.unit.nva.commons.json.JsonUtils;
@@ -32,14 +33,14 @@ public class Record {
     private String rightsholder;
     private List<String> spatialCoverage;
     private String partOf;
-    private List<String> part;
+    private Set<String> part;
     private Publication publication;
     private ResourceContent contentBundle;
     private PublishedDate publishedDate;
     private String cristinId;
     private String brageLocation;
-    private List<ErrorDetails> errors;
-    private List<WarningDetails> warnings;
+    private Set<ErrorDetails> errors;
+    private Set<WarningDetails> warnings;
 
     public Record() {
     }
@@ -58,11 +59,11 @@ public class Record {
     }
 
     @JsonProperty("hasPart")
-    public List<String> getPart() {
+    public Set<String> getPart() {
         return part;
     }
 
-    public void setPart(List<String> part) {
+    public void setPart(Set<String> part) {
         this.part = part;
     }
 
@@ -85,20 +86,20 @@ public class Record {
     }
 
     @JsonProperty("warnings")
-    public List<WarningDetails> getWarnings() {
+    public Set<WarningDetails> getWarnings() {
         return warnings;
     }
 
-    public void setWarnings(List<WarningDetails> warnings) {
+    public void setWarnings(Set<WarningDetails> warnings) {
         this.warnings = warnings;
     }
 
     @JsonProperty("errors")
-    public List<ErrorDetails> getErrors() {
+    public Set<ErrorDetails> getErrors() {
         return errors;
     }
 
-    public void setErrors(List<ErrorDetails> errors) {
+    public void setErrors(Set<ErrorDetails> errors) {
         this.errors = errors;
     }
 

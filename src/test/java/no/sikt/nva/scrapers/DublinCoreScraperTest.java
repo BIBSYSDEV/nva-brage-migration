@@ -1,13 +1,13 @@
 package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_VALUE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_LANGUAGES_PRESENT;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_VALUES;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.nullValue;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
@@ -158,8 +159,8 @@ public class DublinCoreScraperTest {
     @Test
     void shouldCreateContributor() {
 
-        List<Contributor> expectedContributors = List.of(
-            new Contributor(new Identity("Person Some", null), ADVISOR, Qualifier.ADVISOR.getValue(), List.of()));
+        var expectedContributors = Set.of(
+            new Contributor(new Identity("Person Some", null), ADVISOR, Qualifier.ADVISOR.getValue(), Set.of()));
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Some, Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
@@ -421,7 +422,7 @@ public class DublinCoreScraperTest {
                                                       Map.of());
         var record = dublinCoreScraper
                          .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getErrors(), hasItem(new ErrorDetails(INVALID_DC_LANGUAGE, List.of(nonIsoLanguage))));
+        assertThat(record.getErrors(), hasItem(new ErrorDetails(INVALID_DC_LANGUAGE, Set.of(nonIsoLanguage))));
     }
 
     @Test
@@ -437,7 +438,7 @@ public class DublinCoreScraperTest {
                                                       Map.of());
         var brageLocation = new BrageLocation(null);
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_DC_LANGUAGES_PRESENT, List.of()))));
+        assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_DC_LANGUAGES_PRESENT, Set.of()))));
     }
 
     @Test
@@ -453,7 +454,7 @@ public class DublinCoreScraperTest {
                                                       Map.of());
         var brageLocation = new BrageLocation(null);
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_DC_LANGUAGES_PRESENT, List.of()))));
+        assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_DC_LANGUAGES_PRESENT, Set.of()))));
     }
 
     @Test
@@ -695,7 +696,7 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
         dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(appender.getMessages(), containsString(String.valueOf(DUPLICATE_VALUE)));
+        assertThat(appender.getMessages(), containsString(String.valueOf(MULTIPLE_VALUES)));
     }
 
     @Test
@@ -710,7 +711,7 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(appender.getMessages(), containsString(String.valueOf(DUPLICATE_VALUE)));
+        assertThat(appender.getMessages(), containsString(String.valueOf(MULTIPLE_VALUES)));
         assertThat(record.getCristinId(), is(equalTo(expectedCristinId)));
     }
 
@@ -793,7 +794,7 @@ public class DublinCoreScraperTest {
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         var expectedName = "Audun Vognild";
-        var actualName = record.getEntityDescription().getContributors().get(0).getIdentity().getName();
+        var actualName = record.getEntityDescription().getContributors().iterator().next().getIdentity().getName();
         assertThat(expectedName, is(equalTo(actualName)));
     }
 
@@ -808,7 +809,7 @@ public class DublinCoreScraperTest {
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
         var expectedIssn = "1502-8143";
-        var actualIssn = record.getPublication().getIssnList().get(0);
+        var actualIssn = record.getPublication().getIssnSet().iterator().next();
         assertThat(expectedIssn, is(equalTo(actualIssn)));
     }
 
@@ -822,12 +823,12 @@ public class DublinCoreScraperTest {
             List.of(typeDcValue, isbnDcValue));
         var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(record.getPublication().getIsbnList().get(0), is(equalTo("9788293091172")));
+        assertThat(record.getPublication().getIsbnSet().iterator().next(), is(equalTo("9788293091172")));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"1502-007x", "1502-007x (online)", "1502007x", "1502-007x", "1502-007x (e-utg)",
-    "1502-007x (e-utg), 0048-5829 (trykt utg)"})
+        "1502-007x (e-utg), 0048-5829 (trykt utg)"})
     void shouldRemoveAllLettersAndInvalidSpecialCharactersFromIssn(String isbn) {
         var typeDcValue = new DcValue(Element.TYPE, Qualifier.NONE, "Journal article");
         var isbnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, isbn);
@@ -836,7 +837,7 @@ public class DublinCoreScraperTest {
             List.of(typeDcValue, isbnDcValue));
         var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(record.getPublication().getIssnList().get(0), is(equalTo("1502-007X")));
+        assertThat(record.getPublication().getIssnSet().iterator().next(), is(equalTo("1502-007X")));
     }
 
     @ParameterizedTest

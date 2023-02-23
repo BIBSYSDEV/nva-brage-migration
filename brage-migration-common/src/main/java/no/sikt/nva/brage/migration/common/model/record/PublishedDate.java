@@ -1,23 +1,23 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class PublishedDate {
 
-    private List<String> brageDates;
+    private Set<String> brageDates;
     private String nvaDate;
 
     public PublishedDate() {
     }
 
     @JsonProperty("brage")
-    public List<String> getBrageDates() {
+    public Set<String> getBrageDates() {
         return brageDates;
     }
 
-    public void setBrageDates(List<String> brageDates) {
+    public void setBrageDates(Set<String> brageDates) {
         this.brageDates = brageDates;
     }
 

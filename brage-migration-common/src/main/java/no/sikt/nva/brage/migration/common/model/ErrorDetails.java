@@ -1,16 +1,16 @@
 package no.sikt.nva.brage.migration.common.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class ErrorDetails {
 
     private final Error errorCode;
-    private List<String> details;
+    private Set<String> details;
 
     public ErrorDetails(@JsonProperty("errorCode") Error errorCode,
-                        @JsonProperty("details") List<String> details) {
+                        @JsonProperty("details") Set<String> details) {
         this.errorCode = errorCode;
         this.details = details;
     }
@@ -25,7 +25,7 @@ public class ErrorDetails {
     }
 
     @JsonProperty("details")
-    public List<String> getDetails() {
+    public Set<String> getDetails() {
         return details;
     }
 
@@ -69,7 +69,7 @@ public class ErrorDetails {
         DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
         DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
         INVALID_DC_RIGHTS_URI,
-        DUPLICATE_VALUE,
+        MULTIPLE_VALUES,
         CONTENT_FILE_MISSING
     }
 }

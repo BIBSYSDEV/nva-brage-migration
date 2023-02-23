@@ -2,15 +2,15 @@ package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import nva.commons.core.JacocoGenerated;
 
 public class Publication {
 
     private String journal;
-    private List<String> issnList;
-    private List<String> isbnList;
+    private Set<String> issnList;
+    private Set<String> isbnList;
     private PublicationContext publicationContext;
     private String partOfSeries;
 
@@ -61,21 +61,21 @@ public class Publication {
 
     @JacocoGenerated
     @JsonProperty("issnList")
-    public List<String> getIssnList() {
-        return !issnList.isEmpty() ? issnList : Collections.emptyList();
+    public Set<String> getIssnSet() {
+        return !issnList.isEmpty() ? issnList : Collections.emptySet();
     }
 
-    public void setIssnList(List<String> issnList) {
+    public void setIssnList(Set<String> issnList) {
         this.issnList = issnList;
     }
 
     @JacocoGenerated
     @JsonProperty("isbnList")
-    public List<String> getIsbnList() {
+    public Set<String> getIsbnSet() {
         return isbnList;
     }
 
-    public void setIsbnList(List<String> isbnList) {
+    public void setIsbnList(Set<String> isbnList) {
         this.isbnList = isbnList;
     }
 

@@ -3,26 +3,26 @@ package no.sikt.nva.brage.migration.common.model.record;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
-import java.util.List;
+import java.util.Set;
 
 public class Language {
 
-    private List<String> brage;
+    private Set<String> brage;
     private URI nva;
 
     @JsonCreator
-    public Language(@JsonProperty("brage") List<String> brage,
+    public Language(@JsonProperty("brage") Set<String> brage,
                     @JsonProperty("nva") URI nva) {
         this.brage = brage;
         this.nva = nva;
     }
 
     @JsonProperty("brage")
-    public List<String> getBrage() {
+    public Set<String> getBrage() {
         return brage;
     }
 
-    public void setBrage(List<String> brage) {
+    public void setBrage(Set<String> brage) {
         this.brage = brage;
     }
 

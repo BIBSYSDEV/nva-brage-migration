@@ -2,23 +2,23 @@ package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class WarningDetails {
 
     private final Warning warningCode;
-    private List<String> details;
+    private Set<String> details;
 
     public WarningDetails(@JsonProperty("warningCode") Warning warningCode,
-                          @JsonProperty("details") List<String> details) {
+                          @JsonProperty("details") Set<String> details) {
         this.warningCode = warningCode;
         this.details = details;
     }
 
     public WarningDetails(Warning warningCode, String detail) {
         this.warningCode = warningCode;
-        this.details = Collections.singletonList(detail);
+        this.details = Collections.singleton(detail);
     }
 
     public WarningDetails(Warning warningCode) {
@@ -31,11 +31,11 @@ public class WarningDetails {
     }
 
     @JsonProperty("details")
-    public List<String> getDetails() {
+    public Set<String> getDetails() {
         return details;
     }
 
-    public void setDetails(List<String> details) {
+    public void setDetails(Set<String> details) {
         this.details = details;
     }
 

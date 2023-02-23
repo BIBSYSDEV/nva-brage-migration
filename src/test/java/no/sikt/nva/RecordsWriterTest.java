@@ -26,7 +26,7 @@ public class RecordsWriterTest {
     private Record createRecord() {
         var record = new Record();
         record.setId(randomUri());
-        List<String> types = Collections.singletonList("Research report");
+        var types = Collections.singleton("Research report");
         record.setType(new Type(types, TypeMapper.convertBrageTypeToNvaType(types)));
         return record;
     }
