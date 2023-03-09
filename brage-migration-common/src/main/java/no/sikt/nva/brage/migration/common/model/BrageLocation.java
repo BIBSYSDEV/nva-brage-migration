@@ -6,8 +6,8 @@ import java.nio.file.Path;
 
 public class BrageLocation {
 
-    public static final String ORIGIN_INFORMATION_STRING_TEMPLATE = "Bundle location: %s, Handle: %s";
-    public static final String ORIGIN_INFORMATION = "Bundle location: %s, title: \"%s\"";
+    public static final String ORIGIN_INFORMATION_STRING_TEMPLATE = "Handle: %s";
+    public static final String ORIGIN_INFORMATION = "Title: %s";
     private final Path brageBundlePath;
     private URI handle;
     private String title;
@@ -40,8 +40,8 @@ public class BrageLocation {
 
     public String getOriginInformation() {
         return nonNull(handle)
-                   ? String.format(ORIGIN_INFORMATION_STRING_TEMPLATE, getBrageBundlePath(), getHandle())
-                   : String.format(ORIGIN_INFORMATION, getBrageBundlePath(), getTitle());
+                   ? String.format(ORIGIN_INFORMATION_STRING_TEMPLATE, getHandle())
+                   : String.format(ORIGIN_INFORMATION, getTitle());
     }
 
     private String getCollectionDirectory() {

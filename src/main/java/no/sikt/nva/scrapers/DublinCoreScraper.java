@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
 public class DublinCoreScraper {
 
     public static final String SUBMITTED_VERSION = "submittedVersion";
-    public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "Field was not scraped\n";
+    public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "This field will not be migrated\n";
     public static final String NEW_LINE_DELIMITER = "\n";
     public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
     public static final String SCRAPING_HAS_FAILED = "Scraping has failed: ";
