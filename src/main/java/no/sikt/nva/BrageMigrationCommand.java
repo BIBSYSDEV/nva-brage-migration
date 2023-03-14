@@ -47,7 +47,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String PATH_DELIMITER = "/";
     public static final String OUTPUT_JSON_FILENAME = "records.json";
     public static final String FAILURE_IN_BRAGE_MIGRATION_COMMAND = "Failure in BrageMigration command";
-    public static final String FOLLOWING_FIELDS_ARE_IGNORED = "The following fields are ignored: \n";
+    public static final String FOLLOWING_FIELDS_ARE_IGNORED = "The following fields will not be migrated:  \n";
     public static final String INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY =
         "Both specified zipfiles and starting directory cannot be set at "
         + "the same time";
