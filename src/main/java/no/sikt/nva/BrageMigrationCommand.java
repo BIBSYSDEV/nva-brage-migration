@@ -216,6 +216,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private void runAndIgnoreException(BrageProcessor brageProcessor) {
         try {
+            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+            logger.info("Started processing bundle: " + brageProcessor.getDestinationDirectory());
             brageProcessor.run();
         } catch (Exception e) {
             var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
@@ -225,13 +227,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private String generateInputDirectory() {
-        if (StringUtils.isEmpty(startingDirectory) && StringUtils.isEmpty(customer)) {
+        if (StringUtils.isBlank(startingDirectory) && StringUtils.isBlank(customer)) {
             return StringUtils.EMPTY_STRING;
         }
-        if (StringUtils.isEmpty(startingDirectory)) {
+        if (StringUtils.isBlank(startingDirectory)) {
             return DEFAULT_LOCATION + customer + PATH_DELIMITER;
         }
-        if (StringUtils.isNotEmpty(startingDirectory)) {
+        if (StringUtils.isNotBlank(startingDirectory)) {
             return startingDirectory + "/";
         } else {
             return StringUtils.EMPTY_STRING;
@@ -239,13 +241,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private String generateOutputDirectory() {
-        if (StringUtils.isEmpty(userSpecifiedOutputDirectory) && StringUtils.isEmpty(customer)) {
+        if (StringUtils.isBlank(userSpecifiedOutputDirectory) && StringUtils.isBlank(customer)) {
             return userSpecifiedOutputDirectory;
         }
-        if (StringUtils.isEmpty(userSpecifiedOutputDirectory)) {
+        if (StringUtils.isBlank(userSpecifiedOutputDirectory)) {
             return DEFAULT_LOCATION + OUTPUT + customer + PATH_DELIMITER;
         }
-        if (isNull(userSpecifiedOutputDirectory)) {
+        if (StringUtils.isBlank(userSpecifiedOutputDirectory)) {
             return StringUtils.EMPTY_STRING;
         } else {
             return userSpecifiedOutputDirectory;
@@ -424,6 +426,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch(),
                                                               embargoes, contributors);
         return Arrays.stream(zipFiles)
+                   .filter(StringUtils::isNotBlank)
                    .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,
                                                                               shouldLookUpInChannelRegister,
                                                                               noHandleCheck, awsEnvironment.getValue(),

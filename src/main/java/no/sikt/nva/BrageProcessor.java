@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static java.util.Objects.nonNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -99,7 +100,9 @@ public class BrageProcessor implements Runnable {
     }
 
     private boolean isBundle(File entryDirectory) {
-        return entryDirectory.isDirectory();
+        return nonNull(entryDirectory)
+               && StringUtils.isNotBlank(entryDirectory.getPath())
+               && entryDirectory.isDirectory();
     }
 
     private Path getHandlePath(File entryDirectory) {
@@ -171,7 +174,7 @@ public class BrageProcessor implements Runnable {
             return createRecord(entryDirectory, brageLocation, dublinCore);
         } catch (Exception e) {
             var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
-            logger.error(e.getMessage() + StringUtils.SPACE + brageLocation.getOriginInformation());
+            logger.error(e + StringUtils.SPACE + brageLocation.getOriginInformation());
             return Optional.empty();
         }
     }

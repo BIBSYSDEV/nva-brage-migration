@@ -24,9 +24,13 @@ public class BrageProcessorFactory {
         this.contributors = contributors;
     }
 
-    public BrageProcessor createBrageProcessor(String zipfile, String customer, boolean enableOnlineValidation,
-                                               boolean shouldLookUpInChannelRegister,
-                                               boolean noHandleCheck, String awsEnvironment, String outputDirectory) {
+    public BrageProcessor createBrageProcessor(final String zipfile,
+                                               final String customer,
+                                               final boolean enableOnlineValidation,
+                                               final boolean shouldLookUpInChannelRegister,
+                                               final boolean noHandleCheck,
+                                               final String awsEnvironment,
+                                               String outputDirectory) {
         var destinationDirectory = generateDestinationDirectory(outputDirectory, zipfile);
         if (StringUtils.isEmpty(destinationDirectory)) {
             throw new RuntimeException(INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE);
