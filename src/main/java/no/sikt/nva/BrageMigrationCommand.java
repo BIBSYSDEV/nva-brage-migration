@@ -216,8 +216,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private void runAndIgnoreException(BrageProcessor brageProcessor) {
         try {
-            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
-            logger.info("Started processing bundle: " + brageProcessor.getDestinationDirectory());
             brageProcessor.run();
         } catch (Exception e) {
             var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
@@ -291,13 +289,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private List<Embargo> getEmbargoes(String directory) {
-        try {
-            var embargoFile = new File(directory + DEFAULT_EMBARGO_FILE_NAME);
-            return EmbargoScraper.getEmbargoList(embargoFile);
-        } catch (IOException e) {
-            //TODO: do something with this exception
-            return List.of();
-        }
+        var embargoFile = new File(directory + DEFAULT_EMBARGO_FILE_NAME);
+        return EmbargoScraper.getEmbargoList(embargoFile);
     }
 
     private Map<String, Contributor> getContributors(String directory) {
