@@ -92,12 +92,14 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldLoggZipThatIsEmpty() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
+
         var arguments = new String[]{TEST_RESOURCE_PATH + EMPTY_ZIP_FILE_NAME};
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
+        var messages = appender.getMessages();
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
-        assertThat(appender.getMessages(),
+        assertThat(messages,
                    containsString(Warning.EMPTY_COLLECTION.toString()));
-        assertThat(appender.getMessages(),
+        assertThat(messages,
                    not(containsString(WRITING_TO_JSON_FILE_HAS_FAILED)));
     }
 

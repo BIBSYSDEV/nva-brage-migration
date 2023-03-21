@@ -2,7 +2,6 @@ package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.scrapers.ContentScraper.EMPTY_LINE_REGEX;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,9 +27,9 @@ public final class EmbargoScraper {
     public EmbargoScraper() {
     }
 
-    public static List<Embargo> getEmbargoList(File file) throws IOException {
-        var contentFileAsString = Files.readString(file.toPath());
+    public static List<Embargo> getEmbargoList(File file) {
         try {
+            var contentFileAsString = Files.readString(file.toPath());
             var embargoes = convertStringToEmbargoObjects(contentFileAsString);
             logger.info("FOLLOWING COLLECTION CONTAINS " + embargoes.size() + " EMBARGOES.");
             return embargoes;

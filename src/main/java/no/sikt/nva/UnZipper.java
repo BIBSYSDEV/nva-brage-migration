@@ -35,14 +35,13 @@ public final class UnZipper {
             var unzippedFile = unzip(fileToUnzip, destinationFile);
             return Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles())).collect(Collectors.toList());
         } catch (Exception e) {
-            var fileToUnzip = new File(pathToZip);
-            if (fileToUnzip.exists()) {
+            if (initialFile.exists()) {
                 logger.warn(new WarningDetails(Warning.EMPTY_COLLECTION, Path.of(pathToZip).toString()).toString());
             } else {
                 logger.warn(
                     new WarningDetails(Warning.NONEXISTENT_COLLECTION, Path.of(pathToZip).toString()).toString());
             }
-            throw new RuntimeException(e);
+            return List.of();
         }
     }
 
