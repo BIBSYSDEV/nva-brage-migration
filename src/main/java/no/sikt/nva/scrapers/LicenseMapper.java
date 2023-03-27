@@ -55,7 +55,6 @@ public class LicenseMapper {
 
     /**
      * Part of code is commented out because of always changing requirements.
-     *
      */
 
     private static BrageLicense parseLicenseUri(String licenseUri) {
