@@ -281,6 +281,7 @@ public class DublinCoreScraper {
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore, brageLocation));
         record.setDoi(extractDoi(dublinCore));
+        record.setLink(extractLink(dublinCore));
         record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore, contributors));
         record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
         record.setPublication(createPublicationWithIdentifier(dublinCore, brageLocation, record));
@@ -383,9 +384,25 @@ public class DublinCoreScraper {
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .map(DoiValidator::updateDoiStructureIfNeeded)
                    .map(DoiValidator::replaceCharactersIfNeeded)
+                   .map(DoiValidator::attemptToReturnDoi)
                    .map(convertToUriAttempt())
                    .orElse(null);
     }
+
+    private static URI extractLink(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isLink)
+                   .findFirst()
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(DoiValidator::updateDoiStructureIfNeeded)
+                   .map(DoiValidator::updateLinkStructureIfNeeded)
+                   .map(DoiValidator::replaceCharactersIfNeeded)
+                   .map(DoiValidator::attemptToReturnLink)
+                   .map(convertToUriAttempt())
+                   .orElse(null);
+    }
+
 
     private static Function<String, URI> convertToUriAttempt() {
         return doi -> {

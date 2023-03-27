@@ -14,7 +14,7 @@ import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.JacocoGenerated;
 
-@JsonPropertyOrder({"customer", "resourceOwner", "brageLocation", "id", "cristinId", "doi", "publishedDate",
+@JsonPropertyOrder({"customer", "resourceOwner", "brageLocation", "id", "cristinId", "doi", "link", "publishedDate",
     "publisherAuthority",
     "rightsholder",
     "type", "partOf", "hasPart", "publisherAuthority", "spatialCoverage", "date", "language", "publication",
@@ -41,12 +41,22 @@ public class Record {
     private String brageLocation;
     private Set<ErrorDetails> errors;
     private Set<WarningDetails> warnings;
+    private URI link;
 
     public Record() {
     }
 
     public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
+
+    @JsonProperty("link")
+    public URI getLink() {
+        return link;
+    }
+
+    public void setLink(URI link) {
+        this.link = link;
     }
 
     @JsonProperty("resourceOwner")

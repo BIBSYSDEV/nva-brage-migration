@@ -42,8 +42,16 @@ public class DcValue {
         return Element.IDENTIFIER.equals(this.element)
                && Qualifier.DOI.equals(this.qualifier)
                || Element.IDENTIFIER.equals(this.element)
+                  && Qualifier.URI.equals(this.qualifier);
+    }
+
+    public boolean isLink() {
+        return Element.IDENTIFIER.equals(this.element)
+               && Qualifier.DOI.equals(this.qualifier)
+               && !value.contains("doi")
+               || Element.IDENTIFIER.equals(this.element)
                   && Qualifier.URI.equals(this.qualifier)
-                  && value.contains("doi.org");
+                  && !value.contains("doi");
     }
 
     public Qualifier getQualifier() {

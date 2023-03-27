@@ -12,7 +12,6 @@ import no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentif
 public class LicenseMapper {
 
     private static final String CREATIVE_COMMONS_HOST_NAME = "creativecommons.org";
-    private static final String SUPPORTED_CC_LICENSE_VERSION = "4.0";
     private static final Map<BrageLicense, NvaLicenseIdentifier> LICENSE_MAP = Map.of(BrageLicense.CC_BY,
                                                                                       NvaLicenseIdentifier.CC_BY,
                                                                                       BrageLicense.CC_BY_NC,
@@ -54,15 +53,20 @@ public class LicenseMapper {
         return licenseUri.contains(CREATIVE_COMMONS_HOST_NAME);
     }
 
+    /**
+     * Part of code is commented out because of always changing requirements.
+     *
+     */
+
     private static BrageLicense parseLicenseUri(String licenseUri) {
         var pathContainingLicenseType = licenseUri.split(CREATIVE_COMMONS_HOST_NAME)[1];
-        if (pathContainingLicenseType.contains(SUPPORTED_CC_LICENSE_VERSION)) {
-            var brageLicenseSingleton = extractLicenseValue(pathContainingLicenseType);
-            return isSingleton(brageLicenseSingleton)
-                       ? brageLicenseSingleton.get(0)
-                       : null;
-        }
-        return null;
+        //        if (pathContainingLicenseType.contains(SUPPORTED_CC_LICENSE_VERSION)) {
+        var brageLicenseSingleton = extractLicenseValue(pathContainingLicenseType);
+        return isSingleton(brageLicenseSingleton)
+                   ? brageLicenseSingleton.get(0)
+                   : null;
+        //        }
+        //        return null;
     }
 
     private static List<BrageLicense> extractLicenseValue(String pathContainingLicenseType) {

@@ -71,7 +71,7 @@ public final class TypeMapper {
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private static String mapToAnyMappableNvaTypeWhenUnmappableTypePair(Set<String> inputTypes) {
         var brageTypes = convertToBrageTypes(inputTypes);
-        if (brageTypes.isEmpty()) {
+        if (brageTypes.isEmpty() || containsIgnoredType(brageTypes)) {
             return null;
         } else {
             for (BrageType type : brageTypes) {
@@ -84,6 +84,10 @@ public final class TypeMapper {
             }
         }
         return null;
+    }
+
+    private static boolean containsIgnoredType(Set<BrageType> brageTypes) {
+        return brageTypes.contains(BrageType.CONFERENCE_OBJECT);
     }
 
     private static Set<BrageType> convertToBrageTypes(Set<String> inputTypes) {

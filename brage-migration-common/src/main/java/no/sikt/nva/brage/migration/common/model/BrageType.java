@@ -28,6 +28,7 @@ public enum BrageType {
     NOTES("Notat"),
     POSTER("Poster"),
     PRESENTATION("Presentasjon"),
+    CONFERENCE_OBJECT("Conference object"),
     PEER_REVIEWED("Peer reviewed");
 
     private final String value;
