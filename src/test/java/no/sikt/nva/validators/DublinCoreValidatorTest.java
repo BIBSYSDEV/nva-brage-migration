@@ -10,7 +10,6 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALI
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_ISSN_AND_DC_JOURNAL;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_VALUES;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -230,5 +229,14 @@ public class DublinCoreValidatorTest {
         var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(INVALID_DC_TYPE, Set.of()))));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"1935-1987", "1906?", "2009 -", "2009-", "1983–1984"})
+    void shouldNotLogInvalidDateIssuedWhenDateIsPeriod(String value) {
+        var date = new DcValue(Element.DATE, Qualifier.ISSUED, value);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(date));
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
+        assertThat(errors, not(hasItems(new ErrorDetails(INVALID_DC_DATE_ISSUED))));
     }
 }

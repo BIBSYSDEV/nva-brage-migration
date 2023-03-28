@@ -34,7 +34,9 @@ public final class EmbargoScraper {
             logger.info("FOLLOWING COLLECTION CONTAINS " + embargoes.size() + " EMBARGOES.");
             return embargoes;
         } catch (Exception e) {
-            logger.error(ERROR_OCCURRED_EXTRACTING_EMBARGOES);
+            if (file.exists()) {
+                logger.error(ERROR_OCCURRED_EXTRACTING_EMBARGOES);
+            }
             return Collections.emptyList();
         }
     }

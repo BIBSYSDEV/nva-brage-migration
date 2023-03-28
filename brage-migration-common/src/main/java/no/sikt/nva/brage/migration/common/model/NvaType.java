@@ -35,4 +35,13 @@ public enum NvaType {
     public String getValue() {
         return value;
     }
+
+    public static NvaType fromValue(String v) {
+        for (NvaType c : NvaType.values()) {
+            if (c.getValue().equalsIgnoreCase(v)) {
+                return c;
+            }
+        }
+        return null;
+    }
 }

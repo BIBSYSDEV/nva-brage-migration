@@ -200,6 +200,9 @@ public final class EntityDescriptionExtractor {
             if (DublinCoreValidator.containsYearAndMonth(date)) {
                 return new PublicationDate(date, constructDateWithYearAndMonth(date));
             }
+            if(DublinCoreValidator.isPeriodDate(date)) {
+                return new PublicationDate(date, constructDateWithYearOnly(date));
+            }
             return new PublicationDate(date, constructFullDate(date));
         } catch (Exception e) {
             return new PublicationDate(date, new PublicationDateNva.Builder().build());

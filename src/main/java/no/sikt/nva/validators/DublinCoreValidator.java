@@ -47,8 +47,13 @@ public final class DublinCoreValidator {
     public static final String PUBLISHED_VERSION_STRING = "publishedVersion";
     public static final String ACCEPTED_VERSION_STRING = "acceptedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
+    public static final String YEAR_PERIOD_REGEX = "[0-9]{4}-[0-9]{4}";
     public static final String REGEX_BRACKETS_AND_DOT = "(\\.)|(\\[)|(\\])";
     private static final int ONE_DESCRIPTION = 1;
+    public static final String UNKNOWN_YEAR_PERIOD_REGEX = "[0-9]{4}[?]";
+    public static final String QUESTION_MARK = "?";
+    public static final String HYPHEN = "-";
+    public static final String DASH = "–";
 
     public static Set<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore) {
 
@@ -78,7 +83,7 @@ public final class DublinCoreValidator {
     }
 
     public static boolean containsYearAndMonth(String date) {
-        var yearAndMonthList = Arrays.asList(date.split("-"));
+        var yearAndMonthList = Arrays.asList(date.split(HYPHEN));
         return yearAndMonthList.size() == 2 && yearAndMonthList.get(yearAndMonthList.size() - 1).matches("\\d{2}");
     }
 
@@ -303,7 +308,10 @@ public final class DublinCoreValidator {
                            .filter(DcValue::isPublicationDate)
                            .findAny()
                            .map(DcValue::getValue)
+                           .map(value -> value.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING))
+                           .map(value -> value.replaceAll(DASH, HYPHEN))
                            .map(DublinCoreValidator::modifyIfDateIsOfLocalDateTimeFormat)
+                           .map(DublinCoreValidator::constructDateFromPeriod)
                            .orElse(new DcValue().scrapeValueAndSetToScraped());
 
             if (containsYearOnly(date)) {
@@ -318,6 +326,23 @@ public final class DublinCoreValidator {
             return Optional.of(new ErrorDetails(INVALID_DC_DATE_ISSUED, Set.of(date)));
         }
         return Optional.of(new ErrorDetails(DATE_NOT_PRESENT_DC_DATE_ISSUED, Set.of()));
+    }
+
+    private static String constructDateFromPeriod(String value) {
+        if(value.matches(YEAR_PERIOD_REGEX)) {
+            return value.split(HYPHEN)[0];
+        }
+        if(value.matches(UNKNOWN_YEAR_PERIOD_REGEX)) {
+            return value.replace(QUESTION_MARK, StringUtils.EMPTY_STRING);
+        }
+        if(value.matches("[0-9]{4}[-]")) {
+            return value.replace(HYPHEN, StringUtils.EMPTY_STRING);
+        }
+        return value;
+    }
+
+    public static boolean isPeriodDate(String date) {
+        return date.matches(YEAR_PERIOD_REGEX) || date.matches(UNKNOWN_YEAR_PERIOD_REGEX);
     }
 
     private static String modifyIfDateIsOfLocalDateTimeFormat(String date) {

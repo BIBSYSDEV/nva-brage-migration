@@ -13,6 +13,7 @@ public enum BrageType {
     RESEARCH_REPORT("Research report"),
     BACHELOR_THESIS("Bachelor thesis"),
     MASTER_THESIS("Master thesis"),
+    SPECIAL_THESIS("Spesialavhandling"),
     DOCTORAL_THESIS("Doctoral thesis"),
     WORKING_PAPER("Working paper"),
     STUDENT_PAPER("Student paper"),

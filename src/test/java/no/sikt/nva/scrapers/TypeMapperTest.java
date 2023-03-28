@@ -36,4 +36,18 @@ public class TypeMapperTest {
         var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("Student paper, others"));
         assertThat(actualType, is(equalTo(expectedNvaType)));
     }
+
+    @Test
+    void shouldMapOriginalNvaTypeToNvaType() {
+        var expectedNvaType = NvaType.JOURNAL_ARTICLE.getValue();
+        var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("JournalArticle"));
+        assertThat(actualType, is(equalTo(expectedNvaType)));
+    }
+
+    @Test
+    void shouldMapOriginalNvaTypeAndBrageTypeToNvaType() {
+        var expectedNvaType = NvaType.JOURNAL_ARTICLE.getValue();
+        var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("JournalArticle", "Journal article"));
+        assertThat(actualType, is(equalTo(expectedNvaType)));
+    }
 }
