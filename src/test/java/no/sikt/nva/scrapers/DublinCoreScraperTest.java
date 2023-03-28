@@ -813,9 +813,12 @@ public class DublinCoreScraperTest {
         assertThat(expectedIssn, is(equalTo(actualIssn)));
     }
 
-    @Test
-    void shouldDetectDifferencesBetweenDoiAndLinkAndMapDoiCorrectly() {
-        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.5194/tc-8-1885-2014");
+    @ParameterizedTest
+    @ValueSource(strings = {"https://doi.org/10.5194/tc-8-1885-2014", "doi:10.5194/tc-8-1885-2014",
+        "10.5194/tc-8-1885-2014", "doi.org/10.5194/tc-8-1885-2014"})
+    void shouldDetectDifferencesBetweenDoiAndLinkAndMapDoiCorrectly(String value) {
+        var expectedDoi = URI.create("https://doi.org/10.5194/tc-8-1885-2014");
+        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, value);
         var brageLocation = new BrageLocation(null);
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, doi));
@@ -823,7 +826,7 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        assertThat(record.getDoi(), is(equalTo(URI.create(doi.getValue()))));
+        assertThat(record.getDoi(), is(equalTo(expectedDoi)));
         assertThat(record.getLink(), is(nullValue()));
     }
 

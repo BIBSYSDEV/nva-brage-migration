@@ -126,13 +126,13 @@ public class DoiValidator {
         if (isValidDoiOffline(doi)) {
              return Optional.empty();
         }
-        if (isValidLink(doi)) {
+        if (doiIsAValidLink(doi)) {
             return Optional.empty();
         }
         return Optional.of(new ErrorDetails(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK, Set.of(doi)));
     }
 
-    private static boolean isValidLink(String value) {
+    private static boolean doiIsAValidLink(String value) {
         return UrlValidator.getInstance().isValid(value) && !value.contains(DOI_DOMAIN_NAME);
     }
 

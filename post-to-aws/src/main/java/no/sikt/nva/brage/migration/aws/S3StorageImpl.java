@@ -104,7 +104,7 @@ public class S3StorageImpl implements S3Storage {
         switch (awsBucket) {
             case "sandbox":
                 return SANDBOX_BUCKET_NAME;
-            case "develop":
+            case "dev":
                 return DEVELOP_BUCKET_NAME;
             case "prod":
                 return PROD_BUCKET_NAME;
@@ -151,8 +151,8 @@ public class S3StorageImpl implements S3Storage {
     }
 
     private File findAssociatedFiles(Record record) {
-        logger.info(getPathPrefixString() + "/" + record.getBrageLocation());
-        return new File(getPathPrefixString() + "/" + record.getBrageLocation());
+        logger.info(getPathPrefixString()  + record.getBrageLocation());
+        return new File(getPathPrefixString()  + record.getBrageLocation());
     }
 
     private String getCollectionDirectory(Record record) {
