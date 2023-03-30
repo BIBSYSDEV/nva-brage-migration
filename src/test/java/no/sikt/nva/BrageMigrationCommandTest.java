@@ -82,14 +82,6 @@ public class BrageMigrationCommandTest {
     }
 
     @Test
-    void shouldLoggInvalidDoiErrorOnlineWhenDoiUriIsInvalid() {
-        var arguments = new String[]{TEST_RESOURCE_PATH + INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI,
-            "-ov"};
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments);
-        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
-    }
-
-    @Test
     void shouldLoggZipThatIsEmpty() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
 

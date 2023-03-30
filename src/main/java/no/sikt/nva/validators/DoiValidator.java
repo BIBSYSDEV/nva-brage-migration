@@ -13,6 +13,7 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.StringUtils;
 import nva.commons.doi.UnitHttpClient;
+import org.apache.commons.validator.routines.UrlValidator;
 
 public class DoiValidator {
 
@@ -65,12 +66,17 @@ public class DoiValidator {
         }
     }
 
-    public static String replaceCharactersIfNeeded(String doi) {
-        if (doi.contains(ENCODED_SLASH)) {
-            return doi.replace(ENCODED_SLASH, SLASH);
-        }
-        return doi;
+    public static String updateLinkStructureIfNeeded(String value) {
+        return removeEmptySpaces(value);
     }
+
+    public static String replaceCharactersIfNeeded(String value) {
+        if (value.contains(ENCODED_SLASH)) {
+            return value.replace(ENCODED_SLASH, SLASH);
+        }
+        return value;
+    }
+
 
     private static String handleDoiWithColon(String doi) {
         var doiPath = doi.split(COLON)[1];
@@ -117,10 +123,17 @@ public class DoiValidator {
     }
 
     private static Optional<ErrorDetails> validateDoiOffline(String doi) {
-        if (!isValidDoiOffline(doi)) {
-            return Optional.of(new ErrorDetails(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK, Set.of(doi)));
+        if (isValidDoiOffline(doi)) {
+             return Optional.empty();
         }
-        return Optional.empty();
+        if (doiIsAValidLink(doi)) {
+            return Optional.empty();
+        }
+        return Optional.of(new ErrorDetails(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK, Set.of(doi)));
+    }
+
+    private static boolean doiIsAValidLink(String value) {
+        return UrlValidator.getInstance().isValid(value) && !value.contains(DOI_DOMAIN_NAME);
     }
 
     private static boolean isValidDoiOnline(String doi) {
@@ -146,7 +159,15 @@ public class DoiValidator {
         return nva.commons.doi.DoiValidator.validateOffline(doi);
     }
 
-    private static String removeEmptySpaces(String doi) {
-        return doi.replaceAll("\\s", StringUtils.EMPTY_STRING);
+    private static String removeEmptySpaces(String value) {
+        return value.replaceAll("\\s", StringUtils.EMPTY_STRING);
+    }
+
+    public static String attemptToReturnLink(String value) {
+        return value.contains(DOI_DOMAIN_NAME) ? null : value;
+    }
+
+    public static String attemptToReturnDoi(String value) {
+        return value.contains(DOI_DOMAIN_NAME) ? value : null;
     }
 }

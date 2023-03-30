@@ -3,12 +3,14 @@ package no.sikt.nva.scrapers;
 import static java.util.Map.entry;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toSet;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
@@ -37,6 +39,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.RESEARCH_REPORT), NvaType.RESEARCH_REPORT),
         entry(Set.of(BrageType.BACHELOR_THESIS), NvaType.BACHELOR_THESIS),
         entry(Set.of(BrageType.MASTER_THESIS), NvaType.MASTER_THESIS),
+        entry(Set.of(BrageType.SPECIAL_THESIS), NvaType.MASTER_THESIS),
         entry(Set.of(BrageType.DOCTORAL_THESIS), NvaType.DOCTORAL_THESIS),
         entry(Set.of(BrageType.STUDENT_PAPER), NvaType.STUDENT_PAPER),
         entry(Set.of(BrageType.WORKING_PAPER), NvaType.WORKING_PAPER),
@@ -68,10 +71,19 @@ public final class TypeMapper {
         }
     }
 
+    public static Set<BrageType> getBrageTypeForCorrespondingNvaType(NvaType type) {
+        for (Entry<Set<BrageType>, NvaType> entry : TYPE_MAP.entrySet()) {
+            if (entry.getValue().equals(type)) {
+                return entry.getKey();
+            }
+        }
+        return Collections.emptySet();
+    }
+
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private static String mapToAnyMappableNvaTypeWhenUnmappableTypePair(Set<String> inputTypes) {
         var brageTypes = convertToBrageTypes(inputTypes);
-        if (brageTypes.isEmpty()) {
+        if (brageTypes.isEmpty() || containsIgnoredType(brageTypes)) {
             return null;
         } else {
             for (BrageType type : brageTypes) {
@@ -86,11 +98,24 @@ public final class TypeMapper {
         return null;
     }
 
-    private static Set<BrageType> convertToBrageTypes(Set<String> inputTypes) {
-        return inputTypes.stream()
-                   .map(BrageType::fromValue)
-                   .filter(Objects::nonNull)
-                   .collect(Collectors.toSet());
+    private static boolean containsIgnoredType(Set<BrageType> types) {
+        return types.contains(BrageType.CONFERENCE_OBJECT);
+    }
+
+    private static Set<BrageType> convertToBrageTypes(Set<String> values) {
+        var brageTypesFromOriginalNvaTypes = values.stream()
+                                                 .map(NvaType::fromValue)
+                                                 .filter(Objects::nonNull)
+                                                 .map(TypeMapper::getBrageTypeForCorrespondingNvaType)
+                                                 .filter(Objects::nonNull)
+                                                 .flatMap(Set::stream)
+                                                 .collect(toSet());
+        var brageTypes = values.stream()
+                             .map(BrageType::fromValue)
+                             .filter(Objects::nonNull)
+                             .collect(toSet());
+        return Stream.concat(brageTypesFromOriginalNvaTypes.stream(), brageTypes.stream())
+                   .collect(toSet());
     }
 
     private static String mapToNvaTypeIfMappable(Set<String> inputTypes) {
@@ -98,8 +123,11 @@ public final class TypeMapper {
         var nvaType = TYPE_MAP.get(Set.copyOf(brageTypes));
         if (isNull(nvaType) && brageTypes.size() >= 2) {
             for (BrageType type : brageTypes) {
-                if (hasValidType(type.toString())) {
+                if (hasValidType(type.getValue())) {
                     return TYPE_MAP.get(Collections.singleton(type)).getValue();
+                }
+                if (isNvaType(type)) {
+                    return type.getValue();
                 }
             }
         }
@@ -108,6 +136,10 @@ public final class TypeMapper {
         } else {
             return null;
         }
+    }
+
+    private static boolean isNvaType(BrageType type) {
+        return nonNull(NvaType.fromValue(type.getValue()));
     }
 
     private static BrageType convertToBrageType(String brageType) {

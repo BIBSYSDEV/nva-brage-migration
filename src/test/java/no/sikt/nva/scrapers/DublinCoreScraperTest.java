@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -552,9 +553,8 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldLoggInvalidDoi() {
-        var doi = "10.1016/ S0140-6736wefwfg.(20)30045-#%wt3";
         var dcType = new DcValue(Element.TYPE, null, "Book");
-        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doi);
+        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "10.1016/ S0140-6736wefwfg.(20)30045-#%wt3");
         var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
         var appender = LogUtils.getTestingAppenderForRootLogger();
         new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of())
@@ -811,6 +811,37 @@ public class DublinCoreScraperTest {
         var expectedIssn = "1502-8143";
         var actualIssn = record.getPublication().getIssnSet().iterator().next();
         assertThat(expectedIssn, is(equalTo(actualIssn)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"https://doi.org/10.5194/tc-8-1885-2014", "doi:10.5194/tc-8-1885-2014",
+        "10.5194/tc-8-1885-2014", "doi.org/10.5194/tc-8-1885-2014"})
+    void shouldDetectDifferencesBetweenDoiAndLinkAndMapDoiCorrectly(String value) {
+        var expectedDoi = URI.create("https://doi.org/10.5194/tc-8-1885-2014");
+        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, value);
+        var brageLocation = new BrageLocation(null);
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, doi));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
+                                                      Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getDoi(), is(equalTo(expectedDoi)));
+        assertThat(record.getLink(), is(nullValue()));
+    }
+
+    @Test
+    void shouldDetectDifferencesBetweenDoiAndLinkAndMapLinkCorrectly() {
+        var link = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://www.hindawi.com/journals/nrp/2012/690348/");
+        var brageLocation = new BrageLocation(null);
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, link));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
+                                                      Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getLink(), is(equalTo(URI.create(link.getValue()))));
+        assertThat(record.getDoi(), is(nullValue()));
     }
 
     @ParameterizedTest
