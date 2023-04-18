@@ -32,7 +32,7 @@ public class LicenseMapper {
                    .map(LicenseMapper::trim)
                    .map(LicenseMapper::getLicenseName)
                    .map(LICENSE_MAP::get)
-                   .orElse(null);
+                   .orElse(NvaLicenseIdentifier.DEFAULT_LICENSE);
     }
 
     public static boolean isSingleton(List<BrageLicense> versions) {
