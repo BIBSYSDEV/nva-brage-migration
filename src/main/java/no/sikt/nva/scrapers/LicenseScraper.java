@@ -8,6 +8,7 @@ import no.sikt.nva.brage.migration.common.model.record.license.NvaLicense;
 import no.sikt.nva.brage.migration.common.model.record.license.NvaLicenseIdentifier;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import org.jetbrains.annotations.NotNull;
 
 public class LicenseScraper {
 
@@ -43,7 +44,12 @@ public class LicenseScraper {
                    .map(LicenseMapper::mapLicenseToNva)
                    .map(this::constructLicense)
                    .filter(this::isValidCCLicense)
-                   .orElse(null);
+                   .orElse(defaultLicense());
+    }
+
+    @NotNull
+    private static License defaultLicense() {
+        return new License(null, new NvaLicense(NvaLicenseIdentifier.DEFAULT_LICENSE, Map.of()));
     }
 
     public String extractLicense(DublinCore dublinCore) {

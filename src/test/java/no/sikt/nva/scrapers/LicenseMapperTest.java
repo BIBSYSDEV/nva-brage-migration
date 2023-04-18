@@ -22,17 +22,12 @@ public class LicenseMapperTest {
         assertThat(actual, is(equalTo(expected)));
     }
 
-
-    /**
-     * Commented out because of always changing requirements.
-     */
-
-
-    //    @Test
-    //    void shouldReturnNullForLicenseWithUnsupportedVersion() {
-    //        var actual = LicenseMapper.mapLicenseToNva("https://creativecommons.org/publicdomain/zero/1.0/");
-    //        assertThat(actual, is(equalTo(null)));
-    //    }
+    @Test
+    void shouldCreateDefaultLicenseWhenBrageLicenseIsNotPresent() {
+        var expected = NvaLicenseIdentifier.DEFAULT_LICENSE;
+        var actual = LicenseMapper.mapLicenseToNva("");
+        assertThat(actual, is(equalTo(expected)));
+    }
 
     @Test
     void shouldMapLicenseWithZeroWidthWhitespaces() {

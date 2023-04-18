@@ -48,10 +48,19 @@ public class DcValue {
     public boolean isLink() {
         return Element.IDENTIFIER.equals(this.element)
                && Qualifier.DOI.equals(this.qualifier)
-               && !value.contains("doi")
+               && isNotADoi()
                || Element.IDENTIFIER.equals(this.element)
                   && Qualifier.URI.equals(this.qualifier)
-                  && !value.contains("doi");
+                  && isNotADoi()
+                  && isNotAHandle();
+    }
+
+    private boolean isNotAHandle() {
+        return !value.contains(HANDLE_DOMAIN.getHost());
+    }
+
+    private boolean isNotADoi() {
+        return !value.contains("doi");
     }
 
     public Qualifier getQualifier() {
