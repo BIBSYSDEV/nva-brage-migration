@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
+import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,6 +105,7 @@ public final class TypeMapper {
 
     private static Set<BrageType> convertToBrageTypes(Set<String> values) {
         var brageTypesFromOriginalNvaTypes = values.stream()
+                .map(string -> format(string))
                                                  .map(NvaType::fromValue)
                                                  .filter(Objects::nonNull)
                                                  .map(TypeMapper::getBrageTypeForCorrespondingNvaType)
@@ -116,6 +118,10 @@ public final class TypeMapper {
                              .collect(toSet());
         return Stream.concat(brageTypesFromOriginalNvaTypes.stream(), brageTypes.stream())
                    .collect(toSet());
+    }
+
+    private static String format(String value) {
+        return value.replaceAll("(\n)|(\b)|(\u200b)|(\t)", StringUtils.EMPTY_STRING);
     }
 
     private static String mapToNvaTypeIfMappable(Set<String> inputTypes) {
