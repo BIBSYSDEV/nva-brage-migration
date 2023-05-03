@@ -45,6 +45,20 @@ public class TypeMapperTest {
     }
 
     @Test
+    void TypeMapperShouldNotBeCaseSensitive() {
+        var expectedNvaType = NvaType.REPORT.getValue();
+        var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("OTHer Report"));
+        assertThat(actualType, is(equalTo(expectedNvaType)));
+    }
+
+    @Test
+    void TypeMapperShouldRemoveSpecialCharacters() {
+        var expectedNvaType = NvaType.REPORT.getValue();
+        var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("\nOther\b \u200breport\t"));
+        assertThat(actualType, is(equalTo(expectedNvaType)));
+    }
+
+    @Test
     void shouldMapOriginalNvaTypeAndBrageTypeToNvaType() {
         var expectedNvaType = NvaType.JOURNAL_ARTICLE.getValue();
         var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("JournalArticle", "Journal article"));
