@@ -263,7 +263,7 @@ public class DcValue {
 
     public boolean isDescription() {
         return Element.DESCRIPTION.equals(this.element)
-               && Qualifier.NONE.equals(this.qualifier);
+               && (Qualifier.NONE.equals(this.qualifier) || Qualifier.LOCAL_CODE.equals(this.qualifier));
     }
 
     public boolean isSpatialCoverage() {
