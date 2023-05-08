@@ -47,7 +47,7 @@ public class TypeMapperTest {
     @Test
     void TypeMapperShouldNotBeCaseSensitive() {
         var expectedNvaType = NvaType.REPORT.getValue();
-        var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("OTHer Report"));
+        var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("Other report\t"));
         assertThat(actualType, is(equalTo(expectedNvaType)));
     }
 
