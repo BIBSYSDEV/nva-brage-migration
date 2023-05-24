@@ -27,10 +27,12 @@ public final class TypeMapper {
         entry(Set.of(BrageType.JOURNAL_ARTICLE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE),
         entry(Set.of(BrageType.JOURNAL_ISSUE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE),
         entry(Set.of(BrageType.BOOK), NvaType.BOOK),
+        entry(Set.of(BrageType.BOOK_OF_ABSTRACTS), NvaType.BOOK),
         entry(Set.of(BrageType.CHAPTER), NvaType.CHAPTER),
         entry(Set.of(BrageType.JOURNAL_ARTICLE), NvaType.JOURNAL_ARTICLE),
         entry(Set.of(BrageType.JOURNAL_ISSUE), NvaType.JOURNAL_ARTICLE),
         entry(Set.of(BrageType.DATASET), NvaType.DATASET),
+        entry(Set.of(BrageType.DATA_SET), NvaType.DATASET),
         entry(Set.of(BrageType.OTHERS), NvaType.REPORT),
         entry(Set.of(BrageType.OTHER), NvaType.REPORT),
         entry(Set.of(BrageType.REPORT), NvaType.REPORT),
@@ -45,6 +47,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.STUDENT_PAPER), NvaType.STUDENT_PAPER),
         entry(Set.of(BrageType.WORKING_PAPER), NvaType.WORKING_PAPER),
         entry(Set.of(BrageType.STUDENT_PAPER_OTHERS), NvaType.STUDENT_PAPER_OTHERS),
+        entry(Set.of(BrageType.STUDENT_THESIS_OTHER), NvaType.STUDENT_PAPER_OTHERS),
         entry(Set.of(BrageType.DESIGN_PRODUCT), NvaType.DESIGN_PRODUCT),
         entry(Set.of(BrageType.CHRONICLE), NvaType.CHRONICLE),
         //        entry(Set.of(BrageType.SOFTWARE), NvaType.SOFTWARE),
@@ -52,7 +55,9 @@ public final class TypeMapper {
         entry(Set.of(BrageType.LECTURE), NvaType.LECTURE),
         entry(Set.of(BrageType.RECORDING_MUSICAL), NvaType.RECORDING_MUSICAL),
         entry(Set.of(BrageType.PLAN_OR_BLUEPRINT), NvaType.PLAN_OR_BLUEPRINT),
-        entry(Set.of(BrageType.MAP), NvaType.MAP)
+        entry(Set.of(BrageType.MAP), NvaType.MAP),
+        entry(Set.of(BrageType.INTERVIEW), NvaType.INTERVIEW),
+        entry(Set.of(BrageType.PRESENTATION_OTHER), NvaType.PRESENTATION_OTHER)
     );
 
     public static String convertBrageTypeToNvaType(Set<String> inputTypes) {
@@ -100,12 +105,14 @@ public final class TypeMapper {
     }
 
     private static boolean containsIgnoredType(Set<BrageType> types) {
-        return types.contains(BrageType.CONFERENCE_OBJECT);
+        return types.contains(BrageType.CONFERENCE_OBJECT)
+               || types.contains(BrageType.CONFERENCE_POSTER)
+               || types.contains(BrageType.CONFERENCE_LECTURE);
     }
 
     private static Set<BrageType> convertToBrageTypes(Set<String> values) {
         var brageTypesFromOriginalNvaTypes = values.stream()
-                .map(string -> format(string))
+                                                 .map(TypeMapper::format)
                                                  .map(NvaType::fromValue)
                                                  .filter(Objects::nonNull)
                                                  .map(TypeMapper::getBrageTypeForCorrespondingNvaType)
