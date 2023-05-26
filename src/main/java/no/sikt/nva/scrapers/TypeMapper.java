@@ -26,7 +26,10 @@ public final class TypeMapper {
         entry(Set.of(BrageType.CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER),
         entry(Set.of(BrageType.JOURNAL_ARTICLE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE),
         entry(Set.of(BrageType.JOURNAL_ISSUE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE),
+        entry(Set.of(BrageType.ACADEMIC_ARTICLE), NvaType.SCIENTIFIC_ARTICLE),
+        entry(Set.of(BrageType.ACADEMIC_ARTICLE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE),
         entry(Set.of(BrageType.BOOK), NvaType.BOOK),
+        entry(Set.of(BrageType.ANTHOLOGY), NvaType.ANTHOLOGY),
         entry(Set.of(BrageType.BOOK_OF_ABSTRACTS), NvaType.BOOK),
         entry(Set.of(BrageType.CHAPTER), NvaType.CHAPTER),
         entry(Set.of(BrageType.JOURNAL_ARTICLE), NvaType.JOURNAL_ARTICLE),
@@ -57,7 +60,10 @@ public final class TypeMapper {
         entry(Set.of(BrageType.PLAN_OR_BLUEPRINT), NvaType.PLAN_OR_BLUEPRINT),
         entry(Set.of(BrageType.MAP), NvaType.MAP),
         entry(Set.of(BrageType.INTERVIEW), NvaType.INTERVIEW),
-        entry(Set.of(BrageType.PRESENTATION_OTHER), NvaType.PRESENTATION_OTHER)
+        entry(Set.of(BrageType.PRESENTATION_OTHER), NvaType.PRESENTATION_OTHER),
+        entry(Set.of(BrageType.PERFORMING_ARTS), NvaType.PERFORMING_ARTS),
+        entry(Set.of(BrageType.READER_OPINION), NvaType.READER_OPINION),
+        entry(Set.of(BrageType.VISUAL_ARTS), NvaType.VISUAL_ARTS)
     );
 
     public static String convertBrageTypeToNvaType(Set<String> inputTypes) {

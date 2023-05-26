@@ -45,6 +45,13 @@ public class TypeMapperTest {
     }
 
     @Test
+    void shouldMapAnthologyToNvaType() {
+        var expectedNvaType = NvaType.ANTHOLOGY.getValue();
+        var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("Anthology"));
+        assertThat(actualType, is(equalTo(expectedNvaType)));
+    }
+
+    @Test
     void TypeMapperShouldNotBeCaseSensitive() {
         var expectedNvaType = NvaType.REPORT.getValue();
         var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("Other report\t"));
