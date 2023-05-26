@@ -25,7 +25,6 @@ public final class TypeMapper {
         entry(Set.of(BrageType.BOOK, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_MONOGRAPH),
         entry(Set.of(BrageType.ACADEMIC_MONOGRAPH), NvaType.SCIENTIFIC_MONOGRAPH),
         entry(Set.of(BrageType.CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER),
-        entry(Set.of(BrageType.CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER),
         entry(Set.of(BrageType.ACADEMIC_CHAPTER), NvaType.SCIENTIFIC_CHAPTER),
         entry(Set.of(BrageType.ACADEMIC_CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER),
         entry(Set.of(BrageType.JOURNAL_ARTICLE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE),
@@ -137,8 +136,12 @@ public final class TypeMapper {
                              .map(BrageType::fromValue)
                              .filter(Objects::nonNull)
                              .collect(toSet());
-        return Stream.concat(brageTypesFromOriginalNvaTypes.stream(), brageTypes.stream())
-                   .collect(toSet());
+        if (brageTypes.size() > brageTypesFromOriginalNvaTypes.size()) {
+            return brageTypes;
+        } else {
+            return Stream.concat(brageTypesFromOriginalNvaTypes.stream(), brageTypes.stream())
+                       .collect(toSet());
+        }
     }
 
     private static String format(String value) {
