@@ -23,12 +23,20 @@ public final class TypeMapper {
     private static final Logger logger = LoggerFactory.getLogger(TypeMapper.class);
     private static final Map<Set<BrageType>, NvaType> TYPE_MAP = Map.ofEntries(
         entry(Set.of(BrageType.BOOK, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_MONOGRAPH),
+        entry(Set.of(BrageType.ACADEMIC_MONOGRAPH), NvaType.SCIENTIFIC_MONOGRAPH),
         entry(Set.of(BrageType.CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER),
+        entry(Set.of(BrageType.ACADEMIC_CHAPTER), NvaType.SCIENTIFIC_CHAPTER),
+        entry(Set.of(BrageType.ACADEMIC_CHAPTER, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_CHAPTER),
         entry(Set.of(BrageType.JOURNAL_ARTICLE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE),
         entry(Set.of(BrageType.JOURNAL_ISSUE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE),
+        entry(Set.of(BrageType.ACADEMIC_ARTICLE), NvaType.SCIENTIFIC_ARTICLE),
+        entry(Set.of(BrageType.ACADEMIC_ARTICLE, BrageType.PEER_REVIEWED), NvaType.SCIENTIFIC_ARTICLE),
         entry(Set.of(BrageType.BOOK), NvaType.BOOK),
+        entry(Set.of(BrageType.NON_FICTION_MONOGRAPH), NvaType.BOOK),
+        entry(Set.of(BrageType.ANTHOLOGY), NvaType.ANTHOLOGY),
         entry(Set.of(BrageType.BOOK_OF_ABSTRACTS), NvaType.BOOK),
         entry(Set.of(BrageType.CHAPTER), NvaType.CHAPTER),
+        entry(Set.of(BrageType.REPORT_CHAPTER), NvaType.CHAPTER),
         entry(Set.of(BrageType.JOURNAL_ARTICLE), NvaType.JOURNAL_ARTICLE),
         entry(Set.of(BrageType.JOURNAL_ISSUE), NvaType.JOURNAL_ARTICLE),
         entry(Set.of(BrageType.DATASET), NvaType.DATASET),
@@ -38,6 +46,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.REPORT), NvaType.REPORT),
         entry(Set.of(BrageType.NOTES), NvaType.REPORT),
         entry(Set.of(BrageType.POSTER), NvaType.CONFERENCE_POSTER),
+        entry(Set.of(BrageType.NON_FICTION_CHAPTER), NvaType.CHAPTER),
         entry(Set.of(BrageType.PRESENTATION), NvaType.LECTURE),
         entry(Set.of(BrageType.RESEARCH_REPORT), NvaType.RESEARCH_REPORT),
         entry(Set.of(BrageType.BACHELOR_THESIS), NvaType.BACHELOR_THESIS),
@@ -55,9 +64,13 @@ public final class TypeMapper {
         entry(Set.of(BrageType.LECTURE), NvaType.LECTURE),
         entry(Set.of(BrageType.RECORDING_MUSICAL), NvaType.RECORDING_MUSICAL),
         entry(Set.of(BrageType.PLAN_OR_BLUEPRINT), NvaType.PLAN_OR_BLUEPRINT),
+        entry(Set.of(BrageType.ARCHITECTURE), NvaType.PLAN_OR_BLUEPRINT),
         entry(Set.of(BrageType.MAP), NvaType.MAP),
         entry(Set.of(BrageType.INTERVIEW), NvaType.INTERVIEW),
-        entry(Set.of(BrageType.PRESENTATION_OTHER), NvaType.PRESENTATION_OTHER)
+        entry(Set.of(BrageType.PRESENTATION_OTHER), NvaType.PRESENTATION_OTHER),
+        entry(Set.of(BrageType.PERFORMING_ARTS), NvaType.PERFORMING_ARTS),
+        entry(Set.of(BrageType.READER_OPINION), NvaType.READER_OPINION),
+        entry(Set.of(BrageType.VISUAL_ARTS), NvaType.VISUAL_ARTS)
     );
 
     public static String convertBrageTypeToNvaType(Set<String> inputTypes) {
@@ -123,8 +136,12 @@ public final class TypeMapper {
                              .map(BrageType::fromValue)
                              .filter(Objects::nonNull)
                              .collect(toSet());
-        return Stream.concat(brageTypesFromOriginalNvaTypes.stream(), brageTypes.stream())
-                   .collect(toSet());
+        if (brageTypes.size() > brageTypesFromOriginalNvaTypes.size()) {
+            return brageTypes;
+        } else {
+            return Stream.concat(brageTypesFromOriginalNvaTypes.stream(), brageTypes.stream())
+                       .collect(toSet());
+        }
     }
 
     private static String format(String value) {
