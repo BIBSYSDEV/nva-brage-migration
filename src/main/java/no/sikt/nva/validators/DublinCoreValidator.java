@@ -103,7 +103,7 @@ public final class DublinCoreValidator {
         if (hasLicense(dublinCore)) {
             var licenseScraper = new LicenseScraper(dublinCore);
             var license = licenseScraper.generateLicense();
-            if (licenseScraper.isValidCCLicense(license)) {
+            if (licenseScraper.isValidLicense(license)) {
                 return Optional.empty();
             } else {
                 return Optional.of(new ErrorDetails(INVALID_DC_RIGHTS_URI, Collections.singleton(

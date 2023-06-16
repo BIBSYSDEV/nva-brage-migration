@@ -1,28 +1,24 @@
 package no.sikt.nva.brage.migration.common.model.record.license;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Map;
+import java.net.URI;
 import java.util.Objects;
 
 public class NvaLicense {
 
     private static final String TYPE = "License";
-    private NvaLicenseIdentifier identifier;
+    private URI license;
 
-    private final Map<String, String> labels;
-
-    public NvaLicense(@JsonProperty("identifier") NvaLicenseIdentifier identifier,
-                      @JsonProperty("labels") Map<String, String> labels) {
-        this.identifier = identifier;
-        this.labels = labels;
+    public NvaLicense(@JsonProperty("license") URI license) {
+        this.license = license;
     }
 
-    public NvaLicenseIdentifier getIdentifier() {
-        return identifier;
+    public URI getLicense() {
+        return license;
     }
 
-    public void setIdentifier(NvaLicenseIdentifier identifier) {
-        this.identifier = identifier;
+    public void setLicense(URI license) {
+        this.license = license;
     }
 
     @JsonProperty("type")
@@ -30,14 +26,9 @@ public class NvaLicense {
         return TYPE;
     }
 
-    @JsonProperty("labels")
-    public Map<String, String> getLabels() {
-        return labels;
-    }
-
     @Override
     public int hashCode() {
-        return Objects.hash(TYPE, identifier, labels);
+        return Objects.hash(TYPE, license);
     }
 
     @Override
@@ -49,7 +40,6 @@ public class NvaLicense {
             return false;
         }
         NvaLicense nvaLicense = (NvaLicense) o;
-        return Objects.equals(identifier, nvaLicense.identifier)
-               && Objects.equals(labels, nvaLicense.labels);
+        return Objects.equals(license, nvaLicense.license);
     }
 }
