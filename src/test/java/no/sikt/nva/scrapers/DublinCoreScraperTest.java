@@ -44,6 +44,7 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.logutils.LogUtils;
+import org.apache.commons.logging.Log;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -539,7 +540,7 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldLogUnmappableType() {
-        var typeDcValue = new DcValue(Element.TYPE, null, "Conference object");
+        var typeDcValue = new DcValue(Element.TYPE, null, "Conference poster");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(typeDcValue));
         var onlineValidationDisabled = false;
@@ -832,6 +833,7 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldDetectDifferencesBetweenDoiAndLinkAndMapLinkCorrectly() {
+        var appender = LogUtils.getTestingAppender(DublinCoreScraper.class);
         var link = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://www.hindawi.com/journals/nrp/2012/690348/");
         var brageLocation = new BrageLocation(null);
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
@@ -840,6 +842,7 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(appender.getMessages(), not(containsString(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK.toString())));
         assertThat(record.getLink(), is(equalTo(URI.create(link.getValue()))));
         assertThat(record.getDoi(), is(nullValue()));
     }

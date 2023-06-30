@@ -31,7 +31,8 @@ public enum NvaType {
     VISUAL_ARTS("Visual arts"),
     SCIENTIFIC_MONOGRAPH("Vitenskapelig monografi"),
     SCIENTIFIC_CHAPTER("Vitenskapelig kapittel"),
-    SCIENTIFIC_ARTICLE("Vitenskapelig artikkel");
+    SCIENTIFIC_ARTICLE("Vitenskapelig artikkel"),
+    CONFERENCE_REPORT("ConferenceReport");
 
     private final String value;
 

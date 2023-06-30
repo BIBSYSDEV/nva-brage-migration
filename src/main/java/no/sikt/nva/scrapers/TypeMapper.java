@@ -70,7 +70,8 @@ public final class TypeMapper {
         entry(Set.of(BrageType.PRESENTATION_OTHER), NvaType.PRESENTATION_OTHER),
         entry(Set.of(BrageType.PERFORMING_ARTS), NvaType.PERFORMING_ARTS),
         entry(Set.of(BrageType.READER_OPINION), NvaType.READER_OPINION),
-        entry(Set.of(BrageType.VISUAL_ARTS), NvaType.VISUAL_ARTS)
+        entry(Set.of(BrageType.VISUAL_ARTS), NvaType.VISUAL_ARTS),
+        entry(Set.of(BrageType.CONFERENCE_OBJECT), NvaType.CONFERENCE_REPORT)
     );
 
     public static String convertBrageTypeToNvaType(Set<String> inputTypes) {
@@ -118,8 +119,7 @@ public final class TypeMapper {
     }
 
     private static boolean containsIgnoredType(Set<BrageType> types) {
-        return types.contains(BrageType.CONFERENCE_OBJECT)
-               || types.contains(BrageType.CONFERENCE_POSTER)
+        return types.contains(BrageType.CONFERENCE_POSTER)
                || types.contains(BrageType.CONFERENCE_LECTURE);
     }
 
