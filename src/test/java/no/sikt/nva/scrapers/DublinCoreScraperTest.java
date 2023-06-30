@@ -40,6 +40,8 @@ import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Pages;
 import no.sikt.nva.brage.migration.common.model.record.Range;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
@@ -539,8 +541,8 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldLogUnmappableType() {
-        var typeDcValue = new DcValue(Element.TYPE, null, "Conference poster");
+    void shouldLogWarningWhenConferenceObjectOrLecture() {
+        var typeDcValue = new DcValue(Element.TYPE, null, "Conference object");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(typeDcValue));
         var onlineValidationDisabled = false;
@@ -549,7 +551,8 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         dublinCoreScraper
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(appender.getMessages(), containsString(INVALID_DC_TYPE.toString()));
+        assertThat(appender.getMessages(),
+                   containsString(Warning.CONFERENCE_OBJECT_OR_LECTURE_WILL_BE_MAPPED_TO_CONFERENCE_REPORT.toString()));
     }
 
     @Test

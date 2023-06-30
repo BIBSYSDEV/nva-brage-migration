@@ -49,11 +49,11 @@ public final class DublinCoreValidator {
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final String YEAR_PERIOD_REGEX = "[0-9]{4}-[0-9]{4}";
     public static final String REGEX_BRACKETS_AND_DOT = "(\\.)|(\\[)|(\\])";
-    private static final int ONE_DESCRIPTION = 1;
     public static final String UNKNOWN_YEAR_PERIOD_REGEX = "[0-9]{4}[?]";
     public static final String QUESTION_MARK = "?";
     public static final String HYPHEN = "-";
     public static final String DASH = "–";
+    private static final int ONE_DESCRIPTION = 1;
 
     public static Set<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore) {
 
@@ -79,6 +79,7 @@ public final class DublinCoreValidator {
         getIsbnWarnings(dublinCore).ifPresent(warnings::add);
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
         getNonContributorsError(dublinCore).ifPresent(warnings::add);
+        getTypesWarnings(dublinCore).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -97,6 +98,27 @@ public final class DublinCoreValidator {
 
     public static boolean containsTwoDigitYearOnly(String date) {
         return date.matches("\\d{2}");
+    }
+
+    public static boolean isPeriodDate(String date) {
+        return date.matches(YEAR_PERIOD_REGEX) || date.matches(UNKNOWN_YEAR_PERIOD_REGEX);
+    }
+
+    private static Optional<WarningDetails> getTypesWarnings(DublinCore dublinCore) {
+        if (isConferenceObjectOrLecture(dublinCore)) {
+            return Optional.of(
+                new WarningDetails(
+                    Warning.CONFERENCE_OBJECT_OR_LECTURE_WILL_BE_MAPPED_TO_CONFERENCE_REPORT,
+                    DublinCoreScraper.extractType(dublinCore)));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private static boolean isConferenceObjectOrLecture(DublinCore dublinCore) {
+        var types = DublinCoreScraper.extractType(dublinCore);
+        return types.contains(BrageType.CONFERENCE_OBJECT.getValue())
+               || types.contains(BrageType.CONFERENCE_LECTURE.getValue());
     }
 
     private static Optional<ErrorDetails> getLicenseError(DublinCore dublinCore) {
@@ -329,20 +351,16 @@ public final class DublinCoreValidator {
     }
 
     private static String constructDateFromPeriod(String value) {
-        if(value.matches(YEAR_PERIOD_REGEX)) {
+        if (value.matches(YEAR_PERIOD_REGEX)) {
             return value.split(HYPHEN)[0];
         }
-        if(value.matches(UNKNOWN_YEAR_PERIOD_REGEX)) {
+        if (value.matches(UNKNOWN_YEAR_PERIOD_REGEX)) {
             return value.replace(QUESTION_MARK, StringUtils.EMPTY_STRING);
         }
-        if(value.matches("[0-9]{4}[-]")) {
+        if (value.matches("[0-9]{4}[-]")) {
             return value.replace(HYPHEN, StringUtils.EMPTY_STRING);
         }
         return value;
-    }
-
-    public static boolean isPeriodDate(String date) {
-        return date.matches(YEAR_PERIOD_REGEX) || date.matches(UNKNOWN_YEAR_PERIOD_REGEX);
     }
 
     private static String modifyIfDateIsOfLocalDateTimeFormat(String date) {
