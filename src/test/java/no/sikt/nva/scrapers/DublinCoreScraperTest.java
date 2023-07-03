@@ -40,10 +40,13 @@ import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Pages;
 import no.sikt.nva.brage.migration.common.model.record.Range;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.logutils.LogUtils;
+import org.apache.commons.logging.Log;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -538,7 +541,7 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldLogUnmappableType() {
+    void shouldLogWarningWhenConferenceObjectOrLecture() {
         var typeDcValue = new DcValue(Element.TYPE, null, "Conference object");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(typeDcValue));
@@ -548,7 +551,8 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         dublinCoreScraper
             .validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(appender.getMessages(), containsString(INVALID_DC_TYPE.toString()));
+        assertThat(appender.getMessages(),
+                   containsString(Warning.CONFERENCE_OBJECT_OR_LECTURE_WILL_BE_MAPPED_TO_CONFERENCE_REPORT.toString()));
     }
 
     @Test
@@ -832,6 +836,7 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldDetectDifferencesBetweenDoiAndLinkAndMapLinkCorrectly() {
+        var appender = LogUtils.getTestingAppender(DublinCoreScraper.class);
         var link = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://www.hindawi.com/journals/nrp/2012/690348/");
         var brageLocation = new BrageLocation(null);
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
@@ -840,6 +845,7 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(appender.getMessages(), not(containsString(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK.toString())));
         assertThat(record.getLink(), is(equalTo(URI.create(link.getValue()))));
         assertThat(record.getDoi(), is(nullValue()));
     }

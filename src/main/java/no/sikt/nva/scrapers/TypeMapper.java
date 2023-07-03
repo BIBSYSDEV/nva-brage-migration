@@ -70,8 +70,10 @@ public final class TypeMapper {
         entry(Set.of(BrageType.PRESENTATION_OTHER), NvaType.PRESENTATION_OTHER),
         entry(Set.of(BrageType.PERFORMING_ARTS), NvaType.PERFORMING_ARTS),
         entry(Set.of(BrageType.READER_OPINION), NvaType.READER_OPINION),
-        entry(Set.of(BrageType.VISUAL_ARTS), NvaType.VISUAL_ARTS)
-    );
+        entry(Set.of(BrageType.VISUAL_ARTS), NvaType.VISUAL_ARTS),
+        entry(Set.of(BrageType.CONFERENCE_OBJECT), NvaType.CONFERENCE_REPORT),
+        entry(Set.of(BrageType.CONFERENCE_LECTURE), NvaType.CONFERENCE_REPORT),
+        entry(Set.of(BrageType.CONFERENCE_POSTER), NvaType.CONFERENCE_POSTER));
 
     public static String convertBrageTypeToNvaType(Set<String> inputTypes) {
         try {
@@ -102,7 +104,7 @@ public final class TypeMapper {
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private static String mapToAnyMappableNvaTypeWhenUnmappableTypePair(Set<String> inputTypes) {
         var brageTypes = convertToBrageTypes(inputTypes);
-        if (brageTypes.isEmpty() || containsIgnoredType(brageTypes)) {
+        if (brageTypes.isEmpty()) {
             return null;
         } else {
             for (BrageType type : brageTypes) {
@@ -115,12 +117,6 @@ public final class TypeMapper {
             }
         }
         return null;
-    }
-
-    private static boolean containsIgnoredType(Set<BrageType> types) {
-        return types.contains(BrageType.CONFERENCE_OBJECT)
-               || types.contains(BrageType.CONFERENCE_POSTER)
-               || types.contains(BrageType.CONFERENCE_LECTURE);
     }
 
     private static Set<BrageType> convertToBrageTypes(Set<String> values) {
