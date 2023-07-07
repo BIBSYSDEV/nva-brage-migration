@@ -38,6 +38,9 @@ public class ResourceOwnerMapper {
     public static final String NIH = "nih";
     public static final String NIH_OWNER_VALUE = "nih@150.0.0.0";
     public static final String NIH_CRISTIN_IDENTIFIER = "150.0.0.0";
+    public static final String NTNU = "ntnu";
+    public static final String NTNU_OWNER_VALUE = "ntnu@194.0.0.0";
+    public static final String NTNU_CRISTIN_IDENTIFIER = "194.0.0.0";
     public static final String CRISTIN_IDENTIFIER = "CRISTIN_IDENTIFIER";
     public static final String OWNER_VALUE = "OWNER_VALUE";
     public static final String SANDBOX_URI = "https://api.sandbox.nva.aws.unit.no/cristin/organization/";
@@ -61,7 +64,10 @@ public class ResourceOwnerMapper {
         entry(NIBIO, Map.ofEntries(entry(OWNER_VALUE, NIBIO_OWNER_VALUE),
                                    entry(CRISTIN_IDENTIFIER, NIBIO_CRISTIN_IDENTIFIER))),
         entry(NIH, Map.ofEntries(entry(OWNER_VALUE, NIH_OWNER_VALUE),
-                                 entry(CRISTIN_IDENTIFIER, NIH_CRISTIN_IDENTIFIER))));
+                                 entry(CRISTIN_IDENTIFIER, NIH_CRISTIN_IDENTIFIER))),
+        entry(NTNU, Map.ofEntries(entry(OWNER_VALUE, NTNU_OWNER_VALUE),
+                                  entry(CRISTIN_IDENTIFIER, NTNU_CRISTIN_IDENTIFIER))));
+
     private static final Map<String, String> ENVIRONMENT_URI_MAP = Map.ofEntries(
         entry(SANDBOX, SANDBOX_URI),
         entry(DEVELOP, DEVELOP_URI),

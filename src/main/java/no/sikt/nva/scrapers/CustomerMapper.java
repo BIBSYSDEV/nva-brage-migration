@@ -15,8 +15,8 @@ public class CustomerMapper {
     public static final String HIOF = "hiof";
     public static final String NGI = "ngi";
     public static final String NIBIO = "nibio";
-
     public static final String NIH = "nih";
+    public static final String NTNU = "ntnu";
     public static final String SANDBOX = "sandbox";
     public static final String DEVELOP = "dev";
     public static final String TEST = "test";
@@ -60,6 +60,10 @@ public class CustomerMapper {
 
         entry(NIH, Map.ofEntries(entry(SANDBOX, ""),
                                  entry(DEVELOP, "b5ff15a1-0e58-44bf-b137-d5c5389ef63f"),
+                                 entry(TEST, ""),
+                                 entry(PROD, ""))),
+        entry(NTNU, Map.ofEntries(entry(SANDBOX, ""),
+                                 entry(DEVELOP, "8ddecceb-7d64-4df3-a842-489fe4d98f3a"),
                                  entry(TEST, ""),
                                  entry(PROD, ""))));
 
