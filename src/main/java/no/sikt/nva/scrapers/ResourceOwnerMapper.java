@@ -1,6 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Map.entry;
+import static no.sikt.nva.scrapers.CustomerMapper.AHO;
 import static no.sikt.nva.scrapers.CustomerMapper.BORA;
 import static no.sikt.nva.scrapers.CustomerMapper.CMI;
 import static no.sikt.nva.scrapers.CustomerMapper.DMMH;
@@ -11,19 +12,32 @@ import static no.sikt.nva.scrapers.CustomerMapper.HIMOLDE;
 import static no.sikt.nva.scrapers.CustomerMapper.HIOF;
 import static no.sikt.nva.scrapers.CustomerMapper.HIVOLDA;
 import static no.sikt.nva.scrapers.CustomerMapper.HVLOPEN;
+import static no.sikt.nva.scrapers.CustomerMapper.IFE;
+import static no.sikt.nva.scrapers.CustomerMapper.KHIO;
 import static no.sikt.nva.scrapers.CustomerMapper.KRISTIANIA;
 import static no.sikt.nva.scrapers.CustomerMapper.KRUS;
+import static no.sikt.nva.scrapers.CustomerMapper.LDH;
+import static no.sikt.nva.scrapers.CustomerMapper.MF;
+import static no.sikt.nva.scrapers.CustomerMapper.NASJONALMUSEET;
 import static no.sikt.nva.scrapers.CustomerMapper.NGI;
 import static no.sikt.nva.scrapers.CustomerMapper.NHH;
 import static no.sikt.nva.scrapers.CustomerMapper.NIBIO;
+import static no.sikt.nva.scrapers.CustomerMapper.NIFU;
 import static no.sikt.nva.scrapers.CustomerMapper.NIH;
+import static no.sikt.nva.scrapers.CustomerMapper.NIVA;
 import static no.sikt.nva.scrapers.CustomerMapper.NORD;
 import static no.sikt.nva.scrapers.CustomerMapper.NR;
 import static no.sikt.nva.scrapers.CustomerMapper.NTNU;
-import static no.sikt.nva.scrapers.CustomerMapper.ODA;
-import static no.sikt.nva.scrapers.CustomerMapper.SAMFORSK;
 import static no.sikt.nva.scrapers.CustomerMapper.NVE;
+import static no.sikt.nva.scrapers.CustomerMapper.ODA;
+import static no.sikt.nva.scrapers.CustomerMapper.PHS;
+import static no.sikt.nva.scrapers.CustomerMapper.SAMFORSK;
+import static no.sikt.nva.scrapers.CustomerMapper.STAMI;
+import static no.sikt.nva.scrapers.CustomerMapper.STATPED;
+import static no.sikt.nva.scrapers.CustomerMapper.STEINERHOYSKOLEN;
 import static no.sikt.nva.scrapers.CustomerMapper.UIA;
+import static no.sikt.nva.scrapers.CustomerMapper.UNIT;
+import static no.sikt.nva.scrapers.CustomerMapper.VETINST;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Map;
@@ -83,6 +97,34 @@ public class ResourceOwnerMapper {
     public static final String NHH_CRISTIN_IDENTIFIER = "191.0.0.0";
     public static final String BORA_OWNER_VALUE = "bora@184.0.0.0";
     public static final String BORA_CRISTIN_IDENTIFIER = "184.0.0.0";
+    public static final String AHO_OWNER_VALUE = "aho@189.0.0.0";
+    public static final String AHO_CRISTIN_IDENTIFIER = "189.0.0.0";
+    public static final String IFE_OWNER_VALUE = "ife@7492.0.0.0";
+    public static final String IFE_CRISTIN_IDENTIFIER = "7492.0.0.0";
+    public static final String KHIO_OWNER_VALUE = "khio@260.0.0.0";
+    public static final String KHIO_CRISTIN_IDENTIFIER = "260.0.0.0";
+    public static final String LDH_OWNER_VALUE = "ldh@230.0.0.0";
+    public static final String LDH_CRISTIN_IDENTIFIER = "230.0.0.0";
+    public static final String MF_OWNER_VALUE = "ldh@190.0.0.0";
+    public static final String MF_CRISTIN_IDENTIFIER = "190.0.0.0";
+    public static final String NIFU_OWNER_VALUE = "nifu@7463.0.0.0";
+    public static final String NIFU_CRISTIN_IDENTIFIER = "7463.0.0.0";
+    public static final String NIVA_OWNER_VALUE = "niva@7464.0.0.0";
+    public static final String NIVA_CRISTIN_IDENTIFIER = "7464.0.0.0";
+    public static final String PHS_OWNER_VALUE = "phs@233.0.0.0";
+    public static final String PHS_CRISTIN_IDENTIFIER = "233.0.0.0";
+    public static final String STAMI_OWNER_VALUE = "stami@7476.0.0.0";
+    public static final String STAMI_CRISTIN_IDENTIFIER = "7476.0.0.0";
+    public static final String STEINERHOYSKOLEN_OWNER_VALUE = "steinerhoyskolen@1525.0.0.0";
+    public static final String STEINERHOYSKOLEN_CRISTIN_IDENTIFIER = "1525.0.0.0";
+    public static final String VETINST_OWNER_VALUE = "vetinst@7497.0.0.0";
+    public static final String VETINST_CRISTIN_IDENTIFIER = "7497.0.0.0";
+    public static final String NASJONALMUSEET_OWNER_VALUE = "nasjonalmuseet@1305.0.0.0";
+    public static final String NASJONALMUSEET_CRISTIN_IDENTIFIER = "1305.0.0.0";
+    public static final String UNIT_OWNER_VALUE = "unit@195.0.0.0";
+    public static final String UNIT_CRISTIN_IDENTIFIER = "195.0.0.0";
+    public static final String STATPED_OWNER_VALUE = "statped@5831.0.0.0";
+    public static final String STATPED_CRISTIN_IDENTIFIER = "5831.0.0.0";
     public static final String CRISTIN_IDENTIFIER = "CRISTIN_IDENTIFIER";
     public static final String OWNER_VALUE = "OWNER_VALUE";
     public static final String SANDBOX_URI = "https://api.sandbox.nva.aws.unit.no/cristin/organization/";
@@ -112,32 +154,59 @@ public class ResourceOwnerMapper {
         entry(NR, Map.ofEntries(entry(OWNER_VALUE, NR_OWNER_VALUE),
                                 entry(CRISTIN_IDENTIFIER, NR_CRISTIN_IDENTIFIER))),
         entry(SAMFORSK, Map.ofEntries(entry(OWNER_VALUE, SAMFORSK_OWNER_VALUE),
-                                entry(CRISTIN_IDENTIFIER, SAMFORSK_CRISTIN_IDENTIFIER))),
+                                      entry(CRISTIN_IDENTIFIER, SAMFORSK_CRISTIN_IDENTIFIER))),
         entry(CMI, Map.ofEntries(entry(OWNER_VALUE, CMI_OWNER_VALUE),
-                                      entry(CRISTIN_IDENTIFIER, CMI_CRISTIN_IDENTIFIER))),
+                                 entry(CRISTIN_IDENTIFIER, CMI_CRISTIN_IDENTIFIER))),
         entry(DMMH, Map.ofEntries(entry(OWNER_VALUE, DMMH_OWNER_VALUE),
-                                 entry(CRISTIN_IDENTIFIER, DMMH_CRISTIN_IDENTIFIER))),
+                                  entry(CRISTIN_IDENTIFIER, DMMH_CRISTIN_IDENTIFIER))),
         entry(FAFO, Map.ofEntries(entry(OWNER_VALUE, FAFO_OWNER_VALUE),
                                   entry(CRISTIN_IDENTIFIER, FAFO_CRISTIN_IDENTIFIER))),
         entry(FDIR, Map.ofEntries(entry(OWNER_VALUE, FDIR_OWNER_VALUE),
                                   entry(CRISTIN_IDENTIFIER, FDIR_CRISTIN_IDENTIFIER))),
         entry(UIA, Map.ofEntries(entry(OWNER_VALUE, UIA_OWNER_VALUE),
-                                  entry(CRISTIN_IDENTIFIER, UIA_CRISTIN_IDENTIFIER))),
+                                 entry(CRISTIN_IDENTIFIER, UIA_CRISTIN_IDENTIFIER))),
         entry(NORD, Map.ofEntries(entry(OWNER_VALUE, NORD_OWNER_VALUE),
-                                 entry(CRISTIN_IDENTIFIER, NORD_CRISTIN_IDENTIFIER))),
+                                  entry(CRISTIN_IDENTIFIER, NORD_CRISTIN_IDENTIFIER))),
         entry(ODA, Map.ofEntries(entry(OWNER_VALUE, ODA_OWNER_VALUE),
-                                  entry(CRISTIN_IDENTIFIER, ODA_CRISTIN_IDENTIFIER))),
+                                 entry(CRISTIN_IDENTIFIER, ODA_CRISTIN_IDENTIFIER))),
         entry(HIMOLDE, Map.ofEntries(entry(OWNER_VALUE, HIMOLDE_OWNER_VALUE),
-                                 entry(CRISTIN_IDENTIFIER, HIMOLDE_CRISTIN_IDENTIFIER))),
+                                     entry(CRISTIN_IDENTIFIER, HIMOLDE_CRISTIN_IDENTIFIER))),
         entry(HIVOLDA, Map.ofEntries(entry(OWNER_VALUE, HIVOLDA_OWNER_VALUE),
                                      entry(CRISTIN_IDENTIFIER, HIVOLDA_CRISTIN_IDENTIFIER))),
         entry(HVLOPEN, Map.ofEntries(entry(OWNER_VALUE, HVLOPEN_OWNER_VALUE),
                                      entry(CRISTIN_IDENTIFIER, HVLOPEN_CRISTIN_IDENTIFIER))),
         entry(NHH, Map.ofEntries(entry(OWNER_VALUE, NHH_OWNER_VALUE),
-                                     entry(CRISTIN_IDENTIFIER, NHH_CRISTIN_IDENTIFIER))),
+                                 entry(CRISTIN_IDENTIFIER, NHH_CRISTIN_IDENTIFIER))),
         entry(BORA, Map.ofEntries(entry(OWNER_VALUE, BORA_OWNER_VALUE),
-                                 entry(CRISTIN_IDENTIFIER, BORA_CRISTIN_IDENTIFIER)))
-
+                                  entry(CRISTIN_IDENTIFIER, BORA_CRISTIN_IDENTIFIER))),
+        entry(AHO, Map.ofEntries(entry(OWNER_VALUE, AHO_OWNER_VALUE),
+                                 entry(CRISTIN_IDENTIFIER, AHO_CRISTIN_IDENTIFIER))),
+        entry(IFE, Map.ofEntries(entry(OWNER_VALUE, IFE_OWNER_VALUE),
+                                 entry(CRISTIN_IDENTIFIER, IFE_CRISTIN_IDENTIFIER))),
+        entry(KHIO, Map.ofEntries(entry(OWNER_VALUE, KHIO_OWNER_VALUE),
+                                  entry(CRISTIN_IDENTIFIER, KHIO_CRISTIN_IDENTIFIER))),
+        entry(LDH, Map.ofEntries(entry(OWNER_VALUE, LDH_OWNER_VALUE),
+                                 entry(CRISTIN_IDENTIFIER, LDH_CRISTIN_IDENTIFIER))),
+        entry(MF, Map.ofEntries(entry(OWNER_VALUE, MF_OWNER_VALUE),
+                                entry(CRISTIN_IDENTIFIER, MF_CRISTIN_IDENTIFIER))),
+        entry(NIFU, Map.ofEntries(entry(OWNER_VALUE, NIFU_OWNER_VALUE),
+                                  entry(CRISTIN_IDENTIFIER, NIFU_CRISTIN_IDENTIFIER))),
+        entry(NIVA, Map.ofEntries(entry(OWNER_VALUE, NIVA_OWNER_VALUE),
+                                  entry(CRISTIN_IDENTIFIER, NIVA_CRISTIN_IDENTIFIER))),
+        entry(PHS, Map.ofEntries(entry(OWNER_VALUE, PHS_OWNER_VALUE),
+                                 entry(CRISTIN_IDENTIFIER, PHS_CRISTIN_IDENTIFIER))),
+        entry(STAMI, Map.ofEntries(entry(OWNER_VALUE, STAMI_OWNER_VALUE),
+                                   entry(CRISTIN_IDENTIFIER, STAMI_CRISTIN_IDENTIFIER))),
+        entry(STEINERHOYSKOLEN, Map.ofEntries(entry(OWNER_VALUE, STEINERHOYSKOLEN_OWNER_VALUE),
+                                              entry(CRISTIN_IDENTIFIER, STEINERHOYSKOLEN_CRISTIN_IDENTIFIER))),
+        entry(VETINST, Map.ofEntries(entry(OWNER_VALUE, VETINST_OWNER_VALUE),
+                                     entry(CRISTIN_IDENTIFIER, VETINST_CRISTIN_IDENTIFIER))),
+        entry(NASJONALMUSEET, Map.ofEntries(entry(OWNER_VALUE, NASJONALMUSEET_OWNER_VALUE),
+                                            entry(CRISTIN_IDENTIFIER, NASJONALMUSEET_CRISTIN_IDENTIFIER))),
+        entry(UNIT, Map.ofEntries(entry(OWNER_VALUE, UNIT_OWNER_VALUE),
+                                  entry(CRISTIN_IDENTIFIER, UNIT_CRISTIN_IDENTIFIER))),
+        entry(STATPED, Map.ofEntries(entry(OWNER_VALUE, STATPED_OWNER_VALUE),
+                                     entry(CRISTIN_IDENTIFIER, STATPED_CRISTIN_IDENTIFIER)))
     );
 
     private static final Map<String, String> ENVIRONMENT_URI_MAP = Map.ofEntries(
