@@ -8,67 +8,124 @@ import java.util.Optional;
 
 public class CustomerMapper {
 
-    public static final String NVE = "nve";
-    public static final String KRUS = "krus";
-    public static final String KRISTIANIA = "kristiania";
+    public static final String AHO = "aho";
+    public static final String BANENOR = "banenor";
+    public static final String BI = "bi";
+    public static final String BORA = "bora";
+    public static final String DMMH = "dmmh";
+    public static final String CMI = "cmi";
+    public static final String FAFO = "fafo";
+    public static final String FDIR = "fdir";
     public static final String FHS = "fhs";
     public static final String HIOF = "hiof";
-    public static final String NGI = "ngi";
-    public static final String NIBIO = "nibio";
-    public static final String NIH = "nih";
-    public static final String NTNU = "ntnu";
-    public static final String NR = "nr";
-    public static final String SAMFORSK = "samforsk";
-    public static final String CMI = "cmi";
-    public static final String DMMH = "dmmh";
-    public static final String FAFO = "fafo";
-    public static final String UIA = "uia";
-    public static final String FDIR = "fdir";
-    public static final String NORD = "nord";
-    public static final String ODA = "oda";
-    public static final String HIMOLDE = "himolde";
     public static final String HIVOLDA = "hivolda";
+    public static final String HIMOLDE = "himolde";
     public static final String HVLOPEN = "hvlopen";
-    public static final String NHH = "nhh";
-    public static final String BORA = "bora";
-    public static final String AHO = "aho";
     public static final String IFE = "ife";
+    public static final String INN = "inn";
     public static final String KHIO = "khio";
+    public static final String KRISTIANIA = "kristiania";
+    public static final String KRUS = "krus";
     public static final String LDH = "ldh";
     public static final String MF = "mf";
-    public static final String NIFU = "nifu";
-    public static final String NIVA = "niva";
-    public static final String PHS = "phs";
-    public static final String STAMI = "stami";
-    public static final String STEINERHOYSKOLEN = "steinerhoyskolen";
-    public static final String VETINST = "vetinst";
     public static final String NASJONALMUSEET = "nasjonalmuseet";
-    public static final String UNIT = "unit";
+    public static final String NIBIO = "nibio";
+    public static final String NGI = "ngi";
+    public static final String NHH = "nhh";
+    public static final String NIFU = "nifu";
+    public static final String NIH = "nih";
+    public static final String NIVA = "niva";
+    public static final String NORD = "nord";
+    public static final String NORGES_BANK = "norges-bank";
+    public static final String NR = "nr";
+    public static final String NTNU = "ntnu";
+    public static final String NUPI = "nupi";
+    public static final String NVE = "nve";
+    public static final String ODA = "oda";
+    public static final String OMSORGSFORSKNING = "omsorgsforskning";
+    public static final String PHS = "phs";
+    public static final String RA = "ra";
+    public static final String SAMFORSK = "samforsk";
+    public static final String STAMI = "stami";
     public static final String STATPED = "statped";
+    public static final String STEINERHOYSKOLEN = "steinerhoyskolen";
+    public static final String UIA = "uia";
+    public static final String UNIT = "unit";
+    public static final String VETINST = "vetinst";
+    public static final String VID = "vid";
+
+
     public static final String SANDBOX = "sandbox";
     public static final String DEVELOP = "dev";
     public static final String TEST = "test";
     public static final String PROD = "prod";
     private static final Map<String, Map<String, String>> CUSTOMER_MAP = Map.ofEntries(
-        entry(NVE, Map.ofEntries(entry(SANDBOX, "5eb7ca32-0e6b-4819-b794-c31a4b16ea6b"),
-                                 entry(DEVELOP, "b4497570-2903-49a2-9c2a-d6ab8b0eacc2"),
-                                 entry(TEST, ""),
-                                 entry(PROD, "4ba5f697-2056-4292-b0a3-f81ccf21ea22"))),
+            entry(NUPI, Map.ofEntries(
+                    entry(SANDBOX, ""),
+                    entry(DEVELOP, "8d11f0f0-d414-4564-9250-298c06ef5c87"),
+                    entry(TEST, "122d33a7-1844-466a-926b-333eeff42a93"),
+                    entry(PROD, "")
+            )),
+            entry(OMSORGSFORSKNING, Map.ofEntries(
+                    entry(SANDBOX, ""),
+                    entry(DEVELOP, ""),
+                    entry(TEST, ""),
+                    entry(PROD, "")
+            )),
+            entry(INN, Map.ofEntries(
+                    entry(SANDBOX, ""),
+                    entry(DEVELOP, "023f1608-1baa-4d5a-8acc-80d329bddd74"),
+                    entry(TEST, "df2a796f-3eef-45dc-a39d-51b21989285a"),
+                    entry(PROD, "")
+            )),
+            entry(BI, Map.ofEntries(
+                    entry(SANDBOX, ""),
+                    entry(DEVELOP, "a49a2deb-f782-4ab1-b2ab-97745bc14b3d"),
+                    entry(TEST, "e9fb0c5d-1589-4d6f-932f-b312e50daa8f"),
+                    entry(PROD, "")
+            )),
+            entry(VID, Map.ofEntries(
+                    entry(SANDBOX, ""),
+                    entry(DEVELOP, "58d2d14c-ff23-4aa0-94f1-b53190fd020a"),
+                    entry(TEST, "9b17e692-6690-41a2-923b-b7ac0d7a1522"),
+                    entry(PROD, "")
+            )),
+            entry(BANENOR, Map.ofEntries(
+                    entry(SANDBOX, ""),
+                    entry(DEVELOP, ""),
+                    entry(TEST, ""),
+                    entry(PROD, "")
+            )),
+            entry(RA, Map.ofEntries(
+                    entry(SANDBOX, "b3435185-929a-4842-96ee-4243f4c9078c"),
+                    entry(DEVELOP, "e974d7d1-50b5-47c0-ad7e-7135a2d47555"),
+                    entry(TEST, "434ed8ed-f302-409f-9943-8886320550a3"),
+                    entry(PROD, "")
+            )),
+            entry(NORGES_BANK, Map.ofEntries(
+                    entry(SANDBOX, ""),
+                    entry(DEVELOP, "9d02e866-aeba-466d-993a-b519c664d38c"),
+                    entry(TEST, "2d37e9a9-dc70-4c30-bdb6-c7724eb7f0c3"),
+                    entry(PROD, ""))),
+            entry(NVE, Map.ofEntries(entry(SANDBOX, "5eb7ca32-0e6b-4819-b794-c31a4b16ea6b"),
+                    entry(DEVELOP, "b4497570-2903-49a2-9c2a-d6ab8b0eacc2"),
+                    entry(TEST, ""),
+                    entry(PROD, "4ba5f697-2056-4292-b0a3-f81ccf21ea22"))),
 
-        entry(KRUS, Map.ofEntries(entry(SANDBOX, "6b5e1238-7a05-11ed-a1eb-0242ac120002"),
-                                  entry(DEVELOP, "a768727e-4ecb-41c1-a616-1fec000cac1c"),
-                                  entry(TEST, ""),
-                                  entry(PROD, ""))),
+            entry(KRUS, Map.ofEntries(entry(SANDBOX, "6b5e1238-7a05-11ed-a1eb-0242ac120002"),
+                    entry(DEVELOP, "a768727e-4ecb-41c1-a616-1fec000cac1c"),
+                    entry(TEST, ""),
+                    entry(PROD, ""))),
 
-        entry(KRISTIANIA, Map.ofEntries(entry(SANDBOX, "8fb3c2f4-da97-4eb1-be65-307c86b993ee"),
-                                        entry(DEVELOP, "ca57b418-f837-40fd-af5c-5a6ba14abd7e"),
-                                        entry(TEST, "c1d7b72b-3319-4a1f-a365-c04ddb729b6f"),
-                                        entry(PROD, "05329411-0aa7-4c68-8cc6-5875f0d58f8c"))),
+            entry(KRISTIANIA, Map.ofEntries(entry(SANDBOX, "8fb3c2f4-da97-4eb1-be65-307c86b993ee"),
+                    entry(DEVELOP, "ca57b418-f837-40fd-af5c-5a6ba14abd7e"),
+                    entry(TEST, "c1d7b72b-3319-4a1f-a365-c04ddb729b6f"),
+                    entry(PROD, "05329411-0aa7-4c68-8cc6-5875f0d58f8c"))),
 
-        entry(FHS, Map.ofEntries(entry(SANDBOX, ""),
-                                 entry(DEVELOP, "290bb113-cf83-4917-8a07-463b4eca057b"),
-                                 entry(TEST, "ba0b80e8-ca87-4b8f-bf2a-6d00188ad707"),
-                                 entry(PROD, ""))),
+            entry(FHS, Map.ofEntries(entry(SANDBOX, ""),
+                    entry(DEVELOP, "290bb113-cf83-4917-8a07-463b4eca057b"),
+                    entry(TEST, "ba0b80e8-ca87-4b8f-bf2a-6d00188ad707"),
+                    entry(PROD, ""))),
 
         entry(HIOF, Map.ofEntries(entry(SANDBOX, ""),
                                   entry(DEVELOP, "5c243c2d-a8fb-48fb-a2c6-c6fa70310194"),
