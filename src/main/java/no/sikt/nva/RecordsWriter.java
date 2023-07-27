@@ -41,7 +41,7 @@ public final class RecordsWriter {
     }
 
     public static String convertMultipleRecordsToJsonString(List<Record> records) throws JsonProcessingException {
-        return JsonUtils.dtoObjectMapper.writeValueAsString(records);
+        return JsonUtils.singleLineObjectMapper.writeValueAsString(records);
     }
 
     private static void createFileWithRecords(String fileName, List<Record> records) {

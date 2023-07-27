@@ -224,7 +224,7 @@ public class Record {
     }
 
     public String toJsonString() throws JsonProcessingException {
-        return JsonUtils.dtoObjectMapper.writeValueAsString(this);
+        return JsonUtils.singleLineObjectMapper.writeValueAsString(this);
     }
 
     public boolean hasOrigin(String handle) {
