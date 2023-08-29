@@ -261,7 +261,11 @@ public class CustomerMapper {
         entry(STATPED, Map.ofEntries(entry(SANDBOX, ""),
                                      entry(DEVELOP, "e6890d28-a370-49a3-9100-f78b2e8fb324"),
                                      entry(TEST, "82fa69db-a834-47e2-8d03-048b3f60cbcf"),
-                                     entry(PROD, "a63f80aa-d479-4271-8a17-d82ab7d0efd2")))
+                                     entry(PROD, "a63f80aa-d479-4271-8a17-d82ab7d0efd2"))),
+        entry("backup_vegvesen_ikke_slett", Map.ofEntries(entry(SANDBOX, ""),
+                                         entry(DEVELOP, ""),
+                                         entry(TEST, "95100df5-b46b-41c9-a87a-9a2efc58716e"),
+                                         entry(PROD, "")))
 
     );
 
