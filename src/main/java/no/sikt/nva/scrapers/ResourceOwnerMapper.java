@@ -238,7 +238,9 @@ public class ResourceOwnerMapper {
             entry(UNIT, Map.ofEntries(entry(OWNER_VALUE, UNIT_OWNER_VALUE),
                     entry(CRISTIN_IDENTIFIER, UNIT_CRISTIN_IDENTIFIER))),
             entry(STATPED, Map.ofEntries(entry(OWNER_VALUE, STATPED_OWNER_VALUE),
-                    entry(CRISTIN_IDENTIFIER, STATPED_CRISTIN_IDENTIFIER)))
+                    entry(CRISTIN_IDENTIFIER, STATPED_CRISTIN_IDENTIFIER))),
+            entry("backup_vegvesen_ikke_slett", Map.ofEntries(entry(OWNER_VALUE, "sv@6056.0.0.0"),
+                                         entry(CRISTIN_IDENTIFIER, "6056.0.0.0")))
     );
 
     private static final Map<String, String> ENVIRONMENT_URI_MAP = Map.ofEntries(
