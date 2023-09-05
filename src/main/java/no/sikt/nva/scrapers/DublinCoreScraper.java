@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JOURNALS;
@@ -7,6 +8,7 @@ import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PU
 import static no.sikt.nva.validators.DublinCoreValidator.ACCEPTED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.validators.DublinCoreValidator.PUBLISHED_VERSION_STRING;
+import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreErrors;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import java.net.URI;
 import java.util.ArrayList;
@@ -42,7 +44,6 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DoiValidator;
-import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,7 +199,7 @@ public class DublinCoreScraper {
 
     public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
         try {
-            var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore);
+            var errors = getDublinCoreErrors(dublinCore);
             if (lookUpInChannelRegisterIsEnabled()) {
                 ChannelRegister.getChannelRegisterErrors(dublinCore, brageLocation).ifPresent(errors::add);
             }
@@ -277,7 +278,7 @@ public class DublinCoreScraper {
                                                                      BrageLocation brageLocation) {
         var record = new Record();
         record.setId(brageLocation.getHandle());
-        record.setType(mapOriginTypeToNvaType(extractType(dublinCore)));
+        record.setType(mapOriginTypeToNvaType(extractType(dublinCore), dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore, brageLocation));
         record.setDoi(extractDoi(dublinCore));
@@ -466,7 +467,7 @@ public class DublinCoreScraper {
                || dcValue.isOtherIdentifier();
     }
 
-    private static String extractCristinId(DublinCore dublinCore) {
+    public static String extractCristinId(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isCristinDcValue)
@@ -619,9 +620,14 @@ public class DublinCoreScraper {
         }
     }
 
-    private static Type mapOriginTypeToNvaType(Set<String> types) {
+    private static Type mapOriginTypeToNvaType(Set<String> types, DublinCore dublinCore) {
         var uniqueTypes = translateTypesInNorwegian(types);
-        return new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
+        var type = new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
+        if (isNull(type.getNva()) && nonNull(extractCristinId(dublinCore))) {
+           return new Type(types, NvaType.CRISTIN_RECORD.getValue());
+        } else {
+            return type;
+        }
     }
 
     private static boolean isInCristin(DublinCore dublinCore) {
