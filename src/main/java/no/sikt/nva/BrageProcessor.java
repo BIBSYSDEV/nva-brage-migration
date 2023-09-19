@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
@@ -54,12 +56,13 @@ public class BrageProcessor implements Runnable {
     private final String customer;
     private final String awsEnvironment;
     private List<Record> records;
+    private final boolean isUnzipped;
 
     @SuppressWarnings({"PMD.AssignmentToNonFinalStatic", "PMD.ExcessiveParameterList"})
     public BrageProcessor(String zipfile, String customer, String destinationDirectory,
                           final Map<String, String> rescueTitleAndHandleMap, boolean enableOnlineValidation,
                           boolean shouldLookUpInChannelRegister, boolean noHandleCheck, String awsEnvironment,
-                          List<Embargo> embargoes, Map<String, Contributor> contributors) {
+                          List<Embargo> embargoes, Map<String, Contributor> contributors, boolean isUnzipped) {
         this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
@@ -70,6 +73,7 @@ public class BrageProcessor implements Runnable {
         this.awsEnvironment = awsEnvironment;
         this.embargoes = embargoes;
         this.contributors = contributors;
+        this.isUnzipped = isUnzipped;
     }
 
     public Path getContentFilePath(File entryDirectory) {
@@ -83,7 +87,9 @@ public class BrageProcessor implements Runnable {
 
     @Override
     public void run() {
-        List<File> resourceDirectories = UnZipper.extractResourceDirectories(zipfile, destinationDirectory);
+        var resourceDirectories = isUnzipped
+                                      ? readResources(destinationDirectory)
+                                      : UnZipper.extractResourceDirectories(zipfile, destinationDirectory);
         try {
             if (!resourceDirectories.isEmpty()) {
                 records = processBundles(resourceDirectories);
@@ -91,6 +97,10 @@ public class BrageProcessor implements Runnable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private List<File> readResources(String directory) {
+        return Arrays.asList(Objects.requireNonNull(new File(directory).listFiles()));
     }
 
     public List<Record> getRecords() {

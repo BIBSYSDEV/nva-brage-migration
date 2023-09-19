@@ -39,7 +39,7 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Spec;
 import software.amazon.awssdk.services.s3.S3Client;
 
-@SuppressWarnings({"PMD.DoNotUseThreads", "PMD.GodClass"})
+@SuppressWarnings({"PMD.DoNotUseThreads", "PMD.GodClass", "PMD.TooManyFields"})
 @JacocoGenerated
 @Command(name = "Brage migration", description = "Tool for migrating Brage bundles")
 public class BrageMigrationCommand implements Callable<Integer> {
@@ -99,6 +99,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Option(names = {"-no-handle-erros"}, description = "turn off handle errors. Invalid and missing handles does not"
                                                         + " get checked")
     private boolean noHandleCheck;
+    @Option(names = {"-u"}, description = "Run import of unzipped collections")
+    private boolean isUnzipped;
     private RecordStorage recordStorage;
 
     public BrageMigrationCommand() {
@@ -155,7 +157,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 }
                 var contributors = getContributors(inputDirectory);
                 printIgnoredDcValuesFieldsInInfoLog();
-                var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes, contributors);
+                var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes, contributors, isUnzipped);
                 //                Synchronized run:
                 brageProcessors.forEach(this::runAndIgnoreException);
                 //                Parellallization run:
@@ -283,9 +285,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
                                                          List<Embargo> embargoes,
-                                                         Map<String, Contributor> contributors) {
+                                                         Map<String, Contributor> contributors,
+                                                         boolean isUnzipped) {
         return createBrageProcessorThread(zipFiles, customer, enableOnlineValidation, shouldLookUpInChannelRegister,
-                                          noHandleCheck, outputDirectory, embargoes, contributors);
+                                          noHandleCheck, outputDirectory, embargoes, contributors, isUnzipped);
     }
 
     private List<Embargo> getEmbargoes(String directory) {
@@ -414,7 +417,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                             boolean shouldLookUpInChannelRegister,
                                                             boolean noHandleCheck, String outputDirectory,
                                                             List<Embargo> embargoes,
-                                                            Map<String, Contributor> contributors) {
+                                                            Map<String, Contributor> contributors, boolean isUnzipped) {
         var handleTitleMapReader = new HandleTitleMapReader();
         var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch(),
                                                               embargoes, contributors);
@@ -423,7 +426,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                    .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,
                                                                               shouldLookUpInChannelRegister,
                                                                               noHandleCheck, awsEnvironment.getValue(),
-                                                                              outputDirectory))
+                                                                              outputDirectory, isUnzipped))
                    .collect(Collectors.toList());
     }
 
