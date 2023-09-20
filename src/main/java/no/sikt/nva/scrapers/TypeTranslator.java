@@ -8,6 +8,7 @@ public final class TypeTranslator {
 
     private static final Map<String, BrageType> NOR_ENG_TYPE_MAPPER = Map.ofEntries(
         entry(NorwegianType.JOURNAL_ARTICLE.getValue(), BrageType.JOURNAL_ARTICLE),
+        entry(NorwegianType.JOURNAL_ARTICLE_V2.getValue(), BrageType.JOURNAL_ARTICLE),
         entry(NorwegianType.BOOK.getValue(), BrageType.BOOK),
         entry(NorwegianType.CHAPTER.getValue(), BrageType.CHAPTER),
         entry(NorwegianType.MASTER_THESIS.getValue(), BrageType.MASTER_THESIS),
@@ -16,7 +17,8 @@ public final class TypeTranslator {
         entry(NorwegianType.RESEARCH_REPORT.getValue(), BrageType.RESEARCH_REPORT),
         entry(NorwegianType.OTHERS.getValue(), BrageType.OTHERS),
         entry(NorwegianType.WORKING_PAPER.getValue(), BrageType.WORKING_PAPER),
-        entry(NorwegianType.CHRONICLE.getValue(), BrageType.CHRONICLE)
+        entry(NorwegianType.CHRONICLE.getValue(), BrageType.CHRONICLE),
+        entry(NorwegianType.CONFERENCE_OBJECT.getValue(), BrageType.CONFERENCE_OBJECT)
     );
 
     public static String translateToEnglish(String value) {
@@ -30,6 +32,7 @@ public final class TypeTranslator {
     public enum NorwegianType {
 
         JOURNAL_ARTICLE("Tidsskriftartikkel"),
+        JOURNAL_ARTICLE_V2("Tidsskriftsartikkel"),
         BOOK("Bok"),
         CHAPTER("Bokkapittel"),
         MASTER_THESIS("Mastergradsoppgave"),
@@ -38,7 +41,8 @@ public final class TypeTranslator {
         RESEARCH_REPORT("Forskningsrapport"),
         OTHERS("Andre"),
         WORKING_PAPER("Arbeidsnotat"),
-        CHRONICLE("Kronikk");
+        CHRONICLE("Kronikk"),
+        CONFERENCE_OBJECT("Konferansebidrag");
 
         private final String value;
 
