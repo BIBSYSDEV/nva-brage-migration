@@ -30,7 +30,7 @@ public class BrageProcessorFactory {
                                                final boolean shouldLookUpInChannelRegister,
                                                final boolean noHandleCheck,
                                                final String awsEnvironment,
-                                               String outputDirectory) {
+                                               String outputDirectory, boolean isUnzipped) {
         var destinationDirectory = generateDestinationDirectory(outputDirectory, zipfile);
         if (StringUtils.isEmpty(destinationDirectory)) {
             throw new RuntimeException(INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE);
@@ -38,7 +38,7 @@ public class BrageProcessorFactory {
         return new BrageProcessor(zipfile, customer, destinationDirectory, rescueTitleAndHandleMap,
                                   enableOnlineValidation, shouldLookUpInChannelRegister, noHandleCheck,
                                   awsEnvironment, embargoes,
-                                  contributors);
+                                  contributors, isUnzipped);
     }
 
     private static int getLength(String zipfile) {
