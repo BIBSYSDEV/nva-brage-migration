@@ -42,6 +42,7 @@ import static no.sikt.nva.scrapers.CustomerMapper.STATPED;
 import static no.sikt.nva.scrapers.CustomerMapper.STEINERHOYSKOLEN;
 import static no.sikt.nva.scrapers.CustomerMapper.UIA;
 import static no.sikt.nva.scrapers.CustomerMapper.UNIT;
+import static no.sikt.nva.scrapers.CustomerMapper.VEGVESEN;
 import static no.sikt.nva.scrapers.CustomerMapper.VID;
 import static no.sikt.nva.scrapers.CustomerMapper.VETINST;
 
@@ -145,6 +146,8 @@ public class ResourceOwnerMapper {
     public static final String UNIT_CRISTIN_IDENTIFIER = "195.0.0.0";
     public static final String STATPED_OWNER_VALUE = "statped@5831.0.0.0";
     public static final String STATPED_CRISTIN_IDENTIFIER = "5831.0.0.0";
+    public static final String VEGVESEN_OWNER_VALUE = "vegvesen@6056.0.0.0";
+    public static final String VEGVESEN_CRISTIN_IDENTIFIER = "6056.0.0.0";
     public static final String CRISTIN_IDENTIFIER = "CRISTIN_IDENTIFIER";
     public static final String OWNER_VALUE = "OWNER_VALUE";
     public static final String SANDBOX_URI = "https://api.sandbox.nva.aws.unit.no/cristin/organization/";
@@ -239,8 +242,8 @@ public class ResourceOwnerMapper {
                     entry(CRISTIN_IDENTIFIER, UNIT_CRISTIN_IDENTIFIER))),
             entry(STATPED, Map.ofEntries(entry(OWNER_VALUE, STATPED_OWNER_VALUE),
                     entry(CRISTIN_IDENTIFIER, STATPED_CRISTIN_IDENTIFIER))),
-            entry("backup_vegvesen_ikke_slett", Map.ofEntries(entry(OWNER_VALUE, "sv@6056.0.0.0"),
-                                         entry(CRISTIN_IDENTIFIER, "6056.0.0.0")))
+            entry(VEGVESEN, Map.ofEntries(entry(OWNER_VALUE, VEGVESEN_OWNER_VALUE),
+                                         entry(CRISTIN_IDENTIFIER, VEGVESEN_CRISTIN_IDENTIFIER)))
     );
 
     private static final Map<String, String> ENVIRONMENT_URI_MAP = Map.ofEntries(

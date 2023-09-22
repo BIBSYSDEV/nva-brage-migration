@@ -59,6 +59,7 @@ public class CustomerMapper {
     public static final String DEVELOP = "dev";
     public static final String TEST = "test";
     public static final String PROD = "prod";
+    public static final String VEGVESEN = "vegvesen";
     private static final Map<String, Map<String, String>> CUSTOMER_MAP = Map.ofEntries(
             entry(NUPI, Map.ofEntries(
                     entry(SANDBOX, ""),
@@ -262,10 +263,10 @@ public class CustomerMapper {
                                      entry(DEVELOP, "e6890d28-a370-49a3-9100-f78b2e8fb324"),
                                      entry(TEST, "82fa69db-a834-47e2-8d03-048b3f60cbcf"),
                                      entry(PROD, "a63f80aa-d479-4271-8a17-d82ab7d0efd2"))),
-        entry("backup_vegvesen_ikke_slett", Map.ofEntries(entry(SANDBOX, ""),
-                                         entry(DEVELOP, ""),
-                                         entry(TEST, "95100df5-b46b-41c9-a87a-9a2efc58716e"),
-                                         entry(PROD, "")))
+        entry(VEGVESEN, Map.ofEntries(entry(SANDBOX, ""),
+                                      entry(DEVELOP, "2c1deeca-c0fc-487e-93c8-9f0cf4fae490"),
+                                      entry(TEST, "95100df5-b46b-41c9-a87a-9a2efc58716e"),
+                                      entry(PROD, "")))
 
     );
 
