@@ -15,11 +15,8 @@ import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.JacocoGenerated;
 
 @JsonPropertyOrder({"customer", "resourceOwner", "brageLocation", "id", "cristinId", "doi", "link", "publishedDate",
-    "publisherAuthority",
-    "rightsholder",
-    "type", "partOf", "hasPart", "publisherAuthority", "spatialCoverage", "date", "language", "publication",
-    "entityDescription",
-    "recordContent", "errors", "warnings"})
+    "publisherAuthority", "rightsholder", "type", "partOf", "hasPart", "publisherAuthority", "spatialCoverage", "date",
+    "language", "publication", "entityDescription", "recordContent", "errors", "warnings"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
 
@@ -42,12 +39,21 @@ public class Record {
     private Set<ErrorDetails> errors;
     private Set<WarningDetails> warnings;
     private URI link;
+    private Set<URI> subjects;
 
     public Record() {
     }
 
     public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
+
+    public Set<URI> getSubjects() {
+        return subjects;
+    }
+
+    public void setSubjects(Set<URI> subjects) {
+        this.subjects = subjects;
     }
 
     @JsonProperty("link")
@@ -236,9 +242,8 @@ public class Record {
     @Override
     public int hashCode() {
         return Objects.hash(resourceOwner, getEntityDescription(), getCustomer(), getId(), getDoi(), getType(),
-                            getPublisherAuthority(), getRightsholder(), getSpatialCoverage(),
-                            getPartOf(),
-                            getPart(), getPublication(), getContentBundle(), getPublishedDate(), getCristinId(),
+                            getPublisherAuthority(), getRightsholder(), getSpatialCoverage(), getPartOf(), getPart(),
+                            getPublication(), getContentBundle(), getPublishedDate(), getCristinId(),
                             getBrageLocation(), getErrors(), getWarnings());
     }
 
