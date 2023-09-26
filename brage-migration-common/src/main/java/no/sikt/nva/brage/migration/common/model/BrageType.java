@@ -8,6 +8,7 @@ public enum BrageType {
     DATASET("Dataset"),
     DATA_SET("Data set"),
     JOURNAL_ARTICLE("Journal article"),
+    ARTICLE("Article"),
     JOURNAL_ISSUE("Journal issue"),
     OTHERS("Others"),
     OTHER("Other"),

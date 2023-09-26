@@ -1,12 +1,15 @@
 package no.sikt.nva.validators;
 
+import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_NOT_PRESENT_DC_DATE_ISSUED;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_DATE_ISSUED;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_RIGHTS_URI;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.INVALID_ISBN_WARNING;
+import static no.sikt.nva.scrapers.DublinCoreScraper.mapOriginTypeToNvaType;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.LOCAL_DATE_MAX_LENGTH;
+import static no.sikt.nva.scrapers.TypeMapper.convertBrageTypeToNvaType;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -107,9 +110,8 @@ public final class DublinCoreValidator {
     private static Optional<WarningDetails> getTypesWarnings(DublinCore dublinCore) {
         if (isConferenceObjectOrLecture(dublinCore)) {
             return Optional.of(
-                new WarningDetails(
-                    Warning.CONFERENCE_OBJECT_OR_LECTURE_WILL_BE_MAPPED_TO_CONFERENCE_REPORT,
-                    DublinCoreScraper.extractType(dublinCore)));
+                new WarningDetails(Warning.CONFERENCE_OBJECT_OR_LECTURE_WILL_BE_MAPPED_TO_CONFERENCE_REPORT,
+                                   DublinCoreScraper.extractType(dublinCore)));
         } else {
             return Optional.empty();
         }
@@ -117,8 +119,8 @@ public final class DublinCoreValidator {
 
     private static boolean isConferenceObjectOrLecture(DublinCore dublinCore) {
         var types = DublinCoreScraper.extractType(dublinCore);
-        return types.contains(BrageType.CONFERENCE_OBJECT.getValue())
-               || types.contains(BrageType.CONFERENCE_LECTURE.getValue());
+        return types.contains(BrageType.CONFERENCE_OBJECT.getValue()) || types.contains(
+            BrageType.CONFERENCE_LECTURE.getValue());
     }
 
     private static Optional<ErrorDetails> getLicenseError(DublinCore dublinCore) {
@@ -128,8 +130,8 @@ public final class DublinCoreValidator {
             if (licenseScraper.isValidLicense(license)) {
                 return Optional.empty();
             } else {
-                return Optional.of(new ErrorDetails(INVALID_DC_RIGHTS_URI, Collections.singleton(
-                    licenseScraper.extractLicense(dublinCore))));
+                return Optional.of(new ErrorDetails(INVALID_DC_RIGHTS_URI,
+                                                    Collections.singleton(licenseScraper.extractLicense(dublinCore))));
             }
         }
         return Optional.empty();
@@ -393,7 +395,7 @@ public final class DublinCoreValidator {
         if (uniqueTypes.isEmpty()) {
             return Optional.of(new ErrorDetails(INVALID_DC_TYPE, uniqueTypes));
         }
-        if (uniqueTypes.size() >= 2) {
+        if (containsMultipleTypes(uniqueTypes)) {
             return mapMultipleTypes(uniqueTypes);
         }
         if (TypeMapper.hasValidType(uniqueTypes.iterator().next())) {
@@ -409,11 +411,19 @@ public final class DublinCoreValidator {
                         .stream()
                         .distinct()
                         .collect(Collectors.toSet());
-        if (types.size() >= 2 && getInvalidTypes(dublinCore).isEmpty() && !types.contains(
+        var mappedType = mapOriginTypeToNvaType(types, dublinCore);
+        if (nonNull(mappedType.getNva())) {
+            return Optional.empty();
+        }
+        if (containsMultipleTypes(types) && getInvalidTypes(dublinCore).isEmpty() && !types.contains(
             BrageType.PEER_REVIEWED.getValue())) {
             return Optional.of(new ErrorDetails(Error.MULTIPLE_UNMAPPABLE_TYPES, types));
         }
         return Optional.empty();
+    }
+
+    private static boolean containsMultipleTypes(Set<String> types) {
+        return types.size() >= 2;
     }
 
     private static Optional<ErrorDetails> mapMultipleTypes(Set<String> types) {
@@ -428,6 +438,9 @@ public final class DublinCoreValidator {
             }
         }
         if (TypeMapper.hasValidType(firstTypeToMap)) {
+            return Optional.empty();
+        }
+        if (nonNull(convertBrageTypeToNvaType(types))) {
             return Optional.empty();
         }
         return Optional.of(new ErrorDetails(INVALID_DC_TYPE, types));

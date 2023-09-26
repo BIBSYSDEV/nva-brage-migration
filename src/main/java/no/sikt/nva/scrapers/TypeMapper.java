@@ -38,6 +38,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.CHAPTER), NvaType.CHAPTER),
         entry(Set.of(BrageType.REPORT_CHAPTER), NvaType.CHAPTER),
         entry(Set.of(BrageType.JOURNAL_ARTICLE), NvaType.JOURNAL_ARTICLE),
+        entry(Set.of(BrageType.ARTICLE), NvaType.JOURNAL_ARTICLE),
         entry(Set.of(BrageType.JOURNAL_ISSUE), NvaType.JOURNAL_ARTICLE),
         entry(Set.of(BrageType.PROFESSIONAL_ARTICLE), NvaType.PROFESSIONAL_ARTICLE),
         entry(Set.of(BrageType.DATASET), NvaType.DATASET),
