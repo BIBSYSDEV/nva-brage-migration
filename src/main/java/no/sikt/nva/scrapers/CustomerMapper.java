@@ -59,70 +59,65 @@ public class CustomerMapper {
     public static final String DEVELOP = "dev";
     public static final String TEST = "test";
     public static final String PROD = "prod";
+    public static final String NB = "nb";
+    public static final String NFORSK = "nforsk";
     private static final Map<String, Map<String, String>> CUSTOMER_MAP = Map.ofEntries(
-            entry(NUPI, Map.ofEntries(
+        entry(NUPI, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, "8d11f0f0-d414-4564-9250-298c06ef5c87"),
                     entry(TEST, "122d33a7-1844-466a-926b-333eeff42a93"),
-                    entry(PROD, "")
-            )),
-            entry(OMSORGSFORSKNING, Map.ofEntries(
+                    entry(PROD, ""))),
+        entry(OMSORGSFORSKNING, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, ""),
                     entry(TEST, ""),
-                    entry(PROD, "")
-            )),
-            entry(INN, Map.ofEntries(
+                    entry(PROD, ""))),
+        entry(INN, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, "023f1608-1baa-4d5a-8acc-80d329bddd74"),
                     entry(TEST, "df2a796f-3eef-45dc-a39d-51b21989285a"),
-                    entry(PROD, "")
-            )),
-            entry(BI, Map.ofEntries(
+                    entry(PROD, ""))),
+        entry(BI, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, "a49a2deb-f782-4ab1-b2ab-97745bc14b3d"),
                     entry(TEST, "e9fb0c5d-1589-4d6f-932f-b312e50daa8f"),
-                    entry(PROD, "")
-            )),
-            entry(VID, Map.ofEntries(
+                    entry(PROD, ""))),
+        entry(VID, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, "58d2d14c-ff23-4aa0-94f1-b53190fd020a"),
                     entry(TEST, "9b17e692-6690-41a2-923b-b7ac0d7a1522"),
-                    entry(PROD, "")
-            )),
-            entry(BANENOR, Map.ofEntries(
+                    entry(PROD, ""))),
+        entry(BANENOR, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, ""),
                     entry(TEST, ""),
-                    entry(PROD, "")
-            )),
-            entry(RA, Map.ofEntries(
+                    entry(PROD, ""))),
+        entry(RA, Map.ofEntries(
                     entry(SANDBOX, "b3435185-929a-4842-96ee-4243f4c9078c"),
                     entry(DEVELOP, "e974d7d1-50b5-47c0-ad7e-7135a2d47555"),
                     entry(TEST, "434ed8ed-f302-409f-9943-8886320550a3"),
-                    entry(PROD, "")
-            )),
-            entry(NORGES_BANK, Map.ofEntries(
+                    entry(PROD, ""))),
+        entry(NORGES_BANK, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, "9d02e866-aeba-466d-993a-b519c664d38c"),
                     entry(TEST, "2d37e9a9-dc70-4c30-bdb6-c7724eb7f0c3"),
                     entry(PROD, ""))),
-            entry(NVE, Map.ofEntries(entry(SANDBOX, "5eb7ca32-0e6b-4819-b794-c31a4b16ea6b"),
+        entry(NVE, Map.ofEntries(entry(SANDBOX, "5eb7ca32-0e6b-4819-b794-c31a4b16ea6b"),
                     entry(DEVELOP, "b4497570-2903-49a2-9c2a-d6ab8b0eacc2"),
                     entry(TEST, ""),
                     entry(PROD, "4ba5f697-2056-4292-b0a3-f81ccf21ea22"))),
 
-            entry(KRUS, Map.ofEntries(entry(SANDBOX, "6b5e1238-7a05-11ed-a1eb-0242ac120002"),
+        entry(KRUS, Map.ofEntries(entry(SANDBOX, "6b5e1238-7a05-11ed-a1eb-0242ac120002"),
                     entry(DEVELOP, "a768727e-4ecb-41c1-a616-1fec000cac1c"),
                     entry(TEST, ""),
                     entry(PROD, ""))),
 
-            entry(KRISTIANIA, Map.ofEntries(entry(SANDBOX, "8fb3c2f4-da97-4eb1-be65-307c86b993ee"),
+        entry(KRISTIANIA, Map.ofEntries(entry(SANDBOX, "8fb3c2f4-da97-4eb1-be65-307c86b993ee"),
                     entry(DEVELOP, "ca57b418-f837-40fd-af5c-5a6ba14abd7e"),
                     entry(TEST, "c1d7b72b-3319-4a1f-a365-c04ddb729b6f"),
                     entry(PROD, "05329411-0aa7-4c68-8cc6-5875f0d58f8c"))),
 
-            entry(FHS, Map.ofEntries(entry(SANDBOX, ""),
+        entry(FHS, Map.ofEntries(entry(SANDBOX, ""),
                     entry(DEVELOP, "290bb113-cf83-4917-8a07-463b4eca057b"),
                     entry(TEST, "ba0b80e8-ca87-4b8f-bf2a-6d00188ad707"),
                     entry(PROD, ""))),
@@ -266,10 +261,18 @@ public class CustomerMapper {
                                       entry(DEVELOP, "2c1deeca-c0fc-487e-93c8-9f0cf4fae490"),
                                       entry(TEST, "95100df5-b46b-41c9-a87a-9a2efc58716e"),
                                       entry(PROD, ""))),
-            entry(FFI, Map.ofEntries(entry(SANDBOX, ""),
-                                          entry(DEVELOP, "04939e4d-105e-4d3c-b945-7d482d4f18d5"),
-                                          entry(TEST, ""),
-                                          entry(PROD, "")))
+        entry(FFI, Map.ofEntries(entry(SANDBOX, ""),
+                                 entry(DEVELOP, "04939e4d-105e-4d3c-b945-7d482d4f18d5"),
+                                 entry(TEST, ""),
+                                 entry(PROD, ""))),
+        entry(NB, Map.ofEntries(entry(SANDBOX, ""),
+                                entry(DEVELOP, "9fde89c7-baea-4ac1-ad52-97d4dee0e6da"),
+                                entry(TEST, ""),
+                                entry(PROD, ""))),
+        entry(NFORSK, Map.ofEntries(entry(SANDBOX, ""),
+                                    entry(DEVELOP, "5196161e-c952-4b36-9125-3e9746ee338d"),
+                                    entry(TEST, ""),
+                                    entry(PROD, "")))
 
     );
 

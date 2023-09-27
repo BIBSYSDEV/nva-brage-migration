@@ -22,6 +22,8 @@ import static no.sikt.nva.scrapers.CustomerMapper.KRUS;
 import static no.sikt.nva.scrapers.CustomerMapper.LDH;
 import static no.sikt.nva.scrapers.CustomerMapper.MF;
 import static no.sikt.nva.scrapers.CustomerMapper.NASJONALMUSEET;
+import static no.sikt.nva.scrapers.CustomerMapper.NB;
+import static no.sikt.nva.scrapers.CustomerMapper.NFORSK;
 import static no.sikt.nva.scrapers.CustomerMapper.NGI;
 import static no.sikt.nva.scrapers.CustomerMapper.NHH;
 import static no.sikt.nva.scrapers.CustomerMapper.NIBIO;
@@ -157,6 +159,10 @@ public class ResourceOwnerMapper {
     public static final String DEVELOP_URI = "https://api.sandbox.nva.aws.unit.no/cristin/organization/";
     public static final String TEST_URI = "https://api.test.nva.aws.unit.no/cristin/organization/";
     public static final String PROD_URI = "https://api.nva.aws.unit.no/cristin/organization/";
+    private static final String NB_CRISTIN_IDENTIFIER = "5931.0.0.0";
+    private static final String NB_OWNER_VALUE = "nb@5931.0.0.0";
+    private static final String NFORSK_CRISTIN_IDENTIFIER = "7446.0.0.0";
+    private static final String NFORSK_OWNER_VALUE = "nforsk@7446.0.0.0";
     @SuppressWarnings("PMD.UseConcurrentHashMap")
     private static final Map<String, Map<String, String>> RESOURCE_OWNER_MAP = Map.ofEntries(
             entry(NORGES_BANK, Map.ofEntries(entry(OWNER_VALUE, NORGES_BANK_OWNER_VALUE),
@@ -248,7 +254,11 @@ public class ResourceOwnerMapper {
             entry(VEGVESEN, Map.ofEntries(entry(OWNER_VALUE, VEGVESEN_OWNER_VALUE),
                                          entry(CRISTIN_IDENTIFIER, VEGVESEN_CRISTIN_IDENTIFIER))),
             entry(FFI, Map.ofEntries(entry(OWNER_VALUE, FFI_OWNER_VALUE),
-                                          entry(CRISTIN_IDENTIFIER, FFI_CRISTIN_IDENTIFIER)))
+                                          entry(CRISTIN_IDENTIFIER, FFI_CRISTIN_IDENTIFIER))),
+            entry(NB, Map.ofEntries(entry(OWNER_VALUE, NB_OWNER_VALUE),
+                                     entry(CRISTIN_IDENTIFIER, NB_CRISTIN_IDENTIFIER))),
+            entry(NFORSK, Map.ofEntries(entry(OWNER_VALUE, NFORSK_OWNER_VALUE),
+                                    entry(CRISTIN_IDENTIFIER, NFORSK_CRISTIN_IDENTIFIER)))
     );
 
     private static final Map<String, String> ENVIRONMENT_URI_MAP = Map.ofEntries(
