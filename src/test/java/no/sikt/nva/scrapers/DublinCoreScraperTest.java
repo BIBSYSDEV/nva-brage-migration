@@ -14,6 +14,7 @@ import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_R
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.ADVISOR;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -22,6 +23,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -40,14 +42,11 @@ import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Pages;
 import no.sikt.nva.brage.migration.common.model.record.Range;
-import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import nva.commons.core.ioutils.IoUtils;
 import nva.commons.logutils.LogUtils;
-import org.apache.commons.logging.Log;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -813,6 +812,20 @@ public class DublinCoreScraperTest {
     @NotNull
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);
+    }
+
+    @Test
+    void shouldConvertLocalCodeToSubjectAndDoNotConvertLocalCodesThatAreNotUri() {
+        var localCodeUri = new DcValue(Element.DESCRIPTION, Qualifier.LOCAL_CODE, randomUri().toString());
+        var localCodeString = new DcValue(Element.DESCRIPTION, Qualifier.LOCAL_CODE, randomString());
+        var brageLocation = new BrageLocation(null);
+        var typeDcValue = new DcValue(Element.TYPE, null, "Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, localCodeString, localCodeUri));
+        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+
+        assertThat(record.getSubjects(), contains(URI.create(localCodeUri.getValue())));
+        assertThat(record.getSubjects(), hasSize(1));
     }
 
     @ParameterizedTest

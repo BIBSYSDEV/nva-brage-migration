@@ -10,7 +10,9 @@ import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.validators.DublinCoreValidator.PUBLISHED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreErrors;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
+import static nva.commons.core.attempt.Try.attempt;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -290,7 +292,22 @@ public class DublinCoreScraper {
         record.setCristinId(extractCristinId(dublinCore));
         record.setPartOf(extractPartOf(dublinCore));
         record.setPart(extractHasPart(dublinCore));
+        record.setSubjects(extractSubjects(dublinCore));
         return record;
+    }
+
+    private static Set<URI> extractSubjects(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isLocalCode)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(DublinCoreScraper::toUri)
+                   .filter(Objects::nonNull)
+                   .collect(Collectors.toSet());
+    }
+
+    private static URI toUri(String value) {
+        return attempt(() -> new URL(value).toURI()).orElse(failure -> null);
     }
 
     private static Publication createPublicationWithIdentifier(DublinCore dublinCore, BrageLocation brageLocation,
@@ -457,7 +474,6 @@ public class DublinCoreScraper {
                || dcValue.isUpdatedDate()
                || dcValue.isRelationUri()
                || dcValue.isNoneDate()
-               || dcValue.isLocalCode()
                || dcValue.isEmbargo()
                || dcValue.isSourceNone()
                || dcValue.isCreatorNone()
