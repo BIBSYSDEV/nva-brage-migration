@@ -273,8 +273,8 @@ public class DublinCoreScraper {
             } else {
                 logger.error(error + StringUtils.SPACE + brageLocation.getOriginInformation());
             }
-        }
     }
+        }
 
     private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
                                                                      BrageLocation brageLocation) {
@@ -636,7 +636,7 @@ public class DublinCoreScraper {
         }
     }
 
-    private static Type mapOriginTypeToNvaType(Set<String> types, DublinCore dublinCore) {
+    public static Type mapOriginTypeToNvaType(Set<String> types, DublinCore dublinCore) {
         var uniqueTypes = translateTypesInNorwegian(types);
         var type = new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
         if (isNull(type.getNva()) && nonNull(extractCristinId(dublinCore))) {
