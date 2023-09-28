@@ -7,7 +7,7 @@ public enum BrageType {
     CHAPTER("Chapter"),
     DATASET("Dataset"),
     DATA_SET("Data set"),
-    JOURNAL_s("Journal article"),
+    JOURNAL_ARTICLE("Journal article"),
     ARTICLE("Article"),
     JOURNAL_ISSUE("Journal issue"),
     OTHERS("Others"),
