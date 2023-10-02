@@ -86,6 +86,8 @@ public class CustomerMapper {
     public static final String NGU = "ngu";
     public static final String UIT = "uit";
     public static final String UIO = "uio";
+    public static final String FHI = "fhi";
+    public static final String R_BUP = "r-bup";
     private static final Map<String, Map<String, String>> CUSTOMER_MAP = new ConcurrentHashMap<>()
     {{
 
@@ -239,7 +241,7 @@ public class CustomerMapper {
                                         entry(TEST, "7c41e7cd-f494-4266-9979-48285cbb2434"),
                                         entry(PROD, "2f42a7e8-219b-4289-9b41-99b32a6b4866")));
                 put(AHO, Map.ofEntries(entry(SANDBOX, ""),
-                                       entry(DEVELOP, ""),
+                                       entry(DEVELOP, "d6e0ba1c-44fd-49bc-8d79-a45bf1a7b66c"),
                                        entry(TEST, "ba0b80e8-ca87-4b8f-bf2a-6d00188ad707"),
                                        entry(PROD, "")));
                 put(IFE, Map.ofEntries(entry(SANDBOX, ""),
@@ -408,6 +410,14 @@ public class CustomerMapper {
                                        entry(DEVELOP, "8db4a8bd-3db5-420b-a2e4-fc17a489aa6d"),
                                        entry(TEST, ""),
                                        entry(PROD, "")));
+                put(FHI, Map.ofEntries(entry(SANDBOX, ""),
+                                       entry(DEVELOP, "95bfedd6-0a44-4013-8e96-256b0efb7d28"),
+                                       entry(TEST, ""),
+                                       entry(PROD, "")));
+        put(R_BUP, Map.ofEntries(entry(SANDBOX, ""),
+                                 entry(DEVELOP, "3259519a-1ef6-444d-87d2-534d7c6df021"),
+                                 entry(TEST, ""),
+                                 entry(PROD, "")));
         }};
 
     private static final String SANDBOX_URI = "https://api.sandbox.nva.aws.unit.no/customer/";

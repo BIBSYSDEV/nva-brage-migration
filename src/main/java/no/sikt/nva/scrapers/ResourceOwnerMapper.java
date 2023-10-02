@@ -10,6 +10,7 @@ import static no.sikt.nva.scrapers.CustomerMapper.DMMH;
 import static no.sikt.nva.scrapers.CustomerMapper.FAFO;
 import static no.sikt.nva.scrapers.CustomerMapper.FDIR;
 import static no.sikt.nva.scrapers.CustomerMapper.FFI;
+import static no.sikt.nva.scrapers.CustomerMapper.FHI;
 import static no.sikt.nva.scrapers.CustomerMapper.FHS;
 import static no.sikt.nva.scrapers.CustomerMapper.FNI;
 import static no.sikt.nva.scrapers.CustomerMapper.HIMOLDE;
@@ -53,6 +54,7 @@ import static no.sikt.nva.scrapers.CustomerMapper.ODA;
 import static no.sikt.nva.scrapers.CustomerMapper.RA;
 import static no.sikt.nva.scrapers.CustomerMapper.PHS;
 import static no.sikt.nva.scrapers.CustomerMapper.RURALIS;
+import static no.sikt.nva.scrapers.CustomerMapper.R_BUP;
 import static no.sikt.nva.scrapers.CustomerMapper.SAMAS;
 import static no.sikt.nva.scrapers.CustomerMapper.SAMFORSK;
 import static no.sikt.nva.scrapers.CustomerMapper.SAMFUNNSFORSKNING;
@@ -233,6 +235,10 @@ public class ResourceOwnerMapper {
     private static final String UIT_OWNER_VALUE = "uit@186.0.0.0";
     private static final String UIO_CRISTIN_IDENTIFIER = "185.90.0.0";
     private static final String UIO_OWNER_VALUE = "uio@185.90.0.0";
+    private static final String FHI_OWNER_VALUE = "fhi@7502.0.0.0";
+    private static final String FHI_CRISTIN_IDENTIFIER = "7502.0.0.0";
+    private static final String R_BUP_OWNER_VALUE = "r-bup@7539.0.0.0";
+    private static final String R_BUP_CRISTIN_IDENTIFIER = "7539.0.0.0";
     @SuppressWarnings("PMD.UseConcurrentHashMap")
     private static final Map<String, Map<String, String>> RESOURCE_OWNER_MAP = new ConcurrentHashMap<>()
     {{
@@ -376,6 +382,10 @@ public class ResourceOwnerMapper {
             entry(CRISTIN_IDENTIFIER, UIT_CRISTIN_IDENTIFIER)));
             put(UIO, Map.ofEntries(entry(OWNER_VALUE, UIO_OWNER_VALUE),
             entry(CRISTIN_IDENTIFIER, UIO_CRISTIN_IDENTIFIER)));
+            put(FHI, Map.ofEntries(entry(OWNER_VALUE, FHI_OWNER_VALUE),
+                                   entry(CRISTIN_IDENTIFIER, FHI_CRISTIN_IDENTIFIER)));
+            put(R_BUP, Map.ofEntries(entry(OWNER_VALUE, R_BUP_OWNER_VALUE),
+                               entry(CRISTIN_IDENTIFIER, R_BUP_CRISTIN_IDENTIFIER)));
     }};
 
     private static final Map<String, String> ENVIRONMENT_URI_MAP = Map.ofEntries(
