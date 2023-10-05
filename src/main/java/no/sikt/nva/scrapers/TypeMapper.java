@@ -76,6 +76,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.TEXTBOOK), NvaType.TEXTBOOK),
         entry(Set.of(BrageType.OTHER_TYPE_OF_REPORT), NvaType.REPORT),
         entry(Set.of(BrageType.CONFERENCE_OBJECT), NvaType.CONFERENCE_REPORT),
+        entry(Set.of(BrageType.CONFERENCE_REPORT), NvaType.CONFERENCE_REPORT),
         entry(Set.of(BrageType.CONFERENCE_LECTURE), NvaType.CONFERENCE_REPORT),
         entry(Set.of(BrageType.CONFERENCE_POSTER), NvaType.CONFERENCE_POSTER),
         entry(Set.of(BrageType.FILM), NvaType.FILM));
