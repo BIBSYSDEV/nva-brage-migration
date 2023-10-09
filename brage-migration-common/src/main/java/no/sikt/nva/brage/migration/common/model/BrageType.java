@@ -25,6 +25,7 @@ public enum BrageType {
     STUDENT_THESIS_OTHER("Other student thesis"),
     DESIGN_PRODUCT("Design product"),
     CHRONICLE("Chronicle"),
+    FEATURE_ARTICLE("Feature article"),
     SOFTWARE("Software"),
     LECTURE("Lecture"),
     RECORDING_MUSICAL("Recording, musical"),

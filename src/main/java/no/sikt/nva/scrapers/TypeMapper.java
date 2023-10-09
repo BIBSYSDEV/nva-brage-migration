@@ -61,6 +61,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.STUDENT_THESIS_OTHER), NvaType.STUDENT_PAPER_OTHERS),
         entry(Set.of(BrageType.DESIGN_PRODUCT), NvaType.DESIGN_PRODUCT),
         entry(Set.of(BrageType.CHRONICLE), NvaType.CHRONICLE),
+        entry(Set.of(BrageType.FEATURE_ARTICLE), NvaType.CHRONICLE),
         //        entry(Set.of(BrageType.SOFTWARE), NvaType.SOFTWARE),
         //        entry(Set.of(BrageType.RECORDING_ORAL), NvaType.RECORDING_ORAL),
         entry(Set.of(BrageType.LECTURE), NvaType.LECTURE),
