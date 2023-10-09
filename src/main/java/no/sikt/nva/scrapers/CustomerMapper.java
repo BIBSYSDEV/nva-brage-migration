@@ -88,6 +88,7 @@ public class CustomerMapper {
     public static final String UIO = "uio";
     public static final String FHI = "fhi";
     public static final String R_BUP = "r-bup";
+    public static final String IMR = "imr";
     private static final Map<String, Map<String, String>> CUSTOMER_MAP = new ConcurrentHashMap<>()
     {{
 
@@ -418,6 +419,10 @@ public class CustomerMapper {
                                  entry(DEVELOP, "3259519a-1ef6-444d-87d2-534d7c6df021"),
                                  entry(TEST, ""),
                                  entry(PROD, "")));
+        put(IMR, Map.ofEntries(entry(SANDBOX, ""),
+                               entry(DEVELOP, "3e78024a-657d-482c-9496-0f34a376ca78"),
+                               entry(TEST, ""),
+                               entry(PROD, "")));
         }};
 
     private static final String SANDBOX_URI = "https://api.sandbox.nva.aws.unit.no/customer/";
