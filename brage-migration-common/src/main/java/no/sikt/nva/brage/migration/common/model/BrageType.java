@@ -35,6 +35,7 @@ public enum BrageType {
     POSTER("Poster"),
     PRESENTATION("Presentasjon"),
     CONFERENCE_OBJECT("Conference object"),
+    CONFERENCE_REPORT("Conference report"),
     CONFERENCE_POSTER("Conference poster"),
     CONFERENCE_LECTURE("Conference lecture"),
     PRESENTATION_OTHER("Other presentation"),
@@ -52,7 +53,8 @@ public enum BrageType {
     NON_FICTION_CHAPTER("Non-fiction chapter"),
     REPORT_CHAPTER("Report chapter"),
     PEER_REVIEWED("Peer reviewed"),
-    TEXTBOOK("Textbook");
+    TEXTBOOK("Textbook"),
+    FILM("Film");
 
     private final String value;
 
