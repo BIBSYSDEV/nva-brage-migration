@@ -119,7 +119,7 @@ public class CustomerMapper {
                     entry(PROD, "")));
                 put(BANENOR, Map.ofEntries(
                     entry(SANDBOX, ""),
-                    entry(DEVELOP, ""),
+                    entry(DEVELOP, "4a8749c6-567b-42bd-b8c2-384aa41f43d3"),
                     entry(TEST, ""),
                     entry(PROD, "")));
                 put(RA, Map.ofEntries(

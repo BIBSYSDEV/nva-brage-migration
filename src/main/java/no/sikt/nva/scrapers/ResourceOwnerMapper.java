@@ -2,6 +2,7 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Map.entry;
 import static no.sikt.nva.scrapers.CustomerMapper.AHO;
+import static no.sikt.nva.scrapers.CustomerMapper.BANENOR;
 import static no.sikt.nva.scrapers.CustomerMapper.BI;
 import static no.sikt.nva.scrapers.CustomerMapper.BORA;
 import static no.sikt.nva.scrapers.CustomerMapper.CICERO;
@@ -242,6 +243,8 @@ public class ResourceOwnerMapper {
     private static final String R_BUP_CRISTIN_IDENTIFIER = "7539.0.0.0";
     private static final String IMR_OWNER_VALUE = "imr@7431.0.0.0";
     private static final String IMR_CRISTIN_IDENTIFIER = "7431.0.0.0";
+    private static final String BANENOR_OWNER_VALUE = "banenor@21033.0.0.0";
+    private static final String BANENOR_CRISTIN_IDENTIFIER = "21033.0.0.0";
     @SuppressWarnings("PMD.UseConcurrentHashMap")
     private static final Map<String, Map<String, String>> RESOURCE_OWNER_MAP = new ConcurrentHashMap<>()
     {{
@@ -391,6 +394,8 @@ public class ResourceOwnerMapper {
                                entry(CRISTIN_IDENTIFIER, R_BUP_CRISTIN_IDENTIFIER)));
         put(IMR, Map.ofEntries(entry(OWNER_VALUE, IMR_OWNER_VALUE),
                                  entry(CRISTIN_IDENTIFIER, IMR_CRISTIN_IDENTIFIER)));
+        put(BANENOR, Map.ofEntries(entry(OWNER_VALUE, BANENOR_OWNER_VALUE),
+                               entry(CRISTIN_IDENTIFIER, BANENOR_CRISTIN_IDENTIFIER)));
     }};
 
     private static final Map<String, String> ENVIRONMENT_URI_MAP = Map.ofEntries(
