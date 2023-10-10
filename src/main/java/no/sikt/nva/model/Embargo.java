@@ -1,5 +1,10 @@
 package no.sikt.nva.model;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
@@ -46,6 +51,10 @@ public class Embargo {
 
     public String getDate() {
         return date;
+    }
+
+    public Instant getDateAsInstant() {
+        return ZonedDateTime.of(LocalDate.parse(date), LocalTime.now(), ZoneId.systemDefault()).toInstant();
     }
 
     public void setDate(String date) {

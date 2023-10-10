@@ -2,9 +2,11 @@ package no.sikt.nva.scrapers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Objects;
 import no.sikt.nva.model.Embargo;
 import org.junit.jupiter.api.Test;
@@ -20,16 +22,23 @@ public class EmbargoScraperTest {
 
 
     @Test
-    void shouldExtractEmbargoWithPdfFileOnly() throws IOException {
+    void shouldExtractEmbargoWithPdfFileOnly() {
         var expectedEmbargo = new Embargo(HANDLE, FILENAME, DATE);
         var actualEmbargo = Objects.requireNonNull(EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION))).get(0);
         assertThat(actualEmbargo, is(equalTo(expectedEmbargo)));
     }
 
     @Test
-    void shouldExtractEmbargoWithPdfFileOnlyWhen() throws IOException {
+    void shouldExtractEmbargoWithPdfFileOnlyWhen() {
         var expectedEmbargo = new Embargo(HANDLE, FILENAME, DATE);
         var actualEmbargo = Objects.requireNonNull(EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION_V2))).get(0);
         assertThat(actualEmbargo, is(equalTo(expectedEmbargo)));
+    }
+
+    @Test
+    void shouldConvertEmbargoDateToInstant() {
+        var embargo = new Embargo(HANDLE, FILENAME, DATE);
+
+        assertThat(embargo.getDateAsInstant(), is(instanceOf(Instant.class)));
     }
 }

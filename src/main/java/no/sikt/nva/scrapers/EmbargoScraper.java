@@ -50,7 +50,7 @@ public final class EmbargoScraper {
             if (recordContainsEmbargoFile(record, Objects.requireNonNull(potentialEmbargo))) {
                 record.getContentBundle()
                     .getContentFileByFilename(potentialEmbargo.getFilename())
-                    .setEmbargoDate(potentialEmbargo.getDate());
+                    .setEmbargoDate(potentialEmbargo.getDateAsInstant());
             }
         }
         return record;

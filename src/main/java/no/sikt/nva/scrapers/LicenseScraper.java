@@ -78,7 +78,7 @@ public class LicenseScraper {
 
     private String trim(String licenseUri) {
         return Optional.of(licenseUri.replaceAll("[\\p{Cf}]", ""))
-                   .map(s -> s.replace("\u200B", StringUtils.EMPTY_STRING)).get();
+                   .map(s -> s.replaceAll("(\\n)|(\\s)|(\u200b)", StringUtils.EMPTY_STRING)).get();
     }
 
     private URI getLicenseName(String licenseUri) {
