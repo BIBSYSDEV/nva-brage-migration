@@ -21,6 +21,7 @@ public class LicenseScraper {
                                                                  "2.0",
                                                                  "3.0",
                                                                  "4.0");
+    public static final String LINEBREAKS_WHITESPACES_REGEX = "(\\n)|(\\s)|(\u200b)";
     private final DublinCore dublinCore;
 
     public LicenseScraper(DublinCore dublinCore) {
@@ -78,7 +79,7 @@ public class LicenseScraper {
 
     private String trim(String licenseUri) {
         return Optional.of(licenseUri.replaceAll("[\\p{Cf}]", ""))
-                   .map(s -> s.replaceAll("(\\n)|(\\s)|(\u200b)", StringUtils.EMPTY_STRING)).get();
+                   .map(s -> s.replaceAll(LINEBREAKS_WHITESPACES_REGEX, StringUtils.EMPTY_STRING)).get();
     }
 
     private URI getLicenseName(String licenseUri) {
