@@ -20,7 +20,6 @@ import no.sikt.nva.brage.migration.aws.S3Storage;
 import no.sikt.nva.brage.migration.aws.S3StorageImpl;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Record;
-import no.sikt.nva.logutils.LogSetup;
 import no.sikt.nva.model.Embargo;
 import no.sikt.nva.scrapers.ContributorScraper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
@@ -146,7 +145,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
             checkForIllegalArguments();
             var inputDirectory = generateInputDirectory();
             var outputDirectory = generateOutputDirectory();
-            var logOutPutDirectory = getLogOutputDirectory(inputDirectory, outputDirectory);
             if (writeProcessedImportToAws) {
                 pushExistingResourcesToNva(readZipFileNamesFromCollectionFile(inputDirectory));
             } else {
@@ -184,13 +182,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private static Integer getEmbargoCounter(List<BrageProcessor> brageProcessors) {
         return brageProcessors.stream().map(BrageProcessor::getEmbargoCounter).reduce(0, Integer::sum);
-    }
-
-    private static String getLogOutputDirectory(String inputDirectory, String outputDirectory) {
-        if (inputDirectory.equals(outputDirectory)) {
-            return outputDirectory;
-        }
-        return "/";
     }
 
     private static String[] readZipFileNamesFromCollectionFile(String inputDirectory) {
