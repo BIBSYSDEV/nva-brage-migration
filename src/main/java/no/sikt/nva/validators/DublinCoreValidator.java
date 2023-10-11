@@ -439,10 +439,6 @@ public final class DublinCoreValidator {
         return dublinCore.getDcValues().stream().anyMatch(DcValue::isVolume);
     }
 
-    private static boolean hasIssue(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream().anyMatch(DcValue::isIssue);
-    }
-
     private static boolean hasPageNumber(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream().anyMatch(DcValue::isPageNumber);
     }
