@@ -38,6 +38,7 @@ public enum NvaType {
     EXHIBITION_CATALOGUE("Exhibition catalogue"),
     LITERARY_ARTS("Literary arts"),
     POPULAR_SCIENCE_MONOGRAPH("Popular science monograph"),
+    EDITORIAL("Editorial"),
     CRISTIN_RECORD("CristinRecord");
 
     private final String value;
