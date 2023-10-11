@@ -65,6 +65,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
     private static final List<String> handles = Collections.synchronizedList(new ArrayList<>());
+    public static final String CUSTOMER_ARGUMENT = "-c";
+    public static final String CUSTOMER_SYSTEM_PROPERTY = "customer";
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     @Spec
@@ -111,12 +113,16 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     public static void main(String[] args) {
-        var list = Arrays.stream(args).collect(Collectors.toList());
-        var index = list.indexOf("-c");
-        var customer = list.get(index + 1);
-        System.setProperty("filename", customer);
+        setCustomerSystemPropertyForLogFiles(args);
         int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
         System.exit(exitCode);
+    }
+
+    private static void setCustomerSystemPropertyForLogFiles(String[] args) {
+        var arguments = Arrays.stream(args).collect(Collectors.toList());
+        var customerValueArgument = arguments.indexOf(CUSTOMER_ARGUMENT) + 1;
+        var customer = arguments.get(customerValueArgument);
+        System.setProperty(CUSTOMER_SYSTEM_PROPERTY, customer);
     }
 
     @SuppressWarnings("PMD.AvoidSynchronizedAtMethodLevel")

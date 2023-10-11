@@ -5,7 +5,7 @@
     <Property name="LOG_PATTERN">%m%n</Property>
   </Properties>
   <Appenders>
-    <RollingFile name="htmlLogger" fileName="${sys:filename}-app-info.html" filePattern="app-info-%d{yyyy-MM-dd}-%i.html">
+    <RollingFile name="htmlLogger" fileName="${sys:customer}-app-info.html" filePattern="app-info-%d{yyyy-MM-dd}-%i.html">
       <LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
       <HTMLLayout charset="UTF-8" title="Brage migration results"/>
       <Policies>
@@ -14,7 +14,7 @@
       </Policies>
     </RollingFile>
 
-    <RollingFile name="warnLog" fileName="${sys:filename}-application-warn.log"
+    <RollingFile name="warnLog" fileName="${sys:customer}-application-warn.log"
       filePattern="application-warn-%d{yyyy-MM-dd}-%i.log">
       <LevelRangeFilter minLevel="WARN" maxLevel="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
       <PatternLayout pattern="${LOG_PATTERN}"/>
@@ -24,7 +24,7 @@
       <DefaultRolloverStrategy max="10"/>
     </RollingFile>
 
-    <RollingFile name="infoLog" fileName="${sys:filename}-application-info.log"
+    <RollingFile name="infoLog" fileName="${sys:customer}-application-info.log"
       filePattern="application-info-%d{yyyy-MM-dd}-%i.log">
       <LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
       <PatternLayout pattern="${LOG_PATTERN}"/>
@@ -34,7 +34,7 @@
       <DefaultRolloverStrategy max="10"/>
     </RollingFile>
 
-    <RollingFile name="errorLog" fileName="${sys:filename}-application-error.log"
+    <RollingFile name="errorLog" fileName="${sys:customer}-application-error.log"
       filePattern="application-error-%d{yyyy-MM-dd}-%i.log">
       <LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
       <PatternLayout pattern="${LOG_PATTERN}"/>
