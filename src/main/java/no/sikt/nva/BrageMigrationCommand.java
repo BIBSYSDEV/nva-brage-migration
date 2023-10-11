@@ -112,6 +112,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     public static void main(String[] args) {
+        var list = Arrays.stream(args).collect(Collectors.toList());
+        var index = list.indexOf("-c");
+        var customer = list.get(index + 1);
+        System.setProperty("filename", customer);
         int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
         System.exit(exitCode);
     }
@@ -138,13 +142,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
+            System.setProperty("filename", "someFile");
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
             var inputDirectory = generateInputDirectory();
             var outputDirectory = generateOutputDirectory();
             var logOutPutDirectory = getLogOutputDirectory(inputDirectory, outputDirectory);
-            /* IMPORTANT: DO NOT USE LOGGER BEFORE THIS METHOD HAS RUN: */
-            LogSetup.setupLogging(logOutPutDirectory);
             if (writeProcessedImportToAws) {
                 pushExistingResourcesToNva(readZipFileNamesFromCollectionFile(inputDirectory));
             } else {
