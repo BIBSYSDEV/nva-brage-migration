@@ -6,7 +6,7 @@ public interface S3Storage {
 
     void storeRecord(Record record);
 
-    void storeLogs();
+    void storeLogs(String customer);
 
     void storeProcessedCollections(String... bundles);
 }

@@ -28,9 +28,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 public class S3StorageImpl implements S3Storage {
 
-    public static final String DEFAULT_ERROR_FILENAME = "application-error.log";
-    public static final String DEFAULT_WARNING_FILENAME = "application-warn.log";
-    public static final String DEFAULT_INFO_FILENAME = "application-info.log";
+    public static final String DEFAULT_ERROR_FILENAME = "%s-application-error.log";
+    public static final String DEFAULT_WARNING_FILENAME = "%s-application-warn.log";
+    public static final String DEFAULT_INFO_FILENAME = "%s-application-info.log";
     public static final String COULD_NOT_WRITE_RECORD_MESSAGE = "Could not write files to s3 for: ";
     public static final String COULD_NOT_WRITE_LOGS_MESSAGE = "Could not write logs to s3: ";
     public static final String JSON_STRING = ".json";
@@ -45,6 +45,7 @@ public class S3StorageImpl implements S3Storage {
     private static final String DEVELOP_BUCKET_NAME = "brage-migration-input-files-884807050265";
     private static final Logger logger = LoggerFactory.getLogger(S3StorageImpl.class);
     private static final String CONTENT_DISPOSITION_FILE_NAME_PATTERN = "filename=\"%s\"";
+    public static final String DASH = "-";
     private final String bucketName;
     private final S3Client s3Client;
     private final String pathPrefixString;
@@ -69,9 +70,9 @@ public class S3StorageImpl implements S3Storage {
     }
 
     @Override
-    public void storeLogs() {
+    public void storeLogs(String customer) {
         try {
-            writeLogsToS3();
+            writeLogsToS3(customer);
         } catch (Exception e) {
             logger.info(COULD_NOT_WRITE_LOGS_MESSAGE + e.getMessage());
         }
@@ -83,7 +84,7 @@ public class S3StorageImpl implements S3Storage {
             var collectionFiles = getCollections(stripZipBundlesToCollections(collections));
             var listOfRecordsCollections = gerRecordsJsonFiles(collectionFiles);
             extractRecords(listOfRecordsCollections).forEach(this::storeRecord);
-            writeLogsToS3();
+            writeLogsToS3(customer);
         } catch (Exception e) {
             logger.info(PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 + e.getMessage());
         }
@@ -197,10 +198,10 @@ public class S3StorageImpl implements S3Storage {
         }
     }
 
-    private void writeLogsToS3() {
-        var errorFile = new File(getPathPrefixString() + DEFAULT_ERROR_FILENAME);
-        var warningFile = new File(getPathPrefixString() + DEFAULT_WARNING_FILENAME);
-        var infoFile = new File(getPathPrefixString() + DEFAULT_INFO_FILENAME);
+    private void writeLogsToS3(String customer) {
+        var errorFile = new File(getPathPrefixString() + String.format(DEFAULT_ERROR_FILENAME, customer));
+        var warningFile = new File(getPathPrefixString() + String.format(DEFAULT_WARNING_FILENAME, customer));
+        var infoFile = new File(getPathPrefixString() + String.format(DEFAULT_INFO_FILENAME, customer));
         List.of(errorFile, warningFile, infoFile).forEach(this::writeLogFileToS3);
     }
 

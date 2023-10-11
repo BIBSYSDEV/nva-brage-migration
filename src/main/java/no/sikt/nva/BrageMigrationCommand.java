@@ -118,7 +118,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         System.exit(exitCode);
     }
 
-    private static void setCustomerSystemPropertyForLogFiles(String[] args) {
+    private static void setCustomerSystemPropertyForLogFiles(String... args) {
         var arguments = Arrays.stream(args).collect(Collectors.toList());
         var customerValueArgument = arguments.indexOf(CUSTOMER_ARGUMENT) + 1;
         var customer = arguments.get(customerValueArgument);
@@ -327,7 +327,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private void storeLogsToNva() {
         S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/",
                                               customer, awsEnvironment.getValue());
-        storage.storeLogs();
+        storage.storeLogs(customer);
     }
 
     private void logRecordCounter(List<BrageProcessor> brageProcessors) {
