@@ -151,6 +151,7 @@ public class DublinCoreScraper {
                    .stream()
                    .filter(DcValue::isType)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(value -> value.replaceAll("(\n)|(\b)|(\u200b)|(\t)|(\")", StringUtils.EMPTY_STRING))
                    .collect(Collectors.toSet());
     }
 

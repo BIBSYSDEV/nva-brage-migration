@@ -35,6 +35,9 @@ public enum NvaType {
     TEXTBOOK("Textbook"),
     CONFERENCE_REPORT("ConferenceReport"),
     FILM("Film"),
+    EXHIBITION_CATALOGUE("Exhibition catalogue"),
+    LITERARY_ARTS("Literary arts"),
+    POPULAR_SCIENCE_MONOGRAPH("Popular science monograph"),
     CRISTIN_RECORD("CristinRecord");
 
     private final String value;
