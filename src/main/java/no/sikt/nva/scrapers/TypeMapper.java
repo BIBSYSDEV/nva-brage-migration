@@ -83,6 +83,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.CONFERENCE_POSTER), NvaType.CONFERENCE_POSTER),
         entry(Set.of(BrageType.EXHIBITION_CATALOGUE), NvaType.EXHIBITION_CATALOGUE),
         entry(Set.of(BrageType.LITERARY_ARTS), NvaType.LITERARY_ARTS),
+        entry(Set.of(BrageType.EDITORIAL), NvaType.EDITORIAL),
         entry(Set.of(BrageType.POPULAR_SCIENCE_MONOGRAPH), NvaType.POPULAR_SCIENCE_MONOGRAPH),
         entry(Set.of(BrageType.FILM), NvaType.FILM));
 
