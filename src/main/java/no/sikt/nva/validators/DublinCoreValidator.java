@@ -78,7 +78,6 @@ public final class DublinCoreValidator {
         BrageNvaLanguageMapper.getLanguageWarning(dublinCore).ifPresent(warnings::add);
         getDescriptionsWarning(dublinCore).ifPresent(warnings::add);
         getVolumeWarning(dublinCore).ifPresent(warnings::add);
-        getIssueWarning(dublinCore).ifPresent(warnings::add);
         getIsbnWarnings(dublinCore).ifPresent(warnings::add);
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
         getNonContributorsError(dublinCore).ifPresent(warnings::add);
@@ -291,24 +290,6 @@ public final class DublinCoreValidator {
         return Optional.empty();
     }
 
-    private static Optional<WarningDetails> getIssueWarning(DublinCore dublinCore) {
-        if (hasIssue(dublinCore)) {
-            var issue = dublinCore.getDcValues()
-                            .stream()
-                            .filter(DcValue::isIssue)
-                            .findAny()
-                            .orElse(new DcValue())
-                            .getValue();
-            try {
-                Integer.parseInt(issue);
-                return Optional.empty();
-            } catch (Exception e) {
-                return Optional.of(new WarningDetails(Warning.ISSUE_NOT_NUMBER_WARNING, issue));
-            }
-        }
-        return Optional.empty();
-    }
-
     private static Optional<WarningDetails> getPageNumberWarning(DublinCore dublinCore) {
         if (hasPageNumber(dublinCore)) {
             var pageNumber = dublinCore.getDcValues()
@@ -456,10 +437,6 @@ public final class DublinCoreValidator {
 
     private static boolean hasVolume(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream().anyMatch(DcValue::isVolume);
-    }
-
-    private static boolean hasIssue(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream().anyMatch(DcValue::isIssue);
     }
 
     private static boolean hasPageNumber(DublinCore dublinCore) {

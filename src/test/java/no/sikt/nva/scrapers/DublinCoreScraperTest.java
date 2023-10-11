@@ -828,6 +828,18 @@ public class DublinCoreScraperTest {
         assertThat(record.getSubjects(), hasSize(1));
     }
 
+    @Test
+    void shouldPrettifyTypeWhenConvertingToRecord() {
+        var type = "\"Conference report\"";
+        var brageLocation = new BrageLocation(null);
+        var typeDcValue = new DcValue(Element.TYPE, null, type);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
+        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+
+        assertThat(record.getType().getNva(), is(equalTo(NvaType.CONFERENCE_REPORT.getValue())));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"9788293091172(PDF)", "9788293091172(trykt)", "ISBN9788293091172"})
     void shouldRemoveAllSpecialCharactersAndLettersFromIsbn(String isbn) {
