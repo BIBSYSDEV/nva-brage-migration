@@ -63,6 +63,7 @@ public class DublinCoreScraper {
     public static final String REGEX_ISSN = "[^0-9-xX]";
     public static final String COMA_ISSN_DELIMITER = ",";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
+    public static final String EMPTY_SPACES_LINEBREAKS_REGEX = "(\n)|(\b)|(\u200b)|(\t)|(\")";
     private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
@@ -151,7 +152,7 @@ public class DublinCoreScraper {
                    .stream()
                    .filter(DcValue::isType)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .map(value -> value.replaceAll("(\n)|(\b)|(\u200b)|(\t)|(\")", StringUtils.EMPTY_STRING))
+                   .map(value -> value.replaceAll(EMPTY_SPACES_LINEBREAKS_REGEX, StringUtils.EMPTY_STRING))
                    .collect(Collectors.toSet());
     }
 
