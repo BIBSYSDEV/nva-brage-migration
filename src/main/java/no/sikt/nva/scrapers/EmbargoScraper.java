@@ -18,10 +18,11 @@ import org.slf4j.LoggerFactory;
 
 public final class EmbargoScraper {
 
-    public static final String ERROR_OCCURRED_EXTRACTING_EMBARGOES = "ERROR_OCCURRED_EXTRACTING_EMBARGO";
+    public static final String ERROR_OCCURRED_EXTRACTING_EMBARGOES =
+        "ERROR_OCCURRED_EXTRACTING_EMBARGO, embargoes will not be attached to publications";
+    public static final String EMPTY_EMBARGO_FILE_MESSAGE = "EMBARGO_FILE_IS_EMPTY, embargoes will not be attached to publications";
     public static final String PDF_TXT = "pdf.txt";
     public static final String PDF_JPG = "pdf.jpg";
-    public static final String PDF = "pdf";
     private static final Logger logger = LoggerFactory.getLogger(EmbargoScraper.class);
 
     public EmbargoScraper() {
@@ -35,10 +36,17 @@ public final class EmbargoScraper {
             return embargoes;
         } catch (Exception e) {
             if (file.exists()) {
+                if (fileIsEmpty(file)) {
+                    logger.error(EMPTY_EMBARGO_FILE_MESSAGE);
+                }
                 logger.error(ERROR_OCCURRED_EXTRACTING_EMBARGOES);
             }
             return Collections.emptyList();
         }
+    }
+
+    private static boolean fileIsEmpty(File file) {
+        return file.length() == 0;
     }
 
     public static Record checkForEmbargoFromSuppliedEmbargoFile(Record record, List<Embargo> embargoes) {
