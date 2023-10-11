@@ -142,7 +142,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
-            System.setProperty("filename", "someFile");
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
             var inputDirectory = generateInputDirectory();
