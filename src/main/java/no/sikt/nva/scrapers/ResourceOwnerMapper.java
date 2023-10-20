@@ -137,8 +137,8 @@ public class ResourceOwnerMapper {
     public static final String UIA_CRISTIN_IDENTIFIER = "201.0.0.0";
     public static final String NORD_OWNER_VALUE = "nord@204.0.0.0";
     public static final String NORD_CRISTIN_IDENTIFIER = "204.0.0.0";
-    public static final String ODA_OWNER_VALUE = "oda@novaluepresent";
-    public static final String ODA_CRISTIN_IDENTIFIER = "novaluepresent";
+    public static final String ODA_OWNER_VALUE = "oda@215.0.0.0";
+    public static final String ODA_CRISTIN_IDENTIFIER = "215.0.0.0";
     public static final String HIMOLDE_OWNER_VALUE = "himolde@211.0.0.0";
     public static final String HIMOLDE_CRISTIN_IDENTIFIER = "211.0.0.0";
     public static final String HIVOLDA_OWNER_VALUE = "hivolda@223.0.0.0";
