@@ -53,8 +53,8 @@ public final class ChannelRegister {
         NvaType.RESEARCH_REPORT, NvaType.DESIGN_PRODUCT, NvaType.CHRONICLE, NvaType.SOFTWARE, NvaType.LECTURE,
         NvaType.RECORDING_MUSICAL, NvaType.PLAN_OR_BLUEPRINT, NvaType.MAP, NvaType.CONFERENCE_POSTER,
         NvaType.SCIENTIFIC_MONOGRAPH, NvaType.SCIENTIFIC_CHAPTER);
-    private static final String JOURNAL_PATH = "journals.csv";
-    private static final String PUBLISHERS_PATH = "publishers.csv";
+    private static final String JOURNAL_PATH = "journals_channel_registry_v2.csv";
+    private static final String PUBLISHERS_PATH = "publisher_channel_registry_v2.csv";
     private static final char SEPARATOR = ';';
     private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
     /*volatile*/ private static ChannelRegister register;
@@ -117,7 +117,7 @@ public final class ChannelRegister {
             } else {
                 return channelRegisterJournals.stream()
                            .filter(item -> item.hasIssn(issn))
-                           .map(ChannelRegisterJournal::getIdentifier)
+                           .map(ChannelRegisterJournal::getPid)
                            .collect(SingletonCollector.collectOrElse(null));
             }
         } catch (IllegalStateException e) {
@@ -137,7 +137,7 @@ public final class ChannelRegister {
             } else {
                 return channelRegisterJournals.stream()
                            .filter(item -> item.hasTitle(title))
-                           .map(ChannelRegisterJournal::getIdentifier)
+                           .map(ChannelRegisterJournal::getPid)
                            .collect(SingletonCollector.collectOrElse(null));
             }
         } catch (IllegalStateException e) {
@@ -275,7 +275,7 @@ public final class ChannelRegister {
     private String getPublisherIdentifer(String publisherFromMapper) {
         return channelRegisterPublishers.stream()
                    .filter(item -> item.hasPublisher(publisherFromMapper))
-                   .map(ChannelRegisterPublisher::getIdentifier)
+                   .map(ChannelRegisterPublisher::getPid)
                    .collect(SingletonCollector.collectOrElse(null));
     }
 

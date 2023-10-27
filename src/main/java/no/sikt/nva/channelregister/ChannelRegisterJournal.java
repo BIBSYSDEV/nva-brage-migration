@@ -6,8 +6,8 @@ import nva.commons.core.StringUtils;
 
 public class ChannelRegisterJournal {
 
-    @CsvBindByName(column = "Tidsskrift id")
-    private String identifier;
+    @CsvBindByName(column = "PID")
+    private String pid;
     @CsvBindByName(column = "Print ISSN")
     private String printIssn;
     @CsvBindByName(column = "Online ISSN")
@@ -15,19 +15,17 @@ public class ChannelRegisterJournal {
 
     @CsvBindByName(column = "Original tittel")
     private String originalTitle;
-    @CsvBindByName(column = "Internasjonal tittel")
-    private String internationalTitle;
 
     public ChannelRegisterJournal() {
 
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public String getPid() {
+        return pid;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setPid(String pid) {
+        this.pid = pid;
     }
 
     public String getPrintIssn() {
@@ -54,14 +52,6 @@ public class ChannelRegisterJournal {
         this.originalTitle = originalTitle;
     }
 
-    public String getInternationalTitle() {
-        return internationalTitle;
-    }
-
-    public void setInternationalTitle(String internationalTitle) {
-        this.internationalTitle = internationalTitle;
-    }
-
     public boolean hasIssn(String issn) {
         var onlineIssn = Optional.ofNullable(this.getOnlineIssn()).orElse(StringUtils.EMPTY_STRING);
         var printIssn = Optional.ofNullable(this.getPrintIssn()).orElse(StringUtils.EMPTY_STRING);
@@ -71,8 +61,7 @@ public class ChannelRegisterJournal {
 
     public boolean hasTitle(String title) {
         var originalTitle = Optional.of(this.getOriginalTitle()).orElse(StringUtils.EMPTY_STRING);
-        var internationalTitle = Optional.of(this.getInternationalTitle()).orElse(StringUtils.EMPTY_STRING);
 
-        return originalTitle.equalsIgnoreCase(title) || internationalTitle.equalsIgnoreCase(title);
+        return originalTitle.equalsIgnoreCase(title);
     }
 }

@@ -6,18 +6,18 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 public class Series {
 
-    private String id;
+    private String pid;
 
-    public Series(@JsonProperty("id") String id) {
-        this.id = id;
+    public Series(@JsonProperty("pid") String pid) {
+        this.pid = pid;
     }
 
-    @JsonProperty("id")
-    public String getId() {
-        return id;
+    @JsonProperty("pid")
+    public String getPid() {
+        return pid;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setPid(String pid) {
+        this.pid = pid;
     }
 }

@@ -234,7 +234,8 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        assertThat(record.getPublication().getPublicationContext().getJournal().getId(), is(equalTo("503077")));
+        assertThat(record.getPublication().getPublicationContext().getJournal().getPid(),
+                   is(equalTo("70196DF2-7107-40F2-B6DF-045F3FAED38D")));
     }
 
     @Test
@@ -250,8 +251,8 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        String seriesId = record.getPublication().getPublicationContext().getSeries().getId();
-        assertThat(seriesId, is(equalTo("450187")));
+        String seriesId = record.getPublication().getPublicationContext().getSeries().getPid();
+        assertThat(seriesId, is(equalTo("7907D9CB-E44D-4CC0-9F1E-F67595F67AFE")));
     }
 
     @Test
@@ -566,14 +567,14 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        String idFromChannelRegister = "477294";
-        var journalId = record.getPublication().getPublicationContext().getJournal().getId();
-        assertThat(journalId, is(equalTo(idFromChannelRegister)));
+        String pidFromChannelRegister = "80B8F122-9C53-4BB1-88EC-3F14BD361E52";
+        var journalId = record.getPublication().getPublicationContext().getJournal().getPid();
+        assertThat(journalId, is(equalTo(pidFromChannelRegister)));
     }
 
     @Test
     void shouldScrapeIdFromPublishersInChannelRegisterWhenReportFromNVE() {
-        var expectedPublisherId = "28065";
+        var expectedPublisherPid = "E0964486-164E-4ADE-AB57-23F9780B7EF1";
         var dcType = toDcType("Report");
         var dcPublisher = new DcValue(Element.PUBLISHER, null, "NVE");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
@@ -582,13 +583,13 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        var publisherId = record.getPublication().getPublicationContext().getPublisher().getId();
-        assertThat(publisherId, is(equalTo(expectedPublisherId)));
+        var publisherId = record.getPublication().getPublicationContext().getPublisher().getPid();
+        assertThat(publisherId, is(equalTo(expectedPublisherPid)));
     }
 
     @Test
     void shouldScrapeIdFromPublishersInChannelRegisterWhenReportFromKrus() {
-        var expectedPublisherId = "28073";
+        var expectedPublisherPid = "AB2ED6B5-10A9-496B-A21C-DD695C44C846";
         var dcType = toDcType("Report");
         var dcPublisher = new DcValue(Element.PUBLISHER, null, "KRUS");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
@@ -597,13 +598,13 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        var publisherId = record.getPublication().getPublicationContext().getPublisher().getId();
-        assertThat(publisherId, is(equalTo(expectedPublisherId)));
+        var publisherId = record.getPublication().getPublicationContext().getPublisher().getPid();
+        assertThat(publisherId, is(equalTo(expectedPublisherPid)));
     }
 
     @Test
     void shouldScrapeIdFromPublishersInChannelRegisterWhenReportFromFHS() {
-        var expectedPublisherId = "14088";
+        var expectedPublisherPid = "B620D836-BB3A-4480-9E0B-794B3E84A2C7";
         var dcType = toDcType("Report");
         var dcPublisher = new DcValue(Element.PUBLISHER, null, "Orkana Forlag");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
@@ -612,14 +613,14 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        var publisherId = record.getPublication().getPublicationContext().getPublisher().getId();
-        assertThat(publisherId, is(equalTo(expectedPublisherId)));
+        var publisherId = record.getPublication().getPublicationContext().getPublisher().getPid();
+        assertThat(publisherId, is(equalTo(expectedPublisherPid)));
     }
 
     @Test
     void shouldScrapeIdFromPublishersAndJournalsWhenReportAndPartOfSeries() {
-        var expectedPublisherId = "28073";
-        var expectedSeriesId = "450187";
+        var expectedPublisherPid = "AB2ED6B5-10A9-496B-A21C-DD695C44C846";
+        var expectedSeriesPid = "7907D9CB-E44D-4CC0-9F1E-F67595F67AFE";
         var dcType = toDcType("Report");
         var dcPublisher = new DcValue(Element.PUBLISHER, null, "KRUS");
         var dcIssn = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
@@ -631,11 +632,11 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
                                                       Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
-        var publisherId = record.getPublication().getPublicationContext().getPublisher().getId();
-        var seriesId = record.getPublication().getPublicationContext().getSeries().getId();
+        var publisherId = record.getPublication().getPublicationContext().getPublisher().getPid();
+        var seriesId = record.getPublication().getPublicationContext().getSeries().getPid();
 
-        assertThat(publisherId, is(equalTo(expectedPublisherId)));
-        assertThat(seriesId, is(equalTo(expectedSeriesId)));
+        assertThat(publisherId, is(equalTo(expectedPublisherPid)));
+        assertThat(seriesId, is(equalTo(expectedSeriesPid)));
     }
 
     @Test
@@ -820,7 +821,8 @@ public class DublinCoreScraperTest {
         var localCodeString = new DcValue(Element.DESCRIPTION, Qualifier.LOCAL_CODE, randomString());
         var brageLocation = new BrageLocation(null);
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, localCodeString, localCodeUri));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(typeDcValue, localCodeString, localCodeUri));
         var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
 
