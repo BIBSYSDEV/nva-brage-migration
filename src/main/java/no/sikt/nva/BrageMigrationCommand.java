@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -65,13 +66,18 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
     private static final List<String> handles = Collections.synchronizedList(new ArrayList<>());
-    public static final String CUSTOMER_ARGUMENT = "-c";
+    public static final String CUSTOMER_ARGUMENT_SHORT = "-c";
     public static final String CUSTOMER_SYSTEM_PROPERTY = "customer";
+    public static final String CUSTOMER_ARGUMENT_LONG = "--customer";
+    public static final String OUTPUT_DIR_ARGUMENT_SHORT = "-O";
+    public static final String OUTPUT_DIR_ARGUMENT_LONG = "--output-directory";
+    public static final String OUTPUT_DIR_SYSTEM_PROPERTY = "outputDir";
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     @Spec
     private CommandSpec spec;
-    @Option(names = {"-c", "--customer"}, description = "customer id in NVA")
+    @Option(names = {CUSTOMER_ARGUMENT_SHORT,
+        CUSTOMER_ARGUMENT_LONG}, description = "customer id in NVA", required = true)
     private String customer;
     @Option(names = {"-ov", "--online-validator"}, description = "enable online validator, disabled if not present")
     private boolean enableOnlineValidation;
@@ -85,7 +91,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @SuppressWarnings("PMD.UnusedPrivateField")
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
     private boolean usageHelpRequested;
-    @Option(names = {"-O", "--output-directory"}, description = "result outputdirectory.")
+    @Option(names = {OUTPUT_DIR_ARGUMENT_SHORT,
+        OUTPUT_DIR_ARGUMENT_LONG}, description = "result outputdirectory.")
     private String userSpecifiedOutputDirectory;
     @Option(names = {"-a", "--should-write-to-aws"}, description = "If this flag is set, result will "
                                                                    + "be pushed "
@@ -113,16 +120,37 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     public static void main(String[] args) {
-        setCustomerSystemPropertyForLogFiles(args);
+        setSystemPropertiesForLogFiles(args);
         int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
         System.exit(exitCode);
     }
 
-    private static void setCustomerSystemPropertyForLogFiles(String... args) {
+    private static void setSystemPropertiesForLogFiles(String... args) {
         var arguments = Arrays.stream(args).collect(Collectors.toList());
-        var customerValueArgument = arguments.indexOf(CUSTOMER_ARGUMENT) + 1;
-        var customer = arguments.get(customerValueArgument);
-        System.setProperty(CUSTOMER_SYSTEM_PROPERTY, customer);
+
+        System.setProperty(CUSTOMER_SYSTEM_PROPERTY,
+                           getArgument(arguments, CUSTOMER_ARGUMENT_SHORT, CUSTOMER_ARGUMENT_LONG).orElseThrow());
+
+        var outputDir = getArgument(arguments,
+                                    OUTPUT_DIR_ARGUMENT_SHORT,
+                                    OUTPUT_DIR_ARGUMENT_LONG).orElse("");
+
+        System.setProperty(OUTPUT_DIR_SYSTEM_PROPERTY, outputDir.isEmpty() ? "" : addTrailingSlash(outputDir));
+    }
+
+    private static String addTrailingSlash(String input) {
+        return input.endsWith("/") ? input : input + "/";
+    }
+
+    private static Optional<String> getArgument(List<String> arguments, String argumentShort, String argumentLong) {
+        var valueArgument = arguments.indexOf(argumentShort);
+        if (valueArgument == -1) {
+            valueArgument = arguments.indexOf(argumentLong);
+        }
+        if (valueArgument == -1) {
+            return Optional.empty();
+        }
+        return Optional.of(arguments.get(valueArgument + 1));
     }
 
     @SuppressWarnings("PMD.AvoidSynchronizedAtMethodLevel")
@@ -163,7 +191,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 }
                 var contributors = getContributors(inputDirectory);
                 printIgnoredDcValuesFieldsInInfoLog();
-                var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes, contributors, isUnzipped);
+                var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes, contributors,
+                                                              isUnzipped);
                 //                Synchronized run:
                 brageProcessors.forEach(this::runAndIgnoreException);
                 //                Parellallization run:
