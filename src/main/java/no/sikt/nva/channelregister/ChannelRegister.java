@@ -50,7 +50,7 @@ public final class ChannelRegister {
     public final static List<NvaType> SEARCHABLE_TYPES_IN_PUBLISHERS = List.of(
         NvaType.BOOK, NvaType.DATASET, NvaType.REPORT, NvaType.BACHELOR_THESIS, NvaType.MASTER_THESIS,
         NvaType.DOCTORAL_THESIS, NvaType.WORKING_PAPER, NvaType.STUDENT_PAPER, NvaType.STUDENT_PAPER_OTHERS,
-        NvaType.RESEARCH_REPORT, NvaType.DESIGN_PRODUCT, NvaType.CHRONICLE, NvaType.SOFTWARE, NvaType.LECTURE,
+        NvaType.RESEARCH_REPORT, NvaType.DESIGN_PRODUCT, NvaType.MEDIA_FEATURE_ARTICLE, NvaType.SOFTWARE, NvaType.LECTURE,
         NvaType.RECORDING_MUSICAL, NvaType.PLAN_OR_BLUEPRINT, NvaType.MAP, NvaType.CONFERENCE_POSTER,
         NvaType.SCIENTIFIC_MONOGRAPH, NvaType.SCIENTIFIC_CHAPTER);
     private static final String JOURNAL_PATH = "journals_channel_registry_v2.csv";
