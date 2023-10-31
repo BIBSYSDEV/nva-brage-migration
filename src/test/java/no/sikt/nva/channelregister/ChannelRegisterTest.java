@@ -25,7 +25,7 @@ public class ChannelRegisterTest {
         publication.setIssnList(Set.of(issn));
         publication.setJournal("someTitle");
         var actual = register.lookUpInJournal(publication, brageLocation);
-        var expectedIdentifier = "503077";
+        var expectedIdentifier = "70196DF2-7107-40F2-B6DF-045F3FAED38D";
 
         assertThat(actual, is(equalTo(expectedIdentifier)));
     }

@@ -31,7 +31,8 @@ public class EmbargoScraperTest {
     @Test
     void shouldExtractEmbargoWithPdfFileOnlyWhen() {
         var expectedEmbargo = new Embargo(HANDLE, FILENAME, DATE);
-        var actualEmbargo = Objects.requireNonNull(EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION_V2))).get(0);
+        var actualEmbargo = Objects.requireNonNull(EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION_V2)))
+                                .get(0);
         assertThat(actualEmbargo, is(equalTo(expectedEmbargo)));
     }
 
