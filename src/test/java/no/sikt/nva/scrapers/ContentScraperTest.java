@@ -7,7 +7,10 @@ import static no.sikt.nva.scrapers.ContentScraper.UNKNOWN_FILE_LOG_MESSAGE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
@@ -22,9 +25,9 @@ public class ContentScraperTest {
     public static final String ORIGINAL_FILENAME_1 = "rapport2022_25_1.pdf";
     public static final String ORIGINAL_FILENAME_2 = "rapport2022_25_2.pdf";
     private static final License someLicense = new License(null, null);
-    private final ContentScraper contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
-                                                                     new BrageLocation(null),
-                                                                     someLicense);
+    private ContentScraper contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
+                                                               new BrageLocation(null),
+                                                               someLicense, null);
 
     @Test
     void shouldCreateResourceContentCorrectly() throws ContentException {
@@ -34,6 +37,19 @@ public class ContentScraperTest {
                                             .map(ContentFile::getFilename)
                                             .collect(Collectors.toList());
         assertThat(actualContentFilenameList, containsInAnyOrder(ORIGINAL_FILENAME_1, ORIGINAL_FILENAME_2));
+    }
+
+    @Test
+    void shouldCreateResourceContentWithEmbargoCorrectly() throws ContentException {
+        var expectedEmbargo = LocalDate.parse("3022-08-24").atStartOfDay(ZoneId.systemDefault()).toInstant();
+        contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
+                                            new BrageLocation(null),
+                                            someLicense, "3022-08-24");
+        var actualContentFilenameList = contentScraper.scrapeContent().getContentFiles();
+
+        assertTrue(actualContentFilenameList.stream().allMatch(contentFile -> contentFile.getEmbargoDate().equals(expectedEmbargo)));
+        assertThat(actualContentFilenameList.stream().map(ContentFile::getFilename).collect(Collectors.toList()),
+                   containsInAnyOrder(ORIGINAL_FILENAME_1, ORIGINAL_FILENAME_2));
     }
 
     @Test
@@ -47,7 +63,7 @@ public class ContentScraperTest {
     void shouldReturnMissingFilesWarningMessageWhenContentFileIsEmpty() throws ContentException {
         var contentScraper = new ContentScraper(Path.of(EMPTY_CONTENT_FILE_PATH),
                                                 new BrageLocation(null),
-                                                someLicense);
+                                                someLicense, null);
         var appender = LogUtils.getTestingAppenderForRootLogger();
         contentScraper.scrapeContent();
         assertThat(appender.getMessages(), containsString(Warning.MISSING_FILES.toString()));
@@ -57,7 +73,7 @@ public class ContentScraperTest {
     void shouldReturnContentFileMissingErrorMessageWhenContentFileIsNotPresent() throws ContentException {
         var contentScraper = new ContentScraper(Path.of("some/Random/Path"),
                                                 new BrageLocation(null),
-                                                someLicense);
+                                                someLicense, null);
         var appender = LogUtils.getTestingAppenderForRootLogger();
         contentScraper.scrapeContent();
         assertThat(appender.getMessages(), containsString(String.valueOf(CONTENT_FILE_MISSING)));

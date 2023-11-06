@@ -128,14 +128,16 @@ public class BrageProcessor implements Runnable {
 
     private Record injectContentBundle(Record record, File entryDirectory, BrageLocation brageLocation,
                                        DublinCore dublinCore) throws ContentException {
-        record.setContentBundle(getContent(entryDirectory, brageLocation, dublinCore));
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore);
+        record.setContentBundle(getContent(entryDirectory, brageLocation, dublinCore, embargo));
         return record;
     }
 
-    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation, DublinCore dublinCore)
+    private ResourceContent getContent(File entryDirectory, BrageLocation brageLocation, DublinCore dublinCore,
+                                       String embargo)
         throws ContentException {
         var license = new LicenseScraper(dublinCore).generateLicense();
-        var contentScraper = new ContentScraper(getContentFilePath(entryDirectory), brageLocation, license);
+        var contentScraper = new ContentScraper(getContentFilePath(entryDirectory), brageLocation, license, embargo);
         return contentScraper.scrapeContent();
     }
 

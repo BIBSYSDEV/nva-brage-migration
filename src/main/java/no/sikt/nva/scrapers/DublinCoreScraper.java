@@ -46,6 +46,7 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DoiValidator;
+import nva.commons.core.SingletonCollector;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -220,7 +221,7 @@ public class DublinCoreScraper {
             logErrorsIfNotEmpty(brageLocation, errors, isCristinPost);
             return record;
         } catch (Exception e) {
-            throw new DublinCoreException(SCRAPING_HAS_FAILED + e);
+            throw new DublinCoreException(SCRAPING_HAS_FAILED + e.getMessage());
         }
     }
 
@@ -296,6 +297,14 @@ public class DublinCoreScraper {
         record.setPart(extractHasPart(dublinCore));
         record.setSubjects(extractSubjects(dublinCore));
         return record;
+    }
+
+    public static String extractEmbargo(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isEmbargoEndDate)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(SingletonCollector.collect());
     }
 
     private static Set<URI> extractSubjects(DublinCore dublinCore) {

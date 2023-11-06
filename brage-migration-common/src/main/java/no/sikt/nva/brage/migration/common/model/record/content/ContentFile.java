@@ -7,9 +7,10 @@ import java.util.Objects;
 import java.util.UUID;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.BundleType;
 import no.sikt.nva.brage.migration.common.model.record.license.License;
+import no.unit.nva.commons.json.JsonSerializable;
 import nva.commons.core.JacocoGenerated;
 
-public class ContentFile {
+public class ContentFile implements JsonSerializable {
 
     private String filename;
     private BundleType bundleType;
@@ -113,5 +114,10 @@ public class ContentFile {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return this.toJsonString();
     }
 }
