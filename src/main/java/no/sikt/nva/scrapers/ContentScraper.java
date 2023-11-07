@@ -1,11 +1,15 @@
 package no.sikt.nva.scrapers;
 
+import static java.util.Objects.nonNull;
 import static nva.commons.core.StringUtils.isEmpty;
 import static nva.commons.core.attempt.Try.attempt;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -42,11 +46,13 @@ public final class ContentScraper {
     private final Path contentFilePath;
     private final BrageLocation brageLocation;
     private final License license;
+    private final String embargo;
 
-    public ContentScraper(Path contentFilePath, BrageLocation brageLocation, License license) {
+    public ContentScraper(Path contentFilePath, BrageLocation brageLocation, License license, String embargo) {
         this.contentFilePath = contentFilePath;
         this.brageLocation = brageLocation;
         this.license = license;
+        this.embargo = embargo;
     }
 
     public ResourceContent scrapeContent() throws ContentException {
@@ -125,7 +131,17 @@ public final class ContentScraper {
         contentFile.setDescription(getDescription(fileInformationList));
         contentFile.setBundleType(extractBundleType(fileInformationList));
         contentFile.setIdentifier(UUID.randomUUID());
+        contentFile.setEmbargoDate(convertEmbargoToInstant());
         return contentFile;
+    }
+
+    private Instant convertEmbargoToInstant() {
+        return nonNull(embargo) ? toInstant() : null;
+    }
+
+    private Instant toInstant() {
+        return attempt(() -> LocalDate.parse(embargo).atStartOfDay(ZoneId.systemDefault()).toInstant())
+                   .orElse(failure -> null);
     }
 
     private void logWhenUnknownType(List<String> fileInformationList) {
