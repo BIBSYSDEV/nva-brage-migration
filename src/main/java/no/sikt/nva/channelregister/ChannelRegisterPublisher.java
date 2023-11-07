@@ -33,6 +33,6 @@ public class ChannelRegisterPublisher {
     public boolean hasPublisher(String publisher) {
         var originalTitle = Optional.of(this.getOriginalTitle()).orElse(StringUtils.EMPTY_STRING);
 
-        return originalTitle.equalsIgnoreCase(publisher);
+        return originalTitle.equalsIgnoreCase(publisher.trim());
     }
 }
