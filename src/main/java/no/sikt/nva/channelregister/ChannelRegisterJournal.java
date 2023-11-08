@@ -62,6 +62,6 @@ public class ChannelRegisterJournal {
     public boolean hasTitle(String title) {
         var originalTitle = Optional.of(this.getOriginalTitle()).orElse(StringUtils.EMPTY_STRING);
 
-        return originalTitle.equalsIgnoreCase(title);
+        return originalTitle.equalsIgnoreCase(title.trim());
     }
 }

@@ -118,7 +118,9 @@ public final class ChannelRegister {
                 return channelRegisterJournals.stream()
                            .filter(item -> item.hasIssn(issn))
                            .map(ChannelRegisterJournal::getPid)
+                           .distinct()
                            .collect(SingletonCollector.collectOrElse(null));
+
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER, filterOutNullValues(Set.of(issn)))
@@ -138,6 +140,7 @@ public final class ChannelRegister {
                 return channelRegisterJournals.stream()
                            .filter(item -> item.hasTitle(title))
                            .map(ChannelRegisterJournal::getPid)
+                           .distinct()
                            .collect(SingletonCollector.collectOrElse(null));
             }
         } catch (IllegalStateException e) {
@@ -276,6 +279,7 @@ public final class ChannelRegister {
         return channelRegisterPublishers.stream()
                    .filter(item -> item.hasPublisher(publisherFromMapper))
                    .map(ChannelRegisterPublisher::getPid)
+                   .distinct()
                    .collect(SingletonCollector.collectOrElse(null));
     }
 
