@@ -44,6 +44,7 @@ import no.sikt.nva.brage.migration.common.model.record.Pages;
 import no.sikt.nva.brage.migration.common.model.record.Range;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
+import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.logutils.LogUtils;
@@ -881,6 +882,18 @@ public class DublinCoreScraperTest {
         var actualPages = record.getEntityDescription().getPublicationInstance().getPages();
         assertThat(actualPages, is(equalTo(expectedPages)));
         assertThat(appender.getMessages(), not(containsString(PAGE_NUMBER_FORMAT_NOT_RECOGNIZED.toString())));
+    }
+
+    @Test
+    void shouldLookupInChannelRegisterAliases() {
+        var expectedPublisherPid = "B5CABA4E-8C50-42E8-81BE-0C85D8CC00B8";
+        var typeDcValue = toDcType("Journal article");
+        var journal = new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Dronning Mauds Minne Høgskole");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, journal));
+        var dublinCoreScraper = new DublinCoreScraper(false, true, Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var publisherId = record.getPublication().getPublicationContext().getJournal().getPid();
+        assertThat(publisherId, is(equalTo(expectedPublisherPid)));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

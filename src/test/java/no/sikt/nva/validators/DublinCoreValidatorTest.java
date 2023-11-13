@@ -192,7 +192,7 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
         var brageLocation = new BrageLocation(null);
         var actualError =
-            ChannelRegister.getChannelRegisterErrors(DublinCoreFactory.createDublinCoreWithDcValues(dcValues),
+            ChannelRegister.getRegister().getChannelRegisterErrors(DublinCoreFactory.createDublinCoreWithDcValues(dcValues),
                                                      brageLocation);
 
         assertThat(actualError.get(),
