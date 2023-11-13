@@ -304,7 +304,7 @@ public class DublinCoreScraper {
                    .stream()
                    .filter(DcValue::isEmbargoEndDate)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(SingletonCollector.collect());
+                   .collect(SingletonCollector.collectOrElse(null));
     }
 
     private static Set<URI> extractSubjects(DublinCore dublinCore) {
