@@ -29,7 +29,6 @@ import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.DublinCoreScraper;
-import no.sikt.nva.scrapers.PublisherMapper;
 import no.sikt.nva.scrapers.TypeMapper;
 import nva.commons.core.SingletonCollector;
 import nva.commons.core.StringUtils;
@@ -53,10 +52,10 @@ public final class ChannelRegister {
         NvaType.LECTURE,
         NvaType.RECORDING_MUSICAL, NvaType.PLAN_OR_BLUEPRINT, NvaType.MAP, NvaType.CONFERENCE_POSTER,
         NvaType.SCIENTIFIC_MONOGRAPH, NvaType.SCIENTIFIC_CHAPTER);
+    public static final String PUBLISHER_CHANNEL_REGISTRY_ALIASES_CSV_PATH = "publisher_channel_registry_aliases.csv";
     private static final String JOURNAL_PATH = "journals_channel_registry_v2.csv";
     private static final String PUBLISHERS_PATH = "publisher_channel_registry_v2.csv";
     private static final String JOURNAL_ALIAS_PATH = "journals_channel_registry_aliases.csv";
-
     private static final char SEPARATOR = ';';
     private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
     /*volatile*/ private static ChannelRegister register;
@@ -64,11 +63,13 @@ public final class ChannelRegister {
     private final List<ChannelRegisterPublisher> channelRegisterPublishers;
 
     private final List<ChannelRegisterAlias> channelRegisterAliasesJournals;
+    private final List<ChannelRegisterAlias> channelRegisterAliasesPublishers;
 
     private ChannelRegister() {
         this.channelRegisterJournals = getJournalsFromCsv();
         this.channelRegisterPublishers = getPublishersFromCsv();
         this.channelRegisterAliasesJournals = getChannelRegisterAliases(JOURNAL_ALIAS_PATH);
+        this.channelRegisterAliasesPublishers = getChannelRegisterAliases(PUBLISHER_CHANNEL_REGISTRY_ALIASES_CSV_PATH);
     }
 
     public static ChannelRegister getRegister() {
@@ -167,7 +168,7 @@ public final class ChannelRegister {
             } else {
                 return nonNull(getPublisherIdentifer(publisher))
                            ? getPublisherIdentifer(publisher)
-                           : getPublisherIdentifer(PublisherMapper.getMappablePublisher(publisher));
+                           : lookupInAliases(publisher);
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
@@ -268,6 +269,14 @@ public final class ChannelRegister {
     private static boolean isJournalArticle(DublinCore dublinCore) {
         return DublinCoreScraper.extractType(dublinCore).contains(BrageType.JOURNAL_ARTICLE.getValue())
                || DublinCoreScraper.extractType(dublinCore).contains(BrageType.JOURNAL_ISSUE.getValue());
+    }
+
+    private String lookupInAliases(String publisher) {
+        return channelRegisterAliasesPublishers.stream()
+                   .filter(item -> item.hasAlias(publisher))
+                   .map(ChannelRegisterAlias::getPid)
+                   .distinct()
+                   .collect(SingletonCollector.collectOrElse(null));
     }
 
     private String checkForAliases(String title) {

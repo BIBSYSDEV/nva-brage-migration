@@ -885,15 +885,29 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldLookupInChannelRegisterAliases() {
-        var expectedPublisherPid = "B5CABA4E-8C50-42E8-81BE-0C85D8CC00B8";
+    void shouldLookupInChannelRegisterAliasesForJournals() {
+        var expectedJournalPid = "B5CABA4E-8C50-42E8-81BE-0C85D8CC00B8";
         var typeDcValue = toDcType("Journal article");
         var journal = new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Dronning Mauds Minne Høgskole");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, journal));
         var dublinCoreScraper = new DublinCoreScraper(false, true, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-        var publisherId = record.getPublication().getPublicationContext().getJournal().getPid();
-        assertThat(publisherId, is(equalTo(expectedPublisherPid)));
+        var journalPid = record.getPublication().getPublicationContext().getJournal().getPid();
+        assertThat(journalPid, is(equalTo(expectedJournalPid)));
+    }
+
+    @Test
+    void shouldLookupInChannelRegisterAliasesForPublisher() {
+        var expectedPublisherPid = "A2096FDB-2B23-4AF8-8E32-ACEF53E0D3EE";
+        var dcType = toDcType("Report");
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, "uis");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
+                                                      Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var publisherPid = record.getPublication().getPublicationContext().getPublisher().getPid();
+        assertThat(publisherPid, is(equalTo(expectedPublisherPid)));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
