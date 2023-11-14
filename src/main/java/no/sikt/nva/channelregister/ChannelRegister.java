@@ -188,7 +188,7 @@ public final class ChannelRegister {
 
     private String lookupInPublisherAliases(String publisher,
                                             String customer) {
-        String pid = lookupInAliases(channelRegisterAliasesPublishers, publisher);
+        var pid = lookupInAliases(channelRegisterAliasesPublishers, publisher);
         if (StringUtils.isEmpty(pid) && NTNU.equalsIgnoreCase(customer)) {
             pid = lookupInAliases(channelRegisterAliasesForNtnu, publisher);
         }
