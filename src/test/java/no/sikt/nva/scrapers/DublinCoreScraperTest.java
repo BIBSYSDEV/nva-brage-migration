@@ -634,13 +634,25 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldScrapeDoiThatHasOldFormat() {
+        var typeDcValue = toDcType("Others");
+        var date = new DcValue(Element.DATE, Qualifier.ISSUED, "2010");
+        var handle = new DcValue(Element.IDENTIFIER, Qualifier.URI, "https://hdl.handle.net/11250/3027043");
+        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "http://dx.doi.org/10.7480/spool.2016.1.1392");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, date, handle, doi));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
+        assertThat(record.getDoi().toString(), is(equalTo(doi.getValue())));
+
+    }
+
+    @Test
     void shouldNotSwitchNamesWhenComaIsTheLastCharInTheString() {
         var typeDcValue = toDcType("Others");
         var author = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, "Audun Vognild,");
         var pageNumber = new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, "245|-257");
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, author, pageNumber));
-        var onlineValidationDisabled = false;
         var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         var expectedName = "Audun Vognild";
         var actualName = record.getEntityDescription().getContributors().iterator().next().getIdentity().getName();
@@ -694,7 +706,6 @@ public class DublinCoreScraperTest {
 
         var appender = LogUtils.getTestingAppender(DublinCoreScraper.class);
         dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
-
         var messages = appender.getMessages();
         assertThat(messages, not(containsString(MULTIPLE_UNMAPPABLE_TYPES.name())));
         assertThat(messages, not(containsString(INVALID_DC_TYPE.name())));
