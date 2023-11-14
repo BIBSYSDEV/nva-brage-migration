@@ -14,16 +14,23 @@ import static org.hamcrest.Matchers.hasItem;
 
 public class EntityDescriptionExtractorTest {
 
+    private static final String SOME_CUSTOMER = "nve";
+    private static final boolean ONLINE_VALIDATION_DISABLED = false;
+
+    private static final boolean LOOKUP_IN_CHANNEL_REGISTER = false;
+
     @Test
     void shouldMapLocalCodeToDescription() {
         var someLocalCode = "someLocalCode";
         var localCodeValue = new DcValue(Element.DESCRIPTION, Qualifier.LOCAL_CODE, someLocalCode);
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(localCodeValue, typeDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, false, Map.of());
+        var dublinCoreScraper = new DublinCoreScraper(ONLINE_VALIDATION_DISABLED,
+                                                      LOOKUP_IN_CHANNEL_REGISTER,
+                                                      Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore,
-                new BrageLocation(null));
+                                                                  new BrageLocation(null),
+                                                                  SOME_CUSTOMER);
         var descriptions = record.getEntityDescription().getDescriptions();
         assertThat(descriptions, hasItem(someLocalCode));
     }

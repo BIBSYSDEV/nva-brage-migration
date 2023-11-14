@@ -38,6 +38,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class DublinCoreValidatorTest {
 
+    private static final String SOME_CUSTOMER = "nve";
+
     @Test
     void validIssnAndIsbnDoesNotAppendProblemsToProblemList() {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
@@ -192,8 +194,9 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
         var brageLocation = new BrageLocation(null);
         var actualError =
-            ChannelRegister.getChannelRegisterErrors(DublinCoreFactory.createDublinCoreWithDcValues(dcValues),
-                                                     brageLocation);
+            ChannelRegister.getRegister().getChannelRegisterErrors(DublinCoreFactory.createDublinCoreWithDcValues(dcValues),
+                                                     brageLocation,
+                                                                   SOME_CUSTOMER);
 
         assertThat(actualError.get(),
                    is(equalTo(new ErrorDetails(DC_JOURNAL_NOT_IN_CHANNEL_REGISTER, Set.of("1501-0678")))));

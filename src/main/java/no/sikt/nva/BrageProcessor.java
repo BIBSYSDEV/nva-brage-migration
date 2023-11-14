@@ -185,7 +185,9 @@ public class BrageProcessor implements Runnable {
             if (isAlreadyImported(handle)) {
                 return Optional.empty();
             }
-            return createRecord(entryDirectory, brageLocation, dublinCore);
+            return createRecord(entryDirectory,
+                                brageLocation,
+                                dublinCore);
         } catch (Exception e) {
             var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
             logger.error(e + StringUtils.SPACE + brageLocation.getOriginInformation());
@@ -193,10 +195,15 @@ public class BrageProcessor implements Runnable {
         }
     }
 
-    private Optional<Record> createRecord(File entryDirectory, BrageLocation brageLocation, DublinCore dublinCore) {
-        var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation, shouldLookUpInChannelRegister,
+    private Optional<Record> createRecord(File entryDirectory,
+                                          BrageLocation brageLocation,
+                                          DublinCore dublinCore) {
+        var dublinCoreScraper = new DublinCoreScraper(enableOnlineValidation,
+                                                      shouldLookUpInChannelRegister,
                                                       contributors);
-        return Optional.of(dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation))
+        return Optional.of(dublinCoreScraper.validateAndParseDublinCore(dublinCore,
+                                                                        brageLocation,
+                                                                        customer))
                    .map(this::injectCustomer)
                    .map(this::injectResourceOwner)
                    .map(r -> injectResourceContent(entryDirectory, brageLocation, dublinCore, r))

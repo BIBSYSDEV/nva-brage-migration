@@ -57,17 +57,17 @@ public class DublinCoreScraper {
     public static final String SUBMITTED_VERSION = "submittedVersion";
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "This field will not be migrated\n";
     public static final String NEW_LINE_DELIMITER = "\n";
-    public static final ChannelRegister channelRegister = ChannelRegister.getRegister();
     public static final String SCRAPING_HAS_FAILED = "Scraping has failed: ";
     public static final String CRISTIN_POST = "[CRISTIN_POST]";
     public static final String DELIMITER = "-";
     public static final String REGEX_ISSN = "[^0-9-xX]";
     public static final String COMA_ISSN_DELIMITER = ",";
-    private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     public static final String EMPTY_SPACES_LINEBREAKS_REGEX = "(\n)|(\b)|(\u200b)|(\t)|(\")";
+    private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
+    public ChannelRegister channelRegister;
 
     @SuppressWarnings("PMD.AssignmentToNonFinalStatic")
     public DublinCoreScraper(boolean enableOnlineValidation, boolean shouldLookUpInChannelRegister,
@@ -75,6 +75,9 @@ public class DublinCoreScraper {
         this.enableOnlineValidation = enableOnlineValidation;
         this.shouldLookUpInChannelRegister = shouldLookUpInChannelRegister;
         DublinCoreScraper.contributors = contributors;
+        if (shouldLookUpInChannelRegister) {
+            this.channelRegister = ChannelRegister.getRegister();
+        }
     }
 
     public static Set<String> extractIssn(DublinCore dublinCore) {
@@ -202,17 +205,55 @@ public class DublinCoreScraper {
                                                                                   + issn.substring(4) : issn;
     }
 
-    public Record validateAndParseDublinCore(DublinCore dublinCore, BrageLocation brageLocation) {
+    public static String extractEmbargo(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isEmbargoEndDate)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(SingletonCollector.collectOrElse(null));
+    }
+
+    public static String extractCristinId(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isCristinDcValue)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(DublinCoreScraper::removeAllUnnecessaryStrings)
+                   .filter(Objects::nonNull)
+                   .filter(DublinCoreScraper::isNumeric)
+                   .findAny()
+                   .orElse(null);
+    }
+
+    public static Type mapOriginTypeToNvaType(Set<String> types, DublinCore dublinCore) {
+        var uniqueTypes = translateTypesInNorwegian(types);
+        var type = new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
+        if (isNull(type.getNva()) && nonNull(extractCristinId(dublinCore))) {
+            return new Type(types, NvaType.CRISTIN_RECORD.getValue());
+        } else {
+            return type;
+        }
+    }
+
+    public Record validateAndParseDublinCore(DublinCore dublinCore,
+                                             BrageLocation brageLocation,
+                                             String customer) {
         try {
             var errors = getDublinCoreErrors(dublinCore);
             if (lookUpInChannelRegisterIsEnabled()) {
-                ChannelRegister.getChannelRegisterErrors(dublinCore, brageLocation).ifPresent(errors::add);
+                channelRegister.getChannelRegisterErrors(dublinCore,
+                                                         brageLocation,
+                                                         customer)
+                    .ifPresent(errors::add);
             }
             if (onlineValidationIsEnabled()) {
                 DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
             }
             var warnings = getDublinCoreWarnings(dublinCore);
-            var record = createRecordFromDublinCoreAndBrageLocation(dublinCore, brageLocation);
+            var record = createRecordFromDublinCoreAndBrageLocation(dublinCore,
+                                                                    brageLocation,
+                                                                    shouldLookUpInChannelRegister,
+                                                                    customer);
             record.setErrors(errors);
             record.setWarnings(warnings);
             logUnscrapedValues(dublinCore, brageLocation);
@@ -276,35 +317,7 @@ public class DublinCoreScraper {
             } else {
                 logger.error(error + StringUtils.SPACE + brageLocation.getOriginInformation());
             }
-    }
         }
-
-    private static Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
-                                                                     BrageLocation brageLocation) {
-        var record = new Record();
-        record.setId(brageLocation.getHandle());
-        record.setType(mapOriginTypeToNvaType(extractType(dublinCore), dublinCore));
-        record.setRightsHolder(extractRightsholder(dublinCore));
-        record.setPublisherAuthority(extractVersion(dublinCore, brageLocation));
-        record.setDoi(extractDoi(dublinCore));
-        record.setLink(extractLink(dublinCore));
-        record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore, contributors));
-        record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
-        record.setPublication(createPublicationWithIdentifier(dublinCore, brageLocation, record));
-        record.setPublishedDate(extractAvailableDate(dublinCore));
-        record.setCristinId(extractCristinId(dublinCore));
-        record.setPartOf(extractPartOf(dublinCore));
-        record.setPart(extractHasPart(dublinCore));
-        record.setSubjects(extractSubjects(dublinCore));
-        return record;
-    }
-
-    public static String extractEmbargo(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isEmbargoEndDate)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(SingletonCollector.collectOrElse(null));
     }
 
     private static Set<URI> extractSubjects(DublinCore dublinCore) {
@@ -321,56 +334,16 @@ public class DublinCoreScraper {
         return attempt(() -> new URL(value).toURI()).orElse(failure -> null);
     }
 
-    private static Publication createPublicationWithIdentifier(DublinCore dublinCore, BrageLocation brageLocation,
-                                                               Record record) {
-        var publication = extractPublication(dublinCore);
-        publication.setPublicationContext(new PublicationContext());
-        publication.getPublicationContext().setBragePublisher(extractPublisher(dublinCore));
-        record.setPublication(publication);
-        if (nonNull(record.getType().getNva())) {
-            searchForSeriesAndJournalsInChannelRegister(brageLocation, record);
-            searchForPublisherInChannelRegister(record);
-        }
-        return publication;
+    private static boolean brageJournalChannelPresent(Publication publication) {
+        return issnPresent(publication) || journalNameIsPresent(publication);
     }
 
-    private static void searchForSeriesAndJournalsInChannelRegister(BrageLocation brageLocation, Record record) {
-        if (isSearchableInJournals(record)) {
-            setIdFromJournals(brageLocation, record);
-        }
+    private static boolean journalNameIsPresent(Publication publication) {
+        return StringUtils.isNotBlank(publication.getJournal());
     }
 
-    private static void setIdFromJournals(BrageLocation brageLocation, Record record) {
-        if (isReport(record)) {
-            setChannelRegisterIdentifierForReport(brageLocation, record);
-        }
-        if (isJournal(record)) {
-            setChannelRegisterIdentifierForJournal(brageLocation, record);
-        }
-    }
-
-    private static void setChannelRegisterIdentifierForJournal(BrageLocation brageLocation, Record record) {
-        record.getPublication()
-            .getPublicationContext()
-            .setJournal(
-                new Journal(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
-    }
-
-    private static void setChannelRegisterIdentifierForReport(BrageLocation brageLocation, Record record) {
-        record.getPublication()
-            .getPublicationContext()
-            .setSeries(
-                new Series(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
-    }
-
-    private static String extractChannelRegisterIdentifierForSeriesJournal(BrageLocation brageLocation,
-                                                                           Publication publication) {
-        return publication.getIssnSet()
-                   .stream()
-                   .map(issn -> channelRegister.lookUpInJournal(publication, brageLocation))
-                   .filter(Objects::nonNull)
-                   .findAny()
-                   .orElse(null);
+    private static boolean issnPresent(Publication publication) {
+        return !publication.getIssnSet().isEmpty();
     }
 
     private static boolean isJournal(Record record) {
@@ -380,15 +353,6 @@ public class DublinCoreScraper {
 
     private static boolean isReport(Record record) {
         return NvaType.REPORT.getValue().equals(record.getType().getNva());
-    }
-
-    private static void searchForPublisherInChannelRegister(Record record) {
-        if (isSearchableInPublishers(record)) {
-            var publisherId = channelRegister.lookUpInChannelRegisterForPublisher(record);
-            if (nonNull(publisherId)) {
-                record.getPublication().getPublicationContext().setPublisher(new Publisher(publisherId));
-            }
-        }
     }
 
     private static boolean isSearchableInJournals(Record record) {
@@ -431,7 +395,6 @@ public class DublinCoreScraper {
                    .map(convertToUriAttempt())
                    .orElse(null);
     }
-
 
     private static Function<String, URI> convertToUriAttempt() {
         return doi -> {
@@ -492,18 +455,6 @@ public class DublinCoreScraper {
                || dcValue.isFormatMimeType()
                || dcValue.isIdentifierNone()
                || dcValue.isOtherIdentifier();
-    }
-
-    public static String extractCristinId(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isCristinDcValue)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .map(DublinCoreScraper::removeAllUnnecessaryStrings)
-                   .filter(Objects::nonNull)
-                   .filter(DublinCoreScraper::isNumeric)
-                   .findAny()
-                   .orElse(null);
     }
 
     private static String removeAllUnnecessaryStrings(String s) {
@@ -647,16 +598,6 @@ public class DublinCoreScraper {
         }
     }
 
-    public static Type mapOriginTypeToNvaType(Set<String> types, DublinCore dublinCore) {
-        var uniqueTypes = translateTypesInNorwegian(types);
-        var type = new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
-        if (isNull(type.getNva()) && nonNull(extractCristinId(dublinCore))) {
-           return new Type(types, NvaType.CRISTIN_RECORD.getValue());
-        } else {
-            return type;
-        }
-    }
-
     private static boolean isInCristin(DublinCore dublinCore) {
         var cristinId = extractCristinId(dublinCore);
         return nonNull(cristinId) && !cristinId.isEmpty();
@@ -664,5 +605,92 @@ public class DublinCoreScraper {
 
     private static boolean firstLetterIsDelimiter(String value) {
         return DELIMITER.equals(String.valueOf(value.toCharArray()[0]));
+    }
+
+    private Record createRecordFromDublinCoreAndBrageLocation(DublinCore dublinCore,
+                                                              BrageLocation brageLocation,
+                                                              boolean shouldLookUpInChannelRegister,
+                                                              String customer) {
+        var record = new Record();
+        record.setId(brageLocation.getHandle());
+        record.setType(mapOriginTypeToNvaType(extractType(dublinCore), dublinCore));
+        record.setRightsHolder(extractRightsholder(dublinCore));
+        record.setPublisherAuthority(extractVersion(dublinCore, brageLocation));
+        record.setDoi(extractDoi(dublinCore));
+        record.setLink(extractLink(dublinCore));
+        record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore, contributors));
+        record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
+        record.setPublication(createPublicationWithIdentifier(dublinCore,
+                                                              brageLocation,
+                                                              record,
+                                                              shouldLookUpInChannelRegister,
+                                                              customer));
+        record.setPublishedDate(extractAvailableDate(dublinCore));
+        record.setCristinId(extractCristinId(dublinCore));
+        record.setPartOf(extractPartOf(dublinCore));
+        record.setPart(extractHasPart(dublinCore));
+        record.setSubjects(extractSubjects(dublinCore));
+        return record;
+    }
+
+    private Publication createPublicationWithIdentifier(DublinCore dublinCore,
+                                                        BrageLocation brageLocation,
+                                                        Record record,
+                                                        boolean shouldLookUpInChannelRegister,
+                                                        String customer) {
+        var publication = extractPublication(dublinCore);
+        publication.setPublicationContext(new PublicationContext());
+        publication.getPublicationContext().setBragePublisher(extractPublisher(dublinCore));
+        record.setPublication(publication);
+        if (nonNull(record.getType().getNva()) && shouldLookUpInChannelRegister) {
+            searchForSeriesAndJournalsInChannelRegister(brageLocation, record);
+            searchForPublisherInChannelRegister(record, customer);
+        }
+        return publication;
+    }
+
+    private void searchForSeriesAndJournalsInChannelRegister(BrageLocation brageLocation, Record record) {
+        if (isSearchableInJournals(record)) {
+            setIdFromJournals(brageLocation, record);
+        }
+    }
+
+    private void setIdFromJournals(BrageLocation brageLocation, Record record) {
+        if (isReport(record)) {
+            setChannelRegisterIdentifierForReport(brageLocation, record);
+        }
+        if (isJournal(record)) {
+            setChannelRegisterIdentifierForJournal(brageLocation, record);
+        }
+    }
+
+    private void setChannelRegisterIdentifierForJournal(BrageLocation brageLocation, Record record) {
+        record.getPublication()
+            .getPublicationContext()
+            .setJournal(
+                new Journal(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
+    }
+
+    private void setChannelRegisterIdentifierForReport(BrageLocation brageLocation, Record record) {
+        record.getPublication()
+            .getPublicationContext()
+            .setSeries(
+                new Series(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
+    }
+
+    private String extractChannelRegisterIdentifierForSeriesJournal(BrageLocation brageLocation,
+                                                                    Publication publication) {
+        return brageJournalChannelPresent(publication)
+                   ? channelRegister.lookUpInJournal(publication, brageLocation)
+                   : null;
+    }
+
+    private void searchForPublisherInChannelRegister(Record record, String customer) {
+        if (isSearchableInPublishers(record)) {
+            var publisherId = channelRegister.lookUpInChannelRegisterForPublisher(record, customer);
+            if (nonNull(publisherId)) {
+                record.getPublication().getPublicationContext().setPublisher(new Publisher(publisherId));
+            }
+        }
     }
 }
