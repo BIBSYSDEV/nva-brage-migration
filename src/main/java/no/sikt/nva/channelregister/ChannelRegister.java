@@ -53,19 +53,20 @@ public final class ChannelRegister {
         NvaType.RECORDING_MUSICAL, NvaType.PLAN_OR_BLUEPRINT, NvaType.MAP, NvaType.CONFERENCE_POSTER,
         NvaType.SCIENTIFIC_MONOGRAPH, NvaType.SCIENTIFIC_CHAPTER);
     public static final String PUBLISHER_CHANNEL_REGISTRY_ALIASES_CSV_PATH = "publisher_channel_registry_aliases.csv";
+    public static final String NTNU_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH =
+        "ntnu_publisher_channel_registry_faculties.csv";
+    public static final String NTNU = "ntnu";
     private static final String JOURNAL_PATH = "journals_channel_registry_v2.csv";
     private static final String PUBLISHERS_PATH = "publisher_channel_registry_v2.csv";
     private static final String JOURNAL_ALIAS_PATH = "journals_channel_registry_aliases.csv";
     private static final char SEPARATOR = ';';
     private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
-    public static final String NTNU = "ntnu";
     /*volatile*/ private static ChannelRegister register;
     private final List<ChannelRegisterJournal> channelRegisterJournals;
     private final List<ChannelRegisterPublisher> channelRegisterPublishers;
 
     private final List<ChannelRegisterAlias> channelRegisterAliasesJournals;
     private final List<ChannelRegisterAlias> channelRegisterAliasesPublishers;
-
 
     private final List<ChannelRegisterAlias> channelRegisterAliasesForNtnu;
 
@@ -74,7 +75,8 @@ public final class ChannelRegister {
         this.channelRegisterPublishers = getPublishersFromCsv();
         this.channelRegisterAliasesJournals = getChannelRegisterAliases(JOURNAL_ALIAS_PATH);
         this.channelRegisterAliasesPublishers = getChannelRegisterAliases(PUBLISHER_CHANNEL_REGISTRY_ALIASES_CSV_PATH);
-        this.channelRegisterAliasesForNtnu = getChannelRegisterAliases("ntnu_publisher_channel_registry_faculties.csv");
+        this.channelRegisterAliasesForNtnu = getChannelRegisterAliases(
+            NTNU_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH);
     }
 
     public static ChannelRegister getRegister() {
@@ -186,15 +188,6 @@ public final class ChannelRegister {
         }
     }
 
-    private String lookupInPublisherAliases(String publisher,
-                                            String customer) {
-        var pid = lookupInAliases(channelRegisterAliasesPublishers, publisher);
-        if (StringUtils.isEmpty(pid) && NTNU.equalsIgnoreCase(customer)) {
-            pid = lookupInAliases(channelRegisterAliasesForNtnu, publisher);
-        }
-        return pid;
-    }
-
     private static List<ChannelRegisterAlias> getChannelRegisterAliases(String filePath) {
         try (var inputStream = Thread.currentThread().getContextClassLoader()
                                    .getResourceAsStream(filePath);
@@ -287,7 +280,16 @@ public final class ChannelRegister {
                || DublinCoreScraper.extractType(dublinCore).contains(BrageType.JOURNAL_ISSUE.getValue());
     }
 
-    private String lookupInAliases(List<ChannelRegisterAlias>  aliases , String publisher) {
+    private String lookupInPublisherAliases(String publisher,
+                                            String customer) {
+        var pid = lookupInAliases(channelRegisterAliasesPublishers, publisher);
+        if (StringUtils.isEmpty(pid) && NTNU.equalsIgnoreCase(customer)) {
+            pid = lookupInAliases(channelRegisterAliasesForNtnu, publisher);
+        }
+        return pid;
+    }
+
+    private String lookupInAliases(List<ChannelRegisterAlias> aliases, String publisher) {
         return aliases.stream()
                    .filter(item -> item.hasAlias(publisher))
                    .map(ChannelRegisterAlias::getPid)
