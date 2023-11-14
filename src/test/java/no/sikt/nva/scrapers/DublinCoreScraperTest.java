@@ -730,6 +730,22 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldScrapeDoiThatHasOldFormat() {
+        var typeDcValue = toDcType("Others");
+        var date = new DcValue(Element.DATE, Qualifier.ISSUED, "2010");
+        var handle = new DcValue(Element.IDENTIFIER, Qualifier.URI, "https://hdl.handle.net/11250/3027043");
+        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "http://dx.doi.org/10.7480/spool.2016.1.1392");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, date, handle, doi));
+        var onlineValidationDisabled = false;
+        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
+                                                      Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        assertThat(record.getDoi().toString(), is(equalTo(doi.getValue())));
+
+    }
+
+    @Test
     void shouldNotSwitchNamesWhenComaIsTheLastCharInTheString() {
         var typeDcValue = toDcType("Others");
         var author = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, "Audun Vognild,");
@@ -802,8 +818,6 @@ public class DublinCoreScraperTest {
         var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
                                                       Map.of());
         var appender = LogUtils.getTestingAppender(DublinCoreScraper.class);
-        var r = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
-
         var messages = appender.getMessages();
         assertThat(messages, not(containsString(MULTIPLE_UNMAPPABLE_TYPES.name())));
         assertThat(messages, not(containsString(INVALID_DC_TYPE.name())));

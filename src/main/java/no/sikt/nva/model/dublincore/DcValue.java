@@ -1,5 +1,6 @@
 package no.sikt.nva.model.dublincore;
 
+import static java.util.Objects.nonNull;
 import static no.sikt.nva.scrapers.HandleScraper.HANDLE_DOMAIN;
 import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.annotation.XmlAttribute;
@@ -12,6 +13,7 @@ import nva.commons.core.StringUtils;
 public class DcValue {
 
     public static final String XML_PREFIX = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
+    private static final String DOI_PREFIX = "10.";
     @XmlAttribute
     private Element element;
 
@@ -42,7 +44,13 @@ public class DcValue {
         return Element.IDENTIFIER.equals(this.element)
                && Qualifier.DOI.equals(this.qualifier)
                || Element.IDENTIFIER.equals(this.element)
-                  && Qualifier.URI.equals(this.qualifier);
+                  && Qualifier.URI.equals(this.qualifier)
+                  && hasDoiPrefix();
+    }
+
+    public boolean hasDoiPrefix() {
+        return nonNull(value)
+               && value.contains(DOI_PREFIX);
     }
 
     public boolean isLink() {
