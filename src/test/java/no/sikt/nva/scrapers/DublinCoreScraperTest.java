@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_LANGUAGE;
@@ -44,11 +45,11 @@ import no.sikt.nva.brage.migration.common.model.record.Pages;
 import no.sikt.nva.brage.migration.common.model.record.Range;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
-import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.logutils.LogUtils;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -57,7 +58,20 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class DublinCoreScraperTest {
 
-    private final boolean shouldLookUpInChannelRegister = true;
+    private static final boolean SHOULD_LOOKUP_IN_CHANNEL_REGISTER = true;
+    private static final String SOME_CUSTOMER = "nve";
+
+    private static boolean SHOUL_VALIDATE_ONLINE = false;
+    private DublinCoreScraper dcScraper;
+
+    @BeforeEach
+    void init() {
+        dcScraper = new DublinCoreScraper(
+            SHOUL_VALIDATE_ONLINE,
+            SHOULD_LOOKUP_IN_CHANNEL_REGISTER,
+            Map.of()
+        );
+    }
 
     @Test
     void shouldLogDcValuesThatAreNotUsedForScraping() {
@@ -67,10 +81,7 @@ public class DublinCoreScraperTest {
                                                              + "gurba gurba gurba gurba gurba gurba gurba "
                                                              + "gurba gurba gurba gurba gurba (øæsdfadfåp)");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, expectedDcValuedLogged));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(appender.getMessages(), containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE));
         assertThat(appender.getMessages(), containsString(expectedDcValuedLogged.toXmlString()));
     }
@@ -81,10 +92,7 @@ public class DublinCoreScraperTest {
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
     }
@@ -97,11 +105,8 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(firstVersionDcValue, secondVersionDcValue, typeDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
         assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_DC_VERSION_VALUES))));
@@ -116,11 +121,8 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(firstVersionDcValue, secondVersionDcValue, thirdVersionDcValue, typeDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
         assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_DC_VERSION_VALUES))));
@@ -134,11 +136,8 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(firstVersionDcValue, secondVersionDcValue, typeDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
         assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_DC_VERSION_VALUES))));
@@ -148,10 +147,7 @@ public class DublinCoreScraperTest {
     void shouldCreatePublisherAuthorityIfVersionIsNotPresent() {
         var typeDcValue = toDcType("Others");
         var dublinCoreWithoutVersion = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCoreWithoutVersion, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCoreWithoutVersion, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(null)));
     }
@@ -164,10 +160,7 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Others");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Some, Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualContributors = record.getEntityDescription().getContributors();
         assertThat(actualContributors, is(equalTo(expectedContributors)));
     }
@@ -182,10 +175,7 @@ public class DublinCoreScraperTest {
         var brageLocation = new BrageLocation(Path.of("some", "ignoredPath"));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getDoi(), is(notNullValue()));
         assertThat(appender.getMessages(),
                    allOf(containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE), containsString(expectedLogMessage)));
@@ -201,10 +191,9 @@ public class DublinCoreScraperTest {
                                new DcValue(Element.TITLE, Qualifier.ALTERNATIVE, expectedAlternativeTitle2),
                                toDcType("Others"));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore,
+                                                          new BrageLocation(null),
+                                                          SOME_CUSTOMER);
 
         assertThat(record.getEntityDescription().getMainTitle(), is(equalTo(expectedMainTitle)));
         assertThat(record.getEntityDescription().getAlternativeTitles(),
@@ -217,10 +206,7 @@ public class DublinCoreScraperTest {
         var partOfSeriesDcValue = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, partOfSeries);
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(partOfSeriesDcValue, typeDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(record.getPublication().getPartOfSeries(), is(equalTo(partOfSeries)));
     }
 
@@ -231,10 +217,7 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Journal Article");
         var dateDcValue = new DcValue(Element.DATE, Qualifier.ISSUED, "2020");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(issnDcValue, typeDcValue, dateDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(record.getPublication().getPublicationContext().getJournal().getPid(),
                    is(equalTo("70196DF2-7107-40F2-B6DF-045F3FAED38D")));
     }
@@ -248,10 +231,7 @@ public class DublinCoreScraperTest {
         var partOfSeriesDcValue = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, "NVE Rapport;2019:1");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(publisherDcValue, issnDcValue, typeDcValue, dateDcValue, partOfSeriesDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null),SOME_CUSTOMER);
         String seriesId = record.getPublication().getPublicationContext().getSeries().getPid();
         assertThat(seriesId, is(equalTo("7907D9CB-E44D-4CC0-9F1E-F67595F67AFE")));
     }
@@ -260,11 +240,8 @@ public class DublinCoreScraperTest {
     void shouldNotLogSingleTypeValues() {
         var typeDcValue = toDcType("Journal Article");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(appender.getMessages(), not(containsString(MULTIPLE_UNMAPPABLE_TYPES.toString())));
         assertThat(record.getType(), is(notNullValue()));
     }
@@ -274,11 +251,8 @@ public class DublinCoreScraperTest {
         var firstTypeDcValue = toDcType("Journal Article");
         var secondTypeDcValue = toDcType("Journal Article");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(firstTypeDcValue, secondTypeDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(appender.getMessages(), not(containsString(MULTIPLE_UNMAPPABLE_TYPES.toString())));
         assertThat(record.getType(), is(notNullValue()));
     }
@@ -291,11 +265,8 @@ public class DublinCoreScraperTest {
 
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(typeDcValue, peerReviewed, issnDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(appender.getMessages(), not(containsString(MULTIPLE_UNMAPPABLE_TYPES.toString())));
         assertThat(record.getType(), is(notNullValue()));
     }
@@ -307,11 +278,8 @@ public class DublinCoreScraperTest {
         var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(peerReviewed, typeDcValue, issnDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(appender.getMessages(), not(containsString(MULTIPLE_UNMAPPABLE_TYPES.toString())));
         assertThat(record.getType(), is(notNullValue()));
     }
@@ -324,11 +292,8 @@ public class DublinCoreScraperTest {
         var unrecognizedPageNumber = new DcValue(Element.SOURCE, Qualifier.PAGE_NUMBER, unrecognizedPagenumber);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(unrecognizedPageNumber, typeDcValue, peerReviewed));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(record.getEntityDescription().getPublicationInstance().getPages(),
                    is(equalTo(new Pages(unrecognizedPagenumber, null, null))));
         assertThat(appender.getMessages(), containsString(PAGE_NUMBER_FORMAT_NOT_RECOGNIZED.toString()));
@@ -346,11 +311,8 @@ public class DublinCoreScraperTest {
         var nsiTag = new DcValue(Element.SUBJECT, Qualifier.NORWEGIAN_SCIENCE_INDEX, tag3);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(normalTagWithQualifierNone, normalTagWithQualifierKeyword, nsiTag, typeDcValue, peerReviewed));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(record.getEntityDescription().getTags(), containsInAnyOrder(tag1, tag2));
         assertThat(record.getEntityDescription().getTags(), not(contains(tag3)));
         assertThat(appender.getMessages(), not(containsString(SUBJECT_WARNING.toString())));
@@ -364,11 +326,8 @@ public class DublinCoreScraperTest {
         var normalTagWithUnrecognizedQualifier = new DcValue(Element.SUBJECT, Qualifier.AGROVOC, tag);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(normalTagWithUnrecognizedQualifier, typeDcValue, peerReviewed));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(record.getEntityDescription().getTags(), contains(tag));
         assertThat(appender.getMessages(), containsString(SUBJECT_WARNING.toString()));
     }
@@ -381,10 +340,7 @@ public class DublinCoreScraperTest {
         var nonIsoLanguageDcValue = new DcValue(Element.LANGUAGE, Qualifier.ISO, nonIsoLanguage);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(nonIsoLanguageDcValue, typeDcValue, peerReviewed));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(record.getErrors(), hasItem(new ErrorDetails(INVALID_DC_LANGUAGE, Set.of(nonIsoLanguage))));
     }
 
@@ -396,11 +352,8 @@ public class DublinCoreScraperTest {
         var nonIsoLanguageDcValue = new DcValue(Element.LANGUAGE, null, "ger");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(nonIsoLanguageDcValue, isoLanguageDcValue, typeDcValue, peerReviewed));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var brageLocation = new BrageLocation(null);
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_DC_LANGUAGES_PRESENT, Set.of()))));
     }
 
@@ -412,11 +365,8 @@ public class DublinCoreScraperTest {
         var nonIsoLanguageDcValue = new DcValue(Element.LANGUAGE, null, "deutsch");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(nonIsoLanguageDcValue, isoLanguageDcValue, typeDcValue, peerReviewed));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var brageLocation = new BrageLocation(null);
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getErrors(), not(hasItem(new ErrorDetails(MULTIPLE_DC_LANGUAGES_PRESENT, Set.of()))));
     }
 
@@ -425,11 +375,8 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Others");
         var publisherDcValue = new DcValue(Element.PUBLISHER, null, "Publisher");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, publisherDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(appender.getMessages(), not(containsString(NOT_FOUND_IN_CHANNEL_REGISTER)));
     }
 
@@ -445,11 +392,8 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(typeDcValue, publisherDcValue, accessDateDcValue, availableDateDcValue, cristinDcValue,
                     accessDateDcValue2));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(appender.getMessages(), not(containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE)));
     }
 
@@ -458,10 +402,7 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Others");
         var date = new DcValue(Element.DATE, Qualifier.ISSUED, "22");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, date));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(record.getEntityDescription().getPublicationDate().getNva().getYear(), is(equalTo("2022")));
     }
 
@@ -470,11 +411,8 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Others");
         var date = new DcValue(Element.DATE, Qualifier.ISSUED, "222");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, date));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(appender.getMessages(), containsString(Error.INVALID_DC_DATE_ISSUED.toString()));
     }
 
@@ -485,11 +423,8 @@ public class DublinCoreScraperTest {
         var type3DcValue = toDcType("Book");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(type1DcValue, type2DcValue, type3DcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(record.getType().getNva(), is(not(nullValue())));
         assertThat(appender.getMessages(), not(containsString(MULTIPLE_UNMAPPABLE_TYPES.toString())));
         assertThat(appender.getMessages(), not(containsString(INVALID_DC_TYPE.toString())));
@@ -499,11 +434,8 @@ public class DublinCoreScraperTest {
     void shouldLogWarningWhenConferenceObjectOrLecture() {
         var typeDcValue = toDcType("Conference object");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null),SOME_CUSTOMER);
         assertThat(appender.getMessages(),
                    containsString(Warning.CONFERENCE_OBJECT_OR_LECTURE_WILL_BE_MAPPED_TO_CONFERENCE_REPORT.toString()));
     }
@@ -514,8 +446,8 @@ public class DublinCoreScraperTest {
         var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "10.1016/ S0140-6736wefwfg.(20)30045-#%wt3");
         var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of()).validateAndParseDublinCore(
-            dublinCoreWithDoi, new BrageLocation(null));
+        dcScraper.validateAndParseDublinCore(
+            dublinCoreWithDoi, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(appender.getMessages(), containsString(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK.toString()));
     }
 
@@ -526,8 +458,8 @@ public class DublinCoreScraperTest {
         var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doi);
         var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of()).validateAndParseDublinCore(
-            dublinCoreWithDoi, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(
+            dublinCoreWithDoi, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(record.getDoi().toString(), is(equalTo("https://doi.org/10.1007/s12062-016-9157-z")));
         assertThat(appender.getMessages(), not(containsString(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK.toString())));
     }
@@ -537,10 +469,7 @@ public class DublinCoreScraperTest {
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "acceptedVersion");
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, versionDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(record.getPublisherAuthority().getNva(), is(false));
     }
 
@@ -550,10 +479,7 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Others");
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, versionDcValue));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getPublisherAuthority().getNva(), is(nullValue()));
     }
 
@@ -564,10 +490,7 @@ public class DublinCoreScraperTest {
         var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1664-0640");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType1, dcType2, issnDcValue));
         var brageLocation = new BrageLocation(null);
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         String pidFromChannelRegister = "80B8F122-9C53-4BB1-88EC-3F14BD361E52";
         var journalId = record.getPublication().getPublicationContext().getJournal().getPid();
         assertThat(journalId, is(equalTo(pidFromChannelRegister)));
@@ -580,10 +503,7 @@ public class DublinCoreScraperTest {
         var dcPublisher = new DcValue(Element.PUBLISHER, null, "NVE");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
         var brageLocation = new BrageLocation(null);
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         var publisherId = record.getPublication().getPublicationContext().getPublisher().getPid();
         assertThat(publisherId, is(equalTo(expectedPublisherPid)));
     }
@@ -595,10 +515,7 @@ public class DublinCoreScraperTest {
         var dcPublisher = new DcValue(Element.PUBLISHER, null, "KRUS");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
         var brageLocation = new BrageLocation(null);
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         var publisherId = record.getPublication().getPublicationContext().getPublisher().getPid();
         assertThat(publisherId, is(equalTo(expectedPublisherPid)));
     }
@@ -610,10 +527,7 @@ public class DublinCoreScraperTest {
         var dcPublisher = new DcValue(Element.PUBLISHER, null, "Orkana Forlag");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
         var brageLocation = new BrageLocation(null);
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         var publisherId = record.getPublication().getPublicationContext().getPublisher().getPid();
         assertThat(publisherId, is(equalTo(expectedPublisherPid)));
     }
@@ -629,10 +543,7 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(dcType, dcPublisher, dcIssn, dcPartOfSeries));
         var brageLocation = new BrageLocation(null);
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         var publisherId = record.getPublication().getPublicationContext().getPublisher().getPid();
         var seriesId = record.getPublication().getPublicationContext().getSeries().getPid();
 
@@ -647,9 +558,8 @@ public class DublinCoreScraperTest {
         var issue2 = new DcValue(Element.SOURCE, Qualifier.ISSUE, "21/2017");
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, issue1, issue2));
-        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(appender.getMessages(), containsString(String.valueOf(MULTIPLE_VALUES)));
     }
 
@@ -661,9 +571,8 @@ public class DublinCoreScraperTest {
         var cristin2 = new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN, expectedCristinId);
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, cristin1, cristin2));
-        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(appender.getMessages(), containsString(String.valueOf(MULTIPLE_VALUES)));
         assertThat(record.getCristinId(), is(equalTo(expectedCristinId)));
     }
@@ -674,9 +583,8 @@ public class DublinCoreScraperTest {
         var journal = new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Earth System Science Data");
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, journal));
-        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(appender.getMessages(), containsString(String.valueOf(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER)));
     }
 
@@ -687,8 +595,7 @@ public class DublinCoreScraperTest {
         var contributor2 = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, null);
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, contributor1, contributor2));
-        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getEntityDescription().getContributors(), is(empty()));
     }
 
@@ -700,8 +607,7 @@ public class DublinCoreScraperTest {
         var type3 = new DcValue(Element.TYPE, Qualifier.VERSION, "publishedVersion");
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type0, type1, type2, type3));
-        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getType().getNva(), is(equalTo(NvaType.SCIENTIFIC_ARTICLE.getValue())));
     }
 
@@ -711,8 +617,7 @@ public class DublinCoreScraperTest {
         var cristinId = new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN_ID_MUNIN, "FRIDAID 932785");
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(cristinId, type));
-        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getCristinId(), is(equalTo("932785")));
     }
 
@@ -724,9 +629,7 @@ public class DublinCoreScraperTest {
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, date, doi));
         var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getDoi().toString(), is(equalTo("https://doi.org/10.1177/1757975910383936")));
     }
 
@@ -738,9 +641,7 @@ public class DublinCoreScraperTest {
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, author, pageNumber));
         var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         var expectedName = "Audun Vognild";
         var actualName = record.getEntityDescription().getContributors().iterator().next().getIdentity().getName();
         assertThat(expectedName, is(equalTo(actualName)));
@@ -752,10 +653,7 @@ public class DublinCoreScraperTest {
         var issn = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1502-8190");
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, issn));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         var expectedIssn = "1502-8143";
         var actualIssn = record.getPublication().getIssnSet().iterator().next();
         assertThat(expectedIssn, is(equalTo(actualIssn)));
@@ -770,10 +668,7 @@ public class DublinCoreScraperTest {
         var brageLocation = new BrageLocation(null);
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, doi));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getDoi(), is(equalTo(expectedDoi)));
         assertThat(record.getLink(), is(nullValue()));
     }
@@ -785,10 +680,7 @@ public class DublinCoreScraperTest {
         var brageLocation = new BrageLocation(null);
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, link));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(appender.getMessages(), not(containsString(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK.toString())));
         assertThat(record.getLink(), is(equalTo(URI.create(link.getValue()))));
         assertThat(record.getDoi(), is(nullValue()));
@@ -799,11 +691,9 @@ public class DublinCoreScraperTest {
         var type1 = new DcValue(Element.TYPE, null, "Journal article");
         var type2 = toDcType("Article");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type1, type2));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
+
         var appender = LogUtils.getTestingAppender(DublinCoreScraper.class);
-        var r = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
 
         var messages = appender.getMessages();
         assertThat(messages, not(containsString(MULTIPLE_UNMAPPABLE_TYPES.name())));
@@ -824,8 +714,7 @@ public class DublinCoreScraperTest {
         var typeDcValue = new DcValue(Element.TYPE, null, "Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(typeDcValue, localCodeString, localCodeUri));
-        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
 
         assertThat(record.getSubjects(), contains(URI.create(localCodeUri.getValue())));
         assertThat(record.getSubjects(), hasSize(1));
@@ -837,8 +726,7 @@ public class DublinCoreScraperTest {
         var brageLocation = new BrageLocation(null);
         var typeDcValue = new DcValue(Element.TYPE, null, type);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
-        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
 
         assertThat(record.getType().getNva(), is(equalTo(NvaType.CONFERENCE_REPORT.getValue())));
     }
@@ -850,8 +738,7 @@ public class DublinCoreScraperTest {
         var isbnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISBN, isbn);
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, isbnDcValue));
-        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getPublication().getIsbnSet().iterator().next(), is(equalTo("9788293091172")));
     }
 
@@ -863,8 +750,7 @@ public class DublinCoreScraperTest {
         var isbnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, isbn);
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, isbnDcValue));
-        var dublinCoreScraper = new DublinCoreScraper(false, shouldLookUpInChannelRegister, Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, brageLocation);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getPublication().getIssnSet().iterator().next(), is(equalTo("1502-007X")));
     }
 
@@ -874,11 +760,8 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Journal Article");
         var peerReviewed = toDcType("Peer reviewed");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(peerReviewed, typeDcValue, pageNumber));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPages = record.getEntityDescription().getPublicationInstance().getPages();
         assertThat(actualPages, is(equalTo(expectedPages)));
         assertThat(appender.getMessages(), not(containsString(PAGE_NUMBER_FORMAT_NOT_RECOGNIZED.toString())));
@@ -888,26 +771,54 @@ public class DublinCoreScraperTest {
     void shouldLookupInChannelRegisterAliasesForJournals() {
         var expectedJournalPid = "B5CABA4E-8C50-42E8-81BE-0C85D8CC00B8";
         var typeDcValue = toDcType("Journal article");
-        var journal = new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Dronning Mauds Minne Høgskole");
+        var journalName = "Dronning Mauds Minne Høgskole";
+        var journal = new DcValue(Element.SOURCE, Qualifier.JOURNAL, journalName);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, journal));
-        var dublinCoreScraper = new DublinCoreScraper(false, true, Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var journalPid = record.getPublication().getPublicationContext().getJournal().getPid();
         assertThat(journalPid, is(equalTo(expectedJournalPid)));
+        assertThat(appender.getMessages(), not(containsString(journalName)));
     }
 
     @Test
     void shouldLookupInChannelRegisterAliasesForPublisher() {
         var expectedPublisherPid = "A2096FDB-2B23-4AF8-8E32-ACEF53E0D3EE";
         var dcType = toDcType("Report");
-        var dcPublisher = new DcValue(Element.PUBLISHER, null, "uis");
+        var publisherName = "uis";
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, publisherName);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
-        var onlineValidationDisabled = false;
-        var dublinCoreScraper = new DublinCoreScraper(onlineValidationDisabled, shouldLookUpInChannelRegister,
-                                                      Map.of());
-        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var publisherPid = record.getPublication().getPublicationContext().getPublisher().getPid();
         assertThat(publisherPid, is(equalTo(expectedPublisherPid)));
+        assertThat(appender.getMessages(), not(containsString(publisherName)));
+    }
+
+    @Test
+    void shouldLookupInChannelRegisterAliasesForNtnuPublishers() {
+        var expectedPublisherPid = "D61B0D47-C78A-48DC-8537-3AD87DEF4D5B";
+        var dcType = toDcType("Report");
+        var publisherName = "Institutt for teknisk kybernetikk";
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, publisherName);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+        var publisherPid = record.getPublication().getPublicationContext().getPublisher().getPid();
+        assertThat(publisherPid, is(equalTo(expectedPublisherPid)));
+        assertThat(appender.getMessages(), not(containsString(publisherName)));
+    }
+
+    @Test
+    void shouldLogPublisherThatDoesNotExistInChannelRegistry() {
+        var dcType = toDcType("Report");
+        var publisherName = "Gurba that is not in any channel registry csv's";
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, publisherName);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+        assertThat(appender.getMessages(), containsString(publisherName));
+        assertThat(appender.getMessages(), containsString(DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER.toString()));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

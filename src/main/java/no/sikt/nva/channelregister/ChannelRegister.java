@@ -58,6 +58,7 @@ public final class ChannelRegister {
     private static final String JOURNAL_ALIAS_PATH = "journals_channel_registry_aliases.csv";
     private static final char SEPARATOR = ';';
     private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
+    public static final String NTNU = "ntnu";
     /*volatile*/ private static ChannelRegister register;
     private final List<ChannelRegisterJournal> channelRegisterJournals;
     private final List<ChannelRegisterPublisher> channelRegisterPublishers;
@@ -65,11 +66,15 @@ public final class ChannelRegister {
     private final List<ChannelRegisterAlias> channelRegisterAliasesJournals;
     private final List<ChannelRegisterAlias> channelRegisterAliasesPublishers;
 
+
+    private final List<ChannelRegisterAlias> channelRegisterAliasesForNtnu;
+
     private ChannelRegister() {
         this.channelRegisterJournals = getJournalsFromCsv();
         this.channelRegisterPublishers = getPublishersFromCsv();
         this.channelRegisterAliasesJournals = getChannelRegisterAliases(JOURNAL_ALIAS_PATH);
         this.channelRegisterAliasesPublishers = getChannelRegisterAliases(PUBLISHER_CHANNEL_REGISTRY_ALIASES_CSV_PATH);
+        this.channelRegisterAliasesForNtnu = getChannelRegisterAliases("ntnu_publisher_channel_registry_faculties.csv");
     }
 
     public static ChannelRegister getRegister() {
@@ -84,22 +89,24 @@ public final class ChannelRegister {
         return register;
     }
 
-    public Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore, BrageLocation brageLocation) {
+    public Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore,
+                                                           BrageLocation brageLocation,
+                                                           String customer) {
         if (typeIsPresentInDublinCore(dublinCore)) {
             if (isJournalArticle(dublinCore)) {
                 return getErrorDetailsForJournalArticle(dublinCore, brageLocation);
             }
             if (hasPublisher(dublinCore) && isSearchableInPublishers(dublinCore)) {
-                return getErrorDetailsForPublisher(dublinCore, brageLocation);
+                return getErrorDetailsForPublisher(dublinCore, brageLocation, customer);
             }
         }
         return Optional.empty();
     }
 
-    public String lookUpInChannelRegisterForPublisher(Record record) {
+    public String lookUpInChannelRegisterForPublisher(Record record, String customer) {
         var publicationContext = record.getPublication().getPublicationContext();
-        if (extractedIdentifierFromPublishersIsPresent(publicationContext.getBragePublisher())) {
-            return lookUpInPublisher(publicationContext.getBragePublisher());
+        if (extractedIdentifierFromPublishersIsPresent(publicationContext.getBragePublisher(), customer)) {
+            return lookUpInPublisher(publicationContext.getBragePublisher(), customer);
         }
         return null;
     }
@@ -148,7 +155,7 @@ public final class ChannelRegister {
                                   .distinct()
                                   .collect(SingletonCollector.collectOrElse(null));
 
-                return Optional.ofNullable(channel).orElse(checkForAliases(title));
+                return Optional.ofNullable(channel).orElse(lookupInAliases(channelRegisterAliasesJournals, title));
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
@@ -161,14 +168,14 @@ public final class ChannelRegister {
         }
     }
 
-    public String lookUpInPublisher(String publisher) {
+    public String lookUpInPublisher(String publisher, String customer) {
         try {
             if (isNullOrEmpty(publisher)) {
                 return publisher;
             } else {
                 return nonNull(getPublisherIdentifer(publisher))
                            ? getPublisherIdentifer(publisher)
-                           : lookupInAliases(publisher);
+                           : lookupInPublisherAliases(publisher, customer);
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
@@ -177,6 +184,15 @@ public final class ChannelRegister {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private String lookupInPublisherAliases(String publisher,
+                                            String customer) {
+        String pid = lookupInAliases(channelRegisterAliasesPublishers, publisher);
+        if (StringUtils.isEmpty(pid) && NTNU.equalsIgnoreCase(customer)) {
+            pid = lookupInAliases(channelRegisterAliasesForNtnu, publisher);
+        }
+        return pid;
     }
 
     private static List<ChannelRegisterAlias> getChannelRegisterAliases(String filePath) {
@@ -271,18 +287,9 @@ public final class ChannelRegister {
                || DublinCoreScraper.extractType(dublinCore).contains(BrageType.JOURNAL_ISSUE.getValue());
     }
 
-    private String lookupInAliases(String publisher) {
-        return channelRegisterAliasesPublishers.stream()
+    private String lookupInAliases(List<ChannelRegisterAlias>  aliases , String publisher) {
+        return aliases.stream()
                    .filter(item -> item.hasAlias(publisher))
-                   .map(ChannelRegisterAlias::getPid)
-                   .distinct()
-                   .collect(SingletonCollector.collectOrElse(null));
-    }
-
-    private String checkForAliases(String title) {
-        return channelRegisterAliasesJournals
-                   .stream()
-                   .filter(item -> item.hasAlias(title))
                    .map(ChannelRegisterAlias::getPid)
                    .distinct()
                    .collect(SingletonCollector.collectOrElse(null));
@@ -301,11 +308,12 @@ public final class ChannelRegister {
     }
 
     private Optional<ErrorDetails> getErrorDetailsForPublisher(DublinCore dublinCore,
-                                                               BrageLocation brageLocation) {
+                                                               BrageLocation brageLocation,
+                                                               String customer) {
         var publisher = DublinCoreScraper.extractPublisher(dublinCore);
         var publication = DublinCoreScraper.extractPublication(dublinCore);
         var journalIdentifier = lookUpInJournal(publication, brageLocation);
-        var publisherIdentifier = lookUpInPublisher(publisher);
+        var publisherIdentifier = lookUpInPublisher(publisher, customer);
         if (nonNull(journalIdentifier)
             || nonNull(publisherIdentifier)) {
             return Optional.empty();
@@ -322,9 +330,9 @@ public final class ChannelRegister {
                    .collect(SingletonCollector.collectOrElse(null));
     }
 
-    private boolean extractedIdentifierFromPublishersIsPresent(String publisher) {
+    private boolean extractedIdentifierFromPublishersIsPresent(String publisher, String customer) {
         if (isNotNullOrEmpty(publisher)) {
-            var identifierFromPublisher = lookUpInPublisher(publisher);
+            var identifierFromPublisher = lookUpInPublisher(publisher, customer);
             return isNotNullOrEmpty(identifierFromPublisher);
         }
         return false;
