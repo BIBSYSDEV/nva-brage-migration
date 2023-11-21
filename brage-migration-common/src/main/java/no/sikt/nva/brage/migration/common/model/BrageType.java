@@ -69,8 +69,9 @@ public enum BrageType {
     }
 
     public static BrageType fromValue(String v) {
+        var alias = convertFromAlias(v);
         for (BrageType c : BrageType.values()) {
-            if (c.getValue().equalsIgnoreCase(v)) {
+            if (c.getValue().equalsIgnoreCase(alias)) {
                 return c;
             }
         }
@@ -79,5 +80,20 @@ public enum BrageType {
 
     public String getValue() {
         return value;
+    }
+
+    private static String convertFromAlias(String value) {
+        var trimmed = value.trim();
+        if ("Rapport".equalsIgnoreCase(trimmed)
+            || "Research report".equalsIgnoreCase(trimmed)) {
+            return REPORT.value;
+        }
+        if ("Book chapter".equalsIgnoreCase(trimmed)) {
+            return CHAPTER.value;
+        }
+        if ("Musical score".equalsIgnoreCase(trimmed)) {
+            return RECORDING_MUSICAL.value;
+        }
+        return trimmed;
     }
 }
