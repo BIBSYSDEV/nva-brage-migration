@@ -122,6 +122,7 @@ public class DublinCoreScraper {
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .distinct()
                    .map(DublinCoreScraper::attemptToRepairIsbn)
+                   .filter(StringUtils::isNotBlank)
                    .collect(Collectors.toSet());
     }
 
