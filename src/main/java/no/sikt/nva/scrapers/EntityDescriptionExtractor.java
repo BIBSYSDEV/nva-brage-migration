@@ -29,7 +29,7 @@ import nva.commons.core.StringUtils;
 public final class EntityDescriptionExtractor {
 
     public static final String FIRST_DAY_OF_A_MONTH = "01";
-    public static final String ADVISOR = "Advisor";
+    public static final String SUPERVISOR = "Supervisor";
     public static final String AUTHOR = "Creator";
     public static final String EDITOR = "Editor";
     public static final String DATA_COLLECTOR = "DataCollector";
@@ -298,7 +298,7 @@ public final class EntityDescriptionExtractor {
             return Optional.of(new Contributor(identity, AUTHOR, brageRole, Set.of()));
         }
         if (dcValue.isAdvisor()) {
-            return Optional.of(new Contributor(identity, ADVISOR, brageRole, Set.of()));
+            return Optional.of(new Contributor(identity, SUPERVISOR, brageRole, Set.of()));
         }
         if (dcValue.isEditor()) {
             return Optional.of(new Contributor(identity, EDITOR, brageRole, Set.of()));

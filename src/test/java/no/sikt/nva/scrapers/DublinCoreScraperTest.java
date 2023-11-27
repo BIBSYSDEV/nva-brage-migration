@@ -13,7 +13,7 @@ import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.War
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
-import static no.sikt.nva.scrapers.EntityDescriptionExtractor.ADVISOR;
+import static no.sikt.nva.scrapers.EntityDescriptionExtractor.SUPERVISOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -157,7 +157,7 @@ public class DublinCoreScraperTest {
     void shouldCreateContributor() {
 
         var expectedContributors = Set.of(
-            new Contributor(new Identity("Person Some", null), ADVISOR, Qualifier.ADVISOR.getValue(), Set.of()));
+            new Contributor(new Identity("Person Some", null), SUPERVISOR, Qualifier.ADVISOR.getValue(), Set.of()));
         var typeDcValue = toDcType("Others");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Some, Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
@@ -169,7 +169,7 @@ public class DublinCoreScraperTest {
     @Test
     void shouldCreateContributorFromDcElementCreator() {
         var expectedContributors = Set.of(
-            new Contributor(new Identity("Person Some", null), ADVISOR, Qualifier.ADVISOR.getValue(), Set.of()));
+            new Contributor(new Identity("Person Some", null), SUPERVISOR, Qualifier.ADVISOR.getValue(), Set.of()));
         var typeDcValue = toDcType("Others");
         var advisorDcValue = new DcValue(Element.CREATOR, Qualifier.ADVISOR, "Some, Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
