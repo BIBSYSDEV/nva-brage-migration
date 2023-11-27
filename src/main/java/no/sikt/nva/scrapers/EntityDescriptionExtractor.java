@@ -21,6 +21,7 @@ import no.sikt.nva.brage.migration.common.model.record.PublicationDateNva.Builde
 import no.sikt.nva.brage.migration.common.model.record.PublicationInstance;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
 
@@ -74,13 +75,17 @@ public final class EntityDescriptionExtractor {
 
     public static Set<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors) {
         return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isContributor)
+                   .filter(EntityDescriptionExtractor::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
                    .map(contributor -> updateRoleBasedOnType(contributor, dublinCore))
                    .map(contributor -> updateContributor(contributor, contributors))
                    .map(EntityDescriptionExtractor::updateNameOrder)
                    .collect(Collectors.toSet());
+    }
+
+    private static boolean isContributor(DcValue dcValue) {
+        return dcValue.isContributor() || dcValue.isCreator();
     }
 
     public static String extractIssue(DublinCore dublinCore) {
@@ -288,7 +293,7 @@ public final class EntityDescriptionExtractor {
         if (isNull(identity.getName()) || identity.getName().isEmpty()) {
             return Optional.empty();
         }
-        String brageRole = dcValue.getQualifier().getValue();
+        var brageRole = Optional.ofNullable(dcValue.getQualifier()).map(Qualifier::getValue).orElse(null);
         if (dcValue.isAuthor()) {
             return Optional.of(new Contributor(identity, AUTHOR, brageRole, Set.of()));
         }
@@ -301,7 +306,7 @@ public final class EntityDescriptionExtractor {
         if (dcValue.isIllustrator()) {
             return Optional.of(new Contributor(identity, ILLUSTRATOR, brageRole, Set.of()));
         }
-        if (dcValue.isOtherContributor()) {
+        if (dcValue.isOtherContributor() || dcValue.isContributor() && isNull(dcValue.getQualifier())) {
             return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole, Set.of()));
         }
         return Optional.empty();
