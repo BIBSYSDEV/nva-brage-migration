@@ -63,6 +63,10 @@ public class DcValue {
                   && isNotAHandle();
     }
 
+    public boolean isCreator() {
+        return Element.CREATOR.equals(this.getElement());
+    }
+
     private boolean isNotAHandle() {
         return !value.contains(HANDLE_DOMAIN.getHost());
     }
@@ -209,23 +213,28 @@ public class DcValue {
     }
 
     public boolean isAdvisor() {
-        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ADVISOR.equals(this.qualifier);
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ADVISOR.equals(this.qualifier)
+            || Element.CREATOR.equals(this.element) && Qualifier.ADVISOR.equals(this.qualifier);
     }
 
     public boolean isAuthor() {
-        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier)
+            || Element.CREATOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
     }
 
     public boolean isEditor() {
-        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.EDITOR.equals(this.qualifier);
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.EDITOR.equals(this.qualifier)
+               || Element.CREATOR.equals(this.element) && Qualifier.EDITOR.equals(this.qualifier);
     }
 
     public boolean isIllustrator() {
-        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ILLUSTRATOR.equals(this.qualifier);
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ILLUSTRATOR.equals(this.qualifier)
+               || Element.CREATOR.equals(this.element) && Qualifier.ILLUSTRATOR.equals(this.qualifier);
     }
 
     public boolean isOtherContributor() {
-        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.OTHER.equals(this.qualifier);
+        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.OTHER.equals(this.qualifier)
+               || Element.CREATOR.equals(this.element) && Qualifier.OTHER.equals(this.qualifier);
     }
 
     public boolean isPartOfSeries() {

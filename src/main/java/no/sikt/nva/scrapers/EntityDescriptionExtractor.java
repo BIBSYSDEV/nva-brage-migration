@@ -74,13 +74,17 @@ public final class EntityDescriptionExtractor {
 
     public static Set<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors) {
         return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isContributor)
+                   .filter(EntityDescriptionExtractor::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
                    .map(contributor -> updateRoleBasedOnType(contributor, dublinCore))
                    .map(contributor -> updateContributor(contributor, contributors))
                    .map(EntityDescriptionExtractor::updateNameOrder)
                    .collect(Collectors.toSet());
+    }
+
+    private static boolean isContributor(DcValue dcValue) {
+        return dcValue.isContributor() || dcValue.isCreator();
     }
 
     public static String extractIssue(DublinCore dublinCore) {
@@ -301,7 +305,7 @@ public final class EntityDescriptionExtractor {
         if (dcValue.isIllustrator()) {
             return Optional.of(new Contributor(identity, ILLUSTRATOR, brageRole, Set.of()));
         }
-        if (dcValue.isOtherContributor()) {
+        if (dcValue.isOtherContributor() || (dcValue.isContributor() && isNull(dcValue.getQualifier()))) {
             return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole, Set.of()));
         }
         return Optional.empty();
