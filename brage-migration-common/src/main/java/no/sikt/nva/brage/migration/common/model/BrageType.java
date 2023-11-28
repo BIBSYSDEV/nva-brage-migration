@@ -62,6 +62,9 @@ public enum BrageType {
     EDITORIAL("Editorial"),
     FILM("Film");
 
+    private static final String RAPPORT = "Rapport";
+    private static final String BOOK_CHAPTER = "Book chapter";
+    private static final String MUSICAL_SCORE = "Musical score";
     private final String value;
 
     BrageType(String type) {
@@ -69,8 +72,9 @@ public enum BrageType {
     }
 
     public static BrageType fromValue(String v) {
+        var alias = convertFromAlias(v);
         for (BrageType c : BrageType.values()) {
-            if (c.getValue().equalsIgnoreCase(v)) {
+            if (c.getValue().equalsIgnoreCase(alias)) {
                 return c;
             }
         }
@@ -79,5 +83,19 @@ public enum BrageType {
 
     public String getValue() {
         return value;
+    }
+
+    private static String convertFromAlias(String value) {
+        var trimmed = value.trim();
+        if (RAPPORT.equalsIgnoreCase(trimmed)) {
+            return REPORT.value;
+        }
+        if (BOOK_CHAPTER.equalsIgnoreCase(trimmed)) {
+            return CHAPTER.value;
+        }
+        if (MUSICAL_SCORE.equalsIgnoreCase(trimmed)) {
+            return RECORDING_MUSICAL.value;
+        }
+        return trimmed;
     }
 }
