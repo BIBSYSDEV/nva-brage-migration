@@ -41,7 +41,8 @@ public class BrageProcessor implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
     private static final String HANDLE_DEFAULT_NAME = "handle";
-    private static final String DUBLIN_CORE_XML_DEFAULT_NAME = "dublin_core.xml";
+    private static final String BRAGE_DUBLIN_CORE_XML_DEFAULT_NAME = "dublin_core.xml";
+    private static final String FS_DUBLIN_CORE_XML_DEFAULT_NAME = "metadata_fs.xml";
     private static final String CONTENT_FILE_DEFAULT_NAME = "contents";
     private final static Counter counter = new Counter();
     private final String zipfile;
@@ -122,8 +123,8 @@ public class BrageProcessor implements Runnable {
         return Path.of(bundlePath, HANDLE_DEFAULT_NAME);
     }
 
-    private File getDublinCoreFile(File entryDirectory) {
-        return new File(Path.of(entryDirectory.toString(), DUBLIN_CORE_XML_DEFAULT_NAME).toString());
+    private File getDublinCoreFile(File entryDirectory, String fileName) {
+        return new File(Path.of(entryDirectory.toString(), fileName).toString());
     }
 
     private Record injectContentBundle(Record record, File entryDirectory, BrageLocation brageLocation,
@@ -151,7 +152,19 @@ public class BrageProcessor implements Runnable {
     }
 
     private DublinCore parseDublinCore(File entryDirectory) {
-        return DublinCoreFactory.createDublinCoreFromXml(getDublinCoreFile(entryDirectory));
+        return DublinCoreFactory.createDublinCoreFromXml(
+            getDublinCoreFile(entryDirectory, BRAGE_DUBLIN_CORE_XML_DEFAULT_NAME));
+    }
+
+    private DublinCore parseFsDublinCore(File entryDirectory) {
+        var file = getDublinCoreFile(entryDirectory, FS_DUBLIN_CORE_XML_DEFAULT_NAME);
+        return file.exists()
+                   ? DublinCoreFactory.createDublinCoreFromXml(file)
+                   : emptyDublinCore();
+    }
+
+    private static DublinCore emptyDublinCore() {
+        return new DublinCore(List.of());
     }
 
     private Record injectCustomer(Record record) {
@@ -209,7 +222,13 @@ public class BrageProcessor implements Runnable {
                    .map(r -> injectResourceContent(entryDirectory, brageLocation, dublinCore, r))
                    .map(r -> injectBrageLocation(r, brageLocation))
                    .map(this::injectAffiliationsFromExternalFile)
+                   .map(record -> injectValuesFromFsDublinCore(record, parseFsDublinCore(entryDirectory)))
                    .map(r -> EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(r, embargoes));
+    }
+
+    private Record injectValuesFromFsDublinCore(Record record, DublinCore dublinCore) {
+        record.setSubjectCode(DublinCoreScraper.extractSubjectCode(dublinCore));
+        return record;
     }
 
     private Record injectBrageLocation(Record record, BrageLocation brageLocation) {

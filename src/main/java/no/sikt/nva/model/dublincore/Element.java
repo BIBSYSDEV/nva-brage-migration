@@ -57,7 +57,10 @@ public enum Element {
     TITLE("title"),
 
     @XmlEnumValue("type")
-    TYPE("type");
+    TYPE("type"),
+
+    @XmlEnumValue("subjectcode")
+    SUBJECT_CODE("subjectcode");
 
     private final String value;
 

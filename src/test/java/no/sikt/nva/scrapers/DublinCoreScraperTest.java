@@ -1,5 +1,7 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
+import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
@@ -30,7 +32,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +65,7 @@ public class DublinCoreScraperTest {
 
     private static final boolean SHOULD_LOOKUP_IN_CHANNEL_REGISTER = true;
     private static final String SOME_CUSTOMER = "nve";
+    public static final String METADATA_FS_XML = "metadata_fs.xml";
 
     private static boolean SHOUL_VALIDATE_ONLINE = false;
     private DublinCoreScraper dcScraper;
@@ -855,6 +860,14 @@ public class DublinCoreScraperTest {
         dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
         assertThat(appender.getMessages(), containsString(publisherName));
         assertThat(appender.getMessages(), containsString(DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER.toString()));
+    }
+
+    @Test
+    void shouldExtractSubjectCodeFromFsXml() {
+        var fsDublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(TEST_RESOURCE_PATH + METADATA_FS_XML));
+        var expectedSubjectCode = "JUS399";
+
+        assertThat(DublinCoreScraper.extractSubjectCode(fsDublinCore), is(equalTo(expectedSubjectCode)));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
