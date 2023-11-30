@@ -62,3 +62,4 @@ src/test/resources/resourceWithEmbargo/app*
 **/inputWithEmptyCCLicense/**
 **/resourceWithTwoSameObjects/**
 **/testFilesToDelete/**
+**/someOutputPath/**
