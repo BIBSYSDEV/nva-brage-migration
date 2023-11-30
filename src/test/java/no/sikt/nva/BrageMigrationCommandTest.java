@@ -27,13 +27,16 @@ import picocli.CommandLine;
 public class BrageMigrationCommandTest {
 
     public static final String EXPECTED_EMBARGO_LOGG_MESSAGE = "FOLLOWING COLLECTION CONTAINS 1 EMBARGO";
+
+    public static final String BUNDLE_WITH_FORWARD_SLASHES_ZIP = "bundleWithForwardSlashes.zip";
+    public static final String PUSH_TO_AWS = "-a";
     private static final int NORMAL_EXIT_CODE = 0;
     private static List<String> arguments;
 
     @BeforeEach
     void beforeEach() {
         arguments = new ArrayList<>(List.of("-c", "someCustomer", "-O",
-                                            "someOutputPAth"));
+                                            "someOutputPath"));
     }
 
     @Test
@@ -121,5 +124,13 @@ public class BrageMigrationCommandTest {
             arguments.toArray(String[]::new));
         assertThat(appender.getMessages(), containsString(EXPECTED_EMBARGO_LOGG_MESSAGE));
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
+    }
+
+    @Test
+    void shouldHandleContentFilesWithForwardSlashesInTheirNames() {
+        arguments.add(TEST_RESOURCE_PATH + BUNDLE_WITH_FORWARD_SLASHES_ZIP);
+        arguments.add(PUSH_TO_AWS);
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+            arguments.toArray(String[]::new));
     }
 }

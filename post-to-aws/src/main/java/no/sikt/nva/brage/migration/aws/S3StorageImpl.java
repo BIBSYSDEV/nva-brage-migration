@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -35,6 +34,7 @@ public class S3StorageImpl implements S3Storage {
     public static final String COULD_NOT_WRITE_LOGS_MESSAGE = "Could not write logs to s3: ";
     public static final String JSON_STRING = ".json";
     public static final String APPLICATION_JSON = "application/json";
+    public static final String PATH_DELIMITER = "/";
     public static final String EXPERIMENTAL_BUCKET_NAME = "anette-kir-brage-migration-experiment";
     public static final String SANDBOX_BUCKET_NAME = "brage-migration-input-files-750639270376";
     public static final String PROD_BUCKET_NAME = "brage-migration-input-files-755923822223";
@@ -45,7 +45,6 @@ public class S3StorageImpl implements S3Storage {
     private static final String DEVELOP_BUCKET_NAME = "brage-migration-input-files-884807050265";
     private static final Logger logger = LoggerFactory.getLogger(S3StorageImpl.class);
     private static final String CONTENT_DISPOSITION_FILE_NAME_PATTERN = "filename=\"%s\"";
-    public static final String DASH = "-";
     private final String bucketName;
     private final S3Client s3Client;
     private final String pathPrefixString;
@@ -118,7 +117,7 @@ public class S3StorageImpl implements S3Storage {
 
     private static List<File> gerRecordsJsonFiles(List<File> collectionFiles) {
         return collectionFiles.stream()
-                   .map(file -> new File(file.getName() + "/" + RECORDS_JSON_FILE_NAME))
+                   .map(file -> new File(file.getName() + PATH_DELIMITER + RECORDS_JSON_FILE_NAME))
                    .collect(Collectors.toList());
     }
 
@@ -129,12 +128,20 @@ public class S3StorageImpl implements S3Storage {
     }
 
     private static String extractHandleForFilename(Record record) {
-        var handleToList = Arrays.asList(record.getId().toString().split("/"));
+        var handleToList = Arrays.asList(record.getId().toString().split(PATH_DELIMITER));
         return handleToList.get(handleToList.size() - 1) + JSON_STRING;
     }
 
-    private static UUID getUuidToRecordFile(Record record, File file) {
-        return record.getContentBundle().getContentFileByFilename(file.getName()).getIdentifier();
+    private static void addFilePathToMap(ConcurrentMap<UUID, File> map,
+                                         ContentFile contentFile,
+                                         Record record,
+                                         String filePath) {
+        try {
+            var file = new File(filePath);
+            map.put(contentFile.getIdentifier(), file);
+        } catch (Exception e) {
+            logger.error("FILE NOT FOUND: " + filePath + ", in bundle: " + record.getBrageLocation());
+        }
     }
 
     private List<Record> extractRecords(List<File> listOfRecordsCollections) throws IOException {
@@ -152,17 +159,17 @@ public class S3StorageImpl implements S3Storage {
     }
 
     private File findAssociatedFiles(Record record) {
-        logger.info(getPathPrefixString()  + record.getBrageLocation());
-        return new File(getPathPrefixString()  + record.getBrageLocation());
+        logger.info(getPathPrefixString() + record.getBrageLocation());
+        return new File(getPathPrefixString() + record.getBrageLocation());
     }
 
     private String getCollectionDirectory(Record record) {
-        var brageLocation = record.getBrageLocation().split("/");
+        var brageLocation = record.getBrageLocation().split(PATH_DELIMITER);
         return brageLocation[brageLocation.length - 2];
     }
 
     private String getResourceDirectory(Record record) {
-        var brageLocation = record.getBrageLocation().split("/");
+        var brageLocation = record.getBrageLocation().split(PATH_DELIMITER);
         return brageLocation[brageLocation.length - 1];
     }
 
@@ -209,7 +216,7 @@ public class S3StorageImpl implements S3Storage {
         s3Client.putObject(PutObjectRequest
                                .builder()
                                .bucket(bucketName)
-                               .key(customer + "/" + file.getName())
+                               .key(customer + PATH_DELIMITER + file.getName())
                                .build(),
                            RequestBody.fromFile(file));
     }
@@ -221,18 +228,24 @@ public class S3StorageImpl implements S3Storage {
 
     private ConcurrentMap<UUID, File> mapFilesToUuid(Record record, File resourceFiles) {
         ConcurrentMap<UUID, File> map = new ConcurrentHashMap<>();
-        Arrays.stream(Objects.requireNonNull(resourceFiles.listFiles()))
-            .filter(file -> isPartOfRecord(file, record))
-            .forEach(file -> map.put(getUuidToRecordFile(record, file), file));
+        var contentFiles = record.getContentBundle()
+                               .getContentFiles();
+        contentFiles.forEach(contentFile -> addToMap(map,
+                                                     contentFile,
+                                                     resourceFiles,
+                                                     record));
         return map;
     }
 
-    private boolean isPartOfRecord(File file, Record record) {
-        var recordFiles = record.getContentBundle()
-                              .getContentFiles()
-                              .stream()
-                              .map(ContentFile::getFilename)
-                              .collect(Collectors.toList());
-        return recordFiles.contains(file.getName());
+    private void addToMap(ConcurrentMap<UUID, File> map,
+                          ContentFile contentFile,
+                          File resourceFiles,
+                          Record record) {
+        try {
+            var filePath = resourceFiles.getPath() + PATH_DELIMITER + contentFile.getFilename();
+            addFilePathToMap(map, contentFile, record, filePath);
+        } catch (Exception e) {
+            logger.error("COULD NOT CRAFT CONTENTS FILE PATH: " + record.getBrageLocation());
+        }
     }
 }
