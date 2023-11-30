@@ -62,3 +62,13 @@ src/test/resources/resourceWithEmbargo/app*
 **/inputWithEmptyCCLicense/**
 **/resourceWithTwoSameObjects/**
 **/testFilesToDelete/**
+**/someOutputPath/**
+
+# logs
+/${sys:outputDir}${sys:customer}-app-info.html
+/${sys:outputDir}${sys:customer}-application-error.log
+/${sys:outputDir}${sys:customer}-application-info.log
+/${sys:outputDir}${sys:customer}-application-warn.log
+/${sys:outputDir}app-info-2023-11-21-1.html
+/${sys:outputDir}app-info-2023-11-22-1.html
+/${sys:outputDir}app-info-2023-11-29-1.html
