@@ -353,7 +353,7 @@ public class CustomerMapper {
                                                  entry(PROD, "")));
                 put(NORSKFOLKEMUSEUM, Map.ofEntries(entry(SANDBOX, ""),
                                                     entry(DEVELOP, "890ae660-440f-41cb-9d57-1afa3f5d0444"),
-                                                    entry(TEST, ""),
+                                                    entry(TEST, "2fcfc7e5-b8d7-4c08-98ef-3927ad934e6f"),
                                                     entry(PROD, "")));
                 put(NPOLAR, Map.ofEntries(entry(SANDBOX, ""),
                                           entry(DEVELOP, "009974e9-217c-46b8-8f61-f7c1501ee04a"),
