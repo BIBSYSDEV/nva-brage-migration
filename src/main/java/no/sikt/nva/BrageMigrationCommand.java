@@ -19,10 +19,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.aws.S3Storage;
 import no.sikt.nva.brage.migration.aws.S3StorageImpl;
-import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.Embargo;
+import no.sikt.nva.scrapers.AffiliationType;
 import no.sikt.nva.scrapers.AffiliationsScraper;
 import no.sikt.nva.scrapers.ContributorScraper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
@@ -321,7 +321,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
                                                          List<Embargo> embargoes,
                                                          Map<String, Contributor> contributors,
-                                                         Map<String, Affiliation> affiliations, boolean isUnzipped) {
+                                                         AffiliationType affiliations, boolean isUnzipped) {
         return createBrageProcessorThread(zipFiles, customer, enableOnlineValidation, shouldLookUpInChannelRegister,
                                           noHandleCheck, outputDirectory, embargoes, contributors, affiliations,
                                           isUnzipped);
@@ -454,7 +454,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                             boolean noHandleCheck, String outputDirectory,
                                                             List<Embargo> embargoes,
                                                             Map<String, Contributor> contributors,
-                                                            Map<String, Affiliation> affiliations, boolean isUnzipped) {
+                                                            AffiliationType affiliations, boolean isUnzipped) {
         var handleTitleMapReader = new HandleTitleMapReader();
         var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch(),
                                                               embargoes, contributors, affiliations);

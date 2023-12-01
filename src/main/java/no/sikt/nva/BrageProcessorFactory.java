@@ -4,9 +4,9 @@ import static java.util.Objects.isNull;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.model.Embargo;
+import no.sikt.nva.scrapers.AffiliationType;
 import nva.commons.core.StringUtils;
 
 public class BrageProcessorFactory {
@@ -16,11 +16,11 @@ public class BrageProcessorFactory {
     private final Map<String, String> rescueTitleAndHandleMap;
     private final List<Embargo> embargoes;
     private final Map<String, Contributor> contributors;
-    private final Map<String, Affiliation> affiliations;
+    private final AffiliationType affiliations;
 
     public BrageProcessorFactory(Map<String, String> rescueTitleAndHandleMap,
                                  List<Embargo> embargoes,
-                                 Map<String, Contributor> contributors, Map<String, Affiliation> affiliations) {
+                                 Map<String, Contributor> contributors, AffiliationType affiliations) {
         this.rescueTitleAndHandleMap = rescueTitleAndHandleMap;
         this.embargoes = embargoes;
         this.contributors = contributors;
