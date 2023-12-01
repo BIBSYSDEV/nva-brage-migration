@@ -1,6 +1,7 @@
 package no.sikt.nva;
 
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.scrapers.EntityDescriptionExtractor.AUTHOR;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -249,7 +250,8 @@ public class BrageProcessor implements Runnable {
                                            .map(key -> affiliationType.getAffiliations().get(key))
                                            .collect(Collectors.toSet());
             record.getEntityDescription()
-                .getContributors()
+                .getContributors().stream()
+                .filter(contributor -> AUTHOR.equals(contributor.getRole()))
                 .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));
         }
         return record;
