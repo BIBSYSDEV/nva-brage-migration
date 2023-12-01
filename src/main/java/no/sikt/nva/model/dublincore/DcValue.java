@@ -83,6 +83,10 @@ public class DcValue {
         return Element.SUBJECT.equals(this.element);
     }
 
+    public boolean isSubjectCode() {
+        return Element.SUBJECT_CODE.equals(this.element);
+    }
+
     public boolean isScraped() {
         return scraped;
     }

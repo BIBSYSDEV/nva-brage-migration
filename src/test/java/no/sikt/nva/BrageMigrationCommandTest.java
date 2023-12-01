@@ -117,6 +117,14 @@ public class BrageMigrationCommandTest {
     }
 
     @Test
+    void shouldHandleContentFilesWithForwardSlashesInTheirNames() {
+        arguments.add(TEST_RESOURCE_PATH + BUNDLE_WITH_FORWARD_SLASHES_ZIP);
+        arguments.add(PUSH_TO_AWS);
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+            arguments.toArray(String[]::new));
+    }
+
+    @Test
     void shouldCreateRecordWithEmbargo() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         arguments.addAll(List.of("-D", EMBARGO_TEST_DIRECTORY));
@@ -127,10 +135,10 @@ public class BrageMigrationCommandTest {
     }
 
     @Test
-    void shouldHandleContentFilesWithForwardSlashesInTheirNames() {
-        arguments.add(TEST_RESOURCE_PATH + BUNDLE_WITH_FORWARD_SLASHES_ZIP);
-        arguments.add(PUSH_TO_AWS);
-        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+    void shouldProcessResourceWithFsDublinCore() {
+        arguments.add(TEST_RESOURCE_PATH + INPUT_WITH_LICENSE_ZIP_FILE_NAME);
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
             arguments.toArray(String[]::new));
+        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
     }
 }

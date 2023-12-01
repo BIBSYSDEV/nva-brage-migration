@@ -80,6 +80,7 @@ public class DublinCoreScraper {
         }
     }
 
+
     public static Set<String> extractIssn(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
@@ -234,6 +235,14 @@ public class DublinCoreScraper {
         } else {
             return type;
         }
+    }
+
+    public static String extractSubjectCode(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isSubjectCode)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .findFirst()
+                   .orElse(null);
     }
 
     public Record validateAndParseDublinCore(DublinCore dublinCore,
