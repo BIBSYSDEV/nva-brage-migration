@@ -244,7 +244,7 @@ public class BrageProcessor implements Runnable {
             var matchingAffiliationKeys = affiliationType.getAffiliations().keySet()
                                               .stream()
                                               .filter(record::hasOrigin)
-                                              .toList();
+                                              .collect(Collectors.toList());
             var matchingAffiliations = matchingAffiliationKeys.stream()
                                            .map(key -> affiliationType.getAffiliations().get(key))
                                            .collect(Collectors.toSet());
