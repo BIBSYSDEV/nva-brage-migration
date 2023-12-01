@@ -19,9 +19,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.aws.S3Storage;
 import no.sikt.nva.brage.migration.aws.S3StorageImpl;
+import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.Embargo;
+import no.sikt.nva.scrapers.AffiliationsScraper;
 import no.sikt.nva.scrapers.ContributorScraper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.EmbargoScraper;
@@ -29,6 +31,7 @@ import no.sikt.nva.scrapers.HandleTitleMapReader;
 import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -39,11 +42,12 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Spec;
 import software.amazon.awssdk.services.s3.S3Client;
 
-@SuppressWarnings({"PMD.DoNotUseThreads", "PMD.GodClass", "PMD.TooManyFields"})
+@SuppressWarnings({"PMD.DoNotUseThreads", "PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessiveParameterList"})
 @JacocoGenerated
 @Command(name = "Brage migration", description = "Tool for migrating Brage bundles")
 public class BrageMigrationCommand implements Callable<Integer> {
 
+    public static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
     public static final String PATH_DELIMITER = "/";
     public static final String OUTPUT_JSON_FILENAME = "records.json";
     public static final String FAILURE_IN_BRAGE_MIGRATION_COMMAND = "Failure in BrageMigration command";
@@ -72,6 +76,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String OUTPUT_DIR_ARGUMENT_SHORT = "-O";
     public static final String OUTPUT_DIR_ARGUMENT_LONG = "--output-directory";
     public static final String OUTPUT_DIR_SYSTEM_PROPERTY = "outputDir";
+    public static final String AFFILIATIONS_FILE = "affiliations.txt";
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     @Spec
@@ -190,8 +195,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
                     embargoes = getEmbargoes(Arrays.stream(zipFiles));
                 }
                 var contributors = getContributors(inputDirectory);
+                var affiliations = AffiliationsScraper.getAffiliations(new File(inputDirectory + AFFILIATIONS_FILE));
                 printIgnoredDcValuesFieldsInInfoLog();
                 var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes, contributors,
+                                                              affiliations,
                                                               isUnzipped);
                 //                Synchronized run:
                 brageProcessors.forEach(this::runAndIgnoreException);
@@ -314,9 +321,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
                                                          List<Embargo> embargoes,
                                                          Map<String, Contributor> contributors,
-                                                         boolean isUnzipped) {
+                                                         Map<String, Affiliation> affiliations, boolean isUnzipped) {
         return createBrageProcessorThread(zipFiles, customer, enableOnlineValidation, shouldLookUpInChannelRegister,
-                                          noHandleCheck, outputDirectory, embargoes, contributors, isUnzipped);
+                                          noHandleCheck, outputDirectory, embargoes, contributors, affiliations,
+                                          isUnzipped);
     }
 
     private List<Embargo> getEmbargoes(String directory) {
@@ -445,10 +453,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                             boolean shouldLookUpInChannelRegister,
                                                             boolean noHandleCheck, String outputDirectory,
                                                             List<Embargo> embargoes,
-                                                            Map<String, Contributor> contributors, boolean isUnzipped) {
+                                                            Map<String, Contributor> contributors,
+                                                            Map<String, Affiliation> affiliations, boolean isUnzipped) {
         var handleTitleMapReader = new HandleTitleMapReader();
         var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch(),
-                                                              embargoes, contributors);
+                                                              embargoes, contributors, affiliations);
         return Arrays.stream(zipFiles)
                    .filter(StringUtils::isNotBlank)
                    .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,

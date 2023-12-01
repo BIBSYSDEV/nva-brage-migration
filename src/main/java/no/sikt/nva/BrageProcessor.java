@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Customer;
 import no.sikt.nva.brage.migration.common.model.record.Record;
@@ -20,7 +21,6 @@ import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.Embargo;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.scrapers.AffiliationsScraper;
 import no.sikt.nva.scrapers.AlreadyImportedHandlesScraper;
 import no.sikt.nva.scrapers.ContentScraper;
 import no.sikt.nva.scrapers.CustomerMapper;
@@ -56,6 +56,7 @@ public class BrageProcessor implements Runnable {
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private final String customer;
     private final String awsEnvironment;
+    private final Map<String, Affiliation> affiliations;
     private List<Record> records;
     private final boolean isUnzipped;
 
@@ -63,7 +64,8 @@ public class BrageProcessor implements Runnable {
     public BrageProcessor(String zipfile, String customer, String destinationDirectory,
                           final Map<String, String> rescueTitleAndHandleMap, boolean enableOnlineValidation,
                           boolean shouldLookUpInChannelRegister, boolean noHandleCheck, String awsEnvironment,
-                          List<Embargo> embargoes, Map<String, Contributor> contributors, boolean isUnzipped) {
+                          List<Embargo> embargoes, Map<String, Contributor> contributors,
+                          Map<String, Affiliation> affiliations, boolean isUnzipped) {
         this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
@@ -74,6 +76,7 @@ public class BrageProcessor implements Runnable {
         this.awsEnvironment = awsEnvironment;
         this.embargoes = embargoes;
         this.contributors = contributors;
+        this.affiliations = affiliations;
         this.isUnzipped = isUnzipped;
     }
 
@@ -237,7 +240,6 @@ public class BrageProcessor implements Runnable {
     }
 
     private Record injectAffiliationsFromExternalFile(Record record) {
-        var affiliations = AffiliationsScraper.getAffiliations(new File("affiliations.txt"));
         if (!affiliations.isEmpty()) {
             var matchingAffiliationKeys = affiliations.keySet()
                                               .stream()

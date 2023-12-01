@@ -244,7 +244,7 @@ public class Record {
 
     public boolean hasOrigin(String handle) {
         var recordOriginCollection = this.getBrageLocation().split("/")[0];
-        return handle.split("/")[0].equals(recordOriginCollection);
+        return handle.split("/")[1].equals(recordOriginCollection);
     }
 
     @JacocoGenerated

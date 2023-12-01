@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static no.sikt.nva.BrageMigrationCommand.logger;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -10,11 +11,17 @@ import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 
 public final class AffiliationsScraper {
 
+    public static final String AFFILIATIONS_NUMBER_MESSAGE =
+        "Provided affiliations file contains following number of affiliations {}";
+
     public static Map<String, Affiliation> getAffiliations(File file) {
         try {
             var string = Files.readString(file.toPath());
-            return convertStringToAffiliations(string);
+            var affiliations = convertStringToAffiliations(string);
+            logger.info(AFFILIATIONS_NUMBER_MESSAGE, affiliations.size());
+            return affiliations;
         } catch (Exception e) {
+            logger.info("Affiliations failed: {}", e.getMessage());
             return Map.of();
         }
     }
