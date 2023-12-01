@@ -122,4 +122,12 @@ public class BrageMigrationCommandTest {
         assertThat(appender.getMessages(), containsString(EXPECTED_EMBARGO_LOGG_MESSAGE));
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
     }
+
+    @Test
+    void shouldProcessResourceWithFsDublinCore() {
+        arguments.add(TEST_RESOURCE_PATH + INPUT_WITH_LICENSE_ZIP_FILE_NAME);
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+            arguments.toArray(String[]::new));
+        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
+    }
 }

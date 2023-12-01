@@ -40,12 +40,21 @@ public class Record {
     private Set<WarningDetails> warnings;
     private URI link;
     private Set<URI> subjects;
+    private String subjectCode;
 
     public Record() {
     }
 
     public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
+
+    public String getSubjectCode() {
+        return subjectCode;
+    }
+
+    public void setSubjectCode(String subjectCode) {
+        this.subjectCode = subjectCode;
     }
 
     public Set<URI> getSubjects() {
