@@ -1,6 +1,7 @@
 package no.sikt.nva;
 
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.scrapers.EntityDescriptionExtractor.AUTHOR;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -20,7 +21,7 @@ import no.sikt.nva.exceptions.ContentException;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.Embargo;
 import no.sikt.nva.model.dublincore.DublinCore;
-import no.sikt.nva.scrapers.AffiliationsScraper;
+import no.sikt.nva.scrapers.AffiliationType;
 import no.sikt.nva.scrapers.AlreadyImportedHandlesScraper;
 import no.sikt.nva.scrapers.ContentScraper;
 import no.sikt.nva.scrapers.CustomerMapper;
@@ -56,6 +57,7 @@ public class BrageProcessor implements Runnable {
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private final String customer;
     private final String awsEnvironment;
+    private final AffiliationType affiliationType;
     private List<Record> records;
     private final boolean isUnzipped;
 
@@ -63,7 +65,8 @@ public class BrageProcessor implements Runnable {
     public BrageProcessor(String zipfile, String customer, String destinationDirectory,
                           final Map<String, String> rescueTitleAndHandleMap, boolean enableOnlineValidation,
                           boolean shouldLookUpInChannelRegister, boolean noHandleCheck, String awsEnvironment,
-                          List<Embargo> embargoes, Map<String, Contributor> contributors, boolean isUnzipped) {
+                          List<Embargo> embargoes, Map<String, Contributor> contributors,
+                          AffiliationType affiliationType, boolean isUnzipped) {
         this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
@@ -74,6 +77,7 @@ public class BrageProcessor implements Runnable {
         this.awsEnvironment = awsEnvironment;
         this.embargoes = embargoes;
         this.contributors = contributors;
+        this.affiliationType = affiliationType;
         this.isUnzipped = isUnzipped;
     }
 
@@ -237,20 +241,24 @@ public class BrageProcessor implements Runnable {
     }
 
     private Record injectAffiliationsFromExternalFile(Record record) {
-        var affiliations = AffiliationsScraper.getAffiliations(new File("affiliations.txt"));
-        if (!affiliations.isEmpty()) {
-            var matchingAffiliationKeys = affiliations.keySet()
+        if (!affiliationType.getAffiliations().isEmpty() && containsType(record)) {
+            var matchingAffiliationKeys = affiliationType.getAffiliations().keySet()
                                               .stream()
                                               .filter(record::hasOrigin)
                                               .collect(Collectors.toList());
             var matchingAffiliations = matchingAffiliationKeys.stream()
-                                           .map(affiliations::get)
+                                           .map(key -> affiliationType.getAffiliations().get(key))
                                            .collect(Collectors.toSet());
             record.getEntityDescription()
-                .getContributors()
+                .getContributors().stream()
+                .filter(contributor -> AUTHOR.equals(contributor.getRole()))
                 .forEach(contributor -> contributor.setAffiliations(matchingAffiliations));
         }
         return record;
+    }
+
+    private boolean containsType(Record record) {
+        return affiliationType.getTypes().contains(record.getType().getNva());
     }
 
     private boolean isAlreadyImported(String handle) {
