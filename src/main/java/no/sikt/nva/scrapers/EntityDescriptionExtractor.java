@@ -59,13 +59,13 @@ public final class EntityDescriptionExtractor {
     }
 
     public static EntityDescription extractEntityDescription(DublinCore dublinCore,
-                                                             Map<String, Contributor> contributors) {
+                                                             Map<String, Contributor> contributors, String customer) {
         var entityDescription = new EntityDescription();
         entityDescription.setAbstracts(extractAbstracts(dublinCore));
         entityDescription.setDescriptions(extractDescriptions(dublinCore));
         entityDescription.setMainTitle(extractMainTitle(dublinCore));
         entityDescription.setAlternativeTitles(extractAlternativeTitles(dublinCore));
-        entityDescription.setContributors(extractContributors(dublinCore, contributors));
+        entityDescription.setContributors(extractContributors(dublinCore, contributors, customer));
         entityDescription.setTags(SubjectScraper.extractTags(dublinCore));
         entityDescription.setPublicationInstance(extractPublicationInstance(dublinCore));
         entityDescription.setPublicationDate(extractPublicationDate(dublinCore));
@@ -73,12 +73,13 @@ public final class EntityDescriptionExtractor {
         return entityDescription;
     }
 
-    public static Set<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors) {
+    public static Set<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors,
+                                                       String customer) {
         return dublinCore.getDcValues().stream()
                    .filter(EntityDescriptionExtractor::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
-                   .map(contributor -> updateRoleBasedOnType(contributor, dublinCore))
+                   .map(contributor -> updateRoleBasedOnType(contributor, dublinCore, customer))
                    .map(contributor -> updateContributor(contributor, contributors))
                    .map(EntityDescriptionExtractor::updateNameOrder)
                    .collect(Collectors.toSet());
@@ -120,8 +121,8 @@ public final class EntityDescriptionExtractor {
                    .orElse(null);
     }
 
-    private static Contributor updateRoleBasedOnType(Contributor contributor, DublinCore dublinCore) {
-        var type = TypeMapper.convertBrageTypeToNvaType(DublinCoreScraper.extractType(dublinCore));
+    private static Contributor updateRoleBasedOnType(Contributor contributor, DublinCore dublinCore, String customer) {
+        var type = TypeMapper.convertBrageTypeToNvaType(DublinCoreScraper.extractType(dublinCore, customer));
         if (NvaType.DATASET.getValue().equals(type)) {
             contributor.setRole(DATA_COLLECTOR);
         }
