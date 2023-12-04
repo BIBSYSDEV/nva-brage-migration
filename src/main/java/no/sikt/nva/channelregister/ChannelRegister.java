@@ -95,10 +95,10 @@ public final class ChannelRegister {
                                                            BrageLocation brageLocation,
                                                            String customer) {
         if (typeIsPresentInDublinCore(dublinCore)) {
-            if (isJournalArticle(dublinCore)) {
+            if (isJournalArticle(dublinCore, customer)) {
                 return getErrorDetailsForJournalArticle(dublinCore, brageLocation);
             }
-            if (hasPublisher(dublinCore) && isSearchableInPublishers(dublinCore)) {
+            if (hasPublisher(dublinCore) && isSearchableInPublishers(dublinCore, customer)) {
                 return getErrorDetailsForPublisher(dublinCore, brageLocation, customer);
             }
         }
@@ -203,11 +203,11 @@ public final class ChannelRegister {
         }
     }
 
-    private static boolean isSearchableInPublishers(DublinCore dublinCore) {
+    private static boolean isSearchableInPublishers(DublinCore dublinCore, String customer) {
         return SEARCHABLE_TYPES_IN_PUBLISHERS.stream()
                    .map(NvaType::getValue)
                    .collect(Collectors.toList())
-                   .contains(TypeMapper.convertBrageTypeToNvaType(DublinCoreScraper.extractType(dublinCore)));
+                   .contains(TypeMapper.convertBrageTypeToNvaType(DublinCoreScraper.extractType(dublinCore, customer)));
     }
 
     private static List<ChannelRegisterPublisher> getPublishersFromCsv() {
@@ -275,9 +275,9 @@ public final class ChannelRegister {
                    .anyMatch(DcValue::isType);
     }
 
-    private static boolean isJournalArticle(DublinCore dublinCore) {
-        return DublinCoreScraper.extractType(dublinCore).contains(BrageType.JOURNAL_ARTICLE.getValue())
-               || DublinCoreScraper.extractType(dublinCore).contains(BrageType.JOURNAL_ISSUE.getValue());
+    private static boolean isJournalArticle(DublinCore dublinCore, String customer) {
+        return DublinCoreScraper.extractType(dublinCore, customer).contains(BrageType.JOURNAL_ARTICLE.getValue())
+               || DublinCoreScraper.extractType(dublinCore, customer).contains(BrageType.JOURNAL_ISSUE.getValue());
     }
 
     private String lookupInPublisherAliases(String publisher,

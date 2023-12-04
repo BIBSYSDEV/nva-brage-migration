@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JOURNALS;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PUBLISHERS;
+import static no.sikt.nva.scrapers.CustomerMapper.FFI;
 import static no.sikt.nva.validators.DublinCoreValidator.ACCEPTED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.validators.DublinCoreValidator.PUBLISHED_VERSION_STRING;
@@ -48,6 +49,7 @@ import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DoiValidator;
 import nva.commons.core.SingletonCollector;
 import nva.commons.core.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,7 +155,19 @@ public class DublinCoreScraper {
         return journals.isEmpty() ? null : journals.get(0);
     }
 
-    public static Set<String> extractType(DublinCore dublinCore) {
+    public static Set<String> extractType(DublinCore dublinCore, String customer) {
+        var types = extractType(dublinCore);
+        return types.isEmpty() && customerHasAgreedToImportTypeLessPostsAsReport(customer)
+                   ? Set.of(NvaType.REPORT.getValue())
+                   : types;
+    }
+
+    private static boolean customerHasAgreedToImportTypeLessPostsAsReport(String customer) {
+        return nonNull(customer) && FFI.equals(customer);
+    }
+
+    @NotNull
+    private static Set<String> extractType(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isType)
@@ -249,7 +263,7 @@ public class DublinCoreScraper {
                                              BrageLocation brageLocation,
                                              String customer) {
         try {
-            var errors = getDublinCoreErrors(dublinCore);
+            var errors = getDublinCoreErrors(dublinCore, customer);
             if (lookUpInChannelRegisterIsEnabled()) {
                 channelRegister.getChannelRegisterErrors(dublinCore,
                                                          brageLocation,
@@ -259,7 +273,7 @@ public class DublinCoreScraper {
             if (onlineValidationIsEnabled()) {
                 DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
             }
-            var warnings = getDublinCoreWarnings(dublinCore);
+            var warnings = getDublinCoreWarnings(dublinCore, customer);
             var record = createRecordFromDublinCoreAndBrageLocation(dublinCore,
                                                                     brageLocation,
                                                                     shouldLookUpInChannelRegister,
@@ -623,12 +637,12 @@ public class DublinCoreScraper {
                                                               String customer) {
         var record = new Record();
         record.setId(brageLocation.getHandle());
-        record.setType(mapOriginTypeToNvaType(extractType(dublinCore), dublinCore));
+        record.setType(mapOriginTypeToNvaType(extractType(dublinCore, customer), dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractVersion(dublinCore, brageLocation));
         record.setDoi(extractDoi(dublinCore));
         record.setLink(extractLink(dublinCore));
-        record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore, contributors));
+        record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore, contributors, customer));
         record.setSpatialCoverage(extractSpatialCoverage(dublinCore));
         record.setPublication(createPublicationWithIdentifier(dublinCore,
                                                               brageLocation,

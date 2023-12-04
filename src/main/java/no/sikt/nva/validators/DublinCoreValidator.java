@@ -57,22 +57,23 @@ public final class DublinCoreValidator {
     public static final String HYPHEN = "-";
     public static final String DASH = "–";
     private static final int ONE_DESCRIPTION = 1;
+    public static final String NO_CUSTOMER = null;
 
-    public static Set<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore) {
+    public static Set<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, String customer) {
 
         var errors = new HashSet<ErrorDetails>();
         DoiValidator.getDoiErrorDetailsOffline(dublinCore).ifPresent(errors::addAll);
-        getInvalidTypes(dublinCore).ifPresent(errors::add);
+        getInvalidTypes(dublinCore, customer).ifPresent(errors::add);
         getIssnErrors(dublinCore).ifPresent(errors::add);
         getDateError(dublinCore).ifPresent(errors::add);
         BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
-        getMultipleUnmappableTypeError(dublinCore).ifPresent(errors::add);
+        getMultipleUnmappableTypeError(dublinCore, customer).ifPresent(errors::add);
         getMultipleValues(dublinCore).ifPresent(errors::addAll);
         getLicenseError(dublinCore).ifPresent(errors::add);
         return errors;
     }
 
-    public static Set<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore) {
+    public static Set<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore, String customer) {
         var warnings = new HashSet<WarningDetails>();
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
         BrageNvaLanguageMapper.getLanguageWarning(dublinCore).ifPresent(warnings::add);
@@ -81,7 +82,7 @@ public final class DublinCoreValidator {
         getIsbnWarnings(dublinCore).ifPresent(warnings::add);
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
         getNonContributorsError(dublinCore).ifPresent(warnings::add);
-        getTypesWarnings(dublinCore).ifPresent(warnings::add);
+        getTypesWarnings(dublinCore, customer).ifPresent(warnings::add);
         return warnings;
     }
 
@@ -106,18 +107,18 @@ public final class DublinCoreValidator {
         return date.matches(YEAR_PERIOD_REGEX) || date.matches(UNKNOWN_YEAR_PERIOD_REGEX);
     }
 
-    private static Optional<WarningDetails> getTypesWarnings(DublinCore dublinCore) {
-        if (isConferenceObjectOrLecture(dublinCore)) {
+    private static Optional<WarningDetails> getTypesWarnings(DublinCore dublinCore, String customer) {
+        if (isConferenceObjectOrLecture(dublinCore, customer)) {
             return Optional.of(
                 new WarningDetails(Warning.CONFERENCE_OBJECT_OR_LECTURE_WILL_BE_MAPPED_TO_CONFERENCE_REPORT,
-                                   DublinCoreScraper.extractType(dublinCore)));
+                                   DublinCoreScraper.extractType(dublinCore, customer)));
         } else {
             return Optional.empty();
         }
     }
 
-    private static boolean isConferenceObjectOrLecture(DublinCore dublinCore) {
-        var types = DublinCoreScraper.extractType(dublinCore);
+    private static boolean isConferenceObjectOrLecture(DublinCore dublinCore, String customer) {
+        var types = DublinCoreScraper.extractType(dublinCore, customer);
         return types.contains(BrageType.CONFERENCE_OBJECT.getValue()) || types.contains(
             BrageType.CONFERENCE_LECTURE.getValue());
     }
@@ -222,7 +223,7 @@ public final class DublinCoreValidator {
     }
 
     private static boolean hasContributors(DublinCore dublinCore) {
-        return !EntityDescriptionExtractor.extractContributors(dublinCore, Map.of()).isEmpty();
+        return !EntityDescriptionExtractor.extractContributors(dublinCore, Map.of(), NO_CUSTOMER).isEmpty();
     }
 
     private static Optional<ErrorDetails> getIssnErrors(DublinCore dublinCore) {
@@ -369,8 +370,8 @@ public final class DublinCoreValidator {
     }
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-    private static Optional<ErrorDetails> getInvalidTypes(DublinCore dublinCore) {
-        var uniqueTypes = DublinCoreScraper.extractType(dublinCore).stream()
+    private static Optional<ErrorDetails> getInvalidTypes(DublinCore dublinCore, String customer) {
+        var uniqueTypes = DublinCoreScraper.extractType(dublinCore, customer).stream()
                               .map(TypeTranslator::translateToEnglish)
                               .collect(Collectors.toSet());
         if (uniqueTypes.isEmpty()) {
@@ -387,8 +388,8 @@ public final class DublinCoreValidator {
     }
 
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-    private static Optional<ErrorDetails> getMultipleUnmappableTypeError(DublinCore dublinCore) {
-        var types = DublinCoreScraper.translateTypesInNorwegian(DublinCoreScraper.extractType(dublinCore))
+    private static Optional<ErrorDetails> getMultipleUnmappableTypeError(DublinCore dublinCore, String customer) {
+        var types = DublinCoreScraper.translateTypesInNorwegian(DublinCoreScraper.extractType(dublinCore, customer))
                         .stream()
                         .distinct()
                         .collect(Collectors.toSet());
@@ -396,7 +397,7 @@ public final class DublinCoreValidator {
         if (nonNull(mappedType.getNva())) {
             return Optional.empty();
         }
-        if (containsMultipleTypes(types) && getInvalidTypes(dublinCore).isEmpty() && !types.contains(
+        if (containsMultipleTypes(types) && getInvalidTypes(dublinCore, customer).isEmpty() && !types.contains(
             BrageType.PEER_REVIEWED.getValue())) {
             return Optional.of(new ErrorDetails(Error.MULTIPLE_UNMAPPABLE_TYPES, types));
         }
