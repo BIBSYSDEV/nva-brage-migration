@@ -872,7 +872,7 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldSetTypeToReportAndDoNotLogWhenPostIsMissingTypePropertyAndCustomerHasAgreedToMapTypelessPostAsReport() {
+    void shouldSetTypeToReportAndDoNotLogWhenPostIsMissingTypePropertyWhenCustomerHasAgreedToMapTypelessPostAsReport() {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
