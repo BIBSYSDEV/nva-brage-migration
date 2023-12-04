@@ -877,7 +877,7 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
 
-        assertThat(appender.getMessages(), containsString(INVALID_DC_TYPE.toString()));
+        assertThat(appender.getMessages(), not(containsString(INVALID_DC_TYPE.toString())));
         assertThat(record.getType().getNva(), is(equalTo(NvaType.REPORT.getValue())));
 
     }

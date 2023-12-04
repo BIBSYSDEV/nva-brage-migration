@@ -382,7 +382,10 @@ public final class DublinCoreValidator {
         }
         if (TypeMapper.hasValidType(uniqueTypes.iterator().next())) {
             return Optional.empty();
-        } else {
+        } if (nonNull(mapOriginTypeToNvaType(uniqueTypes, dublinCore).getNva())) {
+            return Optional.empty();
+        }
+        else {
             return Optional.of(new ErrorDetails(INVALID_DC_TYPE, uniqueTypes));
         }
     }
