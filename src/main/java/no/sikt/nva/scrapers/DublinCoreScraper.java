@@ -264,16 +264,17 @@ public class DublinCoreScraper {
                                              String customer) {
         try {
             var errors = getDublinCoreErrors(dublinCore, customer);
+            var warnings = getDublinCoreWarnings(dublinCore, customer);
             if (lookUpInChannelRegisterIsEnabled()) {
-                channelRegister.getChannelRegisterErrors(dublinCore,
-                                                         brageLocation,
-                                                         customer)
-                    .ifPresent(errors::add);
+                channelRegister.getChannelRegisterWarnings(dublinCore,
+                                                           brageLocation,
+                                                           customer)
+                    .ifPresent(warnings::add);
             }
             if (onlineValidationIsEnabled()) {
                 DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
             }
-            var warnings = getDublinCoreWarnings(dublinCore, customer);
+
             var record = createRecordFromDublinCoreAndBrageLocation(dublinCore,
                                                                     brageLocation,
                                                                     shouldLookUpInChannelRegister,

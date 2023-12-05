@@ -4,10 +4,10 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_JOURNAL_NOT_IN_CHANNEL_REGISTER;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_ISSN_AND_DC_JOURNAL;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_PUBLISHER;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.DC_JOURNAL_NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MISSING_DC_ISSN_AND_DC_JOURNAL;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MISSING_DC_PUBLISHER;
 import static no.sikt.nva.validators.DublinCoreValidator.filterOutNullValues;
 import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.BufferedReader;
@@ -26,6 +26,7 @@ import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.Record;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.DublinCoreScraper;
@@ -91,9 +92,9 @@ public final class ChannelRegister {
         return register;
     }
 
-    public Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore,
-                                                           BrageLocation brageLocation,
-                                                           String customer) {
+    public Optional<WarningDetails> getChannelRegisterWarnings(DublinCore dublinCore,
+                                                             BrageLocation brageLocation,
+                                                             String customer) {
         if (typeIsPresentInDublinCore(dublinCore)) {
             if (isJournalArticle(dublinCore, customer)) {
                 return getErrorDetailsForJournalArticle(dublinCore, brageLocation);
@@ -246,27 +247,27 @@ public final class ChannelRegister {
         return nonNull(publisher);
     }
 
-    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String publisher) {
+    private static Optional<WarningDetails> getChannelRegisterErrorDetailsWhenSearchingForPublisher(String publisher) {
         if (!filterOutNullValues(Collections.singleton(publisher)).isEmpty()) {
             return Optional.of(
-                new ErrorDetails(DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER,
+                new WarningDetails(DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER,
                                  filterOutNullValues(Collections.singleton(publisher))));
         } else {
-            return Optional.of(new ErrorDetails(MISSING_DC_PUBLISHER,
+            return Optional.of(new WarningDetails(MISSING_DC_PUBLISHER,
                                                 Collections.singleton(NO_PUBLISHER_FOUND)));
         }
     }
 
-    private static Optional<ErrorDetails> getChannelRegisterErrorDetailsWhenSearchingForJournals(Set<String> issnList,
+    private static Optional<WarningDetails> getChannelRegisterErrorDetailsWhenSearchingForJournals(Set<String> issnList,
                                                                                                  String title) {
         var valuesToLog = new HashSet<String>();
         valuesToLog.add(title);
         valuesToLog.addAll(issnList);
         if (!filterOutNullValues(valuesToLog).isEmpty()) {
-            return Optional.of(new ErrorDetails(DC_JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(valuesToLog)));
+            return Optional.of(new WarningDetails(DC_JOURNAL_NOT_IN_CHANNEL_REGISTER, filterOutNullValues(valuesToLog)));
         } else {
             return Optional.of(
-                new ErrorDetails(MISSING_DC_ISSN_AND_DC_JOURNAL, Collections.singleton(NO_ISSN_OR_JOURNAL_FOUND)));
+                new WarningDetails(MISSING_DC_ISSN_AND_DC_JOURNAL, Collections.singleton(NO_ISSN_OR_JOURNAL_FOUND)));
         }
     }
 
@@ -297,7 +298,7 @@ public final class ChannelRegister {
                    .collect(SingletonCollector.collectOrElse(null));
     }
 
-    private Optional<ErrorDetails> getErrorDetailsForJournalArticle(DublinCore dublinCore,
+    private Optional<WarningDetails> getErrorDetailsForJournalArticle(DublinCore dublinCore,
                                                                     BrageLocation brageLocation) {
         var publication = DublinCoreScraper.extractPublication(dublinCore);
         var possibleIdentifier = lookUpInJournal(publication, brageLocation);
@@ -309,7 +310,7 @@ public final class ChannelRegister {
         }
     }
 
-    private Optional<ErrorDetails> getErrorDetailsForPublisher(DublinCore dublinCore,
+    private Optional<WarningDetails> getErrorDetailsForPublisher(DublinCore dublinCore,
                                                                BrageLocation brageLocation,
                                                                String customer) {
         var publisher = DublinCoreScraper.extractPublisher(dublinCore);
