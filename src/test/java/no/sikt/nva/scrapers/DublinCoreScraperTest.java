@@ -852,6 +852,20 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldLookupInChannelRegisterAliasesForUibPublishers() {
+        var expectedPublisherPid = "CBCE38D7-C6C6-4CE9-BCED-D64610033E9B";
+        var dcType = toDcType("Report");
+        var publisherName = "Institute for Social Research";
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, publisherName);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "bora");
+        var publisherPid = record.getPublication().getPublicationContext().getPublisher().getPid();
+        assertThat(publisherPid, is(equalTo(expectedPublisherPid)));
+        assertThat(appender.getMessages(), not(containsString(publisherName)));
+    }
+
+    @Test
     void shouldLogPublisherThatDoesNotExistInChannelRegistry() {
         var dcType = toDcType("Report");
         var publisherName = "Gurba that is not in any channel registry csv's";
