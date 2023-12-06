@@ -226,8 +226,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void checkThatCustomerIsValid() {
-        if (AwsEnvironment.TEST == awsEnvironment
-            || AwsEnvironment.PROD == awsEnvironment) {
+        if (AwsEnvironment.TEST.equals(awsEnvironment)
+            || AwsEnvironment.PROD.equals(awsEnvironment)) {
             var customerUri = new CustomerMapper().getCustomerUri(customer, awsEnvironment.getValue());
             if (isNull(customerUri)) {
                 logger.error(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
