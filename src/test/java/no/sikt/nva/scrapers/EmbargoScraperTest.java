@@ -27,6 +27,8 @@ public class EmbargoScraperTest {
                                           + " precipitation fields with variance consistent interpolation.pdf";
     public static final String DATE = "2023-10-01";
     public static final String TEST_FILE_LOCATION = "src/test/resources/FileEmbargo.txt";
+    public static final String TEST_FILE_LOCATION_V2 = "src/test/resources/FileEmbargoV2.txt";
+    public static final String EMBARGO_WITH_DISTANT_DATE_TXT = "src/test/resources/FileEmbargo_with_distant_date.txt";
 
     @Test
     void shouldExtractEmbargoWithPdfFile() {
@@ -34,6 +36,14 @@ public class EmbargoScraperTest {
         var actualEmbargos =
             Objects.requireNonNull(EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION))).get(HANDLE);
         assertThat(actualEmbargos, hasItem(expectedEmbargo));
+    }
+
+    @Test
+    void shouldExtractEmbargosWithDifferentDelimiter() {
+        var expectedEmbargo = new Embargo(HANDLE, FILENAME, DATE);
+        var actualEmbargo = Objects.requireNonNull(EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION_V2)))
+                                .get(HANDLE);
+        assertThat(actualEmbargo, hasItem(expectedEmbargo));
     }
 
     @Test
@@ -61,7 +71,7 @@ public class EmbargoScraperTest {
     @Test
     void shouldSetEmbargoOnMultipleContentFilesIfNecessary() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var embargos = EmbargoScraper.getEmbargoList(new File("src/test/resources/FileEmbargo_v2.txt"));
+        var embargos = EmbargoScraper.getEmbargoList(new File(EMBARGO_WITH_DISTANT_DATE_TXT));
         var record = new Record();
         record.setId(UriWrapper.fromUri("https://hdl.handle.net/11250/2683076").getUri());
         record.setContentBundle(contentBundleWithFileNameFromEmbargo(

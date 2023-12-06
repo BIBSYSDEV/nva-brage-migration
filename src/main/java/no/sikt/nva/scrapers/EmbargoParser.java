@@ -12,10 +12,9 @@ public class EmbargoParser {
 
     public static final String PDF_TXT = "pdf.txt";
     public static final String PDF_JPG = "pdf.jpg";
-
-    private static final Logger logger = LoggerFactory.getLogger(EmbargoParser.class);
     public static final String LICENSE_RDF = "license_rdf";
     public static final String LICENSE_TXT = "license.txt";
+    private static final Logger logger = LoggerFactory.getLogger(EmbargoParser.class);
 
     public static Record checkForEmbargoFromSuppliedEmbargoFile(Record record, Map<String, List<Embargo>> embargoes) {
         var handle = record.getId().toString();
@@ -75,10 +74,14 @@ public class EmbargoParser {
     }
 
     private static boolean shouldBeLogged(Embargo embargo) {
-        return !embargo.isDetectedFile() &&
-               (embargo.getFilename().contains(PDF_TXT)
-                || embargo.getFilename().contains(PDF_JPG)
-                || LICENSE_RDF.equals(embargo.getFilename())
-                || LICENSE_TXT.equals(embargo.getFilename()));
+        return !embargo.isDetectedFile()
+               && !isIgnoredFile(embargo);
+    }
+
+    private static boolean isIgnoredFile(Embargo embargo) {
+        return embargo.getFilename().contains(PDF_TXT)
+               || embargo.getFilename().contains(PDF_JPG)
+               || LICENSE_RDF.equals(embargo.getFilename())
+               || LICENSE_TXT.equals(embargo.getFilename());
     }
 }
