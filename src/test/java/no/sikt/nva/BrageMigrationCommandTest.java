@@ -150,6 +150,7 @@ public class BrageMigrationCommandTest {
                                             "someOutputPath",
                                             "-j",
                                             "test"));
+        arguments.add(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME);
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
@@ -163,6 +164,7 @@ public class BrageMigrationCommandTest {
                                             "someOutputPath",
                                             "-j",
                                             "prod"));
+        arguments.add(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME);
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
@@ -176,6 +178,7 @@ public class BrageMigrationCommandTest {
                                             "someOutputPath",
                                             "-j",
                                             "dev"));
+        arguments.add(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME);
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
