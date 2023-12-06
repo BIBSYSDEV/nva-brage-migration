@@ -154,4 +154,30 @@ public class BrageMigrationCommandTest {
             arguments.toArray(String[]::new));
         assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
     }
+
+    @Test
+    void shouldThrowExceptionIfProdEnvironmentAndInvalidCustomer() {
+        arguments = new ArrayList<>(List.of("-c",
+                                            "someInvalidCustomer",
+                                            "-O",
+                                            "someOutputPath",
+                                            "-j",
+                                            "prod"));
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+            arguments.toArray(String[]::new));
+        assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
+    }
+
+    @Test
+    void shouldNotCareAboutInvalidCustomerInDevelop() {
+        arguments = new ArrayList<>(List.of("-c",
+                                            "someInvalidCustomer",
+                                            "-O",
+                                            "someOutputPath",
+                                            "-j",
+                                            "dev"));
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+            arguments.toArray(String[]::new));
+        assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
+    }
 }
