@@ -14,6 +14,8 @@ public class Embargo {
     private String date;
     private String filename;
 
+    private boolean detectedFile;
+
     public Embargo(String handle, String filename, String date) {
         this.handle = handle;
         this.filename = filename;
@@ -51,6 +53,14 @@ public class Embargo {
 
     public String getDate() {
         return date;
+    }
+
+    public boolean isDetectedFile() {
+        return detectedFile;
+    }
+
+    public void setDetectedFile(boolean detectedFile) {
+        this.detectedFile = detectedFile;
     }
 
     public Instant getDateAsInstant() {
