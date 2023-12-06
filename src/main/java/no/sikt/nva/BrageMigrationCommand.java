@@ -25,6 +25,7 @@ import no.sikt.nva.model.Embargo;
 import no.sikt.nva.scrapers.AffiliationType;
 import no.sikt.nva.scrapers.AffiliationsScraper;
 import no.sikt.nva.scrapers.ContributorScraper;
+import no.sikt.nva.scrapers.CustomerMapper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.EmbargoScraper;
 import no.sikt.nva.scrapers.HandleTitleMapReader;
@@ -77,6 +78,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String OUTPUT_DIR_ARGUMENT_LONG = "--output-directory";
     public static final String OUTPUT_DIR_SYSTEM_PROPERTY = "outputDir";
     public static final String AFFILIATIONS_FILE = "affiliations.txt";
+    public static final String CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT = "Customer id does not exist for this environment: ";
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     @Spec
@@ -182,6 +184,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         try {
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
+            checkThatCustomerIsValid();
             var inputDirectory = generateInputDirectory();
             var outputDirectory = generateOutputDirectory();
             if (writeProcessedImportToAws) {
@@ -219,6 +222,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
             var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
+        }
+    }
+
+    private void checkThatCustomerIsValid() {
+        if (AwsEnvironment.TEST.equals(awsEnvironment)
+            || AwsEnvironment.PROD.equals(awsEnvironment)) {
+            var customerUri = new CustomerMapper().getCustomerUri(customer, awsEnvironment.getValue());
+            if (isNull(customerUri)) {
+                logger.error(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
+                throw new IllegalArgumentException(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
+            }
         }
     }
 
