@@ -185,7 +185,7 @@ public class CustomerMapper {
                 put(SAMFORSK, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, "6da57387-b48a-46dc-a395-d07c12b1e54b"),
-                    entry(TEST, ""),
+                    entry(TEST, "999f15f5-b0d4-4273-8dc4-97a971454b74"),
                     entry(PROD, "")));
                 put(CMI, Map.ofEntries(
                     entry(SANDBOX, ""),
@@ -303,11 +303,11 @@ public class CustomerMapper {
                                             entry(PROD, "")));
                 put(FFI, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "04939e4d-105e-4d3c-b945-7d482d4f18d5"),
-                                       entry(TEST, ""),
+                                       entry(TEST, "b11f0a40-ac27-42b9-ba94-f4952e3d5a5a"),
                                        entry(PROD, "")));
                 put(NB, Map.ofEntries(entry(SANDBOX, ""),
                                       entry(DEVELOP, "9fde89c7-baea-4ac1-ad52-97d4dee0e6da"),
-                                      entry(TEST, ""),
+                                      entry(TEST, "155b291c-9da7-482c-833d-e1b1488f9ee3"),
                                       entry(PROD, "")));
                 put(NFORSK, Map.ofEntries(entry(SANDBOX, ""),
                                           entry(DEVELOP, "5196161e-c952-4b36-9125-3e9746ee338d"),
@@ -333,23 +333,23 @@ public class CustomerMapper {
                                        entry(PROD, "")));
                 put(NINA, Map.ofEntries(entry(SANDBOX, ""),
                                         entry(DEVELOP, "afa4fb86-76f6-4339-9133-924d999a792e"),
-                                        entry(TEST, ""),
+                                        entry(TEST, "899823c8-7315-4bb7-b734-97e65b43af15"),
                                         entry(PROD, "")));
                 put(NMBU, Map.ofEntries(entry(SANDBOX, ""),
                                         entry(DEVELOP, "8b0609fc-8787-4c71-ba6d-fa3718bc73e1"),
-                                        entry(TEST, ""),
+                                        entry(TEST, "b8977f51-28bd-41b5-bb19-71c577be7c28"),
                                         entry(PROD, "")));
                 put(NMH, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "2f148e5f-a017-4e7f-8f78-6a52eb6a9938"),
-                                       entry(TEST, ""),
+                                       entry(TEST, "9efe66cc-ead0-49e0-b787-b73a188d4770"),
                                        entry(PROD, "")));
                 put(NOFIMA, Map.ofEntries(entry(SANDBOX, ""),
                                           entry(DEVELOP, "15af7bc4-16cd-4134-91ba-68d900a5685c"),
-                                          entry(TEST, ""),
+                                          entry(TEST, "dc9f40f0-7397-4237-a54d-cf33b5d236f1"),
                                           entry(PROD, "")));
                 put(NORCERESEARCH, Map.ofEntries(entry(SANDBOX, ""),
                                                  entry(DEVELOP, "d039e7ea-1380-46f1-bb7d-b6456ddc0fc2"),
-                                                 entry(TEST, ""),
+                                                 entry(TEST, "e58d2162-c4de-4627-8b3f-ac2d9fb49446"),
                                                  entry(PROD, "")));
                 put(NORSKFOLKEMUSEUM, Map.ofEntries(entry(SANDBOX, ""),
                                                     entry(DEVELOP, "890ae660-440f-41cb-9d57-1afa3f5d0444"),
@@ -357,11 +357,11 @@ public class CustomerMapper {
                                                     entry(PROD, "")));
                 put(NPOLAR, Map.ofEntries(entry(SANDBOX, ""),
                                           entry(DEVELOP, "009974e9-217c-46b8-8f61-f7c1501ee04a"),
-                                          entry(TEST, ""),
+                                          entry(TEST, "7de3c640-f71e-4837-b46b-32f250acf179"),
                                           entry(PROD, "")));
                 put(RURALIS, Map.ofEntries(entry(SANDBOX, ""),
                                            entry(DEVELOP, "f8f52dc0-688c-4d56-b0f6-26e2698e16a0"),
-                                           entry(TEST, ""),
+                                           entry(TEST, "37b410b5-d85f-4bb2-8421-c8afc2e5de60"),
                                            entry(PROD, "")));
                 put(SAMAS, Map.ofEntries(entry(SANDBOX, ""),
                                          entry(DEVELOP, "69f64ed3-e2c6-4c0c-a370-0de946ca6568"),
@@ -369,7 +369,7 @@ public class CustomerMapper {
                                          entry(PROD, "")));
                 put(SAMFUNNSFORSKNING, Map.ofEntries(entry(SANDBOX, ""),
                                                      entry(DEVELOP, "818c957b-65ce-447d-b78c-cd472ea0e65f"),
-                                                     entry(TEST, ""),
+                                                     entry(TEST, "999f15f5-b0d4-4273-8dc4-97a971454b74"),
                                                      entry(PROD, "")));
                 put(SIHF, Map.ofEntries(entry(SANDBOX, ""),
                                         entry(DEVELOP, "73662b0f-4eba-4783-97da-de9e835affb6"),
@@ -389,7 +389,7 @@ public class CustomerMapper {
                                        entry(PROD, "")));
                 put(USN, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "702c4fbe-d51a-4d20-aec8-50beb813ff36"),
-                                       entry(TEST, ""),
+                                       entry(TEST, "b3d72c51-c4f2-4aa1-a15a-e9cc9b1f5e1e"),
                                        entry(PROD, "")));
                 put(NIKU, Map.ofEntries(entry(SANDBOX, ""),
                                         entry(DEVELOP, "11c1a22c-6b1b-4463-b74e-e20cd13d7243"),
@@ -409,11 +409,11 @@ public class CustomerMapper {
                                        entry(PROD, "")));
                 put(UIO, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "8db4a8bd-3db5-420b-a2e4-fc17a489aa6d"),
-                                       entry(TEST, ""),
+                                       entry(TEST, "e4fd5fe5-b073-47a7-bb3e-2516d40335e6"),
                                        entry(PROD, "")));
                 put(FHI, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "95bfedd6-0a44-4013-8e96-256b0efb7d28"),
-                                       entry(TEST, ""),
+                                       entry(TEST, "94fb0975-499d-42be-b729-1d8327a33a76"),
                                        entry(PROD, "")));
         put(R_BUP, Map.ofEntries(entry(SANDBOX, ""),
                                  entry(DEVELOP, "3259519a-1ef6-444d-87d2-534d7c6df021"),
