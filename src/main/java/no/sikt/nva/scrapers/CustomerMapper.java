@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import nva.commons.core.StringUtils;
 
 @SuppressWarnings("PMD.DoubleBraceInitialization")
 public class CustomerMapper {
@@ -443,6 +444,7 @@ public class CustomerMapper {
         return Optional.ofNullable(customerShortName)
                    .map(customer -> CUSTOMER_MAP.get(customer.toLowerCase(Locale.ROOT)))
                    .map(environmentMap -> environmentMap.get(environment))
+                   .filter(StringUtils::isNotBlank)
                    .map(customerIdentifier -> constructCustomerUri(environment, customerIdentifier))
                    .orElse(null);
     }
