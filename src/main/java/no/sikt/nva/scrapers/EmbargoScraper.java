@@ -5,12 +5,10 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.stream.Collectors;
-import no.sikt.nva.brage.migration.common.model.record.Record;
-import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.model.Embargo;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
@@ -20,15 +18,15 @@ public final class EmbargoScraper {
 
     public static final String ERROR_OCCURRED_EXTRACTING_EMBARGOES =
         "ERROR_OCCURRED_EXTRACTING_EMBARGO, embargoes will not be attached to publications";
-    public static final String EMPTY_EMBARGO_FILE_MESSAGE = "EMBARGO_FILE_IS_EMPTY, embargoes will not be attached to publications";
-    public static final String PDF_TXT = "pdf.txt";
-    public static final String PDF_JPG = "pdf.jpg";
+    public static final String EMPTY_EMBARGO_FILE_MESSAGE = "EMBARGO_FILE_IS_EMPTY, embargoes will not be attached to"
+                                                            + " publications";
+
     private static final Logger logger = LoggerFactory.getLogger(EmbargoScraper.class);
 
     public EmbargoScraper() {
     }
 
-    public static List<Embargo> getEmbargoList(File file) {
+    public static Map<String, List<Embargo>> getEmbargoList(File file) {
         try {
             var contentFileAsString = Files.readString(file.toPath());
             var embargoes = convertStringToEmbargoObjects(contentFileAsString);
@@ -41,7 +39,7 @@ public final class EmbargoScraper {
                 }
                 logger.error(ERROR_OCCURRED_EXTRACTING_EMBARGOES);
             }
-            return Collections.emptyList();
+            return new HashMap<>();
         }
     }
 
@@ -49,26 +47,7 @@ public final class EmbargoScraper {
         return file.length() == 0;
     }
 
-    public static Record checkForEmbargoFromSuppliedEmbargoFile(Record record, List<Embargo> embargoes) {
-        var handle = record.getId().toString();
-        if (containsHandle(embargoes, handle)) {
-            var potentialEmbargo = embargoes.stream()
-                                       .filter(embargo -> embargo.getHandle().equals(handle))
-                                       .findAny().orElse(null);
-            if (recordContainsEmbargoFile(record, Objects.requireNonNull(potentialEmbargo))) {
-                record.getContentBundle()
-                    .getContentFileByFilename(potentialEmbargo.getFilename())
-                    .setEmbargoDate(potentialEmbargo.getDateAsInstant());
-            }
-        }
-        return record;
-    }
-
-    private static boolean containsHandle(List<Embargo> embargoes, String handle) {
-        return embargoes.stream().map(Embargo::getHandle).collect(Collectors.toList()).contains(handle);
-    }
-
-    private static List<Embargo> convertStringToEmbargoObjects(String contentFileAsString) {
+    private static Map<String, List<Embargo>> convertStringToEmbargoObjects(String contentFileAsString) {
         var listOfStringObjects = Arrays.asList(
             contentFileAsString.replaceAll(EMPTY_LINE_REGEX, StringUtils.EMPTY_STRING)
                 .replace("|", ";")
@@ -76,7 +55,7 @@ public final class EmbargoScraper {
         var embargoes = listOfStringObjects.stream()
                             .map(EmbargoScraper::convertToEmbargo)
                             .collect(Collectors.toList());
-        return filterOutSameEmbargoes(embargoes);
+        return createEmbargoHandleMap(embargoes);
     }
 
     private static Embargo convertToEmbargo(String string) {
@@ -87,28 +66,22 @@ public final class EmbargoScraper {
         return new Embargo(handle, filename, date);
     }
 
-    private static List<Embargo> filterOutSameEmbargoes(List<Embargo> embargoes) {
-        List<Embargo> uniqueEmbargoesList = new ArrayList<>();
-        for (Embargo embargo : embargoes) {
-            var handlesList = uniqueEmbargoesList.stream()
-                                  .map(Embargo::getHandle)
-                                  .collect(Collectors.toList());
-            if (!handlesList.contains(embargo.getHandle()) && isNotTextFileOrThumbnail(embargo.getFilename())) {
-                uniqueEmbargoesList.add(embargo);
-            }
+    private static Map<String, List<Embargo>> createEmbargoHandleMap(List<Embargo> embargoes) {
+        var embargoesByHandle = new HashMap<String, List<Embargo>>();
+        embargoes.forEach(embargo -> addEmbargoToMap(embargoesByHandle, embargo));
+        return embargoesByHandle;
+    }
+
+    private static void addEmbargoToMap(Map<String, List<Embargo>> embargoMap,
+                                        Embargo embargo) {
+        List<Embargo> embargoList;
+        if (embargoMap.containsKey(embargo.getHandle())) {
+            embargoList = embargoMap.get(embargo.getHandle());
+            embargoList.add(embargo);
+        } else {
+            embargoList = new ArrayList<>();
+            embargoList.add(embargo);
         }
-        return uniqueEmbargoesList;
-    }
-
-    private static boolean isNotTextFileOrThumbnail(String filename) {
-        return !filename.contains(PDF_TXT)
-               && !filename.contains(PDF_JPG);
-    }
-
-    private static boolean recordContainsEmbargoFile(Record record, Embargo potentialEmbargo) {
-        return record.getContentBundle().getContentFiles().stream()
-                   .map(ContentFile::getFilename)
-                   .collect(Collectors.toList())
-                   .contains(potentialEmbargo.getFilename());
+        embargoMap.put(embargo.getHandle(), embargoList);
     }
 }

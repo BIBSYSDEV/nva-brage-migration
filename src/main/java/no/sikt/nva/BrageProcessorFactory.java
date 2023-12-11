@@ -14,12 +14,12 @@ public class BrageProcessorFactory {
     public static final String ZIP_EXTENSION = ".zip";
     private static final String INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE = "invalid zipfile name";
     private final Map<String, String> rescueTitleAndHandleMap;
-    private final List<Embargo> embargoes;
+    private final Map<String, List<Embargo>> embargoes;
     private final Map<String, Contributor> contributors;
     private final AffiliationType affiliations;
 
     public BrageProcessorFactory(Map<String, String> rescueTitleAndHandleMap,
-                                 List<Embargo> embargoes,
+                                 Map<String, List<Embargo>> embargoes,
                                  Map<String, Contributor> contributors, AffiliationType affiliations) {
         this.rescueTitleAndHandleMap = rescueTitleAndHandleMap;
         this.embargoes = embargoes;
