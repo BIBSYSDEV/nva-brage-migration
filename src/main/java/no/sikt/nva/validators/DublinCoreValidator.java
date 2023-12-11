@@ -10,6 +10,7 @@ import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.War
 import static no.sikt.nva.scrapers.DublinCoreScraper.mapOriginTypeToNvaType;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.LOCAL_DATE_MAX_LENGTH;
 import static no.sikt.nva.scrapers.TypeMapper.convertBrageTypeToNvaType;
+import static no.sikt.nva.scrapers.TypeMapper.mapToNvaTypeIfMappable;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -385,7 +386,9 @@ public final class DublinCoreValidator {
         } if (nonNull(mapOriginTypeToNvaType(uniqueTypes, dublinCore).getNva())) {
             return Optional.empty();
         }
-        else {
+        if (nonNull(mapToNvaTypeIfMappable(uniqueTypes))) {
+            return Optional.empty();
+        } else {
             return Optional.of(new ErrorDetails(INVALID_DC_TYPE, uniqueTypes));
         }
     }

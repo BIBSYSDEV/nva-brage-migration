@@ -27,7 +27,7 @@ import no.sikt.nva.scrapers.ContentScraper;
 import no.sikt.nva.scrapers.CustomerMapper;
 import no.sikt.nva.scrapers.DublinCoreFactory;
 import no.sikt.nva.scrapers.DublinCoreScraper;
-import no.sikt.nva.scrapers.EmbargoScraper;
+import no.sikt.nva.scrapers.EmbargoParser;
 import no.sikt.nva.scrapers.HandleScraper;
 import no.sikt.nva.scrapers.LicenseScraper;
 import no.sikt.nva.scrapers.ResourceOwnerMapper;
@@ -52,7 +52,7 @@ public class BrageProcessor implements Runnable {
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
     private final boolean noHandleCheck;
-    private final List<Embargo> embargoes;
+    private final Map<String, List<Embargo>> embargoes;
     private final Map<String, Contributor> contributors;
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private final String customer;
@@ -65,7 +65,7 @@ public class BrageProcessor implements Runnable {
     public BrageProcessor(String zipfile, String customer, String destinationDirectory,
                           final Map<String, String> rescueTitleAndHandleMap, boolean enableOnlineValidation,
                           boolean shouldLookUpInChannelRegister, boolean noHandleCheck, String awsEnvironment,
-                          List<Embargo> embargoes, Map<String, Contributor> contributors,
+                          Map<String, List<Embargo>> embargoes, Map<String, Contributor> contributors,
                           AffiliationType affiliationType, boolean isUnzipped) {
         this.customer = customer;
         this.zipfile = zipfile;
@@ -227,7 +227,7 @@ public class BrageProcessor implements Runnable {
                    .map(r -> injectBrageLocation(r, brageLocation))
                    .map(this::injectAffiliationsFromExternalFile)
                    .map(record -> injectValuesFromFsDublinCore(record, parseFsDublinCore(entryDirectory)))
-                   .map(r -> EmbargoScraper.checkForEmbargoFromSuppliedEmbargoFile(r, embargoes));
+                   .map(r -> EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(r, embargoes));
     }
 
     private Record injectValuesFromFsDublinCore(Record record, DublinCore dublinCore) {

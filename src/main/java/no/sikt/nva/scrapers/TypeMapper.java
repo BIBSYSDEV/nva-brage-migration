@@ -156,7 +156,7 @@ public final class TypeMapper {
         return value.replaceAll("(\n)|(\b)|(\u200b)|(\t)", StringUtils.EMPTY_STRING);
     }
 
-    private static String mapToNvaTypeIfMappable(Set<String> inputTypes) {
+    public static String mapToNvaTypeIfMappable(Set<String> inputTypes) {
         Set<BrageType> brageTypes = convertToBrageTypes(inputTypes);
         var nvaType = TYPE_MAP.get(Set.copyOf(brageTypes));
         if (isNull(nvaType) && brageTypes.size() >= 2) {

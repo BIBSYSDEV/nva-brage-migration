@@ -7,8 +7,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,7 +26,9 @@ import no.sikt.nva.model.Embargo;
 import no.sikt.nva.scrapers.AffiliationType;
 import no.sikt.nva.scrapers.AffiliationsScraper;
 import no.sikt.nva.scrapers.ContributorScraper;
+import no.sikt.nva.scrapers.CustomerMapper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
+import no.sikt.nva.scrapers.EmbargoParser;
 import no.sikt.nva.scrapers.EmbargoScraper;
 import no.sikt.nva.scrapers.HandleTitleMapReader;
 import no.unit.nva.s3.S3Driver;
@@ -77,6 +80,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String OUTPUT_DIR_ARGUMENT_LONG = "--output-directory";
     public static final String OUTPUT_DIR_SYSTEM_PROPERTY = "outputDir";
     public static final String AFFILIATIONS_FILE = "affiliations.txt";
+    public static final String CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT = "Customer id does not exist for this environment: ";
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     @Spec
@@ -182,12 +186,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
         try {
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
+            checkThatCustomerIsValid();
             var inputDirectory = generateInputDirectory();
             var outputDirectory = generateOutputDirectory();
             if (writeProcessedImportToAws) {
                 pushExistingResourcesToNva(readZipFileNamesFromCollectionFile(inputDirectory));
             } else {
-                List<Embargo> embargoes;
+                Map<String, List<Embargo>> embargoes;
                 if (isNull(zipFiles)) {
                     this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
                     embargoes = getEmbargoes(inputDirectory);
@@ -207,6 +212,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 //                (Collectors.toList());
                 //                startProcessors(brageProcessorThreads);
                 //                waitForAllProcesses(brageProcessorThreads);
+                EmbargoParser.logNonEmbargosDetected(embargoes);
                 writeRecordsToFiles(brageProcessors);
                 if (shouldWriteToAws) {
                     pushToNva(brageProcessors);
@@ -219,6 +225,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
             var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
+        }
+    }
+
+    private void checkThatCustomerIsValid() {
+        if (AwsEnvironment.TEST.equals(awsEnvironment)
+            || AwsEnvironment.PROD.equals(awsEnvironment)) {
+            var customerUri = new CustomerMapper().getCustomerUri(customer, awsEnvironment.getValue());
+            if (isNull(customerUri)) {
+                logger.error(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
+                throw new IllegalArgumentException(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
+            }
         }
     }
 
@@ -319,7 +336,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
-                                                         List<Embargo> embargoes,
+                                                         Map<String, List<Embargo>> embargoes,
                                                          Map<String, Contributor> contributors,
                                                          AffiliationType affiliations, boolean isUnzipped) {
         return createBrageProcessorThread(zipFiles, customer, enableOnlineValidation, shouldLookUpInChannelRegister,
@@ -327,7 +344,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                           isUnzipped);
     }
 
-    private List<Embargo> getEmbargoes(String directory) {
+    private Map<String, List<Embargo>> getEmbargoes(String directory) {
         var embargoFile = new File(directory + DEFAULT_EMBARGO_FILE_NAME);
         return EmbargoScraper.getEmbargoList(embargoFile);
     }
@@ -343,11 +360,23 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
     }
 
-    private List<Embargo> getEmbargoes(Stream<String> zipfiles) {
+    private Map<String, List<Embargo>> getEmbargoes(Stream<String> zipfiles) {
         return zipfiles.map(this::getDirectory)
                    .map(this::getEmbargoes)
-                   .flatMap(Collection::stream)
-                   .collect(Collectors.toList());
+                   .flatMap(map -> map.entrySet().stream())
+                   .collect(
+                       Collectors.toMap(
+                           Map.Entry::getKey,
+                           Map.Entry::getValue,
+                           this::mergeValues, // merge function to handle possible duplicates
+                           HashMap::new));
+    }
+
+    private List<Embargo> mergeValues(List<Embargo> v1, List<Embargo> v2) {
+        var values = new HashSet<Embargo>();
+        values.addAll(v1);
+        values.addAll(v2);
+        return new ArrayList<>(values);
     }
 
     private String getDirectory(String zipfile) {
@@ -452,7 +481,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                             boolean enableOnlineValidation,
                                                             boolean shouldLookUpInChannelRegister,
                                                             boolean noHandleCheck, String outputDirectory,
-                                                            List<Embargo> embargoes,
+                                                            Map<String, List<Embargo>> embargoes,
                                                             Map<String, Contributor> contributors,
                                                             AffiliationType affiliations, boolean isUnzipped) {
         var handleTitleMapReader = new HandleTitleMapReader();
