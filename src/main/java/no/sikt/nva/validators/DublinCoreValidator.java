@@ -383,6 +383,8 @@ public final class DublinCoreValidator {
         }
         if (TypeMapper.hasValidType(uniqueTypes.iterator().next())) {
             return Optional.empty();
+        } if (nonNull(mapOriginTypeToNvaType(uniqueTypes, dublinCore).getNva())) {
+            return Optional.empty();
         }
         if (nonNull(mapToNvaTypeIfMappable(uniqueTypes))) {
             return Optional.empty();
