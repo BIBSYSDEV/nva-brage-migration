@@ -4,6 +4,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.scrapers.CustomerMapper.BORA;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.DC_JOURNAL_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.MISSING_DC_ISSN_AND_DC_JOURNAL;
@@ -56,6 +57,8 @@ public final class ChannelRegister {
     public static final String PUBLISHER_CHANNEL_REGISTRY_ALIASES_CSV_PATH = "publisher_channel_registry_aliases.csv";
     public static final String NTNU_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH =
         "ntnu_publisher_channel_registry_faculties.csv";
+    public static final String UIB_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH =
+        "uib_specific_publisher_channel_registry.csv";
     public static final String NTNU = "ntnu";
     private static final String JOURNAL_PATH = "journals_channel_registry_v2.csv";
     private static final String PUBLISHERS_PATH = "publisher_channel_registry_v2.csv";
@@ -70,6 +73,7 @@ public final class ChannelRegister {
     private final List<ChannelRegisterAlias> channelRegisterAliasesPublishers;
 
     private final List<ChannelRegisterAlias> channelRegisterAliasesForNtnu;
+    private final List<ChannelRegisterAlias> channelRegisterAliasesForBora;
 
     private ChannelRegister() {
         this.channelRegisterJournals = getJournalsFromCsv();
@@ -78,6 +82,8 @@ public final class ChannelRegister {
         this.channelRegisterAliasesPublishers = getChannelRegisterAliases(PUBLISHER_CHANNEL_REGISTRY_ALIASES_CSV_PATH);
         this.channelRegisterAliasesForNtnu = getChannelRegisterAliases(
             NTNU_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH);
+        this.channelRegisterAliasesForBora =
+            getChannelRegisterAliases(UIB_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH);
     }
 
     public static ChannelRegister getRegister() {
@@ -284,10 +290,20 @@ public final class ChannelRegister {
     private String lookupInPublisherAliases(String publisher,
                                             String customer) {
         var pid = lookupInAliases(channelRegisterAliasesPublishers, publisher);
-        if (StringUtils.isEmpty(pid) && NTNU.equalsIgnoreCase(customer)) {
-            pid = lookupInAliases(channelRegisterAliasesForNtnu, publisher);
+        if (StringUtils.isEmpty(pid)) {
+            pid = lookupInCustomerSpecificCsv(publisher, customer).orElse(null);
         }
         return pid;
+    }
+
+    private Optional<String> lookupInCustomerSpecificCsv(String publisher, String customer) {
+        if (NTNU.equalsIgnoreCase(customer)) {
+            return Optional.ofNullable(lookupInAliases(channelRegisterAliasesForNtnu, publisher));
+        }
+        if (BORA.equalsIgnoreCase(customer)) {
+            return Optional.ofNullable(lookupInAliases(channelRegisterAliasesForBora, publisher));
+        }
+        return Optional.empty();
     }
 
     private String lookupInAliases(List<ChannelRegisterAlias> aliases, String publisher) {

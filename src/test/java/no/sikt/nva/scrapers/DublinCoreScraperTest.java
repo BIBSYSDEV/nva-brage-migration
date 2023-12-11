@@ -47,7 +47,6 @@ import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Pages;
 import no.sikt.nva.brage.migration.common.model.record.Range;
-import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
@@ -851,6 +850,20 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldLookupInChannelRegisterAliasesForUibPublishers() {
+        var expectedPublisherPid = "CBCE38D7-C6C6-4CE9-BCED-D64610033E9B";
+        var dcType = toDcType("Report");
+        var publisherName = "Institute for Social Research";
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, publisherName);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "bora");
+        var publisherPid = record.getPublication().getPublicationContext().getPublisher().getPid();
+        assertThat(publisherPid, is(equalTo(expectedPublisherPid)));
+        assertThat(appender.getMessages(), not(containsString(publisherName)));
+    }
+
+    @Test
     void shouldLogPublisherThatDoesNotExistInChannelRegistry() {
         var dcType = toDcType("Report");
         var publisherName = "Gurba that is not in any channel registry csv's";
@@ -876,9 +889,19 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
 
-        assertThat(appender.getMessages(), containsString(INVALID_DC_TYPE.toString()));
+        assertThat(appender.getMessages(), not(containsString(INVALID_DC_TYPE.toString())));
         assertThat(record.getType().getNva(), is(equalTo(NvaType.REPORT.getValue())));
+    }
 
+    @Test
+    void shouldConvertNvaTypeToNvaTypeAndDoNotCreateError() {
+        var dcType = toDcType("Other report");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+
+        assertThat(record.getType().getNva(), is(equalTo(NvaType.REPORT.getValue())));
+        assertThat(appender.getMessages(), not(containsString(INVALID_DC_TYPE.toString())));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
@@ -13,6 +14,8 @@ public class Embargo {
     private String handle;
     private String date;
     private String filename;
+
+    private boolean detectedFile;
 
     public Embargo(String handle, String filename, String date) {
         this.handle = handle;
@@ -53,12 +56,24 @@ public class Embargo {
         return date;
     }
 
-    public Instant getDateAsInstant() {
-        return ZonedDateTime.of(LocalDate.parse(date), LocalTime.now(), ZoneId.systemDefault()).toInstant();
-    }
-
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public boolean isDetectedFile() {
+        return detectedFile;
+    }
+
+    public void setDetectedFile(boolean detectedFile) {
+        this.detectedFile = detectedFile;
+    }
+
+    public Instant getDateAsInstant() {
+        try {
+            return ZonedDateTime.of(LocalDate.parse(date), LocalTime.now(), ZoneId.systemDefault()).toInstant();
+        } catch (Exception e) {
+            return perseFiveYearDateToInstant();
+        }
     }
 
     public String getFilename() {
@@ -67,5 +82,13 @@ public class Embargo {
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    private Instant perseFiveYearDateToInstant() {
+        var fiveDigitYear = DateTimeFormatter.ofPattern("yyyyy-MM-dd");
+        return ZonedDateTime.of(LocalDate.parse(date, fiveDigitYear),
+                                LocalTime.now(),
+                                ZoneId.systemDefault())
+                   .toInstant();
     }
 }
