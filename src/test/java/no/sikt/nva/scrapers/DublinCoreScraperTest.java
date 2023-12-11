@@ -48,7 +48,6 @@ import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Pages;
 import no.sikt.nva.brage.migration.common.model.record.Range;
-import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
@@ -891,9 +890,19 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
 
-        assertThat(appender.getMessages(), containsString(INVALID_DC_TYPE.toString()));
+        assertThat(appender.getMessages(), not(containsString(INVALID_DC_TYPE.toString())));
         assertThat(record.getType().getNva(), is(equalTo(NvaType.REPORT.getValue())));
+    }
 
+    @Test
+    void shouldConvertNvaTypeToNvaTypeAndDoNotCreateError() {
+        var dcType = toDcType("Other report");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+
+        assertThat(record.getType().getNva(), is(equalTo(NvaType.REPORT.getValue())));
+        assertThat(appender.getMessages(), not(containsString(INVALID_DC_TYPE.toString())));
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {
