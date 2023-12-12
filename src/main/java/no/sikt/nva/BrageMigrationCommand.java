@@ -2,6 +2,8 @@ package no.sikt.nva;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
+import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -43,6 +45,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Spec;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @SuppressWarnings({"PMD.DoNotUseThreads", "PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessiveParameterList"})
@@ -81,6 +84,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String OUTPUT_DIR_SYSTEM_PROPERTY = "outputDir";
     public static final String AFFILIATIONS_FILE = "affiliations.txt";
     public static final String CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT = "Customer id does not exist for this environment: ";
+    public static final String WRONG_ACCOUNT_MESSAGE = "You are connected to wrong aws account: ";
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     @Spec
@@ -124,12 +128,37 @@ public class BrageMigrationCommand implements Callable<Integer> {
         this.s3Client = S3Driver.defaultS3Client().build();
     }
 
+    private static void validateAwsEnvironment(String environment) {
+        var accountId = getAccountId();
+        var awsEnvironment = AwsEnvironment.fromValue(environment);
+        if (doesNotBelongToCurrentAwsEnvironment(accountId, awsEnvironment)) {
+           throw new IllegalArgumentException(WRONG_ACCOUNT_MESSAGE + AwsEnvironment.getEnvironmentById(accountId).getValue());
+        }
+    }
+
+    private static boolean doesNotBelongToCurrentAwsEnvironment(String accountId, AwsEnvironment awsEnvironment) {
+        return nonNull(accountId)
+               && nonNull(awsEnvironment.getAccountId())
+               && !accountId.equals(awsEnvironment.getAccountId());
+    }
+
+    private static String getAccountId() {
+        return AWSSecurityTokenServiceClientBuilder
+                   .standard()
+                   .withRegion(Region.EU_WEST_1.id())
+                   .build()
+                   .getCallerIdentity(new GetCallerIdentityRequest())
+                   .getAccount();
+    }
+
     public BrageMigrationCommand(S3Client s3Client) {
         this.s3Client = s3Client;
     }
 
     public static void main(String[] args) {
         setSystemPropertiesForLogFiles(args);
+        var arg = getArgument(Arrays.asList(args), "-j", "--aws-bucket");
+        validateAwsEnvironment(arg.orElse(null));
         int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
         System.exit(exitCode);
     }
@@ -498,7 +527,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     public enum AwsEnvironment {
         EXPERIMENTAL("experimental"), SANDBOX("sandbox"), DEVELOP("dev"), TEST("test"), PROD("prod");
-
+        private static final Map<AwsEnvironment, String> ID_MAP = Map.of(SANDBOX, "750639270376",
+                                                                         DEVELOP, "884807050265",
+                                                                         TEST, "812481234721",
+                                                                         PROD, "755923822223");
         private final String value;
 
         AwsEnvironment(String type) {
@@ -516,6 +548,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
         public String getValue() {
             return value;
+        }
+
+        public String getAccountId() {
+            return ID_MAP.get(this);
+        }
+
+        public static AwsEnvironment getEnvironmentById(String id) {
+            return ID_MAP.entrySet()
+                              .stream()
+                              .filter(entry -> id.equals(entry.getValue()))
+                              .map(Map.Entry::getKey).findFirst().orElseThrow();
         }
     }
 }
