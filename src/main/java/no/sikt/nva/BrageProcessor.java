@@ -207,7 +207,11 @@ public class BrageProcessor implements Runnable {
                                 dublinCore);
         } catch (Exception e) {
             var brageLocation = new BrageLocation(Path.of(destinationDirectory, entryDirectory.getName()));
-            logger.error(e + StringUtils.SPACE + brageLocation.getOriginInformation());
+            if (nonNull(brageLocation.getHandle())) {
+                logger.error(e + StringUtils.SPACE + brageLocation.getOriginInformation());
+            } else {
+                logger.error(e + StringUtils.SPACE + brageLocation.getBrageBundlePath());
+            }
             return Optional.empty();
         }
     }
