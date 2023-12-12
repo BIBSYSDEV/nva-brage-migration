@@ -35,8 +35,7 @@ public class BrageMigrationCommandTest {
 
     @BeforeEach
     void beforeEach() {
-        arguments = new ArrayList<>(List.of("-c", "someCustomer", "-O",
-                                            "someOutputPath"));
+        arguments = new ArrayList<>(List.of("-c", "someCustomer"));
     }
 
     @Test
@@ -60,7 +59,8 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessFileWithoutHandleInDublinCoreFile() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        arguments.add(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME);
+        arguments.addAll(List.of(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME, "-O",
+                      "someOutputPath"));
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
             arguments.toArray(String[]::new));
         assertThat(appender.getMessages(),
@@ -87,8 +87,7 @@ public class BrageMigrationCommandTest {
     void shouldNotLoggDoiOfflineErrorWhenBundleContainsInvalidDoiWithValidDoiStructure() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         arguments.add(TEST_RESOURCE_PATH + INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI);
-        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
-            arguments.toArray(String[]::new));
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments.toArray(String[]::new));
         assertThat(appender.getMessages(),
                    not(containsString(String.valueOf(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK))));
     }
@@ -102,10 +101,8 @@ public class BrageMigrationCommandTest {
             arguments.toArray(String[]::new));
         var messages = appender.getMessages();
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
-        assertThat(messages,
-                   containsString(Warning.EMPTY_COLLECTION.toString()));
-        assertThat(messages,
-                   not(containsString(WRITING_TO_JSON_FILE_HAS_FAILED)));
+        assertThat(messages, containsString(Warning.EMPTY_COLLECTION.toString()));
+        assertThat(messages, not(containsString(WRITING_TO_JSON_FILE_HAS_FAILED)));
     }
 
     @Test
@@ -120,8 +117,7 @@ public class BrageMigrationCommandTest {
     void shouldHandleContentFilesWithForwardSlashesInTheirNames() {
         arguments.add(TEST_RESOURCE_PATH + BUNDLE_WITH_FORWARD_SLASHES_ZIP);
         arguments.add(PUSH_TO_AWS);
-        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
-            arguments.toArray(String[]::new));
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments.toArray(String[]::new));
     }
 
     @Test
@@ -144,12 +140,7 @@ public class BrageMigrationCommandTest {
 
     @Test
     void shouldThrowExceptionIfTestEnvironmentAndInvalidCustomer() {
-        arguments = new ArrayList<>(List.of("-c",
-                                            "someInvalidCustomer",
-                                            "-O",
-                                            "someOutputPath",
-                                            "-j",
-                                            "test"));
+        arguments = new ArrayList<>(List.of("-c", "someInvalidCustomer", "-O", "someOutputPath", "-j", "test"));
         arguments.add(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME);
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
             arguments.toArray(String[]::new));
@@ -158,12 +149,7 @@ public class BrageMigrationCommandTest {
 
     @Test
     void shouldThrowExceptionIfProdEnvironmentAndInvalidCustomer() {
-        arguments = new ArrayList<>(List.of("-c",
-                                            "someInvalidCustomer",
-                                            "-O",
-                                            "someOutputPath",
-                                            "-j",
-                                            "prod"));
+        arguments = new ArrayList<>(List.of("-c", "someInvalidCustomer", "-O", "someOutputPath", "-j", "prod"));
         arguments.add(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME);
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
             arguments.toArray(String[]::new));
@@ -172,15 +158,23 @@ public class BrageMigrationCommandTest {
 
     @Test
     void shouldNotCareAboutInvalidCustomerInDevelop() {
-        arguments = new ArrayList<>(List.of("-c",
-                                            "someInvalidCustomer",
-                                            "-O",
-                                            "someOutputPath",
-                                            "-j",
-                                            "dev"));
+        arguments = new ArrayList<>(List.of("-c", "someInvalidCustomer", "-O", "someOutputPath", "-j", "dev"));
         arguments.add(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME);
         int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
+    }
+
+    @Test
+    void shouldLogBrageBundleWhenFailingAndHandleIsNull() {
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        arguments.addAll(List.of("-D", TEST_RESOURCE_PATH + "failing_resource", "-u", "-O",
+                                 TEST_RESOURCE_PATH + "failing_resource"));
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client()))
+            .execute(arguments.toArray(String[]::new));
+
+        assertThat(appender.getMessages(),
+                   containsString(
+                       "IllegalArgumentException: src/test/resources/failing_resource/1/1"));
     }
 }
