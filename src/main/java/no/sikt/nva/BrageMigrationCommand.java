@@ -36,7 +36,6 @@ import no.sikt.nva.scrapers.HandleTitleMapReader;
 import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -53,7 +52,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 @Command(name = "Brage migration", description = "Tool for migrating Brage bundles")
 public class BrageMigrationCommand implements Callable<Integer> {
 
-    public static final Logger logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
     public static final String PATH_DELIMITER = "/";
     public static final String OUTPUT_JSON_FILENAME = "records.json";
     public static final String FAILURE_IN_BRAGE_MIGRATION_COMMAND = "Failure in BrageMigration command";
@@ -262,6 +260,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             || AwsEnvironment.PROD.equals(awsEnvironment)) {
             var customerUri = new CustomerMapper().getCustomerUri(customer, awsEnvironment.getValue());
             if (isNull(customerUri)) {
+                var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
                 logger.error(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
                 throw new IllegalArgumentException(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
             }

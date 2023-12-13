@@ -1,6 +1,5 @@
 package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.BrageMigrationCommand.logger;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -9,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.Affiliation;
+import org.slf4j.LoggerFactory;
 
 public final class AffiliationsScraper {
 
@@ -24,6 +24,7 @@ public final class AffiliationsScraper {
             var string = Files.readString(file.toPath());
             var affiliations = convertStringToAffiliations(string);
             var types = Arrays.asList(string.split(LINE_BREAK)[0].split(REGEX_COLON));
+            var logger = LoggerFactory.getLogger(AffiliationsScraper.class);
             logger.info(NUMBER_OF_AFFILIATIONS_MESSAGE, affiliations.size());
             logger.info(TYPE_TO_APPLY_ON_MESSAGE, types.toArray());
             return new AffiliationType(affiliations, types);
