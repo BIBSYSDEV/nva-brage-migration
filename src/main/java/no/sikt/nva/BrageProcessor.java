@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import no.sikt.nva.brage.migration.aws.ColoredLogger;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Customer;
@@ -33,14 +34,12 @@ import no.sikt.nva.scrapers.LicenseScraper;
 import no.sikt.nva.scrapers.ResourceOwnerMapper;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.GodClass")
 @JacocoGenerated
 public class BrageProcessor implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(BrageProcessor.class);
+    private static final ColoredLogger logger = ColoredLogger.create(BrageProcessor.class);
     private static final String HANDLE_DEFAULT_NAME = "handle";
     private static final String BRAGE_DUBLIN_CORE_XML_DEFAULT_NAME = "dublin_core.xml";
     private static final String FS_DUBLIN_CORE_XML_DEFAULT_NAME = "metadata_fs.xml";

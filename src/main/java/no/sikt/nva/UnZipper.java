@@ -11,19 +11,18 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import no.sikt.nva.brage.migration.aws.ColoredLogger;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import nva.commons.core.JacocoGenerated;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @JacocoGenerated
 public final class UnZipper {
 
     private static final String UNZIPPING_WENT_WRONG_WITH_EXCEPTION =
         "Unzipping went wrong with exception :";
-    private static final Logger logger = LoggerFactory.getLogger(UnZipper.class);
+    private static final ColoredLogger logger = ColoredLogger.create(UnZipper.class);
 
     private UnZipper() {
     }
