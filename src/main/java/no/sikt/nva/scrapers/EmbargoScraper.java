@@ -9,10 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import no.sikt.nva.brage.migration.aws.ColoredLogger;
 import no.sikt.nva.model.Embargo;
 import nva.commons.core.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class EmbargoScraper {
 
@@ -21,7 +20,7 @@ public final class EmbargoScraper {
     public static final String EMPTY_EMBARGO_FILE_MESSAGE = "EMBARGO_FILE_IS_EMPTY, embargoes will not be attached to"
                                                             + " publications";
 
-    private static final Logger logger = LoggerFactory.getLogger(EmbargoScraper.class);
+    private static final ColoredLogger logger = ColoredLogger.create(EmbargoScraper.class);
 
     public EmbargoScraper() {
     }

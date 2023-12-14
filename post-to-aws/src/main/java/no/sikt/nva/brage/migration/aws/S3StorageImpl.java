@@ -1,12 +1,14 @@
 package no.sikt.nva.brage.migration.aws;
 
 import static java.util.Objects.nonNull;
+import static nva.commons.core.attempt.Try.attempt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,8 +21,7 @@ import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.unit.nva.commons.json.JsonUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import nva.commons.core.StringUtils;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -43,8 +44,10 @@ public class S3StorageImpl implements S3Storage {
     public static final String RECORDS_JSON_FILE_NAME = "records.json";
     public static final String PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 = "Problem pushing processed records to S3: ";
     private static final String DEVELOP_BUCKET_NAME = "brage-migration-input-files-884807050265";
-    private static final Logger logger = LoggerFactory.getLogger(S3StorageImpl.class);
+    private static final ColoredLogger logger = ColoredLogger.create(S3StorageImpl.class);
     private static final String CONTENT_DISPOSITION_FILE_NAME_PATTERN = "filename=\"%s\"";
+    public static final String ZIP = ".zip";
+    public static final String FILE_DOES_NOT_EXIST_MESSAGE = "FILE DOES NOT EXIST ";
     private final String bucketName;
     private final S3Client s3Client;
     private final String pathPrefixString;
@@ -62,9 +65,9 @@ public class S3StorageImpl implements S3Storage {
         try {
             writeAssociatedFilesToS3(record);
             writeRecordToS3(record);
-            logger.info("record" + record.getId() + " stored to bucket " + bucketName);
+            logger.info(record.getId() + " stored to aws");
         } catch (Exception e) {
-            logger.info(COULD_NOT_WRITE_RECORD_MESSAGE + record.getBrageLocation() + " " + e);
+            logger.error(COULD_NOT_WRITE_RECORD_MESSAGE + record.getBrageLocation() + " " + e);
         }
     }
 
@@ -73,7 +76,7 @@ public class S3StorageImpl implements S3Storage {
         try {
             writeLogsToS3(customer);
         } catch (Exception e) {
-            logger.info(COULD_NOT_WRITE_LOGS_MESSAGE + e.getMessage());
+            logger.error(COULD_NOT_WRITE_LOGS_MESSAGE + e.getMessage());
         }
     }
 
@@ -81,11 +84,11 @@ public class S3StorageImpl implements S3Storage {
     public void storeProcessedCollections(String[] collections) {
         try {
             var collectionFiles = getCollections(stripZipBundlesToCollections(collections));
-            var listOfRecordsCollections = gerRecordsJsonFiles(collectionFiles);
+            var listOfRecordsCollections = getRecordsJsonFiles(collectionFiles);
             extractRecords(listOfRecordsCollections).forEach(this::storeRecord);
             writeLogsToS3(customer);
         } catch (Exception e) {
-            logger.info(PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 + e.getMessage());
+            logger.error(PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 + e);
         }
     }
 
@@ -94,10 +97,19 @@ public class S3StorageImpl implements S3Storage {
     }
 
     public List<Record> readRecordsFromFile(File recordsFile) throws IOException {
-        var path = getPathPrefixString() + recordsFile.getPath();
-        var recordsAsString = Files.readString(Path.of(path));
-        Record[] a = JsonUtils.dtoObjectMapper.readValue(recordsAsString, Record[].class);
-        return Arrays.asList(a);
+        return attempt(() -> readFileAsString(getPathPrefixString() + recordsFile.getPath()))
+                   .map(s -> JsonUtils.dtoObjectMapper.readValue(s, Record[].class))
+                   .map(Arrays::asList)
+                   .orElse(failure -> List.<Record>of());
+    }
+
+    private static String readFileAsString(String path) throws IOException {
+        try {
+            return Files.readString(Path.of(path));
+        } catch (NoSuchFileException e) {
+            logger.error(FILE_DOES_NOT_EXIST_MESSAGE + path);
+            return null;
+        }
     }
 
     private static String determineBucketFromAwsEnvironment(String awsBucket) {
@@ -115,7 +127,7 @@ public class S3StorageImpl implements S3Storage {
         }
     }
 
-    private static List<File> gerRecordsJsonFiles(List<File> collectionFiles) {
+    private static List<File> getRecordsJsonFiles(List<File> collectionFiles) {
         return collectionFiles.stream()
                    .map(file -> new File(file.getName() + PATH_DELIMITER + RECORDS_JSON_FILE_NAME))
                    .collect(Collectors.toList());
@@ -123,7 +135,7 @@ public class S3StorageImpl implements S3Storage {
 
     private static List<String> stripZipBundlesToCollections(String... collections) {
         return Arrays.stream(collections)
-                   .map(collectionString -> collectionString.replaceAll(".zip", ""))
+                   .map(collectionString -> collectionString.replaceAll(ZIP, StringUtils.EMPTY_STRING))
                    .collect(Collectors.toList());
     }
 
@@ -140,7 +152,7 @@ public class S3StorageImpl implements S3Storage {
             var file = new File(filePath);
             map.put(contentFile.getIdentifier(), file);
         } catch (Exception e) {
-            logger.error("FILE NOT FOUND: " + filePath + ", in bundle: " + record.getBrageLocation());
+            logger.error("FILE NOT FOUND: "  + filePath + ", in bundle: " + record.getBrageLocation());
         }
     }
 
@@ -159,7 +171,6 @@ public class S3StorageImpl implements S3Storage {
     }
 
     private File findAssociatedFiles(Record record) {
-        logger.info(getPathPrefixString() + record.getBrageLocation());
         return new File(getPathPrefixString() + record.getBrageLocation());
     }
 
