@@ -122,6 +122,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private boolean noHandleCheck;
     @Option(names = {"-u"}, description = "Run import of unzipped collections")
     private boolean isUnzipped;
+    @Option(names = {"-e", "--excel-file"}, description = "Push pdf files and metadata to s3 given "
+                                                          + "an excel file")
+    private String excelFile;
+
     private RecordStorage recordStorage;
 
     public BrageMigrationCommand() {
@@ -220,7 +224,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             var outputDirectory = generateOutputDirectory();
             if (writeProcessedImportToAws) {
                 pushExistingResourcesToNva(readZipFileNamesFromCollectionFile(inputDirectory));
-            } else {
+            }  else {
                 Map<String, List<Embargo>> embargoes;
                 if (isNull(zipFiles)) {
                     this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
