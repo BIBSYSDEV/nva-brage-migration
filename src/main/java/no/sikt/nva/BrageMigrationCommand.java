@@ -374,7 +374,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private Map<String, List<Embargo>> getEmbargoes(String directory) {
         var embargoFile = new File(directory + DEFAULT_EMBARGO_FILE_NAME);
-        return EmbargoScraper.getEmbargoList(embargoFile);
+        return EmbargoScraper.getEmbargoes(embargoFile);
     }
 
     private Map<String, Contributor> getContributors(String directory) {

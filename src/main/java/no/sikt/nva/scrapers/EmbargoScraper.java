@@ -25,7 +25,7 @@ public final class EmbargoScraper {
     public EmbargoScraper() {
     }
 
-    public static Map<String, List<Embargo>> getEmbargoList(File file) {
+    public static Map<String, List<Embargo>> getEmbargoes(File file) {
         try {
             var contentFileAsString = Files.readString(file.toPath());
             var embargoes = convertStringToEmbargoObjects(contentFileAsString);
@@ -47,14 +47,21 @@ public final class EmbargoScraper {
     }
 
     private static Map<String, List<Embargo>> convertStringToEmbargoObjects(String contentFileAsString) {
-        var listOfStringObjects = Arrays.asList(
-            contentFileAsString.replaceAll(EMPTY_LINE_REGEX, StringUtils.EMPTY_STRING)
-                .replace("|", ";")
-                .split("\n"));
-        var embargoes = listOfStringObjects.stream()
+        var listOfStringObjects = Arrays.asList(contentFileAsString.replaceAll(EMPTY_LINE_REGEX, StringUtils.EMPTY_STRING)
+                                                                    .replace("|", ";")
+                                                                    .split("\n"));
+        var embargoes = removeIgnoredLines(listOfStringObjects).stream()
                             .map(EmbargoScraper::convertToEmbargo)
                             .collect(Collectors.toList());
         return createEmbargoHandleMap(embargoes);
+    }
+
+    private static List<String> removeIgnoredLines(List<String> listOfStringObjects) {
+        var list = new ArrayList<>(listOfStringObjects);
+        list.remove(0);
+        list.remove(0);
+        list.remove(list.size() - 1);
+        return list;
     }
 
     private static Embargo convertToEmbargo(String string) {

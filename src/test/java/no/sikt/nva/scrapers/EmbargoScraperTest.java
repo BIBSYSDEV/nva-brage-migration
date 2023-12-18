@@ -3,6 +3,7 @@ package no.sikt.nva.scrapers;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -30,18 +31,25 @@ public class EmbargoScraperTest {
     public static final String TEST_FILE_LOCATION_V2 = "src/test/resources/FileEmbargoV2.txt";
     public static final String EMBARGO_WITH_DISTANT_DATE_TXT = "src/test/resources/FileEmbargo_with_distant_date.txt";
 
+
+    @Test
+    void shouldIgnoreDefaultRowsOfEmbargoFile() {
+        var actualEmbargos =
+            Objects.requireNonNull(EmbargoScraper.getEmbargoes(new File(TEST_FILE_LOCATION))).get(HANDLE);
+        assertThat(actualEmbargos, hasSize(3) );
+    }
     @Test
     void shouldExtractEmbargoWithPdfFile() {
         var expectedEmbargo = new Embargo(HANDLE, FILENAME, DATE);
         var actualEmbargos =
-            Objects.requireNonNull(EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION))).get(HANDLE);
+            Objects.requireNonNull(EmbargoScraper.getEmbargoes(new File(TEST_FILE_LOCATION))).get(HANDLE);
         assertThat(actualEmbargos, hasItem(expectedEmbargo));
     }
 
     @Test
     void shouldExtractEmbargosWithDifferentDelimiter() {
         var expectedEmbargo = new Embargo(HANDLE, FILENAME, DATE);
-        var actualEmbargo = Objects.requireNonNull(EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION_V2)))
+        var actualEmbargo = Objects.requireNonNull(EmbargoScraper.getEmbargoes(new File(TEST_FILE_LOCATION_V2)))
                                 .get(HANDLE);
         assertThat(actualEmbargo, hasItem(expectedEmbargo));
     }
@@ -49,7 +57,7 @@ public class EmbargoScraperTest {
     @Test
     void shouldLogNonDetectedEmbargos() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var embargos = EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION));
+        var embargos = EmbargoScraper.getEmbargoes(new File(TEST_FILE_LOCATION));
         EmbargoParser.logNonEmbargosDetected(embargos);
         assertThat(appender.getMessages(), containsString("Embargo file not found: "));
     }
@@ -57,7 +65,7 @@ public class EmbargoScraperTest {
     @Test
     void shouldNotLogDetectedEmbargos() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var embargos = EmbargoScraper.getEmbargoList(new File(TEST_FILE_LOCATION));
+        var embargos = EmbargoScraper.getEmbargoes(new File(TEST_FILE_LOCATION));
         var record = new Record();
         record.setId(UriWrapper.fromUri("https://hdl.handle.net/11250/2683076").getUri());
         record.setContentBundle(contentBundleWithFileNameFromEmbargo(
@@ -71,7 +79,7 @@ public class EmbargoScraperTest {
     @Test
     void shouldSetEmbargoOnMultipleContentFilesIfNecessary() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        var embargos = EmbargoScraper.getEmbargoList(new File(EMBARGO_WITH_DISTANT_DATE_TXT));
+        var embargos = EmbargoScraper.getEmbargoes(new File(EMBARGO_WITH_DISTANT_DATE_TXT));
         var record = new Record();
         record.setId(UriWrapper.fromUri("https://hdl.handle.net/11250/2683076").getUri());
         record.setContentBundle(contentBundleWithFileNameFromEmbargo(
