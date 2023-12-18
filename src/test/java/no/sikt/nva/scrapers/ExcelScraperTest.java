@@ -4,7 +4,7 @@ import static no.sikt.nva.validators.ExcelScraperValidator.ERROR_MESSAGE_INVALID
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import java.io.FileNotFoundException;
+import java.nio.file.NoSuchFileException;
 import no.sikt.nva.exceptions.ExcelException;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +42,7 @@ class ExcelScraperTest {
 
     @Test
     void shouldThrowExceptionWhenExcelPathIsInvalid() {
-        assertThrows(FileNotFoundException.class, () -> ExcelScraper.toRecord(randomString()));
+        assertThrows(NoSuchFileException.class, () -> ExcelScraper.toRecord(randomString()));
     }
 
     @Test

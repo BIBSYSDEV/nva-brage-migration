@@ -1,8 +1,10 @@
 package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.validators.ExcelScraperValidator.validate;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.exceptions.ExcelException;
@@ -25,9 +27,10 @@ public class ExcelScraper {
     public static final int LICENCE_COLUMN = 4;
     public static final int FILENAME_COLUMN = 5;
 
-    public static Record toRecord(String excelFilePath) throws IOException, ExcelException {
-        var excelFileStream = new FileInputStream(excelFilePath);
-        return toRecord(new XSSFWorkbook(excelFileStream));
+    public static Record toRecord(String excelFilePath) throws ExcelException, IOException {
+        try (InputStream excelFileStream = Files.newInputStream(Paths.get(excelFilePath))) {
+            return toRecord(new XSSFWorkbook(excelFileStream));
+        }
     }
 
     public static Record toRecord(Workbook workbook) throws ExcelException {
