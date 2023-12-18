@@ -1,6 +1,6 @@
 package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.validators.ExcelScraperValidator.ERROR_MESSAGE_INVALID_EMBARGO_FORMAT;
+import static no.sikt.nva.validators.ExcelRowValidator.ERROR_MESSAGE_INVALID_EMBARGO_FORMAT;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
