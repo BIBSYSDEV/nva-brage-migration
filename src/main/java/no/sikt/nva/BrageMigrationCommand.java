@@ -159,17 +159,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
         var pushToAwsOnly = getPushToAwsOnlyArgument(args);
         var proceedAndPushToAws = getProceedAndPushToAwsArgument(args);
         if (nonNull(pushToAwsOnly) && nonNull(proceedAndPushToAws)) {
-            validateAwsEnvironment(proceedAndPushToAws.orElse(null));
+            validateAwsEnvironment(environment.orElse(null));
         }
         int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
         System.exit(exitCode);
     }
 
-    private static Optional<String> getProceedAndPushToAwsArgument(String[] args) {
+    private static Optional<String> getProceedAndPushToAwsArgument(String... args) {
         return getArgument(Arrays.asList(args), "-a", "--should-write-to-aws");
     }
 
-    private static Optional<String> getPushToAwsOnlyArgument(String[] args) {
+    private static Optional<String> getPushToAwsOnlyArgument(String... args) {
         return getArgument(Arrays.asList(args), "-b", "--write-processed-import-to-aws");
     }
 
