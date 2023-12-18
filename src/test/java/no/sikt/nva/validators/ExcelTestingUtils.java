@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import no.sikt.nva.brage.migration.common.model.record.BrageVersion;
+import no.sikt.nva.brage.migration.common.model.record.PublisherAuthorityEnum;
 import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -16,7 +16,7 @@ public class ExcelTestingUtils {
     public static final Object[] VALID_ROW = {
         123,
         "En tittel",
-        BrageVersion.ACCEPTED.getValue(),
+        PublisherAuthorityEnum.ACCEPTED.getValue(),
         Date.from(Instant.now()),
         BrageLicense.CC_BY.getValue(),
         "Fil.pdf"
@@ -34,12 +34,12 @@ public class ExcelTestingUtils {
 
         int rowCount = 0;
 
-        for (Object[] aBook : bookData) {
+        for (Object[] book : bookData) {
             Row row = sheet.createRow(rowCount++);
 
             int columnCount = 0;
 
-            for (Object field : aBook) {
+            for (Object field : book) {
                 Cell cell = row.createCell(columnCount++);
                 if (field instanceof String) {
                     cell.setCellValue((String) field);
@@ -56,8 +56,9 @@ public class ExcelTestingUtils {
     }
 
     public static Object[] substituteValue(Object[] list, Object newValue, int index) {
-        list[index] = newValue;
-        return list;
+        var newArray = new ArrayList<>(List.of(list));
+        newArray.set(index, newValue);
+        return newArray.toArray();
     }
 
     public static Object[] addValue(Object[] list, Object newValue) {

@@ -21,7 +21,7 @@ public class ExcelHeaderValidator {
         var actualHeaders = new ArrayList<String>();
         for (int i = FIRST_COLUMN; i < headerRow.getLastCellNum(); i++) {
             var headerCell = headerRow.getCell(i);
-            if (headerCell == null || headerCell.getCellType() != CellType.STRING) {
+            if (headerCell == null || !CellType.STRING.equals(headerCell.getCellType())) {
                 throw new ExcelException(ERROR_MESSAGE_INVALID_HEADER);
             }
             actualHeaders.add(headerCell.getStringCellValue().trim());

@@ -21,7 +21,7 @@ class ExcelScraperValidatorTest {
 
     @Test
     void shouldNotThrowExceptionWhenValidExcelDataIsProvided() {
-        Object[][] validExcelData = {
+        var validExcelData = new Object[][] {
             VALID_HEADERS,
             VALID_ROW
         };
@@ -30,7 +30,7 @@ class ExcelScraperValidatorTest {
 
     @Test
     void shouldThrowExceptionWhenNoData() {
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             {},
             {}
         };

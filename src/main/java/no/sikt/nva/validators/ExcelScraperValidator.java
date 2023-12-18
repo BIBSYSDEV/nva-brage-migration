@@ -1,5 +1,6 @@
 package no.sikt.nva.validators;
 
+import static java.util.Objects.nonNull;
 import static no.sikt.nva.scrapers.ExcelScraper.FIRST_ROW;
 import static no.sikt.nva.scrapers.ExcelScraper.SECOND_ROW;
 import static no.sikt.nva.validators.ExcelHeaderValidator.validateHeaders;
@@ -32,7 +33,7 @@ public class ExcelScraperValidator {
         var lastRowIndex = sheet.getLastRowNum();
         for (var i = lastRowIndex; i >= FIRST_ROW; i--) {
             var row = sheet.getRow(i);
-            if (row != null && row.getLastCellNum() != -1) {
+            if (nonNull(row) && row.getLastCellNum() != -1) {
                 return i;
             }
         }

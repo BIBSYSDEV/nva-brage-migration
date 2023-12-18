@@ -8,7 +8,7 @@ import static no.sikt.nva.scrapers.ExcelScraper.LICENCE_COLUMN;
 import static no.sikt.nva.scrapers.ExcelScraper.TITLE_COLUMN;
 import static no.sikt.nva.scrapers.ExcelScraper.VERSION_COLUMN;
 import static no.sikt.nva.validators.ExcelHeaderValidator.VALID_HEADERS;
-import no.sikt.nva.brage.migration.common.model.record.BrageVersion;
+import no.sikt.nva.brage.migration.common.model.record.PublisherAuthorityEnum;
 import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
 import no.sikt.nva.exceptions.ExcelException;
 import nva.commons.core.StringUtils;
@@ -51,7 +51,7 @@ public class ExcelRowValidator {
         var cristinIdCell = row.getCell(CRISTIN_ID_COLUMN);
         if (isEmpty(cristinIdCell)) {
             throw new ExcelException(ERROR_MESSAGE_MISSING_CRISTIN_ID);
-        } else if (cristinIdCell.getCellType() != CellType.NUMERIC) {
+        } else if (!CellType.NUMERIC.equals(cristinIdCell.getCellType())) {
             throw new ExcelException(ERROR_MESSAGE_INVALID_CRISTIN_ID);
         }
     }
@@ -66,8 +66,8 @@ public class ExcelRowValidator {
         var versionCell = row.getCell(VERSION_COLUMN);
         if (isEmpty(versionCell)) {
             throw new ExcelException(ERROR_MESSAGE_MISSING_VERSION);
-        } else if (versionCell.getCellType() != CellType.STRING
-                   || !BrageVersion.isValid(versionCell.getStringCellValue())) {
+        } else if (!CellType.STRING.equals(versionCell.getCellType())
+                   || !PublisherAuthorityEnum.isValid(versionCell.getStringCellValue())) {
             throw new ExcelException(ERROR_MESSAGE_INVALID_VERSION);
         }
     }
@@ -75,7 +75,7 @@ public class ExcelRowValidator {
     private static void validateEmbargo(Row row) throws ExcelException {
         var embargoCell = row.getCell(EMBARGO_COLUMN);
         if (!isEmpty(embargoCell)
-            && (embargoCell.getCellType() != CellType.NUMERIC
+            && (!CellType.NUMERIC.equals(embargoCell.getCellType())
                 || !DateUtil.isCellDateFormatted(embargoCell))) {
             throw new ExcelException(ERROR_MESSAGE_INVALID_EMBARGO_FORMAT);
         }
@@ -85,7 +85,7 @@ public class ExcelRowValidator {
         var licenceCell = row.getCell(LICENCE_COLUMN);
         if (isEmpty(licenceCell)) {
             throw new ExcelException(ERROR_MESSAGE_MISSING_LICENCE);
-        } else if (licenceCell.getCellType() != CellType.STRING
+        } else if (!CellType.STRING.equals(licenceCell.getCellType())
                    || !BrageLicense.isValid(licenceCell.getStringCellValue())) {
             throw new ExcelException(ERROR_MESSAGE_INVALID_LICENCE);
         }
@@ -102,11 +102,11 @@ public class ExcelRowValidator {
     }
 
     private static boolean isEmpty(Cell cell) {
-        if (cell == null || cell.getCellType() == CellType.BLANK) {
+        if (cell == null || CellType.BLANK.equals(cell.getCellType())) {
             return true;
         }
 
-        return cell.getCellType() == CellType.STRING
+        return cell.getCellType().equals(CellType.STRING)
                && StringUtils.isBlank(cell.getStringCellValue());
     }
 }

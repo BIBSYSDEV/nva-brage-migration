@@ -25,7 +25,7 @@ import static no.sikt.nva.validators.ExcelTestingUtils.substituteValue;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import no.sikt.nva.brage.migration.common.model.record.BrageVersion;
+import no.sikt.nva.brage.migration.common.model.record.PublisherAuthorityEnum;
 import no.sikt.nva.exceptions.ExcelException;
 import no.sikt.nva.scrapers.ExcelScraper;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +44,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldThrowExceptionIfRowHasTooManyCellsFilled() {
         var rowWithExtraCell = addValue(VALID_ROW, randomString());
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithExtraCell
         };
@@ -56,7 +56,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldThrowExceptionIfRowHasTooFewCellsFilled() {
         var rowWithoutCell = removeValue(VALID_ROW, VERSION_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithoutCell
         };
@@ -68,7 +68,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldThrowExceptionWhenCristinIdIsMissing() {
         var rowWithEmptyCristinId = substituteValue(VALID_ROW, EMPTY_STRING, CRISTIN_ID_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithEmptyCristinId
         };
@@ -80,7 +80,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldThrowExceptionWhenCristinIdIsNonNumeric() {
         var rowWithInvalidCristinId = substituteValue(VALID_ROW, randomString(), CRISTIN_ID_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithInvalidCristinId
         };
@@ -92,7 +92,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldThrowExceptionWhenMissingTitle() {
         var rowWithMissingTitle = substituteValue(VALID_ROW, EMPTY_STRING, TITLE_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithMissingTitle
         };
@@ -104,7 +104,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldThrowExceptionWhenMissingVersion() {
         var rowWithMissingVersion = substituteValue(VALID_ROW, EMPTY_STRING, VERSION_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithMissingVersion
         };
@@ -116,7 +116,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldThrowExceptionWhenInvalidVersion() {
         var rowWithInvalidVersion = substituteValue(VALID_ROW, randomString(), VERSION_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithInvalidVersion
         };
@@ -128,18 +128,18 @@ class ExcelRowValidatorTest {
     @Test
     void shouldNotThrowExceptionWhenVersionIsValidEnum() {
         var rowWithValidVersionAkseptert = substituteValue(VALID_ROW,
-                                                           BrageVersion.ACCEPTED.getValue(),
+                                                           PublisherAuthorityEnum.ACCEPTED.getValue(),
                                                            VERSION_COLUMN);
-        Object[][] validExcelDataAkseptert = {
+        var validExcelDataAkseptert = new Object[][] {
             VALID_HEADERS,
             rowWithValidVersionAkseptert
         };
         assertDoesNotThrow(() -> ExcelScraper.toRecord(createWorkbook(validExcelDataAkseptert)));
 
         var rowWithValidVersionPublisert = substituteValue(VALID_ROW,
-                                                           BrageVersion.PUBLISHED.getValue(),
+                                                           PublisherAuthorityEnum.PUBLISHED.getValue(),
                                                            VERSION_COLUMN);
-        Object[][] validExcelDataPublisert = {
+        var validExcelDataPublisert = new Object[][] {
             VALID_HEADERS,
             rowWithValidVersionPublisert
         };
@@ -149,7 +149,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldAllowEmptyEmbargoDate() {
         var rowWithoutEmbargo = substituteValue(VALID_ROW, EMPTY_STRING, EMBARGO_COLUMN);
-        Object[][] validExcelData = {
+        var validExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithoutEmbargo
         };
@@ -159,7 +159,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldThrowExceptionWhenEmbargoDateHasInvalidFormat() {
         var rowWithInvalidEmbargo = substituteValue(VALID_ROW, INVALID_DATE_FORMAT_EXAMPLE, EMBARGO_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithInvalidEmbargo
         };
@@ -171,7 +171,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldThrowExceptionWhenMissingLicence() {
         var rowWithMissingLicence = substituteValue(VALID_ROW, EMPTY_STRING, LICENCE_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithMissingLicence
         };
@@ -183,7 +183,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldThrowExceptionWhenInvalidLicence() {
         var rowWithInvalidLicence = substituteValue(VALID_ROW, randomString(), LICENCE_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithInvalidLicence
         };
@@ -195,7 +195,7 @@ class ExcelRowValidatorTest {
     @Test
     void shouldThrowExceptionWhenMissingFilename() {
         var rowWithMissingFilename = substituteValue(VALID_ROW, EMPTY_STRING, FILENAME_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS,
             rowWithMissingFilename
         };

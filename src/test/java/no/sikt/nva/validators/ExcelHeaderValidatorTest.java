@@ -23,7 +23,7 @@ class ExcelHeaderValidatorTest {
 
     @Test
     void shouldNotThrowExceptionWhenValidHeadersAreProvided() {
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             VALID_HEADERS
         };
         assertDoesNotThrow(() -> ExcelScraperValidator.validate(createWorkbook(invalidExcelData)));
@@ -32,7 +32,7 @@ class ExcelHeaderValidatorTest {
     @Test
     void shouldThrowExceptionWhenHeaderIsMissing() {
         var headersWithoutTitleHeader = removeValue(VALID_HEADERS, TITLE_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             headersWithoutTitleHeader
         };
         assertThrows(ExcelException.class,
@@ -43,7 +43,7 @@ class ExcelHeaderValidatorTest {
     @Test
     void shouldThrowExceptionIfUnknownColumnHeaderExists() {
         var headersWithInvalidCristinIdName = substituteValue(VALID_HEADERS, randomString(), CRISTIN_ID_COLUMN);
-        Object[][] invalidExcelData = {
+        var invalidExcelData = new Object[][] {
             headersWithInvalidCristinIdName
         };
         assertThrows(ExcelException.class,
