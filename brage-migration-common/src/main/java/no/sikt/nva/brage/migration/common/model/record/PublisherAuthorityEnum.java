@@ -1,6 +1,7 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
 
 public enum PublisherAuthorityEnum {
     ACCEPTED("Akseptert"),
@@ -10,6 +11,15 @@ public enum PublisherAuthorityEnum {
 
     PublisherAuthorityEnum(String value) {
         this.value = value;
+    }
+
+    public static PublisherAuthorityEnum fromValue(String value) {
+        for (PublisherAuthorityEnum pubAuth : PublisherAuthorityEnum.values()) {
+            if (pubAuth.getValue().equalsIgnoreCase(value)) {
+                return pubAuth;
+            }
+        }
+        return null;
     }
 
     public static boolean isValid(String value) {

@@ -24,7 +24,7 @@ public class ExcelTestingUtils {
     public static final String INVALID_DATE_FORMAT_EXAMPLE = "03/19/2024";
     public static final String EMPTY_STRING = "";
 
-    public static Workbook createWorkbook(Object[][] bookData) {
+    public static Workbook createWorkbook(Object[][] data) {
         var workbook = new XSSFWorkbook();
         var sheet = workbook.createSheet("Metadata-test");
 
@@ -34,12 +34,12 @@ public class ExcelTestingUtils {
 
         int rowCount = 0;
 
-        for (Object[] book : bookData) {
+        for (Object[] rowData : data) {
             Row row = sheet.createRow(rowCount++);
 
             int columnCount = 0;
 
-            for (Object field : book) {
+            for (Object field : rowData) {
                 Cell cell = row.createCell(columnCount++);
                 if (field instanceof String) {
                     cell.setCellValue((String) field);
@@ -53,6 +53,12 @@ public class ExcelTestingUtils {
         }
 
         return workbook;
+    }
+
+    public static Row createRow(Object[] data) {
+        var workbookData = new Object[][] {data};
+        var workbook = createWorkbook(workbookData);
+        return workbook.getSheetAt(0).getRow(0);
     }
 
     public static Object[] substituteValue(Object[] list, Object newValue, int index) {
