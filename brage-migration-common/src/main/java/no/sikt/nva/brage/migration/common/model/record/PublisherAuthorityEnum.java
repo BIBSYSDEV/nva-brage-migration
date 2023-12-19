@@ -1,7 +1,6 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
 
 public enum PublisherAuthorityEnum {
     ACCEPTED("Akseptert"),
