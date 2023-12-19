@@ -29,6 +29,7 @@ public class EmbargoScraperTest {
     public static final String DATE = "2023-10-01";
     public static final String TEST_FILE_LOCATION = "src/test/resources/FileEmbargo.txt";
     public static final String TEST_FILE_LOCATION_V2 = "src/test/resources/FileEmbargoV2.txt";
+    public static final String TEST_FILE_LOCATION_V3 = "src/test/resources/FileEmbargoV3.txt";
     public static final String EMBARGO_WITH_DISTANT_DATE_TXT = "src/test/resources/FileEmbargo_with_distant_date.txt";
 
 
@@ -36,8 +37,19 @@ public class EmbargoScraperTest {
     void shouldIgnoreDefaultRowsOfEmbargoFile() {
         var actualEmbargos =
             Objects.requireNonNull(EmbargoScraper.getEmbargoes(new File(TEST_FILE_LOCATION))).get(HANDLE);
-        assertThat(actualEmbargos, hasSize(3) );
+        assertThat(actualEmbargos, hasSize(3));
     }
+
+    @Test
+    void shouldConvertPrettifiedEmbargoFileToEmbargoes() {
+        var expectedEmbargo = new Embargo(HANDLE, FILENAME, DATE);
+        var actualEmbargos =
+            Objects.requireNonNull(EmbargoScraper.getEmbargoes(new File(TEST_FILE_LOCATION_V3))).get(HANDLE);
+
+        assertThat(actualEmbargos, hasSize(3));
+        assertThat(actualEmbargos, hasItem(expectedEmbargo));
+    }
+
     @Test
     void shouldExtractEmbargoWithPdfFile() {
         var expectedEmbargo = new Embargo(HANDLE, FILENAME, DATE);

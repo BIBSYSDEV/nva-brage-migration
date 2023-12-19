@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.aws.ColoredLogger;
 import no.sikt.nva.model.Embargo;
 import nva.commons.core.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 public final class EmbargoScraper {
 
@@ -21,6 +22,8 @@ public final class EmbargoScraper {
                                                             + " publications";
 
     private static final ColoredLogger logger = ColoredLogger.create(EmbargoScraper.class);
+    public static final String FIRST_TWO_LINES_PATTERN = "\\s*concat\\s+\\|\\s+text_value\\s+\\|\\s+start_date.*\\R\\s*-+.*\\R";
+    public static final String LAST_LINE_PATTERN = "\\R\\s*\\(\\d+\\s+rows\\)$";
 
     public EmbargoScraper() {
     }
@@ -47,21 +50,20 @@ public final class EmbargoScraper {
     }
 
     private static Map<String, List<Embargo>> convertStringToEmbargoObjects(String contentFileAsString) {
-        var listOfStringObjects = Arrays.asList(contentFileAsString.replaceAll(EMPTY_LINE_REGEX, StringUtils.EMPTY_STRING)
-                                                                    .replace("|", ";")
-                                                                    .split("\n"));
-        var embargoes = removeIgnoredLines(listOfStringObjects).stream()
+        var embargoes = Arrays.asList(parseString(contentFileAsString)).stream()
                             .map(EmbargoScraper::convertToEmbargo)
                             .collect(Collectors.toList());
         return createEmbargoHandleMap(embargoes);
     }
 
-    private static List<String> removeIgnoredLines(List<String> listOfStringObjects) {
-        var list = new ArrayList<>(listOfStringObjects);
-        list.remove(0);
-        list.remove(0);
-        list.remove(list.size() - 1);
-        return list;
+    @NotNull
+    private static String[] parseString(String contentFileAsString) {
+        return contentFileAsString
+                   .replaceFirst(FIRST_TWO_LINES_PATTERN, StringUtils.EMPTY_STRING)
+                   .replaceFirst(LAST_LINE_PATTERN, StringUtils.EMPTY_STRING)
+                   .replaceAll(EMPTY_LINE_REGEX, StringUtils.EMPTY_STRING)
+                   .replace("|", ";")
+                   .split("\n");
     }
 
     private static Embargo convertToEmbargo(String string) {
