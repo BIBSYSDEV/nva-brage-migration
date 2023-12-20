@@ -80,6 +80,8 @@ dependencies {
     implementation project(':brage-migration-common')
     implementation project(':post-to-aws')
 
+    implementation 'org.apache.poi:poi:5.2.2'
+    implementation 'org.apache.poi:poi-ooxml:5.2.2'
 }
 
 compileJava {
