@@ -1,13 +1,13 @@
 package no.sikt.nva;
 
-import static no.sikt.nva.UnisContent.CRISTIN_ID_COLUMN;
-import static no.sikt.nva.UnisContent.TITLE_COLUMN;
 import static no.sikt.nva.UnisContentScrapingResult.ERROR_MESSAGE_EMPTY_SHEET;
 import static no.sikt.nva.UnisContentScrapingResult.ERROR_MESSAGE_INVALID_HEADERS;
 import static no.sikt.nva.validators.ExcelTestingUtils.addValue;
 import static no.sikt.nva.validators.ExcelTestingUtils.createWorkbook;
 import static no.sikt.nva.validators.ExcelTestingUtils.removeValue;
 import static no.sikt.nva.validators.ExcelTestingUtils.substituteValue;
+import static no.sikt.nva.validators.UnisContentValidator.CRISTIN_ID_COLUMN;
+import static no.sikt.nva.validators.UnisContentValidator.TITLE_COLUMN;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.junit.jupiter.api.Assertions.*;
 import no.sikt.nva.exceptions.ExcelException;

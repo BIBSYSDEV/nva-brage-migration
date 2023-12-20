@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.exceptions.ExcelException;
+import no.sikt.nva.exceptions.InvalidUnisContentException;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -24,7 +25,9 @@ public final class UnisContentScrapingResult {
 
     private UnisContentScrapingResult() {}
 
-    public static UnisContentScrapingResult fromWorkbook(Workbook workbook) throws ExcelException {
+    public static UnisContentScrapingResult fromWorkbook(Workbook workbook)
+        throws ExcelException, InvalidUnisContentException {
+
         Sheet sheet = workbook.getSheetAt(0);
 
         validateSheet(sheet);
