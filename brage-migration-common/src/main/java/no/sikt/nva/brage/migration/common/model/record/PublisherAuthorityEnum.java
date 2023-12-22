@@ -32,10 +32,10 @@ public enum PublisherAuthorityEnum {
     }
 
     public PublisherAuthority toPublisherAuthority() {
-        if (ACCEPTED.getValue().equals(this.getValue())) {
+        if (this.equals(ACCEPTED)) {
             return new PublisherAuthority(Collections.singleton("acceptedVersion"), false);
         }
-        if (PUBLISHED.getValue().equals(this.getValue())) {
+        if (this.equals(PUBLISHED)) {
             return new PublisherAuthority(Collections.singleton("publishedVersion"), true);
         }
         return null;

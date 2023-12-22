@@ -35,6 +35,7 @@ public final class UnisContent {
     public static final String DUMMY_HANDLE_THAT_EXIST_FOR_PROCESSING_UNIS
         = "dummy_handle_unis";
     public static final String UNIS_ID = "unis@186.0.0.0";
+    public static final String EMPTY_STRING = "";
     private int cristinId;
     private String title;
     private PublisherAuthorityEnum publisherAuthority;
@@ -118,11 +119,12 @@ public final class UnisContent {
         record.setEntityDescription(new EntityDescription());
         record.setType(new Type(Set.of(CRISTIN_RECORD.getValue()), CRISTIN_RECORD.getValue()));
 
+        var fileIdentifier = UUID.randomUUID();
         var contentFile = new ContentFile(
             getFilename(),
             BundleType.ORIGINAL,
-            "",
-            UUID.randomUUID(),
+            EMPTY_STRING,
+            fileIdentifier,
             License.fromBrageLicense(getLicense()),
             getEmbargo());
         record.setContentBundle(new ResourceContent(List.of(contentFile)));
