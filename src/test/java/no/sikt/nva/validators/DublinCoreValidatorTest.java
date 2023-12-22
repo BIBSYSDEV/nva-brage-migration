@@ -3,13 +3,12 @@ package no.sikt.nva.validators;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_NOT_PRESENT_DC_DATE_ISSUED;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_JOURNAL_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_DATE_ISSUED;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_ISSN_AND_DC_JOURNAL;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.DC_JOURNAL_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.validators.DublinCoreValidator.NO_CUSTOMER;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,6 +20,7 @@ import static org.hamcrest.Matchers.not;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.BrageType;
@@ -195,11 +195,11 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
         var brageLocation = new BrageLocation(null);
         var actualError =
-            ChannelRegister.getRegister().getChannelRegisterErrors(DublinCoreFactory.createDublinCoreWithDcValues(dcValues),
-                                                     brageLocation, SOME_CUSTOMER);
+            ChannelRegister.getRegister().getChannelRegisterWarnings(DublinCoreFactory.createDublinCoreWithDcValues(dcValues),
+                                                                     brageLocation, SOME_CUSTOMER);
 
         assertThat(actualError.get(),
-                   is(equalTo(new ErrorDetails(DC_JOURNAL_NOT_IN_CHANNEL_REGISTER, Set.of("1501-0678")))));
+                   is(equalTo(new WarningDetails(DC_JOURNAL_NOT_IN_CHANNEL_REGISTER, Set.of("1501-0678")))));
     }
 
     @Test
@@ -207,10 +207,11 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(
             new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "2038-324X"),
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
+        var actualErrors =
+            ChannelRegister.getRegister().getChannelRegisterWarnings(DublinCoreFactory.createDublinCoreWithDcValues(dcValues),
+                                                                                   new BrageLocation(null), SOME_CUSTOMER);
 
-        assertThat(actualErrors, not(hasItems(new ErrorDetails(MISSING_DC_ISSN_AND_DC_JOURNAL, Set.of()))));
+        assertThat(actualErrors, is(Optional.empty()));
     }
 
     @Test
@@ -218,10 +219,10 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(
             new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Fisheries management and ecology"),
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
+        var actualErrors = ChannelRegister.getRegister().getChannelRegisterWarnings(DublinCoreFactory.createDublinCoreWithDcValues(dcValues),
+                                                                                    new BrageLocation(null), SOME_CUSTOMER);
 
-        assertThat(actualErrors, not(hasItems(new ErrorDetails(MISSING_DC_ISSN_AND_DC_JOURNAL, Set.of()))));
+        assertThat(actualErrors, is(Optional.empty()));
     }
 
     @Test
