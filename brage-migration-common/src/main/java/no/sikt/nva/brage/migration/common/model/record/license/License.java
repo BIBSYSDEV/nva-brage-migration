@@ -32,6 +32,7 @@ public class License {
             case CC_BY_NC_ND:
             case CC_BY_NC_SA:
             case CC_BY_SA:
+            case CC_BY_ND:
                 var creativeCommonsUri = String.format(CREATIVE_COMMONS_LICENCE_URI, brageLicense.getUriValue());
                 return new License(brageLicense.getValue(), new NvaLicense(URI.create(creativeCommonsUri)));
             case CC_ZERO:
