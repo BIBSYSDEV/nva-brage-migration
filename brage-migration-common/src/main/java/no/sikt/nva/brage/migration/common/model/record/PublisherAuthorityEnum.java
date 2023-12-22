@@ -1,6 +1,7 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Collections;
 
 public enum PublisherAuthorityEnum {
     ACCEPTED("Akseptert"),
@@ -28,6 +29,16 @@ public enum PublisherAuthorityEnum {
             }
         }
         return false;
+    }
+
+    public PublisherAuthority toPublisherAuthority() {
+        if (this.equals(ACCEPTED)) {
+            return new PublisherAuthority(Collections.singleton("acceptedVersion"), false);
+        }
+        if (this.equals(PUBLISHED)) {
+            return new PublisherAuthority(Collections.singleton("publishedVersion"), true);
+        }
+        return null;
     }
 
     @JsonValue

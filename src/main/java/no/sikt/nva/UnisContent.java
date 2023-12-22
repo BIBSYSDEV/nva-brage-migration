@@ -1,27 +1,46 @@
 package no.sikt.nva;
 
 import static java.util.Objects.isNull;
+import static no.sikt.nva.brage.migration.common.model.NvaType.CRISTIN_RECORD;
 import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractCristinId;
 import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractEmbargo;
 import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractFilename;
-import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractLicence;
+import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractLicense;
 import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractPublisherAuthority;
 import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractTitle;
 import static no.sikt.nva.validators.UnisContentValidator.validateRow;
-import java.util.Date;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import no.sikt.nva.brage.migration.common.model.record.EntityDescription;
 import no.sikt.nva.brage.migration.common.model.record.PublisherAuthorityEnum;
 import no.sikt.nva.brage.migration.common.model.record.Record;
+import no.sikt.nva.brage.migration.common.model.record.ResourceOwner;
+import no.sikt.nva.brage.migration.common.model.record.Type;
+import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
+import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
+import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.BundleType;
 import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
+import no.sikt.nva.brage.migration.common.model.record.license.License;
 import no.sikt.nva.exceptions.ExcelException;
 import no.sikt.nva.exceptions.InvalidUnisContentException;
+import nva.commons.core.paths.UriWrapper;
 import org.apache.poi.ss.usermodel.Row;
 
 public final class UnisContent {
+
+    public static final String DUMMY_HANDLE_THAT_EXIST_FOR_PROCESSING_UNIS
+        = "dummy_handle_unis";
+    public static final String UNIS_ID = "unis@186.0.0.0";
+    public static final String EMPTY_STRING = "";
     private int cristinId;
     private String title;
     private PublisherAuthorityEnum publisherAuthority;
-    private Date embargo;
-    private BrageLicense licence;
+    private Instant embargo;
+    private BrageLicense license;
     private String filename;
 
     private UnisContent() {
@@ -34,7 +53,7 @@ public final class UnisContent {
                    .withTitle(validateAndExtractTitle(row))
                    .withPublisherAuthority(validateAndExtractPublisherAuthority(row))
                    .withEmbargo(validateAndExtractEmbargo(row))
-                   .withLicence(validateAndExtractLicence(row))
+                   .withLicense(validateAndExtractLicense(row))
                    .withFilename(validateAndExtractFilename(row))
                    .build();
     }
@@ -67,20 +86,20 @@ public final class UnisContent {
         this.publisherAuthority = pubAuth;
     }
 
-    public Date getEmbargo() {
+    public Instant getEmbargo() {
         return embargo;
     }
 
-    private void setEmbargo(Date embargo) {
+    private void setEmbargo(Instant embargo) {
         this.embargo = embargo;
     }
 
-    public BrageLicense getLicence() {
-        return licence;
+    public BrageLicense getLicense() {
+        return license;
     }
 
-    private void setLicence(BrageLicense licence) {
-        this.licence = licence;
+    private void setLicense(BrageLicense license) {
+        this.license = license;
     }
 
     public String getFilename() {
@@ -91,8 +110,26 @@ public final class UnisContent {
         this.filename = filename;
     }
 
-    public Record toRecord() {
-        return new Record();
+    public Record toRecord() throws URISyntaxException {
+        var record = new Record();
+        record.setId(UriWrapper.fromUri(DUMMY_HANDLE_THAT_EXIST_FOR_PROCESSING_UNIS + getCristinId()).getUri());
+        record.setCristinId(Integer.toString(getCristinId()));
+        record.setResourceOwner(new ResourceOwner(UNIS_ID, new URI("")));
+        record.setPublisherAuthority(getPublisherAuthority().toPublisherAuthority());
+        record.setEntityDescription(new EntityDescription());
+        record.setType(new Type(Set.of(CRISTIN_RECORD.getValue()), CRISTIN_RECORD.getValue()));
+
+        var fileIdentifier = UUID.randomUUID();
+        var contentFile = new ContentFile(
+            getFilename(),
+            BundleType.ORIGINAL,
+            EMPTY_STRING,
+            fileIdentifier,
+            License.fromBrageLicense(getLicense()),
+            getEmbargo());
+        record.setContentBundle(new ResourceContent(List.of(contentFile)));
+
+        return record;
     }
 
     public static final class Builder {
@@ -107,7 +144,7 @@ public final class UnisContent {
             if (unisContent.getCristinId() == 0
                 || isNull(unisContent.getTitle())
                 || isNull(unisContent.getPublisherAuthority())
-                || isNull(unisContent.getLicence())
+                || isNull(unisContent.getLicense())
                 || isNull(unisContent.getFilename())) {
                 throw new InvalidUnisContentException("Missing value(s)");
             }
@@ -129,13 +166,13 @@ public final class UnisContent {
             return this;
         }
 
-        public Builder withEmbargo(Date embargo) {
+        public Builder withEmbargo(Instant embargo) {
             unisContent.setEmbargo(embargo);
             return this;
         }
 
-        public Builder withLicence(BrageLicense licence) {
-            unisContent.setLicence(licence);
+        public Builder withLicense(BrageLicense license) {
+            unisContent.setLicense(license);
             return this;
         }
 

@@ -36,6 +36,28 @@ public enum BrageLicense {
         return false;
     }
 
+    public String getUriValue() {
+        switch (this) {
+            case CC_BY:
+                return "by";
+            case CC_BY_NC:
+                return "by-nc";
+            case CC_BY_NC_ND:
+                return "by-nc-nd";
+            case CC_BY_NC_SA:
+                return "by-nc-sa";
+            case CC_BY_ND:
+                return "by-nd";
+            case CC_BY_SA:
+                return "by-sa";
+            case UTGIVERS_BETINGELSER:
+                return "InC";
+            case CC_ZERO:
+            default:
+                return "";
+        }
+    }
+
     @JsonValue
     public String getValue() {
         return value;

@@ -1,6 +1,7 @@
 package no.sikt.nva;
 
 import static java.util.Objects.nonNull;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +27,7 @@ public final class UnisContentScrapingResult {
     private UnisContentScrapingResult() {}
 
     public static UnisContentScrapingResult fromWorkbook(Workbook workbook)
-        throws ExcelException, InvalidUnisContentException {
+        throws ExcelException, InvalidUnisContentException, URISyntaxException {
 
         Sheet sheet = workbook.getSheetAt(0);
 
