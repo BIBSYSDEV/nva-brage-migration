@@ -3,10 +3,17 @@ package no.sikt.nva.scrapers;
 import static no.sikt.nva.UnisContentScrapingResult.ERROR_MESSAGE_EMPTY_SHEET;
 import static no.sikt.nva.validators.UnisContentValidator.ERROR_MESSAGE_INVALID_EMBARGO_FORMAT;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.NoSuchFileException;
 import no.sikt.nva.exceptions.ExcelException;
+import no.sikt.nva.exceptions.InvalidUnisContentException;
 import org.junit.jupiter.api.Test;
 
 class ExcelScraperTest {
@@ -20,6 +27,14 @@ class ExcelScraperTest {
     @Test
     void shouldNotThrowExceptionWhenValidExcelFileIsProvided() {
         assertDoesNotThrow(() -> ExcelScraper.toRecords(VALID_EXCEL_FILE));
+    }
+
+    @Test
+    void shouldCreateAListOfRecordsWhenMultipleRowsAreGiven()
+        throws ExcelException, InvalidUnisContentException, IOException, URISyntaxException {
+        var results = ExcelScraper.toRecords(VALID_EXCEL_FILE);
+        assertNotNull(results);
+        assertThat(results.size(), is(greaterThan(1)));
     }
 
     @Test

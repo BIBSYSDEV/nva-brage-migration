@@ -1,7 +1,7 @@
 package no.sikt.nva.validators;
 
 import static no.sikt.nva.UnisContentScrapingResult.VALID_HEADERS;
-import java.util.Date;
+import java.time.Instant;
 import no.sikt.nva.brage.migration.common.model.record.PublisherAuthorityEnum;
 import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
 import no.sikt.nva.exceptions.ExcelException;
@@ -17,7 +17,7 @@ public class UnisContentValidator {
     public static final int TITLE_COLUMN = 1;
     public static final int PUBLISHER_AUTHORITY_COLUMN = 2;
     public static final int EMBARGO_COLUMN = 3;
-    public static final int LICENCE_COLUMN = 4;
+    public static final int LICENSE_COLUMN = 4;
     public static final int FILENAME_COLUMN = 5;
     public static final String ERROR_MESSAGE_INVALID_NUMBER_OF_COLUMNS = "Invalid number of columns";
     public static final String ERROR_MESSAGE_MISSING_FIRST_COLUMN_VALUE = "Missing first column value";
@@ -27,8 +27,8 @@ public class UnisContentValidator {
     public static final String ERROR_MESSAGE_MISSING_PUBLISHER_AUTHORITY = "Missing Publisher Authority";
     public static final String ERROR_MESSAGE_INVALID_PUBLISHER_AUTHORITY = "Invalid Publisher Authority value";
     public static final String ERROR_MESSAGE_INVALID_EMBARGO_FORMAT = "Invalid Embargo format";
-    public static final String ERROR_MESSAGE_MISSING_LICENCE = "Missing Licence";
-    public static final String ERROR_MESSAGE_INVALID_LICENCE = "Invalid Licence value";
+    public static final String ERROR_MESSAGE_MISSING_LICENSE = "Missing Licence";
+    public static final String ERROR_MESSAGE_INVALID_LICENSE = "Invalid Licence value";
     public static final String ERROR_MESSAGE_MISSING_FILENAME = "Missing Filename";
 
     public static void validateRow(Row row) throws ExcelException {
@@ -70,27 +70,27 @@ public class UnisContentValidator {
         return PublisherAuthorityEnum.fromValue(publisherAuthorityCell.getStringCellValue());
     }
 
-    public static Date validateAndExtractEmbargo(Row row) throws ExcelException {
+    public static Instant validateAndExtractEmbargo(Row row) throws ExcelException {
         var embargoCell = row.getCell(EMBARGO_COLUMN);
         if (!isEmpty(embargoCell)) {
             if (!CellType.NUMERIC.equals(embargoCell.getCellType())
                 || !DateUtil.isCellDateFormatted(embargoCell)) {
                 throw new ExcelException(ERROR_MESSAGE_INVALID_EMBARGO_FORMAT);
             }
-            return embargoCell.getDateCellValue();
+            return embargoCell.getDateCellValue().toInstant();
         }
         return null;
     }
 
-    public static BrageLicense validateAndExtractLicence(Row row) throws ExcelException {
-        var licenceCell = row.getCell(LICENCE_COLUMN);
-        if (isEmpty(licenceCell)) {
-            throw new ExcelException(ERROR_MESSAGE_MISSING_LICENCE);
-        } else if (!CellType.STRING.equals(licenceCell.getCellType())
-                   || !BrageLicense.isValid(licenceCell.getStringCellValue())) {
-            throw new ExcelException(ERROR_MESSAGE_INVALID_LICENCE);
+    public static BrageLicense validateAndExtractLicense(Row row) throws ExcelException {
+        var licenseCell = row.getCell(LICENSE_COLUMN);
+        if (isEmpty(licenseCell)) {
+            throw new ExcelException(ERROR_MESSAGE_MISSING_LICENSE);
+        } else if (!CellType.STRING.equals(licenseCell.getCellType())
+                   || !BrageLicense.isValid(licenseCell.getStringCellValue())) {
+            throw new ExcelException(ERROR_MESSAGE_INVALID_LICENSE);
         }
-        return BrageLicense.fromValue(licenceCell.getStringCellValue());
+        return BrageLicense.fromValue(licenseCell.getStringCellValue());
     }
 
     public static String validateAndExtractFilename(Row row) throws ExcelException {

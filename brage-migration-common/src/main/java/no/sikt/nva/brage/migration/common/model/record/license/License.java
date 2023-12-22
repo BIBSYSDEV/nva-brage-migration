@@ -1,9 +1,13 @@
 package no.sikt.nva.brage.migration.common.model.record.license;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.net.URI;
 import java.util.Objects;
 
 public class License {
+    // Will it always be version 4 of creative commons?
+    private static final String CREATIVE_COMMONS_LICENCE_URI =  "https://creativecommons.org/licenses/%s/4.0/";
+    private static final String RIGHTS_STATEMENTS_INC_URI = "https://rightsstatements.org/page/InC/1.0/";
 
     @JsonInclude
     private String brageLicense;
@@ -55,5 +59,18 @@ public class License {
     @Override
     public String toString() {
         return brageLicense;
+    }
+
+    public static License fromBrageLicense(BrageLicense brageLicense) {
+        URI licenseUri;
+        if (BrageLicense.UTGIVERS_BETINGELSER.equals(brageLicense)) {
+            licenseUri = URI.create(RIGHTS_STATEMENTS_INC_URI);
+        } else if (BrageLicense.CC_ZERO.equals(brageLicense)) {
+            licenseUri = null;
+        } else {
+            licenseUri = URI.create(String.format(CREATIVE_COMMONS_LICENCE_URI, brageLicense.getUriValue()));
+        }
+
+        return new License(brageLicense.getValue(), new NvaLicense(licenseUri));
     }
 }

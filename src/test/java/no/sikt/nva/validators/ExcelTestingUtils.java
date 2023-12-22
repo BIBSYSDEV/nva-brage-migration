@@ -14,7 +14,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelTestingUtils {
     public static final Object[] VALID_ROW = {
-        123,
+        123456789,
         "En tittel",
         PublisherAuthorityEnum.ACCEPTED.getValue(),
         Date.from(Instant.now()),
