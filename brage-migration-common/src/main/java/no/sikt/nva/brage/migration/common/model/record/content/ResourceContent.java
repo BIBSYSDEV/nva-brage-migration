@@ -1,7 +1,9 @@
 package no.sikt.nva.brage.migration.common.model.record.content;
 
+import static java.util.Objects.isNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
@@ -29,6 +31,13 @@ public class ResourceContent {
                    .filter(contentFile -> contentFile.getFilename().equals(filename))
                    .findAny()
                    .orElse(null);
+    }
+
+    public void addContentFile(ContentFile contentFile) {
+        if (isNull(this.contentFiles)) {
+            this.contentFiles = new ArrayList<>();
+        }
+        this.contentFiles.add(contentFile);
     }
 
     @JacocoGenerated

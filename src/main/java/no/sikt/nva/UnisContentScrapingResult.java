@@ -4,7 +4,9 @@ import static java.util.Objects.nonNull;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.exceptions.ExcelException;
 import no.sikt.nva.exceptions.InvalidUnisContentException;
@@ -14,6 +16,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 public final class UnisContentScrapingResult {
+
     public static final String ERROR_MESSAGE_EMPTY_SHEET = "Empty sheet";
     public static final String[] VALID_HEADERS = {"Post", "Tittel", "Versjon", "Embargo", "Lisens", "Filnavn"};
     public static final String ERROR_MESSAGE_MISSING_HEADER_ROW = "Missing header row";
@@ -24,7 +27,8 @@ public final class UnisContentScrapingResult {
     public static final int FIRST_COLUMN = 0;
     private List<Record> results;
 
-    private UnisContentScrapingResult() {}
+    private UnisContentScrapingResult() {
+    }
 
     public static UnisContentScrapingResult fromWorkbook(Workbook workbook)
         throws ExcelException, InvalidUnisContentException, URISyntaxException {
@@ -34,23 +38,36 @@ public final class UnisContentScrapingResult {
         validateSheet(sheet);
         validateHeaders(sheet.getRow(FIRST_ROW));
 
-        var results = new ArrayList<Record>();
+        var processedRecords = new HashMap<String, Record>();
         for (int i = SECOND_ROW; i <= getLastNonEmptyRowIndex(sheet); i++) {
             var unisContent = UnisContent.fromRow(sheet.getRow(i));
-            results.add(unisContent.toRecord());
+            processUnisContent(processedRecords, unisContent);
         }
 
         UnisContentScrapingResult result = new UnisContentScrapingResult();
-        result.setResults(results);
+        result.setResults(new ArrayList<>(processedRecords.values()));
         return result;
+    }
+
+    public List<Record> getResults() {
+        return this.results;
     }
 
     public void setResults(List<Record> results) {
         this.results = results;
     }
 
-    public List<Record> getResults() {
-        return this.results;
+    private static void processUnisContent(Map<String, Record> processedRecords, UnisContent unisContent)
+        throws URISyntaxException {
+
+        var newRecord = unisContent.toRecord();
+        if (processedRecords.containsKey(newRecord.getCristinId())) {
+            var existingRecord = processedRecords.get(newRecord.getCristinId());
+            var newContentFile = newRecord.getContentBundle().getContentFiles().get(0);
+            existingRecord.getContentBundle().addContentFile(newContentFile);
+        } else {
+            processedRecords.put(newRecord.getCristinId(), unisContent.toRecord());
+        }
     }
 
     private static void validateSheet(Sheet sheet) throws ExcelException {

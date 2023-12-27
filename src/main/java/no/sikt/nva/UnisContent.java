@@ -12,6 +12,7 @@ import static no.sikt.nva.validators.UnisContentValidator.validateRow;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -127,7 +128,7 @@ public final class UnisContent {
             fileIdentifier,
             License.fromBrageLicense(getLicense()),
             getEmbargo());
-        record.setContentBundle(new ResourceContent(List.of(contentFile)));
+        record.setContentBundle(new ResourceContent(new ArrayList<>(List.of(contentFile))));
 
         return record;
     }

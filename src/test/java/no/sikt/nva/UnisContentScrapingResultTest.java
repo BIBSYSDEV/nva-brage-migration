@@ -8,8 +8,10 @@ import static no.sikt.nva.validators.ExcelTestingUtils.removeValue;
 import static no.sikt.nva.validators.ExcelTestingUtils.substituteValue;
 import static no.sikt.nva.validators.UnisContentValidator.CRISTIN_ID_COLUMN;
 import static no.sikt.nva.validators.UnisContentValidator.TITLE_COLUMN;
+import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -24,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 class UnisContentScrapingResultTest {
 
+    public static final int RANDOM_CRISTIN_ID = 123;
     private Object[] VALID_HEADERS;
     private Object[] VALID_ROW;
 
@@ -97,5 +100,47 @@ class UnisContentScrapingResultTest {
         assertThrows(ExcelException.class,
                      () -> UnisContentScrapingResult.fromWorkbook(createWorkbook(invalidExcelData)),
                      ERROR_MESSAGE_INVALID_HEADERS);
+    }
+
+    @Test
+    void shouldAppendContentFilesToSameRecordWhenCristinIdIsIdentical()
+        throws ExcelException, InvalidUnisContentException, URISyntaxException {
+
+        var firstCristinId = randomInteger();
+        var firstRowWithDuplicateCristinId = substituteValue(VALID_ROW, firstCristinId, CRISTIN_ID_COLUMN);
+        var secondRowWithDuplicateCristinId = substituteValue(VALID_ROW, firstCristinId, CRISTIN_ID_COLUMN);
+
+        var secondCristinId = randomInteger();
+        var thirdRowWithUniqueCristinId = substituteValue(VALID_ROW, secondCristinId, CRISTIN_ID_COLUMN);
+
+        var validExcelData = new Object[][]{
+            VALID_HEADERS,
+            firstRowWithDuplicateCristinId,
+            secondRowWithDuplicateCristinId,
+            thirdRowWithUniqueCristinId
+        };
+
+        var records = UnisContentScrapingResult.fromWorkbook(createWorkbook(validExcelData)).getResults();
+        assertNotNull(records);
+        assertThat(records.size(), is(equalTo(2)));
+
+        var recordWithMultipleFiles = records.stream()
+                                          .filter(
+                                              record -> Integer.toString(firstCristinId).equals(record.getCristinId()))
+                                          .findAny()
+                                          .orElse(null);
+        assertNotNull(recordWithMultipleFiles);
+        assertNotNull(recordWithMultipleFiles.getContentBundle());
+        assertNotNull(recordWithMultipleFiles.getContentBundle().getContentFiles());
+        assertThat(recordWithMultipleFiles.getContentBundle().getContentFiles().size(), is(equalTo(2)));
+
+        var recordWithOneFile = records.stream()
+                                    .filter(record -> Integer.toString(secondCristinId).equals(record.getCristinId()))
+                                    .findAny()
+                                    .orElse(null);
+        assertNotNull(recordWithOneFile);
+        assertNotNull(recordWithOneFile.getContentBundle());
+        assertNotNull(recordWithOneFile.getContentBundle().getContentFiles());
+        assertThat(recordWithOneFile.getContentBundle().getContentFiles().size(), is(equalTo(1)));
     }
 }
