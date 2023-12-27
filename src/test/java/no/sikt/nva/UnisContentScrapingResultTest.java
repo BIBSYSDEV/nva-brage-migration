@@ -25,8 +25,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class UnisContentScrapingResultTest {
-
-    public static final int RANDOM_CRISTIN_ID = 123;
     private Object[] VALID_HEADERS;
     private Object[] VALID_ROW;
 
