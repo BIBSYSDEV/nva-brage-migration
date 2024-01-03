@@ -127,8 +127,6 @@ class UnisContentScrapingResultTest {
                                               record -> Integer.toString(firstCristinId).equals(record.getCristinId()))
                                           .findAny()
                                           .orElse(null);
-        assertNotNull(recordWithMultipleFiles);
-        assertNotNull(recordWithMultipleFiles.getContentBundle());
         assertNotNull(recordWithMultipleFiles.getContentBundle().getContentFiles());
         assertThat(recordWithMultipleFiles.getContentBundle().getContentFiles().size(), is(equalTo(2)));
 
@@ -136,8 +134,6 @@ class UnisContentScrapingResultTest {
                                     .filter(record -> Integer.toString(secondCristinId).equals(record.getCristinId()))
                                     .findAny()
                                     .orElse(null);
-        assertNotNull(recordWithOneFile);
-        assertNotNull(recordWithOneFile.getContentBundle());
         assertNotNull(recordWithOneFile.getContentBundle().getContentFiles());
         assertThat(recordWithOneFile.getContentBundle().getContentFiles().size(), is(equalTo(1)));
     }

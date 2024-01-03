@@ -17,6 +17,10 @@ public class ResourceContent {
         this.contentFiles = contentFiles;
     }
 
+    public ResourceContent(ContentFile contentFile) {
+        this(new ArrayList<>(List.of(contentFile)));
+    }
+
     @JsonProperty("contentFiles")
     public List<ContentFile> getContentFiles() {
         return contentFiles;
