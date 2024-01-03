@@ -12,7 +12,6 @@ import static no.sikt.nva.validators.UnisContentValidator.validateRow;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import no.sikt.nva.brage.migration.common.model.record.EntityDescription;
@@ -127,7 +126,7 @@ public final class UnisContent {
             fileIdentifier,
             License.fromBrageLicense(getLicense()),
             getEmbargo());
-        record.setContentBundle(new ResourceContent(List.of(contentFile)));
+        record.setContentBundle(new ResourceContent(contentFile));
 
         return record;
     }
