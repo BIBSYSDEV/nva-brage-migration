@@ -156,10 +156,22 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     public static void main(String[] args) {
         setSystemPropertiesForLogFiles(args);
-        var arg = getArgument(Arrays.asList(args), "-j", "--aws-bucket");
-        validateAwsEnvironment(arg.orElse(null));
+        var environment = getArgument(Arrays.asList(args), "-j", "--aws-bucket");
+        var pushToAwsOnly = getPushToAwsOnlyArgument(args);
+        var proceedAndPushToAws = getProceedAndPushToAwsArgument(args);
+        if (nonNull(pushToAwsOnly) && nonNull(proceedAndPushToAws)) {
+            validateAwsEnvironment(environment.orElse(null));
+        }
         int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
         System.exit(exitCode);
+    }
+
+    private static Optional<String> getProceedAndPushToAwsArgument(String... args) {
+        return getArgument(Arrays.asList(args), "-a", "--should-write-to-aws");
+    }
+
+    private static Optional<String> getPushToAwsOnlyArgument(String... args) {
+        return getArgument(Arrays.asList(args), "-b", "--write-processed-import-to-aws");
     }
 
     private static void setSystemPropertiesForLogFiles(String... args) {
