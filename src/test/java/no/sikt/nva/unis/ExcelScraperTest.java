@@ -1,7 +1,7 @@
-package no.sikt.nva.scrapers;
+package no.sikt.nva.unis;
 
-import static no.sikt.nva.UnisContentScrapingResult.ERROR_MESSAGE_EMPTY_SHEET;
-import static no.sikt.nva.validators.UnisContentValidator.ERROR_MESSAGE_INVALID_EMBARGO_FORMAT;
+import static no.sikt.nva.unis.UnisContentScrapingResult.ERROR_MESSAGE_EMPTY_SHEET;
+import static no.sikt.nva.unis.UnisContentValidator.ERROR_MESSAGE_INVALID_EMBARGO_FORMAT;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -12,8 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.NoSuchFileException;
-import no.sikt.nva.exceptions.ExcelException;
-import no.sikt.nva.exceptions.InvalidUnisContentException;
 import org.junit.jupiter.api.Test;
 
 class ExcelScraperTest {

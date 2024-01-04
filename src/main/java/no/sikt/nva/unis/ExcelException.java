@@ -1,4 +1,4 @@
-package no.sikt.nva.exceptions;
+package no.sikt.nva.unis;
 
 public class ExcelException extends Exception {
     public ExcelException(String message) {
