@@ -1,5 +1,6 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
+import static java.util.Objects.isNull;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.Objects;
@@ -101,7 +102,11 @@ public class Publication {
     }
 
     @JacocoGenerated
+    @JsonProperty("ismnList")
     public Set<String> getIsmnList() {
+        if (isNull(ismnList)) {
+            return Collections.emptySet();
+        }
         return ismnList;
     }
 }
