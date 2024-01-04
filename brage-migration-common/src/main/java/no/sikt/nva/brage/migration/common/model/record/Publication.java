@@ -30,7 +30,12 @@ public class Publication {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(journal, issnList, isbnList, publicationContext, partOfSeries);
+        return Objects.hash(journal,
+                            issnList,
+                            isbnList,
+                            publicationContext,
+                            ismnList,
+                            partOfSeries);
     }
 
     @JacocoGenerated
@@ -47,6 +52,7 @@ public class Publication {
                && Objects.equals(issnList, that.issnList)
                && Objects.equals(isbnList, that.isbnList)
                && Objects.equals(publicationContext, that.publicationContext)
+               && Objects.equals(ismnList, that.ismnList)
                && Objects.equals(partOfSeries, that.partOfSeries);
     }
 
