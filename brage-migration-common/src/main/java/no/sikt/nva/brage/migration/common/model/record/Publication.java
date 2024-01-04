@@ -11,6 +11,7 @@ public class Publication {
     private String journal;
     private Set<String> issnList;
     private Set<String> isbnList;
+    private Set<String> ismnList;
     private PublicationContext publicationContext;
     private String partOfSeries;
 
@@ -87,5 +88,14 @@ public class Publication {
 
     public void setPublicationContext(PublicationContext publicationContext) {
         this.publicationContext = publicationContext;
+    }
+
+    public void isIssmList(Set<String> ismnList) {
+        this.ismnList = ismnList;
+    }
+
+    @JacocoGenerated
+    public Set<String> getIsmnList() {
+        return ismnList;
     }
 }

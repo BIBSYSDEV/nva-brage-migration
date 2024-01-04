@@ -67,12 +67,11 @@ public class DcValue {
         return Element.CREATOR.equals(this.getElement());
     }
 
-    private boolean isNotAHandle() {
-        return !value.contains(HANDLE_DOMAIN.getHost());
-    }
-
-    private boolean isNotADoi() {
-        return !value.contains("doi");
+    public boolean isIsmnAndNotEmptyValue() {
+        if (StringUtils.isEmpty(value)) {
+            scraped = true;
+        }
+        return isImn() && StringUtils.isNotEmpty(value);
     }
 
     public Qualifier getQualifier() {
@@ -218,12 +217,12 @@ public class DcValue {
 
     public boolean isAdvisor() {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ADVISOR.equals(this.qualifier)
-            || Element.CREATOR.equals(this.element) && Qualifier.ADVISOR.equals(this.qualifier);
+               || Element.CREATOR.equals(this.element) && Qualifier.ADVISOR.equals(this.qualifier);
     }
 
     public boolean isAuthor() {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier)
-            || Element.CREATOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
+               || Element.CREATOR.equals(this.element) && Qualifier.AUTHOR.equals(this.qualifier);
     }
 
     public boolean isEditor() {
@@ -349,5 +348,18 @@ public class DcValue {
         return sw.toString()
                    .replace(XML_PREFIX, StringUtils.EMPTY_STRING)
                    .replace("\n", StringUtils.EMPTY_STRING);
+    }
+
+    private boolean isImn() {
+        return Element.IDENTIFIER.equals(this.element)
+               && Qualifier.ISMN.equals(this.qualifier);
+    }
+
+    private boolean isNotAHandle() {
+        return !value.contains(HANDLE_DOMAIN.getHost());
+    }
+
+    private boolean isNotADoi() {
+        return !value.contains("doi");
     }
 }
