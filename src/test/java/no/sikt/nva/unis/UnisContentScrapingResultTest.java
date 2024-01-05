@@ -1,13 +1,13 @@
-package no.sikt.nva;
+package no.sikt.nva.unis;
 
-import static no.sikt.nva.UnisContentScrapingResult.ERROR_MESSAGE_EMPTY_SHEET;
-import static no.sikt.nva.UnisContentScrapingResult.ERROR_MESSAGE_INVALID_HEADERS;
-import static no.sikt.nva.validators.ExcelTestingUtils.addValue;
-import static no.sikt.nva.validators.ExcelTestingUtils.createWorkbook;
-import static no.sikt.nva.validators.ExcelTestingUtils.removeValue;
-import static no.sikt.nva.validators.ExcelTestingUtils.substituteValue;
-import static no.sikt.nva.validators.UnisContentValidator.CRISTIN_ID_COLUMN;
-import static no.sikt.nva.validators.UnisContentValidator.TITLE_COLUMN;
+import static no.sikt.nva.unis.UnisContentScrapingResult.ERROR_MESSAGE_EMPTY_SHEET;
+import static no.sikt.nva.unis.UnisContentScrapingResult.ERROR_MESSAGE_INVALID_HEADERS;
+import static no.sikt.nva.unis.ExcelTestingUtils.addValue;
+import static no.sikt.nva.unis.ExcelTestingUtils.createWorkbook;
+import static no.sikt.nva.unis.ExcelTestingUtils.removeValue;
+import static no.sikt.nva.unis.ExcelTestingUtils.substituteValue;
+import static no.sikt.nva.unis.UnisContentValidator.CRISTIN_ID_COLUMN;
+import static no.sikt.nva.unis.UnisContentValidator.TITLE_COLUMN;
 import static no.unit.nva.testutils.RandomDataGenerator.randomInteger;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -18,9 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.net.URISyntaxException;
-import no.sikt.nva.exceptions.ExcelException;
-import no.sikt.nva.exceptions.InvalidUnisContentException;
-import no.sikt.nva.validators.ExcelTestingUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
