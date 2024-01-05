@@ -2,6 +2,7 @@ package no.sikt.nva.unis;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static nva.commons.core.StringUtils.isBlank;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
 import java.net.URI;
@@ -10,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 import no.sikt.nva.BrageMigrationCommand.AwsEnvironment;
 import no.sikt.nva.brage.migration.aws.S3Storage;
 import no.sikt.nva.brage.migration.aws.S3StorageImpl;
@@ -31,11 +33,18 @@ import software.amazon.awssdk.services.s3.S3Client;
 public class ExcelScrapingCommand implements Callable<Integer> {
 
     public static final String WRONG_ACCOUNT_MESSAGE = "You are connected to wrong aws account: ";
+    public static final String INVALID_EXCEL_FILE_MESSAGE = "Invalid excel file: ";
     public static final String FAILURE_IN_EXCEL_SCRAPER_COMMAND = "Failure in ExcelScraping command";
+    public static final String CUSTOMER_SYSTEM_PROPERTY = "customer";
+    public static final String OUTPUT_DIR_SYSTEM_PROPERTY = "outputDir";
+    public static final String EXCEL_FILE_ARGUMENT_SHORT = "-e";
+    public static final String EXCEL_FILE_ARGUMENT_LONG = "--excel-file";
+    public static final String ENVIRONMENT_ARGUMENT_SHORT = "-j";
+    public static final String ENVIRONMENT_ARGUMENT_LONG = "--aws-bucket";
+    public static final String UNIS = "unis";
+    public static final String EMPTY_STRING = "";
     private static final int NORMAL_EXIT_CODE = 0;
     private static final int ERROR_EXIT_CODE = 2;
-    public static final String UNIS = "unis";
-
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     private URI excelFile;
@@ -44,32 +53,33 @@ public class ExcelScrapingCommand implements Callable<Integer> {
     @Spec
     private CommandSpec spec;
 
-    @Option(names = {"-e", "--excel-file"}, description = "The excel file with metadata. Associated "
-                                                          + "files must be in the same directory")
-    public void setFileLocations(String value) throws URISyntaxException {
-        excelFile = new URI(value);
-        excelFileFolder = excelFile.resolve(".");
-    }
-
-    @Option(names = {"-j", "--aws-bucket"}, description = "Name of AWS bucket to push result in  'experimental', "
-                                                          + "'sandbox', and 'develop' are valid", defaultValue = "experimental")
-    public void setAwsEnvironment(String value) {
-        this.awsEnvironment = AwsEnvironment.fromValue(value);
-        if (isNull(awsEnvironment)) {
-            throw new ParameterException(spec.commandLine(),
-                                         String.format("Invalid value '%s' for option " + "'--aws-bucket'", value));
-        }
-    }
-
     public ExcelScrapingCommand() {
         this.s3Client = S3Driver.defaultS3Client().build();
     }
 
-    public static void main(String[] args) {
-        var environment = getEnvironmentArgument(Arrays.asList(args));
-        validateAwsEnvironment(environment.orElse(null));
+    public static void main(String[] args) throws URISyntaxException {
+        validateArguments(args);
+        setSystemPropertiesForLogFiles(args);
         int exitCode = new CommandLine(new ExcelScrapingCommand()).execute(args);
         System.exit(exitCode);
+    }
+
+    @Option(names = {EXCEL_FILE_ARGUMENT_SHORT, EXCEL_FILE_ARGUMENT_LONG},
+        description = "The excel file with metadata. Associated files must be in the same directory")
+    public void setFileLocations(String value) throws URISyntaxException {
+        excelFile = new URI(value);
+        excelFileFolder = getFolderFromUri(excelFile);
+    }
+
+    @Option(names = {ENVIRONMENT_ARGUMENT_SHORT, ENVIRONMENT_ARGUMENT_LONG},
+        description = "Name of AWS bucket to push result in  'experimental', 'sandbox', and 'develop' are valid",
+        defaultValue = "experimental")
+    public void setAwsEnvironment(String value) {
+        this.awsEnvironment = AwsEnvironment.fromValue(value);
+        if (isNull(awsEnvironment)) {
+            throw new ParameterException(spec.commandLine(),
+                                         String.format("Invalid value '%s' for option '--aws-bucket'", value));
+        }
     }
 
     @Override
@@ -91,13 +101,23 @@ public class ExcelScrapingCommand implements Callable<Integer> {
         }
     }
 
-    private static Optional<String> getEnvironmentArgument(List<String> arguments) {
-        var indexOfShort = arguments.indexOf("-j");
+    private static void setSystemPropertiesForLogFiles(String... args) throws URISyntaxException {
+        var arguments = Arrays.stream(args).collect(Collectors.toList());
+
+        System.setProperty(CUSTOMER_SYSTEM_PROPERTY, UNIS);
+
+        var outputDir = getArgument(arguments, EXCEL_FILE_ARGUMENT_SHORT, EXCEL_FILE_ARGUMENT_LONG).orElse("");
+        var folder = getFolderFromUri(new URI(outputDir));
+        System.setProperty(OUTPUT_DIR_SYSTEM_PROPERTY, outputDir.isEmpty() ? "" : folder.toString());
+    }
+
+    private static Optional<String> getArgument(List<String> arguments, String argShort, String argLong) {
+        var indexOfShort = arguments.indexOf(argShort);
         if (indexOfShort != -1) {
             return Optional.of(arguments.get(indexOfShort + 1));
         }
 
-        var indexOfLong = arguments.indexOf("--aws-bucket");
+        var indexOfLong = arguments.indexOf(argLong);
         if (indexOfLong != -1) {
             return Optional.of(arguments.get(indexOfLong + 1));
         }
@@ -105,12 +125,26 @@ public class ExcelScrapingCommand implements Callable<Integer> {
         return Optional.empty();
     }
 
+    private static void validateArguments(String... args) {
+        var environment = getArgument(Arrays.asList(args), ENVIRONMENT_ARGUMENT_SHORT, ENVIRONMENT_ARGUMENT_LONG);
+        validateAwsEnvironment(environment.orElse(null));
+
+        var excelFile = getArgument(Arrays.asList(args), EXCEL_FILE_ARGUMENT_SHORT, EXCEL_FILE_ARGUMENT_LONG);
+        validateExcelFile(excelFile.orElse(null));
+    }
+
     private static void validateAwsEnvironment(String environment) {
         var accountId = getAccountId();
         var awsEnvironment = AwsEnvironment.fromValue(environment);
         if (doesNotBelongToCurrentAwsEnvironment(accountId, awsEnvironment)) {
             throw new IllegalArgumentException(
-                WRONG_ACCOUNT_MESSAGE + AwsEnvironment.getEnvironmentById(accountId).getValue());
+                INVALID_EXCEL_FILE_MESSAGE + AwsEnvironment.getEnvironmentById(accountId).getValue());
+        }
+    }
+
+    private static void validateExcelFile(String excelFile) {
+        if (isBlank(excelFile)) {
+            throw new IllegalArgumentException(INVALID_EXCEL_FILE_MESSAGE + excelFile);
         }
     }
 
@@ -127,6 +161,10 @@ public class ExcelScrapingCommand implements Callable<Integer> {
         return nonNull(accountId)
                && nonNull(awsEnvironment.getAccountId())
                && !accountId.equals(awsEnvironment.getAccountId());
+    }
+
+    private static URI getFolderFromUri(URI file) {
+        return file.resolve(".");
     }
 
     private void storeFileToNVA(Record record) {
