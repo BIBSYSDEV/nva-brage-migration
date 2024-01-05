@@ -137,7 +137,7 @@ public class ExcelScrapingCommand implements Callable<Integer> {
         var awsEnvironment = AwsEnvironment.fromValue(environment);
         if (doesNotBelongToCurrentAwsEnvironment(accountId, awsEnvironment)) {
             throw new IllegalArgumentException(
-                INVALID_EXCEL_FILE_MESSAGE + AwsEnvironment.getEnvironmentById(accountId).getValue());
+                WRONG_ACCOUNT_MESSAGE + AwsEnvironment.getEnvironmentById(accountId).getValue());
         }
     }
 
