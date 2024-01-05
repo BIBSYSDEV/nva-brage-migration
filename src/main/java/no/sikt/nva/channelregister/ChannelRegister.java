@@ -1,6 +1,5 @@
 package no.sikt.nva.channelregister;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER;
@@ -133,7 +132,7 @@ public final class ChannelRegister {
 
     public String lookUpInJournalByIssn(String issn, BrageLocation brageLocation) {
         try {
-            if (isNullOrEmpty(issn)) {
+            if (StringUtils.isBlank(issn)) {
                 return issn;
             } else {
                 return channelRegisterJournals.stream()
@@ -154,7 +153,7 @@ public final class ChannelRegister {
 
     public String lookUpInJournalByTitle(String title, BrageLocation brageLocation) {
         try {
-            if (isNullOrEmpty(title)) {
+            if (StringUtils.isBlank(title)) {
                 return title;
             } else {
                 var channel = channelRegisterJournals.stream()
@@ -178,7 +177,7 @@ public final class ChannelRegister {
 
     public String lookUpInPublisher(String publisher, String customer) {
         try {
-            if (isNullOrEmpty(publisher)) {
+            if (StringUtils.isBlank(publisher)) {
                 return publisher;
             } else {
                 return nonNull(getPublisherIdentifer(publisher))
@@ -349,20 +348,10 @@ public final class ChannelRegister {
     }
 
     private boolean extractedIdentifierFromPublishersIsPresent(String publisher, String customer) {
-        if (isNotNullOrEmpty(publisher)) {
+        if (StringUtils.isNotBlank(publisher)) {
             var identifierFromPublisher = lookUpInPublisher(publisher, customer);
-            return isNotNullOrEmpty(identifierFromPublisher);
+            return StringUtils.isNotBlank(identifierFromPublisher);
         }
         return false;
-    }
-
-    @SuppressWarnings("PMD.InefficientEmptyStringCheck")
-    private boolean isNotNullOrEmpty(String candidate) {
-        return nonNull(candidate) && !candidate.trim().isEmpty();
-    }
-
-    @SuppressWarnings("PMD.InefficientEmptyStringCheck")
-    private boolean isNullOrEmpty(String candidate) {
-        return isNull(candidate) || candidate.trim().isEmpty();
     }
 }
