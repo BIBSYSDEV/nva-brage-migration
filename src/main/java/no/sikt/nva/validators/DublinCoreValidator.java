@@ -112,7 +112,7 @@ public final class DublinCoreValidator {
 
     private static Optional<ErrorDetails> getIsmnError(DublinCore dublinCore) {
         if (hasIsmn(dublinCore)) {
-            var invalidIsmnList = getInvalidIssmnList(dublinCore);
+            var invalidIsmnList = getInvalidIsmnList(dublinCore);
             return !invalidIsmnList.isEmpty()
                        ? Optional.of(new ErrorDetails(INVALID_ISMN, invalidIsmnList))
                        : Optional.empty();
@@ -120,7 +120,7 @@ public final class DublinCoreValidator {
         return Optional.empty();
     }
 
-    private static Set<String> getInvalidIssmnList(DublinCore dublinCore) {
+    private static Set<String> getInvalidIsmnList(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isIsmnAndNotEmptyValue)
