@@ -106,9 +106,8 @@ public class ExcelScrapingCommand implements Callable<Integer> {
 
         System.setProperty(CUSTOMER_SYSTEM_PROPERTY, UNIS);
 
-        var outputDir = getArgument(arguments, EXCEL_FILE_ARGUMENT_SHORT, EXCEL_FILE_ARGUMENT_LONG).orElse("");
-        var folder = getFolderFromUri(new URI(outputDir));
-        System.setProperty(OUTPUT_DIR_SYSTEM_PROPERTY, outputDir.isEmpty() ? "" : folder.toString());
+        var excelFile = getArgument(arguments, EXCEL_FILE_ARGUMENT_SHORT, EXCEL_FILE_ARGUMENT_LONG).orElse("");
+        System.setProperty(OUTPUT_DIR_SYSTEM_PROPERTY, getFolderFromUri(new URI(excelFile)).toString());
     }
 
     private static Optional<String> getArgument(List<String> arguments, String argShort, String argLong) {
