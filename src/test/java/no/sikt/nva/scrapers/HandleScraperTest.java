@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -28,9 +27,8 @@ public class HandleScraperTest {
 
     @Test
     void shouldReturnHandleFromDublinCoreIfDublinCoreHasHandle() throws HandleException {
-        var rescueMapNotContainingTitle = Map.of("Some title", "https://hdl.handle.net/11250/daffdf");
         var incorrectHandlePath = Path.of("does/not/exists");
-        var handleScraper = new HandleScraper(rescueMapNotContainingTitle);
+        var handleScraper = new HandleScraper();
         var uriString = "https://hdl.handle.net/11250/2684299";
         var expectedHandle = UriWrapper.fromUri(uriString).getUri();
         var dublinCoreWithHandle = generateDublinCoreWithhandle(uriString);
@@ -41,9 +39,8 @@ public class HandleScraperTest {
     @ParameterizedTest
     @ValueSource(strings = {"https://example.com/11250/2684299", "https://hdl.handle.net"})
     void shouldThrowExceptionWhenHandleInDublinCoreIsMalformed(String malformedHandle) {
-        var rescueMapNotContainingTitle = Map.of("Some title", "https://hdl.handle.net/11250/daffdf");
         var incorrectHandlePath = Path.of("does/not/exists");
-        var handleScraper = new HandleScraper(rescueMapNotContainingTitle);
+        var handleScraper = new HandleScraper();
         var dublinCoreWithHandle = generateDublinCoreWithhandle(malformedHandle);
         var exception = assertThrows(HandleException.class,
                                      () -> handleScraper.scrapeHandle(incorrectHandlePath, dublinCoreWithHandle));
@@ -53,10 +50,9 @@ public class HandleScraperTest {
 
     @Test
     void shouldThrowExceptionWhenThereIsNoHandleAnyWhere() {
-        var rescueMapNotContainingTitle = Map.of("Some title", "https://hdl.handle.net/11250/daffdf");
         var incorrectHandlePath = Path.of("does/not/exists");
         var dublinCoreWithouthHandle = generateDublinCoreWithoutHandle();
-        var handleScraper = new HandleScraper(rescueMapNotContainingTitle);
+        var handleScraper = new HandleScraper();
         var exception = assertThrows(HandleException.class,
                                      () -> handleScraper.scrapeHandle(incorrectHandlePath, dublinCoreWithouthHandle));
         assertThat(exception.getMessage(),
@@ -65,24 +61,10 @@ public class HandleScraperTest {
 
     @Test
     void shouldBeAbleToExtractHandleFromHandleFileIfThereIsNoMatchingHandleInTitleHandleMap() throws HandleException {
-        var titleHandleMapWithoutDublinCoreTitle = Map.of("Some title", "https://hdl.handle.net/11250/daffdf");
         var dublinCore = generateDublinCoreWithTitle("Some title not in rescue map");
         var expectedHandle = UriWrapper.fromUri("https://hdl.handle.net/11250/2684299").getUri();
-        var handleScraper = new HandleScraper(titleHandleMapWithoutDublinCoreTitle);
+        var handleScraper = new HandleScraper();
         var actualHandle = handleScraper.scrapeHandle(handleFile, dublinCore);
-        assertThat(actualHandle, is(equalTo(expectedHandle)));
-    }
-
-    @Test
-    void findsHandleInRescueMapIfTitleIsPresentInDublinCoreAndInRescueMap() throws HandleException {
-        var expectedHandle = UriWrapper.fromUri("https://hdl.handle.net/11250/2684299").getUri();
-        var title = randomString();
-        var dublinCore = generateDublinCoreWithTitle(title);
-        var rescueMap = Map.of(title, expectedHandle.toString());
-        var handleScraper = new HandleScraper(rescueMap);
-        var actualHandle = handleScraper.scrapeHandle(Path.of("invalid/and"
-                                                              + "/ignored"),
-                                                      dublinCore);
         assertThat(actualHandle, is(equalTo(expectedHandle)));
     }
 

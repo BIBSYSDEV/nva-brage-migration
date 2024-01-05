@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.Optional;
 import no.sikt.nva.exceptions.HandleException;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -21,10 +19,8 @@ public class HandleScraper {
     public static final URI HANDLE_DOMAIN = UriWrapper.fromHost("https://hdl.handle.net").getUri();
     private static final String ERROR_MESSAGE_HANDLE_IN_DUBLIN_CORE_IS_MALFORMED = "Handle in dublin_core.xml is "
                                                                                    + "invalid: %s";
-    private final Map<String, String> titlesAndHandles;
 
-    public HandleScraper(Map<String, String> titlesAndHandles) {
-        this.titlesAndHandles = titlesAndHandles;
+    public HandleScraper() {
     }
 
     /**
@@ -38,12 +34,7 @@ public class HandleScraper {
      */
     public URI scrapeHandle(final Path handlefile, final DublinCore dublinCore) throws HandleException {
         try {
-            var optionalHandle = getHandleFromInTitlesAndHandlesMap(dublinCore);
-            if (optionalHandle.isPresent()) {
-                return optionalHandle.get();
-            } else {
-                return extractHandleFromBundle(handlefile, dublinCore);
-            }
+            return extractHandleFromBundle(handlefile, dublinCore);
         } catch (Exception e) {
             throw new HandleException(COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV, e);
         }
@@ -88,17 +79,6 @@ public class HandleScraper {
             throw new HandleException(String.format(ERROR_MESSAGE_HANDLE_IN_DUBLIN_CORE_IS_MALFORMED,
                                                     handle));
         }
-    }
-
-    private Optional<URI> getHandleFromInTitlesAndHandlesMap(final DublinCore dublinCore) throws HandleException {
-        var title = DublinCoreScraper.extractMainTitle(dublinCore);
-        if (StringUtils.isNotEmpty(title)) {
-            var handle = titlesAndHandles.get(title);
-            if (StringUtils.isNotEmpty(handle)) {
-                return Optional.of(verifiedHandleURI(handle));
-            }
-        }
-        return Optional.empty();
     }
 
     private URI extractHandleFromBundle(final Path handleFile, final DublinCore dublinCore) throws HandleException {

@@ -50,7 +50,6 @@ public class BrageProcessor implements Runnable {
     private final HandleScraper handleScraper;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
-    private final boolean noHandleCheck;
     private final Map<String, List<Embargo>> embargoes;
     private final Map<String, Contributor> contributors;
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
@@ -61,18 +60,21 @@ public class BrageProcessor implements Runnable {
     private final boolean isUnzipped;
 
     @SuppressWarnings({"PMD.AssignmentToNonFinalStatic", "PMD.ExcessiveParameterList"})
-    public BrageProcessor(String zipfile, String customer, String destinationDirectory,
-                          final Map<String, String> rescueTitleAndHandleMap, boolean enableOnlineValidation,
-                          boolean shouldLookUpInChannelRegister, boolean noHandleCheck, String awsEnvironment,
-                          Map<String, List<Embargo>> embargoes, Map<String, Contributor> contributors,
-                          AffiliationType affiliationType, boolean isUnzipped) {
+    public BrageProcessor(String zipfile, String customer,
+                          String destinationDirectory,
+                          boolean enableOnlineValidation,
+                          boolean shouldLookUpInChannelRegister,
+                          String awsEnvironment,
+                          Map<String, List<Embargo>> embargoes,
+                          Map<String, Contributor> contributors,
+                          AffiliationType affiliationType,
+                          boolean isUnzipped) {
         this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
         this.shouldLookUpInChannelRegister = shouldLookUpInChannelRegister;
         this.destinationDirectory = destinationDirectory;
-        this.handleScraper = new HandleScraper(rescueTitleAndHandleMap);
-        this.noHandleCheck = noHandleCheck;
+        this.handleScraper = new HandleScraper();
         this.awsEnvironment = awsEnvironment;
         this.embargoes = embargoes;
         this.contributors = contributors;
@@ -271,16 +273,6 @@ public class BrageProcessor implements Runnable {
     }
 
     private URI getHandle(File entryDirectory, DublinCore dublinCore) throws HandleException {
-        return noHandleCheck ? getHandleAndIgnoreErrors(entryDirectory, dublinCore)
-                   : handleScraper.scrapeHandle(getHandlePath(entryDirectory), dublinCore);
-    }
-
-    private URI getHandleAndIgnoreErrors(File entryDirectory, DublinCore dublinCore) {
-        try {
-            return handleScraper.scrapeHandle(getHandlePath(entryDirectory), dublinCore);
-        } catch (HandleException e) {
-            //ignored
-            return null;
-        }
+        return handleScraper.scrapeHandle(getHandlePath(entryDirectory), dublinCore);
     }
 }

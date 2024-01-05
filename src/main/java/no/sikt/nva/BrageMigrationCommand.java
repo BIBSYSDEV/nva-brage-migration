@@ -7,6 +7,9 @@ import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,7 +35,6 @@ import no.sikt.nva.scrapers.CustomerMapper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.EmbargoParser;
 import no.sikt.nva.scrapers.EmbargoScraper;
-import no.sikt.nva.scrapers.HandleTitleMapReader;
 import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
@@ -68,12 +70,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String DEFAULT_LOCATION = "/brageexports/";
     public static final String OUTPUT = "output";
     public static final String FAILURE_IN_BRAGE_PROCESS = "FAILURE IN BRAGE PROCESS";
-    private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
-    private static final int NORMAL_EXIT_CODE = 0;
-    private static final int ERROR_EXIT_CODE = 2;
-    private static final String COLLECTION_FILENAME = "samlingsfil.txt";
-    private static final String ZIP_FILE_ENDING = ".zip";
-    private static final List<String> handles = Collections.synchronizedList(new ArrayList<>());
     public static final String CUSTOMER_ARGUMENT_SHORT = "-c";
     public static final String CUSTOMER_SYSTEM_PROPERTY = "customer";
     public static final String CUSTOMER_ARGUMENT_LONG = "--customer";
@@ -81,8 +77,19 @@ public class BrageMigrationCommand implements Callable<Integer> {
     public static final String OUTPUT_DIR_ARGUMENT_LONG = "--output-directory";
     public static final String OUTPUT_DIR_SYSTEM_PROPERTY = "outputDir";
     public static final String AFFILIATIONS_FILE = "affiliations.txt";
-    public static final String CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT = "Customer id does not exist for this environment: ";
+    public static final String CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT = "Customer id does not exist for this"
+                                                                                 + " environment: ";
     public static final String WRONG_ACCOUNT_MESSAGE = "You are connected to wrong aws account: ";
+    private static final String PATTERN_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter
+                                                           .ofPattern(PATTERN_FORMAT)
+                                                           .withZone(ZoneId.systemDefault());
+    private static final String DEFAULT_EMBARGO_FILE_NAME = "FileEmbargo.txt";
+    private static final int NORMAL_EXIT_CODE = 0;
+    private static final int ERROR_EXIT_CODE = 2;
+    private static final String COLLECTION_FILENAME = "samlingsfil.txt";
+    private static final String ZIP_FILE_ENDING = ".zip";
+    private static final List<String> handles = Collections.synchronizedList(new ArrayList<>());
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     @Spec
@@ -115,9 +122,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Option(names = {"-b", "--write-processed-import-to-aws"}, description = "If this flag is set, processed result"
                                                                              + "will be pushed to S3")
     private boolean writeProcessedImportToAws;
-    @Option(names = {"-no-handle-erros"}, description = "turn off handle errors. Invalid and missing handles does not"
-                                                        + " get checked")
-    private boolean noHandleCheck;
     @Option(names = {"-u"}, description = "Run import of unzipped collections")
     private boolean isUnzipped;
 
@@ -125,29 +129,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     public BrageMigrationCommand() {
         this.s3Client = S3Driver.defaultS3Client().build();
-    }
-
-    private static void validateAwsEnvironment(String environment) {
-        var accountId = getAccountId();
-        var awsEnvironment = AwsEnvironment.fromValue(environment);
-        if (doesNotBelongToCurrentAwsEnvironment(accountId, awsEnvironment)) {
-           throw new IllegalArgumentException(WRONG_ACCOUNT_MESSAGE + AwsEnvironment.getEnvironmentById(accountId).getValue());
-        }
-    }
-
-    private static boolean doesNotBelongToCurrentAwsEnvironment(String accountId, AwsEnvironment awsEnvironment) {
-        return nonNull(accountId)
-               && nonNull(awsEnvironment.getAccountId())
-               && !accountId.equals(awsEnvironment.getAccountId());
-    }
-
-    private static String getAccountId() {
-        return AWSSecurityTokenServiceClientBuilder
-                   .standard()
-                   .withRegion(Region.EU_WEST_1.id())
-                   .build()
-                   .getCallerIdentity(new GetCallerIdentityRequest())
-                   .getAccount();
     }
 
     public BrageMigrationCommand(S3Client s3Client) {
@@ -164,42 +145,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
         int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
         System.exit(exitCode);
-    }
-
-    private static Optional<String> getProceedAndPushToAwsArgument(String... args) {
-        return getArgument(Arrays.asList(args), "-a", "--should-write-to-aws");
-    }
-
-    private static Optional<String> getPushToAwsOnlyArgument(String... args) {
-        return getArgument(Arrays.asList(args), "-b", "--write-processed-import-to-aws");
-    }
-
-    private static void setSystemPropertiesForLogFiles(String... args) {
-        var arguments = Arrays.stream(args).collect(Collectors.toList());
-
-        System.setProperty(CUSTOMER_SYSTEM_PROPERTY,
-                           getArgument(arguments, CUSTOMER_ARGUMENT_SHORT, CUSTOMER_ARGUMENT_LONG).orElseThrow());
-
-        var outputDir = getArgument(arguments,
-                                    OUTPUT_DIR_ARGUMENT_SHORT,
-                                    OUTPUT_DIR_ARGUMENT_LONG).orElse("");
-
-        System.setProperty(OUTPUT_DIR_SYSTEM_PROPERTY, outputDir.isEmpty() ? "" : addTrailingSlash(outputDir));
-    }
-
-    private static String addTrailingSlash(String input) {
-        return input.endsWith("/") ? input : input + "/";
-    }
-
-    private static Optional<String> getArgument(List<String> arguments, String argumentShort, String argumentLong) {
-        var valueArgument = arguments.indexOf(argumentShort);
-        if (valueArgument == -1) {
-            valueArgument = arguments.indexOf(argumentLong);
-        }
-        if (valueArgument == -1) {
-            return Optional.empty();
-        }
-        return Optional.of(arguments.get(valueArgument + 1));
     }
 
     @SuppressWarnings("PMD.AvoidSynchronizedAtMethodLevel")
@@ -224,6 +169,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
+            logStartingPoint();
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
             checkThatCustomerIsValid();
@@ -268,16 +214,75 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
     }
 
-    private void checkThatCustomerIsValid() {
-        if (AwsEnvironment.TEST.equals(awsEnvironment)
-            || AwsEnvironment.PROD.equals(awsEnvironment)) {
-            var customerUri = new CustomerMapper().getCustomerUri(customer, awsEnvironment.getValue());
-            if (isNull(customerUri)) {
-                var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
-                logger.error(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
-                throw new IllegalArgumentException(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
-            }
+    private static void validateAwsEnvironment(String environment) {
+        var accountId = getAccountId();
+        var awsEnvironment = AwsEnvironment.fromValue(environment);
+        if (doesNotBelongToCurrentAwsEnvironment(accountId, awsEnvironment)) {
+            throw new IllegalArgumentException(
+                WRONG_ACCOUNT_MESSAGE + AwsEnvironment.getEnvironmentById(accountId).getValue());
         }
+    }
+
+    private static boolean doesNotBelongToCurrentAwsEnvironment(String accountId, AwsEnvironment awsEnvironment) {
+        return nonNull(accountId)
+               && nonNull(awsEnvironment.getAccountId())
+               && !accountId.equals(awsEnvironment.getAccountId());
+    }
+
+    private static String getAccountId() {
+        return AWSSecurityTokenServiceClientBuilder
+                   .standard()
+                   .withRegion(Region.EU_WEST_1.id())
+                   .build()
+                   .getCallerIdentity(new GetCallerIdentityRequest())
+                   .getAccount();
+    }
+
+    private static Optional<String> getProceedAndPushToAwsArgument(String... args) {
+        return getArgument(Arrays.asList(args), "-a", "--should-write-to-aws");
+    }
+
+    private static Optional<String> getPushToAwsOnlyArgument(String... args) {
+        return getArgument(Arrays.asList(args), "-b", "--write-processed-import-to-aws");
+    }
+
+    private static void setSystemPropertiesForLogFiles(String... args) {
+        var arguments = Arrays.stream(args).collect(Collectors.toList());
+
+        System.setProperty(CUSTOMER_SYSTEM_PROPERTY,
+                           getArgument(arguments, CUSTOMER_ARGUMENT_SHORT, CUSTOMER_ARGUMENT_LONG).orElseThrow());
+
+        var outputDir = getArgument(arguments,
+                                    OUTPUT_DIR_ARGUMENT_SHORT,
+                                    OUTPUT_DIR_ARGUMENT_LONG).orElse("");
+
+        System.setProperty(OUTPUT_DIR_SYSTEM_PROPERTY, outputDir.isEmpty() ? "" : addTrailingSlash(outputDir));
+    }
+
+    private static String addTrailingSlash(String input) {
+        return input.endsWith("/") ? input : input + "/";
+    }
+
+    private static Optional<String> getArgument(List<String> arguments, String argumentShort, String argumentLong) {
+        var valueArgument = arguments.indexOf(argumentShort);
+        if (valueArgument == -1) {
+            valueArgument = arguments.indexOf(argumentLong);
+        }
+        if (valueArgument == -1) {
+            return Optional.empty();
+        }
+        return Optional.of(arguments.get(valueArgument + 1));
+    }
+
+    private static void logStartingPoint() {
+        //we need this because the users forgets to delete logs, and they don't want timestamp in logs.
+        var startLogMessage = "\n\n================= Starting new import "
+                              + FORMATTER.format(Instant.now())
+                              + " ==================\n\n";
+        var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+        logger.info(startLogMessage);
+        logger.warn(startLogMessage);
+        logger.error(startLogMessage);
     }
 
     private static Integer getEmbargoCounter(List<BrageProcessor> brageProcessors) {
@@ -306,6 +311,18 @@ public class BrageMigrationCommand implements Callable<Integer> {
             return ContributorScraper.getContributors(contributorsFile);
         } else {
             return Map.of();
+        }
+    }
+
+    private void checkThatCustomerIsValid() {
+        if (AwsEnvironment.TEST.equals(awsEnvironment)
+            || AwsEnvironment.PROD.equals(awsEnvironment)) {
+            var customerUri = new CustomerMapper().getCustomerUri(customer, awsEnvironment.getValue());
+            if (isNull(customerUri)) {
+                var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+                logger.error(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
+                throw new IllegalArgumentException(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
+            }
         }
     }
 
@@ -381,7 +398,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                          Map<String, Contributor> contributors,
                                                          AffiliationType affiliations, boolean isUnzipped) {
         return createBrageProcessorThread(zipFiles, customer, enableOnlineValidation, shouldLookUpInChannelRegister,
-                                          noHandleCheck, outputDirectory, embargoes, contributors, affiliations,
+                                          outputDirectory, embargoes, contributors, affiliations,
                                           isUnzipped);
     }
 
@@ -521,19 +538,21 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, String customer,
                                                             boolean enableOnlineValidation,
                                                             boolean shouldLookUpInChannelRegister,
-                                                            boolean noHandleCheck, String outputDirectory,
+                                                            String outputDirectory,
                                                             Map<String, List<Embargo>> embargoes,
                                                             Map<String, Contributor> contributors,
-                                                            AffiliationType affiliations, boolean isUnzipped) {
-        var handleTitleMapReader = new HandleTitleMapReader();
-        var brageProcessorFactory = new BrageProcessorFactory(handleTitleMapReader.readNveTitleAndHandlesPatch(),
-                                                              embargoes, contributors, affiliations);
+                                                            AffiliationType affiliations,
+                                                            boolean isUnzipped) {
+        var brageProcessorFactory = new BrageProcessorFactory(embargoes, contributors, affiliations);
         return Arrays.stream(zipFiles)
                    .filter(StringUtils::isNotBlank)
-                   .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile, customer, enableOnlineValidation,
+                   .map(zipfile -> brageProcessorFactory.createBrageProcessor(zipfile,
+                                                                              customer,
+                                                                              enableOnlineValidation,
                                                                               shouldLookUpInChannelRegister,
-                                                                              noHandleCheck, awsEnvironment.getValue(),
-                                                                              outputDirectory, isUnzipped))
+                                                                              awsEnvironment.getValue(),
+                                                                              outputDirectory,
+                                                                              isUnzipped))
                    .collect(Collectors.toList());
     }
 
@@ -558,19 +577,19 @@ public class BrageMigrationCommand implements Callable<Integer> {
             return null;
         }
 
+        public static AwsEnvironment getEnvironmentById(String id) {
+            return ID_MAP.entrySet()
+                       .stream()
+                       .filter(entry -> id.equals(entry.getValue()))
+                       .map(Map.Entry::getKey).findFirst().orElseThrow();
+        }
+
         public String getValue() {
             return value;
         }
 
         public String getAccountId() {
             return ID_MAP.get(this);
-        }
-
-        public static AwsEnvironment getEnvironmentById(String id) {
-            return ID_MAP.entrySet()
-                              .stream()
-                              .filter(entry -> id.equals(entry.getValue()))
-                              .map(Map.Entry::getKey).findFirst().orElseThrow();
         }
     }
 }
