@@ -1,14 +1,14 @@
-package no.sikt.nva;
+package no.sikt.nva.unis;
 
 import static java.util.Objects.isNull;
 import static no.sikt.nva.brage.migration.common.model.NvaType.CRISTIN_RECORD;
-import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractCristinId;
-import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractEmbargo;
-import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractFilename;
-import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractLicense;
-import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractPublisherAuthority;
-import static no.sikt.nva.validators.UnisContentValidator.validateAndExtractTitle;
-import static no.sikt.nva.validators.UnisContentValidator.validateRow;
+import static no.sikt.nva.unis.UnisContentValidator.validateAndExtractCristinId;
+import static no.sikt.nva.unis.UnisContentValidator.validateAndExtractEmbargo;
+import static no.sikt.nva.unis.UnisContentValidator.validateAndExtractFilename;
+import static no.sikt.nva.unis.UnisContentValidator.validateAndExtractLicense;
+import static no.sikt.nva.unis.UnisContentValidator.validateAndExtractPublisherAuthority;
+import static no.sikt.nva.unis.UnisContentValidator.validateAndExtractTitle;
+import static no.sikt.nva.unis.UnisContentValidator.validateRow;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -24,8 +24,6 @@ import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.BundleType;
 import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
 import no.sikt.nva.brage.migration.common.model.record.license.License;
-import no.sikt.nva.exceptions.ExcelException;
-import no.sikt.nva.exceptions.InvalidUnisContentException;
 import nva.commons.core.paths.UriWrapper;
 import org.apache.poi.ss.usermodel.Row;
 
@@ -35,6 +33,7 @@ public final class UnisContent {
         = "dummy_handle_unis";
     public static final String UNIS_ID = "unis@186.0.0.0";
     public static final String EMPTY_STRING = "";
+    public static final String UNIS_FOLDER = "unis/";
     private int cristinId;
     private String title;
     private PublisherAuthorityEnum publisherAuthority;
@@ -117,6 +116,7 @@ public final class UnisContent {
         record.setPublisherAuthority(getPublisherAuthority().toPublisherAuthority());
         record.setEntityDescription(new EntityDescription());
         record.setType(new Type(Set.of(CRISTIN_RECORD.getValue()), CRISTIN_RECORD.getValue()));
+        record.setBrageLocation(EMPTY_STRING);
 
         var fileIdentifier = UUID.randomUUID();
         var contentFile = new ContentFile(

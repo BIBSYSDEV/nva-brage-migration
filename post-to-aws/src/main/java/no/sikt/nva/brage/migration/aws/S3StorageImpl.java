@@ -185,6 +185,9 @@ public class S3StorageImpl implements S3Storage {
     }
 
     private String createKey(Record record, String filename) {
+        if (StringUtils.isBlank(record.getBrageLocation())) {
+            return Path.of(customer, record.getCristinId(), filename).toString();
+        }
         var collection = getCollectionDirectory(record);
         var bundle = getResourceDirectory(record);
         return Path.of(customer, collection, bundle, filename).toString();

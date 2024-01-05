@@ -159,7 +159,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         var environment = getArgument(Arrays.asList(args), "-j", "--aws-bucket");
         var pushToAwsOnly = getPushToAwsOnlyArgument(args);
         var proceedAndPushToAws = getProceedAndPushToAwsArgument(args);
-        if (nonNull(pushToAwsOnly) && nonNull(proceedAndPushToAws)) {
+        if (pushToAwsOnly.isPresent() || proceedAndPushToAws.isPresent()) {
             validateAwsEnvironment(environment.orElse(null));
         }
         int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);

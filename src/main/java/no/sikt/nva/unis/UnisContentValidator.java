@@ -1,10 +1,9 @@
-package no.sikt.nva.validators;
+package no.sikt.nva.unis;
 
-import static no.sikt.nva.UnisContentScrapingResult.VALID_HEADERS;
+import static no.sikt.nva.unis.UnisContentScrapingResult.VALID_HEADERS;
 import java.time.Instant;
 import no.sikt.nva.brage.migration.common.model.record.PublisherAuthorityEnum;
 import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
-import no.sikt.nva.exceptions.ExcelException;
 import nva.commons.core.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;

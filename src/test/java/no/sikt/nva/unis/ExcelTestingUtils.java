@@ -1,4 +1,4 @@
-package no.sikt.nva.validators;
+package no.sikt.nva.unis;
 
 import java.time.Instant;
 import java.util.ArrayList;
