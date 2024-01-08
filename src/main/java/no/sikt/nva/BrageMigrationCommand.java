@@ -257,6 +257,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 if (shouldWriteToAws) {
                     pushToNva(brageProcessors);
                     storeLogsToNva();
+                    storeInputFilesToNva();
                 }
                 log(brageProcessors);
             }
@@ -435,6 +436,12 @@ public class BrageMigrationCommand implements Callable<Integer> {
         S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/",
                                               customer, awsEnvironment.getValue());
         storage.storeLogs(customer);
+    }
+
+    private void storeInputFilesToNva() {
+        S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory + "/",
+                                              customer, awsEnvironment.getValue());
+        storage.storeInputFile(startingDirectory, DEFAULT_EMBARGO_FILE_NAME);
     }
 
     private void logRecordCounter(List<BrageProcessor> brageProcessors) {

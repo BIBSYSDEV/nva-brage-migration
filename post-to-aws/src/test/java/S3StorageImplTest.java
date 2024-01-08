@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -22,6 +23,8 @@ import nva.commons.core.paths.UnixPath;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
@@ -32,6 +35,7 @@ public class S3StorageImplTest {
                                                       + "interpolation.pdf";
     public static final String CUSTOMER = "CUSTOMER";
     private static final String EXPERIMENTAL_BUCKET_SETTTING = "experimental";
+    public static final String SAMLINGSFIL_TXT = "samlingsfil.txt";
 
     @Test
     void shouldUploadRecordAndFileToS3() {
@@ -97,6 +101,23 @@ public class S3StorageImplTest {
                 .contents()
                 .get(0).key();
         assertThat(actualFileKeyFromBucket, is(equalTo(expectedKeyFromBucket)));
+    }
+
+    @Test
+    void shouldPushInputFileToS3() {
+        var s3Client = new FakeS3Client();
+        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
+        storageClient.storeInputFile(TEST_PATH, Path.of("NVE", SAMLINGSFIL_TXT).toString());
+        var request = GetObjectRequest.builder()
+                                     .bucket(S3StorageImpl.EXPERIMENTAL_BUCKET_NAME)
+                                     .key(Path.of(CUSTOMER, SAMLINGSFIL_TXT).toString())
+                                     .build();
+        var response = s3Client.getObject(request, ResponseTransformer.toBytes());
+        var fileContent = new String(response.asByteArray());
+        var expectedContent = "2833909\n";
+
+        assertThat(fileContent, is(equalTo(expectedContent)));
+
     }
 
     private ListObjectsRequest createListObjectsRequest(UnixPath folder) {

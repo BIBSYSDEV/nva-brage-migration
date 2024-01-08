@@ -9,4 +9,6 @@ public interface S3Storage {
     void storeLogs(String customer);
 
     void storeProcessedCollections(String... bundles);
+
+    void storeInputFile(String startingDirectory, String filename);
 }
