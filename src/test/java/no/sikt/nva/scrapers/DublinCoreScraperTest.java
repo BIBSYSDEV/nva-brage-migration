@@ -7,6 +7,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLIC
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_LANGUAGES_PRESENT;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
@@ -898,6 +899,16 @@ public class DublinCoreScraperTest {
 
         assertThat(record.getType().getNva(), is(equalTo(NvaType.REPORT.getValue())));
         assertThat(appender.getMessages(), not(containsString(INVALID_DC_TYPE.toString())));
+    }
+
+    @Test
+    void shouldBeAbleToConsumeRandomizedIssn() {
+        var dcType = toDcType("Other report");
+        var dsIssn = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "ISBN");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dsIssn));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+
+        assertThat(record.getErrors().toString(), containsString(INVALID_ISSN.name()));
     }
 
     @Test

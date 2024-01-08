@@ -216,6 +216,9 @@ public class DublinCoreScraper {
     }
 
     public static String removeWrongPlacedDelimiters(String value) {
+        if (isNull(value) || value.isEmpty()) {
+            return value;
+        }
         if (firstLetterIsDelimiter(value)) {
             return value.substring(1);
         }
