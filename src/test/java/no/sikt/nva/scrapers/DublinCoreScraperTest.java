@@ -154,7 +154,8 @@ public class DublinCoreScraperTest {
     void shouldCreatePublisherAuthorityIfVersionIsNotPresent() {
         var typeDcValue = toDcType("Others");
         var dublinCoreWithoutVersion = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
-        var record = dcScraper.validateAndParseDublinCore(dublinCoreWithoutVersion, new BrageLocation(null), SOME_CUSTOMER);
+        var record = dcScraper.validateAndParseDublinCore(dublinCoreWithoutVersion, new BrageLocation(null),
+                                                          SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
         assertThat(actualPublisherAuthority, is(equalTo(null)));
     }
@@ -262,7 +263,7 @@ public class DublinCoreScraperTest {
         var partOfSeriesDcValue = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, "NVE Rapport;2019:1");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(publisherDcValue, issnDcValue, typeDcValue, dateDcValue, partOfSeriesDcValue));
-        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null),SOME_CUSTOMER);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         String seriesId = record.getPublication().getPublicationContext().getSeries().getPid();
         assertThat(seriesId, is(equalTo("7907D9CB-E44D-4CC0-9F1E-F67595F67AFE")));
     }
@@ -466,7 +467,7 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Conference object");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
         var appender = LogUtils.getTestingAppenderForRootLogger();
-        dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null),SOME_CUSTOMER);
+        dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(appender.getMessages(),
                    containsString(Warning.CONFERENCE_OBJECT_OR_LECTURE_WILL_BE_MAPPED_TO_CONFERENCE_REPORT.toString()));
     }
@@ -674,7 +675,6 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, date, handle, doi));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getDoi().toString(), is(equalTo(doi.getValue())));
-
     }
 
     @Test
@@ -741,11 +741,6 @@ public class DublinCoreScraperTest {
         assertThat(messages, not(containsString(MULTIPLE_UNMAPPABLE_TYPES.name())));
         assertThat(messages, not(containsString(INVALID_DC_TYPE.name())));
         assertThat(messages, not(containsString(INVALID_DC_TYPE.name())));
-    }
-
-    @NotNull
-    private static DcValue toDcType(String t) {
-        return new DcValue(Element.TYPE, null, t);
     }
 
     @Test
@@ -914,6 +909,21 @@ public class DublinCoreScraperTest {
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
 
         assertThat(record.getErrors().toString(), containsString(INVALID_ISSN.name()));
+    }
+
+    @Test
+    void shouldScrapeIsmnFieldI() {
+        var dcType = toDcType("Musical score");
+        var ismn = new DcValue(Element.IDENTIFIER, Qualifier.ISMN, "979-0-9005146-0-8");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, ismn));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+        assertThat(record.getType().getNva(), is(equalTo(NvaType.RECORDING_MUSICAL.getValue())));
+
+    }
+
+    @NotNull
+    private static DcValue toDcType(String t) {
+        return new DcValue(Element.TYPE, null, t);
     }
 
     private static Stream<Arguments> provideDcValueAndExpectedPages() {

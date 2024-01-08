@@ -1,5 +1,6 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
+import static java.util.Objects.isNull;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.Objects;
@@ -11,6 +12,7 @@ public class Publication {
     private String journal;
     private Set<String> issnList;
     private Set<String> isbnList;
+    private Set<String> ismnList;
     private PublicationContext publicationContext;
     private String partOfSeries;
 
@@ -29,7 +31,12 @@ public class Publication {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(journal, issnList, isbnList, publicationContext, partOfSeries);
+        return Objects.hash(journal,
+                            issnList,
+                            isbnList,
+                            publicationContext,
+                            ismnList,
+                            partOfSeries);
     }
 
     @JacocoGenerated
@@ -46,6 +53,7 @@ public class Publication {
                && Objects.equals(issnList, that.issnList)
                && Objects.equals(isbnList, that.isbnList)
                && Objects.equals(publicationContext, that.publicationContext)
+               && Objects.equals(ismnList, that.ismnList)
                && Objects.equals(partOfSeries, that.partOfSeries);
     }
 
@@ -87,5 +95,18 @@ public class Publication {
 
     public void setPublicationContext(PublicationContext publicationContext) {
         this.publicationContext = publicationContext;
+    }
+
+    public void isIssmList(Set<String> ismnList) {
+        this.ismnList = ismnList;
+    }
+
+    @JacocoGenerated
+    @JsonProperty("ismnList")
+    public Set<String> getIsmnList() {
+        if (isNull(ismnList)) {
+            return Collections.emptySet();
+        }
+        return ismnList;
     }
 }

@@ -5,6 +5,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_N
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_DATE_ISSUED;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_RIGHTS_URI;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISMN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.INVALID_ISBN_WARNING;
 import static no.sikt.nva.scrapers.DublinCoreScraper.mapOriginTypeToNvaType;
@@ -67,6 +68,7 @@ public final class DublinCoreValidator {
         getInvalidTypes(dublinCore, customer).ifPresent(errors::add);
         getIssnErrors(dublinCore).ifPresent(errors::add);
         getDateError(dublinCore).ifPresent(errors::add);
+        getIsmnError(dublinCore).ifPresent(errors::add);
         BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
         getMultipleUnmappableTypeError(dublinCore, customer).ifPresent(errors::add);
         getMultipleValues(dublinCore).ifPresent(errors::addAll);
@@ -106,6 +108,35 @@ public final class DublinCoreValidator {
 
     public static boolean isPeriodDate(String date) {
         return date.matches(YEAR_PERIOD_REGEX) || date.matches(UNKNOWN_YEAR_PERIOD_REGEX);
+    }
+
+    private static Optional<ErrorDetails> getIsmnError(DublinCore dublinCore) {
+        if (hasIsmn(dublinCore)) {
+            var invalidIsmnList = getInvalidIsmnList(dublinCore);
+            return !invalidIsmnList.isEmpty()
+                       ? Optional.of(new ErrorDetails(INVALID_ISMN, invalidIsmnList))
+                       : Optional.empty();
+        }
+        return Optional.empty();
+    }
+
+    private static Set<String> getInvalidIsmnList(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isIsmnAndNotEmptyValue)
+                   .map(DcValue::getValue)
+                   .filter(ismn -> !isValidIsmn(ismn))
+                   .collect(Collectors.toSet());
+    }
+
+    private static boolean isValidIsmn(String ismn) {
+        //according to this documentation ISBNvalidator can be used for validating ismn.
+        // https://commons.apache.org/proper/commons-validator/apidocs/org/apache/commons/validator/routines/ISBNValidator.html
+        return ISBNValidator.getInstance().isValid(ismn);
+    }
+
+    private static boolean hasIsmn(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream().anyMatch(DcValue::isIsmnAndNotEmptyValue);
     }
 
     private static Optional<WarningDetails> getTypesWarnings(DublinCore dublinCore, String customer) {
@@ -383,7 +414,8 @@ public final class DublinCoreValidator {
         }
         if (TypeMapper.hasValidType(uniqueTypes.iterator().next())) {
             return Optional.empty();
-        } if (nonNull(mapOriginTypeToNvaType(uniqueTypes, dublinCore).getNva())) {
+        }
+        if (nonNull(mapOriginTypeToNvaType(uniqueTypes, dublinCore).getNva())) {
             return Optional.empty();
         }
         if (nonNull(mapToNvaTypeIfMappable(uniqueTypes))) {

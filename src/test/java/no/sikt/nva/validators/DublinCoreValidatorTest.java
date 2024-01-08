@@ -8,6 +8,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALI
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISMN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_ISSN_AND_DC_JOURNAL;
 import static no.sikt.nva.validators.DublinCoreValidator.NO_CUSTOMER;
@@ -15,6 +16,7 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -195,8 +197,9 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
         var brageLocation = new BrageLocation(null);
         var actualError =
-            ChannelRegister.getRegister().getChannelRegisterErrors(DublinCoreFactory.createDublinCoreWithDcValues(dcValues),
-                                                     brageLocation, SOME_CUSTOMER);
+            ChannelRegister.getRegister()
+                .getChannelRegisterErrors(DublinCoreFactory.createDublinCoreWithDcValues(dcValues),
+                                          brageLocation, SOME_CUSTOMER);
 
         assertThat(actualError.get(),
                    is(equalTo(new ErrorDetails(DC_JOURNAL_NOT_IN_CHANNEL_REGISTER, Set.of("1501-0678")))));
@@ -241,5 +244,13 @@ public class DublinCoreValidatorTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(date));
         var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
         assertThat(errors, not(hasItems(new ErrorDetails(INVALID_DC_DATE_ISSUED))));
+    }
+
+    @Test
+    void shouldReturnErrorWhenInvalidIsmnIsSupplied() {
+        var ismn = new DcValue(Element.IDENTIFIER, Qualifier.ISMN, "some invalid ismn");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(ismn));
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
+        assertThat(errors, hasItem(new ErrorDetails(INVALID_ISMN)));
     }
 }

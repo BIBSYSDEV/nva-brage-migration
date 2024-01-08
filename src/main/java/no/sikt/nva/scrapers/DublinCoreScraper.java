@@ -124,12 +124,12 @@ public class DublinCoreScraper {
                    .filter(DcValue::isIsbnAndNotEmptyValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .distinct()
-                   .map(DublinCoreScraper::attemptToRepairIsbn)
+                   .map(DublinCoreScraper::attemptToRepairIsbnAndIsmn)
                    .filter(StringUtils::isNotBlank)
                    .collect(Collectors.toSet());
     }
 
-    public static String attemptToRepairIsbn(String value) {
+    public static String attemptToRepairIsbnAndIsmn(String value) {
         return Optional.ofNullable(value)
                    .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
                    .map(isbn -> isbn.replaceAll("[^0-9]", ""))
@@ -190,8 +190,21 @@ public class DublinCoreScraper {
         publication.setIssnList(extractIssn(dublinCore));
         publication.setIsbnList(extractIsbn(dublinCore));
         publication.setJournal(extractJournal(dublinCore));
+        publication.isIssmList(extractIsmn(dublinCore));
         publication.setPartOfSeries(extractPartOfSeries(dublinCore));
         return publication;
+    }
+
+    public static Set<String> extractIsmn(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isIsmnAndNotEmptyValue)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .distinct()
+                   .map(DublinCoreScraper::attemptToRepairIsbnAndIsmn)
+                   .filter(StringUtils::isNotBlank)
+                   .collect(Collectors.toSet());
+
     }
 
     public static boolean isSingleton(Set<String> versions) {
