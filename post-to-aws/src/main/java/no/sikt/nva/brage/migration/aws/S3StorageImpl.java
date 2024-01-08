@@ -92,6 +92,14 @@ public class S3StorageImpl implements S3Storage {
         }
     }
 
+    @Override
+    public void storeInputFile(String startingDirectory, String filename) {
+        var file = new File(Path.of(startingDirectory, filename).toString());
+        if (file.exists() && file.isFile()) {
+            writeFileToS3(file);
+        }
+    }
+
     public String getPathPrefixString() {
         return pathPrefixString;
     }
@@ -223,10 +231,10 @@ public class S3StorageImpl implements S3Storage {
         var errorFile = new File(getPathPrefixString() + String.format(DEFAULT_ERROR_FILENAME, customer));
         var warningFile = new File(getPathPrefixString() + String.format(DEFAULT_WARNING_FILENAME, customer));
         var infoFile = new File(getPathPrefixString() + String.format(DEFAULT_INFO_FILENAME, customer));
-        List.of(errorFile, warningFile, infoFile).forEach(this::writeLogFileToS3);
+        List.of(errorFile, warningFile, infoFile).forEach(this::writeFileToS3);
     }
 
-    private void writeLogFileToS3(File file) {
+    private void writeFileToS3(File file) {
         s3Client.putObject(PutObjectRequest
                                .builder()
                                .bucket(bucketName)
