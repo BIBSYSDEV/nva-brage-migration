@@ -162,7 +162,7 @@ public final class ChannelRegister {
                                   .distinct()
                                   .collect(SingletonCollector.collectOrElse(null));
 
-                return Optional.ofNullable(channel).orElse(lookupInAliases(channelRegisterAliasesJournals, title));
+                return Optional.ofNullable(channel).orElse(lookupInJournalAliases(title));
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
@@ -287,7 +287,7 @@ public final class ChannelRegister {
 
     private String lookupInPublisherAliases(String publisher,
                                             String customer) {
-        var pid = lookupInAliases(channelRegisterAliasesPublishers, publisher);
+        var pid = lookupInPublisherAliases(channelRegisterPublishers, channelRegisterAliasesPublishers, publisher);
         if (StringUtils.isEmpty(pid)) {
             pid = lookupInCustomerSpecificCsv(publisher, customer).orElse(null);
         }
@@ -296,18 +296,46 @@ public final class ChannelRegister {
 
     private Optional<String> lookupInCustomerSpecificCsv(String publisher, String customer) {
         if (NTNU.equalsIgnoreCase(customer)) {
-            return Optional.ofNullable(lookupInAliases(channelRegisterAliasesForNtnu, publisher));
+            return Optional.ofNullable(lookupInPublisherAliases(channelRegisterPublishers, channelRegisterAliasesForNtnu, publisher));
         }
         if (BORA.equalsIgnoreCase(customer)) {
-            return Optional.ofNullable(lookupInAliases(channelRegisterAliasesForBora, publisher));
+            return Optional.ofNullable(lookupInPublisherAliases(channelRegisterPublishers, channelRegisterAliasesForBora, publisher));
         }
         return Optional.empty();
     }
 
-    private String lookupInAliases(List<ChannelRegisterAlias> aliases, String publisher) {
+    private String lookupInJournalAliases(String publisher) {
+        var originalTitle = channelRegisterAliasesJournals.stream()
+                   .filter(item -> item.hasAlias(publisher))
+                   .map(ChannelRegisterAlias::getOriginalTitle)
+                   .distinct()
+                   .collect(SingletonCollector.collectOrElse(null));
+        return channelRegisterJournals.stream()
+                   .filter(item -> item.hasTitle(originalTitle))
+                   .map(ChannelRegisterJournal::getPid)
+                   .distinct()
+                   .collect(SingletonCollector.collectOrElse(null));
+    }
+
+    private String lookupInPublisherAliases(List<ChannelRegisterPublisher> publishers, List<ChannelRegisterAlias> aliases, String publisher) {
+        var originalPublisher = getOriginalPublisher(aliases, publisher);
+        return nonNull(originalPublisher)
+                   ? lookInPublishers(publishers, originalPublisher)
+                   : null;
+    }
+
+    private static String lookInPublishers(List<ChannelRegisterPublisher> publishers, String originalPublisher) {
+        return publishers.stream()
+                   .filter(item -> item.hasPublisher(originalPublisher))
+                   .map(ChannelRegisterPublisher::getPid)
+                   .distinct()
+                   .collect(SingletonCollector.collectOrElse(null));
+    }
+
+    private static String getOriginalPublisher(List<ChannelRegisterAlias> aliases, String publisher) {
         return aliases.stream()
                    .filter(item -> item.hasAlias(publisher))
-                   .map(ChannelRegisterAlias::getPid)
+                   .map(ChannelRegisterAlias::getOriginalTitle)
                    .distinct()
                    .collect(SingletonCollector.collectOrElse(null));
     }
@@ -340,11 +368,7 @@ public final class ChannelRegister {
     }
 
     private String getPublisherIdentifer(String publisherFromMapper) {
-        return channelRegisterPublishers.stream()
-                   .filter(item -> item.hasPublisher(publisherFromMapper))
-                   .map(ChannelRegisterPublisher::getPid)
-                   .distinct()
-                   .collect(SingletonCollector.collectOrElse(null));
+        return lookInPublishers(channelRegisterPublishers, publisherFromMapper);
     }
 
     private boolean extractedIdentifierFromPublishersIsPresent(String publisher, String customer) {

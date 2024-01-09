@@ -6,9 +6,6 @@ import nva.commons.core.JacocoGenerated;
 
 public class ChannelRegisterAlias {
 
-    @CsvBindByName(column = "PID")
-    private String pid;
-
     @CsvBindByName(column = "alias")
     private String alias;
 
@@ -18,15 +15,6 @@ public class ChannelRegisterAlias {
     @JacocoGenerated
     public ChannelRegisterAlias() {
 
-    }
-
-    public String getPid() {
-        return pid;
-    }
-
-    @JacocoGenerated
-    public void setPid(String pid) {
-        this.pid = pid;
     }
 
     public String getAlias() {
@@ -55,7 +43,7 @@ public class ChannelRegisterAlias {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(pid, alias, originalTitle);
+        return Objects.hash(alias, originalTitle);
     }
 
     @JacocoGenerated
@@ -68,8 +56,7 @@ public class ChannelRegisterAlias {
             return false;
         }
         ChannelRegisterAlias that = (ChannelRegisterAlias) o;
-        return Objects.equals(pid, that.pid)
-               && Objects.equals(alias, that.alias)
+        return Objects.equals(alias, that.alias)
                && Objects.equals(originalTitle, that.originalTitle);
     }
 }
