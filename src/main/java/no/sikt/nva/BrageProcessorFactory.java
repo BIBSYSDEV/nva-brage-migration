@@ -13,15 +13,12 @@ public class BrageProcessorFactory {
 
     public static final String ZIP_EXTENSION = ".zip";
     private static final String INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE = "invalid zipfile name";
-    private final Map<String, String> rescueTitleAndHandleMap;
     private final Map<String, List<Embargo>> embargoes;
     private final Map<String, Contributor> contributors;
     private final AffiliationType affiliations;
 
-    public BrageProcessorFactory(Map<String, String> rescueTitleAndHandleMap,
-                                 Map<String, List<Embargo>> embargoes,
+    public BrageProcessorFactory(                                 Map<String, List<Embargo>> embargoes,
                                  Map<String, Contributor> contributors, AffiliationType affiliations) {
-        this.rescueTitleAndHandleMap = rescueTitleAndHandleMap;
         this.embargoes = embargoes;
         this.contributors = contributors;
         this.affiliations = affiliations;
@@ -31,15 +28,14 @@ public class BrageProcessorFactory {
                                                final String customer,
                                                final boolean enableOnlineValidation,
                                                final boolean shouldLookUpInChannelRegister,
-                                               final boolean noHandleCheck,
                                                final String awsEnvironment,
                                                String outputDirectory, boolean isUnzipped) {
         var destinationDirectory = generateDestinationDirectory(outputDirectory, zipfile);
         if (StringUtils.isEmpty(destinationDirectory)) {
             throw new RuntimeException(INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE);
         }
-        return new BrageProcessor(zipfile, customer, destinationDirectory, rescueTitleAndHandleMap,
-                                  enableOnlineValidation, shouldLookUpInChannelRegister, noHandleCheck,
+        return new BrageProcessor(zipfile, customer, destinationDirectory,
+                                  enableOnlineValidation, shouldLookUpInChannelRegister,
                                   awsEnvironment, embargoes,
                                   contributors, affiliations, isUnzipped);
     }

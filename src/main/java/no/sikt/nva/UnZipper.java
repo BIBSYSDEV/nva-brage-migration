@@ -34,6 +34,7 @@ public final class UnZipper {
             var unzippedFile = unzip(fileToUnzip, destinationFile);
             return Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles())).collect(Collectors.toList());
         } catch (Exception e) {
+            logger.error(e.getMessage());
             if (initialFile.exists()) {
                 logger.warn(new WarningDetails(Warning.EMPTY_COLLECTION, Path.of(pathToZip).toString()).toString());
             } else {
@@ -51,7 +52,7 @@ public final class UnZipper {
             inputStream.closeEntry();
             return destinationDirectory;
         } catch (Exception e) {
-            throw new RuntimeException(UNZIPPING_WENT_WRONG_WITH_EXCEPTION, e);
+            throw new RuntimeException(UNZIPPING_WENT_WRONG_WITH_EXCEPTION + e.getMessage());
         }
     }
 
