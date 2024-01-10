@@ -52,7 +52,7 @@ public final class EmbargoScraper {
     }
 
     private static Boolean fileHasNotContent(File file) {
-        return attempt(() -> Files.readString(Path.of(file.toURI())).isBlank()).orElse(failure -> false);
+        return attempt(() -> StringUtils.isBlank(Files.readString(Path.of(file.toURI())))).orElse(failure -> false);
     }
 
     private static Map<String, List<Embargo>> convertStringToEmbargoObjects(String contentFileAsString) {
