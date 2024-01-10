@@ -47,7 +47,6 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DoiValidator;
-import nva.commons.core.SingletonCollector;
 import nva.commons.core.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -242,7 +241,8 @@ public class DublinCoreScraper {
                    .stream()
                    .filter(DcValue::isEmbargoEndDate)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(SingletonCollector.collectOrElse(null));
+                   .findFirst()
+                   .orElse(null);
     }
 
     public static String extractCristinId(DublinCore dublinCore) {

@@ -28,6 +28,7 @@ public class EmbargoScraperTest {
                                           + " precipitation fields with variance consistent interpolation.pdf";
     public static final String DATE = "2023-10-01";
     public static final String TEST_FILE_LOCATION = "src/test/resources/FileEmbargo.txt";
+    public static final String EMPTY_EMBARGO_FILE = "src/test/resources/EmptyEmbargoFile.txt";
     public static final String TEST_FILE_LOCATION_V2 = "src/test/resources/FileEmbargoV2.txt";
     public static final String TEST_FILE_LOCATION_V3 = "src/test/resources/FileEmbargoV3.txt";
     public static final String EMBARGO_WITH_DISTANT_DATE_TXT = "src/test/resources/FileEmbargo_with_distant_date.txt";
@@ -103,6 +104,12 @@ public class EmbargoScraperTest {
             .getContentFiles()
             .forEach(actualContentFile ->
                          assertThat(actualContentFile.getEmbargoDate(), is(notNullValue())));
+    }
+
+    @Test
+    void shouldCreateEmptyEmbargoListWhenEmptyEmbargoFile() {
+        var embargos = EmbargoScraper.getEmbargoes(new File(EMPTY_EMBARGO_FILE));
+        assertThat(embargos.size(), is(0));
     }
 
     @Test

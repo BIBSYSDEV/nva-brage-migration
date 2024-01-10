@@ -1,8 +1,10 @@
 package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.scrapers.ContentScraper.EMPTY_LINE_REGEX;
+import static nva.commons.core.attempt.Try.attempt;
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,7 +48,11 @@ public final class EmbargoScraper {
     }
 
     private static boolean fileIsEmpty(File file) {
-        return file.length() == 0;
+        return file.length() == 0 || fileHasNotContent(file);
+    }
+
+    private static Boolean fileHasNotContent(File file) {
+        return attempt(() -> Files.readString(Path.of(file.toURI())).isBlank()).orElse(failure -> false);
     }
 
     private static Map<String, List<Embargo>> convertStringToEmbargoObjects(String contentFileAsString) {
