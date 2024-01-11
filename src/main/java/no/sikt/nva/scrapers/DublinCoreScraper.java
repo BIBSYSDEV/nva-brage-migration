@@ -244,7 +244,7 @@ public class DublinCoreScraper {
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .collect(Collectors.toSet())
                    .stream()
-                   .collect(SingletonCollector.collect());
+                   .collect(SingletonCollector.collectOrElse(null));
     }
 
     public static String extractCristinId(DublinCore dublinCore) {
