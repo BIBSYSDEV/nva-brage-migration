@@ -34,7 +34,6 @@ public final class UnZipper {
             var unzippedFile = unzip(fileToUnzip, destinationFile);
             return Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles())).collect(Collectors.toList());
         } catch (Exception e) {
-            logger.error(e.getMessage());
             if (initialFile.exists()) {
                 logger.warn(new WarningDetails(Warning.EMPTY_COLLECTION, Path.of(pathToZip).toString()).toString());
             } else {
