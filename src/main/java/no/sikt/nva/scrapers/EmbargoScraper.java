@@ -40,8 +40,9 @@ public final class EmbargoScraper {
             if (file.exists()) {
                 if (fileIsEmpty(file)) {
                     logger.error(EMPTY_EMBARGO_FILE_MESSAGE);
+                } else {
+                    logger.error(ERROR_OCCURRED_EXTRACTING_EMBARGOES);
                 }
-                logger.error(ERROR_OCCURRED_EXTRACTING_EMBARGOES);
             }
             return new HashMap<>();
         }
