@@ -1,5 +1,6 @@
 package no.sikt.nva;
 
+import static java.util.Objects.nonNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +35,9 @@ public final class UnZipper {
             var unzippedFile = unzip(fileToUnzip, destinationFile);
             return Arrays.stream(Objects.requireNonNull(unzippedFile.listFiles())).collect(Collectors.toList());
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            if(nonNull(e.getMessage())) {
+                logger.error(e.getMessage());
+            }
             if (initialFile.exists()) {
                 logger.warn(new WarningDetails(Warning.EMPTY_COLLECTION, Path.of(pathToZip).toString()).toString());
             } else {

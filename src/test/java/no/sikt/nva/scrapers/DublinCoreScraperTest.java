@@ -1,7 +1,6 @@
 package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
-import static no.sikt.nva.ResourceNameConstants.VALID_DUBLIN_CORE_XML_FILE_NAME;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
@@ -16,8 +15,8 @@ import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.War
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
-import static no.sikt.nva.scrapers.EntityDescriptionExtractor.SUPERVISOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
+import static no.sikt.nva.scrapers.EntityDescriptionExtractor.SUPERVISOR;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,7 +32,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
@@ -919,6 +918,17 @@ public class DublinCoreScraperTest {
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
         assertThat(record.getType().getNva(), is(equalTo(NvaType.RECORDING_MUSICAL.getValue())));
 
+    }
+
+    @Test
+    void shouldExtractFirstEmbargoIfDublinCoreContainsMultipleEmbargoes() {
+        var dcType = toDcType("Musical score");
+        var firstEmbargo = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, "someDate");
+        var secondEmbargo = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, "someDate");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(dcType, firstEmbargo, secondEmbargo));
+
+        assertDoesNotThrow(() -> DublinCoreScraper.extractEmbargo(dublinCore));
     }
 
     @NotNull

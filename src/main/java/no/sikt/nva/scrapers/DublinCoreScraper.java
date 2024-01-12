@@ -242,6 +242,8 @@ public class DublinCoreScraper {
                    .stream()
                    .filter(DcValue::isEmbargoEndDate)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toSet())
+                   .stream()
                    .collect(SingletonCollector.collectOrElse(null));
     }
 
