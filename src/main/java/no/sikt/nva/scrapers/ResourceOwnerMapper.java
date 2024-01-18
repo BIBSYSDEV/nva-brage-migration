@@ -66,6 +66,7 @@ import static no.sikt.nva.scrapers.CustomerMapper.SSB;
 import static no.sikt.nva.scrapers.CustomerMapper.STAMI;
 import static no.sikt.nva.scrapers.CustomerMapper.STATPED;
 import static no.sikt.nva.scrapers.CustomerMapper.STEINERHOYSKOLEN;
+import static no.sikt.nva.scrapers.CustomerMapper.TOI;
 import static no.sikt.nva.scrapers.CustomerMapper.UIA;
 import static no.sikt.nva.scrapers.CustomerMapper.UIO;
 import static no.sikt.nva.scrapers.CustomerMapper.UIS;
@@ -245,6 +246,8 @@ public class ResourceOwnerMapper {
     private static final String IMR_CRISTIN_IDENTIFIER = "7431.0.0.0";
     private static final String BANENOR_OWNER_VALUE = "banenor@21033.0.0.0";
     private static final String BANENOR_CRISTIN_IDENTIFIER = "21033.0.0.0";
+    private static final String TOI_OWNER_VALUE = "toi@7482.0.0.0";
+    private static final String TOI_CRISTIN_IDENTIFIER = "7482.0.0.0";
     @SuppressWarnings("PMD.UseConcurrentHashMap")
     private static final Map<String, Map<String, String>> RESOURCE_OWNER_MAP = new ConcurrentHashMap<>()
     {{
@@ -396,6 +399,8 @@ public class ResourceOwnerMapper {
                                  entry(CRISTIN_IDENTIFIER, IMR_CRISTIN_IDENTIFIER)));
         put(BANENOR, Map.ofEntries(entry(OWNER_VALUE, BANENOR_OWNER_VALUE),
                                entry(CRISTIN_IDENTIFIER, BANENOR_CRISTIN_IDENTIFIER)));
+        put(TOI, Map.ofEntries(entry(OWNER_VALUE, TOI_OWNER_VALUE),
+                                   entry(CRISTIN_IDENTIFIER, TOI_CRISTIN_IDENTIFIER)));
     }};
 
     private static final Map<String, String> ENVIRONMENT_URI_MAP = Map.ofEntries(
