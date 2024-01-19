@@ -640,7 +640,7 @@ public class DublinCoreScraper {
         }
     }
 
-    private static boolean isInCristin(DublinCore dublinCore) {
+    public static boolean isInCristin(DublinCore dublinCore) {
         var cristinId = extractCristinId(dublinCore);
         return nonNull(cristinId) && !cristinId.isEmpty();
     }
