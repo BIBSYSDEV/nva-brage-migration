@@ -136,7 +136,8 @@ public class DcValue {
     }
 
     public boolean isIssnValue() {
-        return Element.IDENTIFIER.equals(this.element) && Qualifier.ISSN.equals(this.qualifier);
+        return Element.IDENTIFIER.equals(this.element) && Qualifier.ISSN.equals(this.qualifier)
+            || Element.SOURCE.equals(this.element) && Qualifier.ISSN.equals(this.qualifier);
     }
 
     public boolean isIsbnAndNotEmptyValue() {

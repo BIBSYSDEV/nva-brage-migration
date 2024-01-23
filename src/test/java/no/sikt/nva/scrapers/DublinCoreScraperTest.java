@@ -17,6 +17,7 @@ import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_R
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.SUPERVISOR;
+import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -929,6 +930,16 @@ public class DublinCoreScraperTest {
             List.of(dcType, firstEmbargo, secondEmbargo));
 
         assertDoesNotThrow(() -> DublinCoreScraper.extractEmbargo(dublinCore));
+    }
+
+    @Test
+    void shouldExtractIssnFromDcSourceIssn() {
+        var dcType = toDcType("Musical score");
+        var value = randomIssn();
+        var issn = new DcValue(Element.SOURCE, Qualifier.ISSN, value);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, issn));
+
+        assertThat(DublinCoreScraper.extractIssn(dublinCore), is(equalTo(Set.of(issn.getValue()))));
     }
 
     @NotNull
