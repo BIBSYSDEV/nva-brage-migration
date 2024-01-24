@@ -969,6 +969,15 @@ public class DublinCoreScraperTest {
         assertThat(appender.getMessages(), not(containsString(MULTIPLE_VALUES.name())));
     }
 
+    @Test
+    void shouldExtractJournalFromJournalTitleDcValue() {
+        var journalValue = randomString();
+        var journalTitle = new DcValue(Element.IDENTIFIER, Qualifier.JOURNAL_TITLE, journalValue);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(journalTitle));
+
+        assertThat(DublinCoreScraper.extractJournal(dublinCore), is(equalTo(journalValue)));
+    }
+
     @NotNull
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);
