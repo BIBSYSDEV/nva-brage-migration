@@ -24,6 +24,7 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("PMD.GodClass")
 public final class EntityDescriptionExtractor {
@@ -42,20 +43,31 @@ public final class EntityDescriptionExtractor {
     }
 
     public static String extractMainTitle(DublinCore dublinCore) {
-        var titles = dublinCore.getDcValues()
-                         .stream()
-                         .filter(DcValue::isMainTitle)
-                         .map(DcValue::scrapeValueAndSetToScraped)
-                         .collect(Collectors.toList());
+        var titles = extreactMainTitles(dublinCore);
         return titles.isEmpty() ? null : titles.get(0);
     }
 
-    public static Set<String> extractAlternativeTitles(DublinCore dublinCore) {
+    private static List<String> extreactMainTitles(DublinCore dublinCore) {
         return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isMainTitle)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
+    }
+
+    public static Set<String> extractAlternativeTitles(DublinCore dublinCore) {
+        var alternativeTitles =  dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isAlternativeTitle)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .collect(Collectors.toSet());
+
+        var mainTitles = extreactMainTitles(dublinCore);
+        if (mainTitles.size() >= 2) {
+            alternativeTitles.add(mainTitles.get(1));
+            return alternativeTitles;
+        }
+        return alternativeTitles;
     }
 
     public static EntityDescription extractEntityDescription(DublinCore dublinCore,

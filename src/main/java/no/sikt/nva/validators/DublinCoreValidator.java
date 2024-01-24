@@ -184,7 +184,7 @@ public final class DublinCoreValidator {
 
     private static void checkMainTitleForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var titles = getTitles(dublinCore);
-        if (hasManyValues(titles)) {
+        if (hasMoreThanTwoValues(titles)) {
             duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, titles));
         }
     }
@@ -199,21 +199,21 @@ public final class DublinCoreValidator {
 
     private static void checkPublicationDateForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var dates = getDates(dublinCore);
-        if (hasManyValues(dates)) {
+        if (hasMoreThanTwoValues(dates)) {
             duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, dates));
         }
     }
 
     private static void checkIssuesForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var issues = getIssues(dublinCore);
-        if (hasManyValues(issues)) {
+        if (hasMoreThanTwoValues(issues)) {
             duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, issues));
         }
     }
 
     private static void checkCristinIdentifierForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var cristinIds = getCristinIds(dublinCore);
-        if (hasManyValues(cristinIds)) {
+        if (hasMoreThanTwoValues(cristinIds)) {
             duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, cristinIds));
         }
     }
@@ -226,8 +226,8 @@ public final class DublinCoreValidator {
                    .collect(Collectors.toSet());
     }
 
-    private static boolean hasManyValues(Set<String> issues) {
-        return issues.size() > 1;
+    private static boolean hasMoreThanTwoValues(Set<String> issues) {
+        return issues.size() > 2;
     }
 
     private static Set<String> getDates(DublinCore dublinCore) {

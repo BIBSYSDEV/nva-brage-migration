@@ -14,6 +14,7 @@ public final class TypeTranslator {
         entry(NorwegianType.MASTER_THESIS.getValue(), BrageType.MASTER_THESIS),
         entry(NorwegianType.LECTURE.getValue(), BrageType.LECTURE),
         entry(NorwegianType.DOCTORAL_THESIS.getValue(), BrageType.DOCTORAL_THESIS),
+        entry(NorwegianType.DOCTORAL_THESIS_V2.getValue(), BrageType.DOCTORAL_THESIS),
         entry(NorwegianType.RESEARCH_REPORT.getValue(), BrageType.RESEARCH_REPORT),
         entry(NorwegianType.OTHERS.getValue(), BrageType.OTHERS),
         entry(NorwegianType.WORKING_PAPER.getValue(), BrageType.WORKING_PAPER),
@@ -42,7 +43,8 @@ public final class TypeTranslator {
         OTHERS("Andre"),
         WORKING_PAPER("Arbeidsnotat"),
         CHRONICLE("Kronikk"),
-        CONFERENCE_OBJECT("Konferansebidrag");
+        CONFERENCE_OBJECT("Konferansebidrag"),
+        DOCTORAL_THESIS_V2("Doktoravhandling");
 
         private final String value;
 
