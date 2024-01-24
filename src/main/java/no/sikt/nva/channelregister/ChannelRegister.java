@@ -8,6 +8,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSIN
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_PUBLISHER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.CustomerMapper.BORA;
+import static no.sikt.nva.scrapers.DublinCoreScraper.isInCristin;
 import static no.sikt.nva.validators.DublinCoreValidator.filterOutNullValues;
 import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.BufferedReader;
@@ -99,7 +100,7 @@ public final class ChannelRegister {
     public Optional<ErrorDetails> getChannelRegisterErrors(DublinCore dublinCore,
                                                            BrageLocation brageLocation,
                                                            String customer) {
-        if (typeIsPresentInDublinCore(dublinCore)) {
+        if (typeIsPresentInDublinCore(dublinCore) && !isInCristin(dublinCore)) {
             if (isJournalArticle(dublinCore, customer)) {
                 return getErrorDetailsForJournalArticle(dublinCore, brageLocation);
             }

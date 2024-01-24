@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.not;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.BrageType;
@@ -252,5 +253,20 @@ public class DublinCoreValidatorTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(ismn));
         var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
         assertThat(errors, hasItem(new ErrorDetails(INVALID_ISMN)));
+    }
+
+    @Test
+    void shouldNotReturnChannelRegistryErrorsIfCristinIdentifierIsPresent() {
+        var dcValues = List.of(
+            new DcValue(Element.IDENTIFIER, Qualifier.CRISTIN, "1234"),
+            new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-0678"),
+            new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
+        var dublinCoreWithCristinId = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var brageLocation = new BrageLocation(null);
+        var actualError =
+            ChannelRegister.getRegister()
+                .getChannelRegisterErrors(dublinCoreWithCristinId,
+                                          brageLocation, SOME_CUSTOMER);
+        assertThat(actualError, is(Optional.empty()));
     }
 }
