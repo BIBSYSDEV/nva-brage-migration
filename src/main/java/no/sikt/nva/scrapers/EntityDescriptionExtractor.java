@@ -42,20 +42,35 @@ public final class EntityDescriptionExtractor {
     }
 
     public static String extractMainTitle(DublinCore dublinCore) {
-        var titles = dublinCore.getDcValues()
-                         .stream()
-                         .filter(DcValue::isMainTitle)
-                         .map(DcValue::scrapeValueAndSetToScraped)
-                         .collect(Collectors.toList());
+        var titles = extreactMainTitles(dublinCore);
         return titles.isEmpty() ? null : titles.get(0);
     }
 
-    public static Set<String> extractAlternativeTitles(DublinCore dublinCore) {
+    private static List<String> extreactMainTitles(DublinCore dublinCore) {
         return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isMainTitle)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
+    }
+
+    public static Set<String> extractAlternativeTitles(DublinCore dublinCore) {
+        var alternativeTitles =  dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isAlternativeTitle)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .collect(Collectors.toSet());
+
+        var mainTitles = extreactMainTitles(dublinCore);
+        if (hasMoreThanTwoValues(mainTitles)) {
+            alternativeTitles.add(mainTitles.get(1));
+            return alternativeTitles;
+        }
+        return alternativeTitles;
+    }
+
+    private static boolean hasMoreThanTwoValues(List<String> values) {
+        return values.size() >= 2;
     }
 
     public static EntityDescription extractEntityDescription(DublinCore dublinCore,

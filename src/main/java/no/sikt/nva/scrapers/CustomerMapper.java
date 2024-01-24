@@ -85,7 +85,7 @@ public class CustomerMapper {
     public static final String NIKU = "niku";
     public static final String NILU = "nilu";
     public static final String NGU = "ngu";
-    public static final String UIT = "munin";
+    public static final String UIT = "uit";
     public static final String UIO = "uio";
     public static final String FHI = "fhi";
     public static final String R_BUP = "r-bup";

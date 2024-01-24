@@ -184,7 +184,7 @@ public final class DublinCoreValidator {
 
     private static void checkMainTitleForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var titles = getTitles(dublinCore);
-        if (hasManyValues(titles)) {
+        if (hasMoreThanTwoValues(titles)) {
             duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, titles));
         }
     }
@@ -228,6 +228,10 @@ public final class DublinCoreValidator {
 
     private static boolean hasManyValues(Set<String> issues) {
         return issues.size() > 1;
+    }
+
+    private static boolean hasMoreThanTwoValues(Set<String> issues) {
+        return issues.size() > 2;
     }
 
     private static Set<String> getDates(DublinCore dublinCore) {

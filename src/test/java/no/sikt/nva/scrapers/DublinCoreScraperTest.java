@@ -942,6 +942,42 @@ public class DublinCoreScraperTest {
         assertThat(DublinCoreScraper.extractIssn(dublinCore), is(equalTo(Set.of(issn.getValue()))));
     }
 
+    @Test
+    void shouldMapDoctoralThesisInNorwegianToDoctoralThesis() {
+        var dcType = toDcType("Doktoravhandling");
+        var dcType2 = toDcType("Doctoral dissertation");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcType2));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+
+        assertThat(record.getType().getNva(), is(equalTo(NvaType.DOCTORAL_THESIS.getValue())));
+        assertThat(appender.getMessages(), not(containsString(INVALID_DC_TYPE.name())));
+    }
+
+    @Test
+    void shouldMapSecondMainTitleToAlternativeTitleWhenTwoMainTitlesAndDoNotLogMultipleValuesError() {
+        var dcType = toDcType("Doktoravhandling");
+        var mainTitle = new DcValue(Element.TITLE, Qualifier.NONE, "mainTitle1");
+        var secondTitle = new DcValue(Element.TITLE, Qualifier.NONE, "mainTitle2");
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, mainTitle, secondTitle));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+
+        assertThat(record.getEntityDescription().getMainTitle(), is(not(nullValue())));
+        assertThat(record.getEntityDescription().getAlternativeTitles(), hasSize(1));
+        assertThat(appender.getMessages(), not(containsString(MULTIPLE_VALUES.name())));
+    }
+
+    @Test
+    void shouldExtractJournalFromJournalTitleDcValue() {
+        var journalValue = randomString();
+        var journalTitle = new DcValue(Element.IDENTIFIER, Qualifier.JOURNAL_TITLE, journalValue);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(journalTitle));
+
+        assertThat(DublinCoreScraper.extractJournal(dublinCore), is(equalTo(journalValue)));
+    }
+
     @NotNull
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);

@@ -148,6 +148,9 @@ public enum Qualifier {
     @XmlEnumValue("journal")
     JOURNAL("journal"),
 
+    @XmlEnumValue("jtitle")
+    JOURNAL_TITLE("jtitle"),
+
     @XmlEnumValue("pagenumber")
     PAGE_NUMBER("pagenumber"),
 
