@@ -199,21 +199,21 @@ public final class DublinCoreValidator {
 
     private static void checkPublicationDateForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var dates = getDates(dublinCore);
-        if (hasMoreThanTwoValues(dates)) {
+        if (hasManyValues(dates)) {
             duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, dates));
         }
     }
 
     private static void checkIssuesForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var issues = getIssues(dublinCore);
-        if (hasMoreThanTwoValues(issues)) {
+        if (hasManyValues(issues)) {
             duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, issues));
         }
     }
 
     private static void checkCristinIdentifierForMultipleValues(DublinCore dublinCore, List<ErrorDetails> duplicates) {
         var cristinIds = getCristinIds(dublinCore);
-        if (hasMoreThanTwoValues(cristinIds)) {
+        if (hasManyValues(cristinIds)) {
             duplicates.add(new ErrorDetails(Error.MULTIPLE_VALUES, cristinIds));
         }
     }
@@ -224,6 +224,10 @@ public final class DublinCoreValidator {
                    .filter(DcValue::isCristinDcValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .collect(Collectors.toSet());
+    }
+
+    private static boolean hasManyValues(Set<String> issues) {
+        return issues.size() > 1;
     }
 
     private static boolean hasMoreThanTwoValues(Set<String> issues) {

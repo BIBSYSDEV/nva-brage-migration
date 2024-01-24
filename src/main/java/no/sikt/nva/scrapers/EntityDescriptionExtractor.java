@@ -24,7 +24,6 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("PMD.GodClass")
 public final class EntityDescriptionExtractor {
@@ -63,11 +62,15 @@ public final class EntityDescriptionExtractor {
                    .collect(Collectors.toSet());
 
         var mainTitles = extreactMainTitles(dublinCore);
-        if (mainTitles.size() >= 2) {
+        if (hasMoreThanTwoValues(mainTitles)) {
             alternativeTitles.add(mainTitles.get(1));
             return alternativeTitles;
         }
         return alternativeTitles;
+    }
+
+    private static boolean hasMoreThanTwoValues(List<String> values) {
+        return values.size() >= 2;
     }
 
     public static EntityDescription extractEntityDescription(DublinCore dublinCore,
