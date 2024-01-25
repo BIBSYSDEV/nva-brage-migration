@@ -31,7 +31,7 @@ public final class UnisContent {
 
     public static final String DUMMY_HANDLE_THAT_EXIST_FOR_PROCESSING_UNIS
         = "dummy_handle_unis";
-    public static final String UNIS_ID = "unis@186.0.0.0";
+    public static final String UNIS_ID = "unis@195.0.0.0";
     public static final String EMPTY_STRING = "";
     public static final String UNIS_FOLDER = "unis/";
     private int cristinId;
