@@ -22,6 +22,8 @@ public class LicenseScraper {
                                                                  "3.0",
                                                                  "4.0");
     public static final String LINEBREAKS_WHITESPACES_REGEX = "(\\n)|(\\s)|(\u200b)";
+    public static final String RIGHTS_STATEMENTS_HOST_NAME = "rightsstatements";
+    public static final String RIGHTS_STATEMENTS_VERSION = "1.0";
     private final DublinCore dublinCore;
 
     public LicenseScraper(DublinCore dublinCore) {
@@ -32,7 +34,12 @@ public class LicenseScraper {
         if (isNull(license) || isNull(license.getBrageLicense())) {
             return false;
         }
-        return trim(license.getBrageLicense()).contains(CREATIVE_COMMONS_BASE_URL);
+        var trimmed = trim(license.getBrageLicense());
+        return trimmed.contains(CREATIVE_COMMONS_BASE_URL) || isRightsStatementsLicense(trimmed);
+    }
+
+    private boolean isRightsStatementsLicense(String trimmed) {
+        return trimmed.contains(RIGHTS_STATEMENTS_HOST_NAME) || trimmed.contains(RIGHTS_STATEMENTS_VERSION);
     }
 
     public License generateLicense() {
@@ -82,12 +89,6 @@ public class LicenseScraper {
                    .map(s -> s.replaceAll(LINEBREAKS_WHITESPACES_REGEX, StringUtils.EMPTY_STRING)).get();
     }
 
-    private URI getLicenseName(String licenseUri) {
-        return hasCreativeCommonsHost(licenseUri)
-                   ? URI.create(licenseUri)
-                   : null;
-    }
-
     private boolean hasCreativeCommonsHost(String licenseUri) {
         return licenseUri.contains(CREATIVE_COMMONS_HOST_NAME);
     }
@@ -97,12 +98,19 @@ public class LicenseScraper {
     }
 
     private License constructLicense(DublinCore dublinCore) {
-        return Optional.ofNullable(extractLicense(dublinCore))
-                   .map(this::trim)
-                   .map(this::getLicenseName)
-                   .map(this::toStandardFormatLicenseUri)
-                   .map(this::constructLicense)
-                   .filter(this::isValidLicense)
-                   .orElse(defaultLicense());
+        var license = Optional.ofNullable(extractLicense(dublinCore))
+                                 .map(this::trim);
+        if (license.stream().anyMatch(this::hasCreativeCommonsHost)) {
+            return license.filter(this::hasCreativeCommonsHost).map(URI::create)
+                       .map(this::toStandardFormatLicenseUri)
+                       .map(this::constructLicense)
+                       .filter(this::isValidLicense)
+                       .orElse(defaultLicense());
+        }
+        if (license.stream().anyMatch(this::isRightsStatementsLicense)) {
+            return new License(license.orElse(null), new NvaLicense(DEFAULT_LICENSE));
+        } else {
+            return defaultLicense();
+        }
     }
 }
