@@ -5,6 +5,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_PUB
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_LANGUAGE;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_RIGHTS_URI;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_LANGUAGES_PRESENT;
@@ -17,6 +18,7 @@ import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_R
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.SUPERVISOR;
+import static no.sikt.nva.scrapers.LicenseScraper.DEFAULT_LICENSE;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -976,6 +978,19 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(journalTitle));
 
         assertThat(DublinCoreScraper.extractJournal(dublinCore), is(equalTo(journalValue)));
+    }
+
+    @Test
+    void shouldNotLogLicenseErrorWhenRightsStatementsLicenseHasBeenMappedToDefaultLicense() {
+        var uri = URI.create("http://rightsstatements.org/page/InC/1.0/");
+        var license = new DcValue(Element.RIGHTS, Qualifier.URI, uri.toString());
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(license));
+        dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+        var actualLicense = new LicenseScraper(dublinCore).generateLicense();
+
+        assertThat(appender.getMessages(), not(containsString(INVALID_DC_RIGHTS_URI.toString())));
+        assertThat(actualLicense.getNvaLicense().getLicense(), is(equalTo(DEFAULT_LICENSE)));
     }
 
     @NotNull
