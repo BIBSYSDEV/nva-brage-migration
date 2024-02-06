@@ -122,7 +122,7 @@ public class CustomerMapper {
                 put(BANENOR, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, "4a8749c6-567b-42bd-b8c2-384aa41f43d3"),
-                    entry(TEST, ""),
+                    entry(TEST, "ccfff2f4-e50a-4ee9-af52-469821476cc3"),
                     entry(PROD, "")));
                 put(RA, Map.ofEntries(
                     entry(SANDBOX, "b3435185-929a-4842-96ee-4243f4c9078c"),
@@ -324,14 +324,11 @@ public class CustomerMapper {
                                           entry(PROD, "")));
                 put(FNI, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "de17a451-0aec-4beb-a17f-ca6779e4e295"),
-                                       entry(TEST, ""),
+                                       entry(TEST, "ad4555b9-8615-4802-93b0-fe84fc4d2971"),
                                        entry(PROD, "")));
                 put(NLA, Map.ofEntries(entry(SANDBOX, ""),
-
                                        entry(DEVELOP, "53fdf89c-7408-4371-bab9-89812ce34e91"),
-
-                                       entry(TEST, ""),
-
+                                       entry(TEST, "d1472762-8e09-4897-bcfe-93418fa90448"),
                                        entry(PROD, "")));
                 put(NINA, Map.ofEntries(entry(SANDBOX, ""),
                                         entry(DEVELOP, "afa4fb86-76f6-4339-9133-924d999a792e"),
@@ -395,7 +392,7 @@ public class CustomerMapper {
                                        entry(PROD, "")));
                 put(NIKU, Map.ofEntries(entry(SANDBOX, ""),
                                         entry(DEVELOP, "11c1a22c-6b1b-4463-b74e-e20cd13d7243"),
-                                        entry(TEST, ""),
+                                        entry(TEST, "61f179e2-4c8a-4f92-a285-6244556011f6"),
                                         entry(PROD, "")));
                 put(NILU, Map.ofEntries(entry(SANDBOX, ""),
                                         entry(DEVELOP, "68e24208-5840-45a1-903c-44ebb3afccc2"),
@@ -423,7 +420,7 @@ public class CustomerMapper {
                                  entry(PROD, "")));
         put(IMR, Map.ofEntries(entry(SANDBOX, ""),
                                entry(DEVELOP, "3e78024a-657d-482c-9496-0f34a376ca78"),
-                               entry(TEST, ""),
+                               entry(TEST, "f76cf282-43c0-495a-8f4d-532838994bd1"),
                                entry(PROD, "")));
             put(TOI, Map.ofEntries(entry(SANDBOX, ""),
                                    entry(DEVELOP, "ff6fd53f-30ff-4c47-955e-f201fe5d9e0c"),
