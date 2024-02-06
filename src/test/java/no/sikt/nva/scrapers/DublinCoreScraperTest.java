@@ -852,7 +852,7 @@ public class DublinCoreScraperTest {
     void shouldLookupInChannelRegisterAliasesForUibPublishers() {
         var expectedPublisherPid = "CBCE38D7-C6C6-4CE9-BCED-D64610033E9B";
         var dcType = toDcType("Report");
-        var publisherName = "Institute for Social Research";
+        var publisherName = "Universitetet i Bergen, HF fakultetet";
         var dcPublisher = new DcValue(Element.PUBLISHER, null, publisherName);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
         var appender = LogUtils.getTestingAppenderForRootLogger();
