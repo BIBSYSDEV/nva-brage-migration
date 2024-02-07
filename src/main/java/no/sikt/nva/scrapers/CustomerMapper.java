@@ -192,7 +192,7 @@ public class CustomerMapper {
                 put(CMI, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, "aebc37b9-593c-42b6-88bf-0d8a54492a32"),
-                    entry(TEST, ""),
+                    entry(TEST, "f9a5a7fb-5add-4968-ac10-68e36953cbb9"),
                     entry(PROD, "")));
                 put(DMMH, Map.ofEntries(
                     entry(SANDBOX, ""),
@@ -416,7 +416,7 @@ public class CustomerMapper {
                                        entry(PROD, "")));
         put(R_BUP, Map.ofEntries(entry(SANDBOX, ""),
                                  entry(DEVELOP, "3259519a-1ef6-444d-87d2-534d7c6df021"),
-                                 entry(TEST, ""),
+                                 entry(TEST, "458137ea-64bf-438d-a69c-6808d1b06e79"),
                                  entry(PROD, "")));
         put(IMR, Map.ofEntries(entry(SANDBOX, ""),
                                entry(DEVELOP, "3e78024a-657d-482c-9496-0f34a376ca78"),
