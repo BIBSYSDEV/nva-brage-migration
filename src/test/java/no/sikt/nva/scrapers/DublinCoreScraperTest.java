@@ -863,6 +863,20 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldLookupInChannelRegisterAliasesForNmbuPublishers() {
+        var expectedPublisherPid = "8B9EC1FA-3C4A-4875-AA0A-C1E0219C840E";
+        var dcType = toDcType("Report");
+        var publisherName = "Norwegian University og Life Sciences, Ås";
+        var dcPublisher = new DcValue(Element.PUBLISHER, null, publisherName);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcPublisher));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "nmbu");
+        var publisherPid = record.getPublication().getPublicationContext().getPublisher().getPid();
+        assertThat(publisherPid, is(equalTo(expectedPublisherPid)));
+        assertThat(appender.getMessages(), not(containsString(publisherName)));
+    }
+
+    @Test
     void shouldLogPublisherThatDoesNotExistInChannelRegistry() {
         var dcType = toDcType("Report");
         var publisherName = "Gurba that is not in any channel registry csv's";

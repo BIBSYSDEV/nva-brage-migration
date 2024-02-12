@@ -8,6 +8,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSIN
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_PUBLISHER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.CustomerMapper.BORA;
+import static no.sikt.nva.scrapers.CustomerMapper.NMBU;
 import static no.sikt.nva.scrapers.DublinCoreScraper.isInCristin;
 import static no.sikt.nva.validators.DublinCoreValidator.filterOutNullValues;
 import com.opencsv.bean.CsvToBeanBuilder;
@@ -56,6 +57,8 @@ public final class ChannelRegister {
     public static final String PUBLISHER_CHANNEL_REGISTRY_ALIASES_CSV_PATH = "publisher_channel_registry_aliases.csv";
     public static final String NTNU_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH =
         "ntnu_publisher_channel_registry_faculties.csv";
+    public static final String NMBU_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH =
+        "nmbu_publisher_channel_registry_faculties.csv";
     public static final String UIB_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH =
         "uib_specific_publisher_channel_registry.csv";
     public static final String NTNU = "ntnu";
@@ -67,11 +70,10 @@ public final class ChannelRegister {
     /*volatile*/ private static ChannelRegister register;
     private final List<ChannelRegisterJournal> channelRegisterJournals;
     private final List<ChannelRegisterPublisher> channelRegisterPublishers;
-
     private final List<ChannelRegisterAlias> channelRegisterAliasesJournals;
     private final List<ChannelRegisterAlias> channelRegisterAliasesPublishers;
-
     private final List<ChannelRegisterAlias> channelRegisterAliasesForNtnu;
+    private final List<ChannelRegisterAlias> channelRegisterAliasesForNmbu;
     private final List<ChannelRegisterAlias> channelRegisterAliasesForBora;
 
     private ChannelRegister() {
@@ -83,6 +85,8 @@ public final class ChannelRegister {
             NTNU_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH);
         this.channelRegisterAliasesForBora =
             getChannelRegisterAliases(UIB_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH);
+        this.channelRegisterAliasesForNmbu = getChannelRegisterAliases(
+            NMBU_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH);
     }
 
     public static ChannelRegister getRegister() {
@@ -301,6 +305,9 @@ public final class ChannelRegister {
         }
         if (BORA.equalsIgnoreCase(customer)) {
             return Optional.ofNullable(lookupInPublisherAliases(channelRegisterPublishers, channelRegisterAliasesForBora, publisher));
+        }
+        if (NMBU.equalsIgnoreCase(customer)) {
+            return Optional.ofNullable(lookupInPublisherAliases(channelRegisterPublishers, channelRegisterAliasesForNmbu, publisher));
         }
         return Optional.empty();
     }
