@@ -6,6 +6,7 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -505,6 +506,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private List<Record> removeIdenticalRecords(List<Record> records) {
         if (nonNull(records) && !records.isEmpty()) {
             var duplicates = findDuplicates(records);
+            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+            logger.error("Removing duplicates: {}",
+                         duplicates.stream().map(Record::getId).map(URI::toString).collect(Collectors.joining(System.lineSeparator())));
             records.removeAll(duplicates);
         }
         return records;
