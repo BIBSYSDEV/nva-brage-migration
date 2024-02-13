@@ -1,12 +1,12 @@
 package no.sikt.nva.channelregister;
 
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_JOURNAL_NOT_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_JOURNAL_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_ISSN_AND_DC_JOURNAL;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_PUBLISHER;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.CustomerMapper.BORA;
 import static no.sikt.nva.scrapers.CustomerMapper.NMBU;
 import static no.sikt.nva.scrapers.DublinCoreScraper.isInCristin;
@@ -116,16 +116,16 @@ public final class ChannelRegister {
     }
 
     public String lookUpInChannelRegisterForPublisher(Record record, String customer) {
-        var publicationContext = record.getPublication().getPublicationContext();
-        if (extractedIdentifierFromPublishersIsPresent(publicationContext.getBragePublisher(), customer)) {
-            return lookUpInPublisher(publicationContext.getBragePublisher(), customer);
+        var publisher = formatValue(record.getPublication().getPublicationContext().getBragePublisher());
+        if (extractedIdentifierFromPublishersIsPresent(publisher, customer)) {
+            return lookUpInPublisher(formatValue(publisher), customer);
         }
         return null;
     }
 
     public String lookUpInJournal(Publication publication, BrageLocation brageLocation) {
         var issnList = publication.getIssnSet();
-        var title = publication.getJournal();
+        var title = formatValue(publication.getJournal());
         var identifiersForIssnList = issnList.stream()
                                          .map(issn -> lookUpInJournalByIssn(issn, brageLocation))
                                          .collect(Collectors.toList());
@@ -133,6 +133,10 @@ public final class ChannelRegister {
         return nonNull(identifierByIssn)
                    ? identifierByIssn
                    : lookUpInJournalByTitle(title, brageLocation);
+    }
+
+    private static String formatValue(String value) {
+        return nonNull(value) ? value.replaceAll("(\n)|(\b)|(\u200b)|(\t)", StringUtils.EMPTY_STRING) : null;
     }
 
     public String lookUpInJournalByIssn(String issn, BrageLocation brageLocation) {
@@ -185,8 +189,8 @@ public final class ChannelRegister {
             if (StringUtils.isBlank(publisher)) {
                 return publisher;
             } else {
-                return nonNull(getPublisherIdentifer(publisher))
-                           ? getPublisherIdentifer(publisher)
+                return nonNull(getPublisherIdentifier(publisher))
+                           ? getPublisherIdentifier(publisher)
                            : lookupInPublisherAliases(publisher, customer);
             }
         } catch (IllegalStateException e) {
@@ -363,7 +367,7 @@ public final class ChannelRegister {
     private Optional<ErrorDetails> getErrorDetailsForPublisher(DublinCore dublinCore,
                                                                BrageLocation brageLocation,
                                                                String customer) {
-        var publisher = DublinCoreScraper.extractPublisher(dublinCore);
+        var publisher = formatValue(DublinCoreScraper.extractPublisher(dublinCore));
         var publication = DublinCoreScraper.extractPublication(dublinCore);
         var journalIdentifier = lookUpInJournal(publication, brageLocation);
         var publisherIdentifier = lookUpInPublisher(publisher, customer);
@@ -375,7 +379,7 @@ public final class ChannelRegister {
         }
     }
 
-    private String getPublisherIdentifer(String publisherFromMapper) {
+    private String getPublisherIdentifier(String publisherFromMapper) {
         return lookInPublishers(channelRegisterPublishers, publisherFromMapper);
     }
 
