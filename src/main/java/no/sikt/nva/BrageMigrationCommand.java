@@ -506,9 +506,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private List<Record> removeIdenticalRecords(List<Record> records) {
         if (nonNull(records) && !records.isEmpty()) {
             var duplicates = findDuplicates(records);
-            var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
-            logger.error("Removing duplicates: {}",
-                         duplicates.stream().map(Record::getId).map(URI::toString).collect(Collectors.joining(System.lineSeparator())));
+            if(!duplicates.isEmpty()) {
+                var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+                logger.error("Removing duplicates: {}",
+                             duplicates.stream().map(Record::getId).map(URI::toString).collect(Collectors.joining(System.lineSeparator())));
+            }
             records.removeAll(duplicates);
         }
         return records;
