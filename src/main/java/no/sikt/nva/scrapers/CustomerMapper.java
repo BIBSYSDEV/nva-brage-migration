@@ -142,7 +142,7 @@ public class CustomerMapper {
                 put(KRUS, Map.ofEntries(
                     entry(SANDBOX, "6b5e1238-7a05-11ed-a1eb-0242ac120002"),
                     entry(DEVELOP, "a768727e-4ecb-41c1-a616-1fec000cac1c"),
-                    entry(TEST, ""),
+                    entry(TEST, "2e0dc263-5af7-4b0e-8bdc-c6f2c660dfd3"),
                     entry(PROD, "")));
                 put(KRISTIANIA, Map.ofEntries(
                     entry(SANDBOX, "8fb3c2f4-da97-4eb1-be65-307c86b993ee"),
@@ -400,7 +400,7 @@ public class CustomerMapper {
                                         entry(PROD, "")));
                 put(NGU, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "4ff971c0-071b-421e-8566-1c0899f3b26c"),
-                                       entry(TEST, ""),
+                                       entry(TEST, "897e5123-d4b5-425a-9872-bfd1c554e30b"),
                                        entry(PROD, "")));
                 put(UIT, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "2d35d439-055d-40e5-94de-a9ec28493835"),
@@ -424,7 +424,7 @@ public class CustomerMapper {
                                entry(PROD, "")));
             put(TOI, Map.ofEntries(entry(SANDBOX, ""),
                                    entry(DEVELOP, "ff6fd53f-30ff-4c47-955e-f201fe5d9e0c"),
-                                   entry(TEST, ""),
+                                   entry(TEST, "d102baef-5861-43e2-bb21-42a1f6479aef"),
                                    entry(PROD, "")));
         }};
 
