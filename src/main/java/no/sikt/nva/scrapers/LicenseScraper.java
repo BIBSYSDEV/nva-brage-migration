@@ -14,11 +14,12 @@ import nva.commons.core.paths.UriWrapper;
 public class LicenseScraper {
 
     public static final String CREATIVE_COMMONS_BASE_URL = "creativecommons.org";
-    public static final URI DEFAULT_LICENSE = URI.create("https://rightsstatements.org/vocab/InC/1.0/");
+    public static final URI DEFAULT_LICENSE = URI.create("https://rightsstatements.org/page/InC/1.0/");
     public static final String DASH = "/";
     private static final String CREATIVE_COMMONS_HOST_NAME = "creativecommons.org";
     private static final List<String> LICENSE_VERSIONS = List.of("1.0",
                                                                  "2.0",
+                                                                 "2.5",
                                                                  "3.0",
                                                                  "4.0");
     public static final String LINEBREAKS_WHITESPACES_REGEX = "(\\n)|(\\s)|(\u200b)";
@@ -55,14 +56,7 @@ public class LicenseScraper {
     }
 
     private static URI toUriWithVersionOnly(URI uri, String lastPathElement) {
-        var license = URI.create(String.valueOf(uri).replace(DASH + lastPathElement, StringUtils.EMPTY_STRING));
-        return String.valueOf(license).endsWith(DASH)
-                   ? toUriWithoutDashAtTheEnd(license)
-                   : license;
-    }
-
-    private static URI toUriWithoutDashAtTheEnd(URI uri) {
-        return URI.create(org.apache.commons.lang3.StringUtils.removeEnd(String.valueOf(uri), DASH));
+        return URI.create(String.valueOf(uri).replace(DASH + lastPathElement, StringUtils.EMPTY_STRING));
     }
 
     private License defaultLicense() {
@@ -74,9 +68,7 @@ public class LicenseScraper {
         if (isNotAVersion(lastPathElement)) {
             return toUriWithVersionOnly(uri, lastPathElement);
         } else {
-            return String.valueOf(uri).endsWith(DASH)
-                       ? toUriWithoutDashAtTheEnd(uri)
-                       : uri;
+            return uri;
         }
     }
 
@@ -101,8 +93,10 @@ public class LicenseScraper {
         var license = Optional.ofNullable(extractLicense(dublinCore))
                                  .map(this::trim);
         if (license.stream().anyMatch(this::hasCreativeCommonsHost)) {
-            return license.filter(this::hasCreativeCommonsHost).map(URI::create)
+            return license.filter(this::hasCreativeCommonsHost)
+                       .map(URI::create)
                        .map(this::toStandardFormatLicenseUri)
+                       .map(LicenseScraper::updateUrlProtocol)
                        .map(this::constructLicense)
                        .filter(this::isValidLicense)
                        .orElse(defaultLicense());
@@ -112,5 +106,9 @@ public class LicenseScraper {
         } else {
             return defaultLicense();
         }
+    }
+
+    private static URI updateUrlProtocol(URI uri) {
+        return UriWrapper.fromHost(uri.getHost()).addChild(uri.getPath()).getUri();
     }
 }
