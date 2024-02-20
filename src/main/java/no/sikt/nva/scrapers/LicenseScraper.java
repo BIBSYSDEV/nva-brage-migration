@@ -25,6 +25,9 @@ public class LicenseScraper {
     public static final String LINEBREAKS_WHITESPACES_REGEX = "(\\n)|(\\s)|(\u200b)";
     public static final String RIGHTS_STATEMENTS_HOST_NAME = "rightsstatements";
     public static final String RIGHTS_STATEMENTS_VERSION = "1.0";
+    public static final String INVALID_LICENSES_PATH = "licences";
+    public static final String VALID_LICENSES_PATH = "licenses";
+    public static final String WWW_SUBDOMAIN = "www.";
     private final DublinCore dublinCore;
 
     public LicenseScraper(DublinCore dublinCore) {
@@ -63,7 +66,7 @@ public class LicenseScraper {
         return new License(null, new NvaLicense(DEFAULT_LICENSE));
     }
 
-    private URI toStandardFormatLicenseUri(URI uri) {
+    private static URI toStandardFormatLicenseUri(URI uri) {
         var lastPathElement = UriWrapper.fromUri(uri).getLastPathElement();
         if (isNotAVersion(lastPathElement)) {
             return toUriWithVersionOnly(uri, lastPathElement);
@@ -72,7 +75,7 @@ public class LicenseScraper {
         }
     }
 
-    private boolean isNotAVersion(String lastPathElement) {
+    private static boolean isNotAVersion(String lastPathElement) {
         return !LICENSE_VERSIONS.contains(lastPathElement);
     }
 
@@ -95,8 +98,7 @@ public class LicenseScraper {
         if (license.stream().anyMatch(this::hasCreativeCommonsHost)) {
             return license.filter(this::hasCreativeCommonsHost)
                        .map(URI::create)
-                       .map(this::toStandardFormatLicenseUri)
-                       .map(LicenseScraper::updateUrlProtocol)
+                       .map(LicenseScraper::formatLicense)
                        .map(this::constructLicense)
                        .filter(this::isValidLicense)
                        .orElse(defaultLicense());
@@ -105,6 +107,32 @@ public class LicenseScraper {
             return new License(license.orElse(null), new NvaLicense(DEFAULT_LICENSE));
         } else {
             return defaultLicense();
+        }
+    }
+
+    private static URI formatLicense(URI uri) {
+        return Optional.ofNullable(uri)
+                   .map(LicenseScraper::updateUrlProtocol)
+                   .map(LicenseScraper::replaceLicensePathIfNeeded)
+                   .map(LicenseScraper::removeWWWIfNeeded)
+                   .map(LicenseScraper::toStandardFormatLicenseUri)
+                   .orElse(null);
+    }
+
+    private static URI removeWWWIfNeeded(URI uri) {
+        var value = uri.toString();
+        if (value.contains(WWW_SUBDOMAIN)) {
+            return URI.create(value.replace(WWW_SUBDOMAIN, StringUtils.EMPTY_STRING));
+        }
+        return uri;
+    }
+
+    private static URI replaceLicensePathIfNeeded(URI uri) {
+        var value = uri.toString();
+        if (value.contains(INVALID_LICENSES_PATH)) {
+            return URI.create(value.replace(INVALID_LICENSES_PATH, VALID_LICENSES_PATH));
+        } else {
+            return uri;
         }
     }
 

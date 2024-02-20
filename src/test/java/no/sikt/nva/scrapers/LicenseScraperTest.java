@@ -102,6 +102,42 @@ public class LicenseScraperTest {
         var expectedLicense = URI.create("https://creativecommons.org/licenses/by/2.5");
         assertThat(license.getNvaLicense().getLicense(), is(equalTo(expectedLicense)));
     }
+
+    @Test
+    void shouldReplaceLicencesWithLicenses() {
+        var value = "https://creativecommons.org/licences/by/2.5";
+        var typeDcValue = new DcValue(Element.RIGHTS, Qualifier.URI, value);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
+        var licenseScraper = new LicenseScraper(dublinCore);
+        var license = licenseScraper.generateLicense();
+
+        var expectedLicense = URI.create("https://creativecommons.org/licenses/by/2.5");
+        assertThat(license.getNvaLicense().getLicense(), is(equalTo(expectedLicense)));
+    }
+
+    @Test
+    void shouldRemoveWWWFromLicenseUrl() {
+        var value = "https://www.creativecommons.org/licenses/by/2.5";
+        var typeDcValue = new DcValue(Element.RIGHTS, Qualifier.URI, value);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
+        var licenseScraper = new LicenseScraper(dublinCore);
+        var license = licenseScraper.generateLicense();
+
+        var expectedLicense = URI.create("https://creativecommons.org/licenses/by/2.5");
+        assertThat(license.getNvaLicense().getLicense(), is(equalTo(expectedLicense)));
+    }
+
+    @Test
+    void shouldRemoveLanguageCodeFromUrl() {
+        var value = "https://creativecommons.org/licenses/by/2.5/uk";
+        var typeDcValue = new DcValue(Element.RIGHTS, Qualifier.URI, value);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
+        var licenseScraper = new LicenseScraper(dublinCore);
+        var license = licenseScraper.generateLicense();
+
+        var expectedLicense = URI.create("https://creativecommons.org/licenses/by/2.5");
+        assertThat(license.getNvaLicense().getLicense(), is(equalTo(expectedLicense)));
+    }
 }
 
 
