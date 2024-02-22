@@ -14,16 +14,20 @@ import nva.commons.core.paths.UriWrapper;
 public class LicenseScraper {
 
     public static final String CREATIVE_COMMONS_BASE_URL = "creativecommons.org";
-    public static final URI DEFAULT_LICENSE = URI.create("https://rightsstatements.org/vocab/InC/1.0/");
+    public static final URI DEFAULT_LICENSE = URI.create("https://rightsstatements.org/page/InC/1.0/");
     public static final String DASH = "/";
     private static final String CREATIVE_COMMONS_HOST_NAME = "creativecommons.org";
     private static final List<String> LICENSE_VERSIONS = List.of("1.0",
                                                                  "2.0",
+                                                                 "2.5",
                                                                  "3.0",
                                                                  "4.0");
     public static final String LINEBREAKS_WHITESPACES_REGEX = "(\\n)|(\\s)|(\u200b)";
     public static final String RIGHTS_STATEMENTS_HOST_NAME = "rightsstatements";
     public static final String RIGHTS_STATEMENTS_VERSION = "1.0";
+    public static final String INVALID_LICENSES_PATH = "licences";
+    public static final String VALID_LICENSES_PATH = "licenses";
+    public static final String WWW_SUBDOMAIN = "www.";
     private final DublinCore dublinCore;
 
     public LicenseScraper(DublinCore dublinCore) {
@@ -55,32 +59,23 @@ public class LicenseScraper {
     }
 
     private static URI toUriWithVersionOnly(URI uri, String lastPathElement) {
-        var license = URI.create(String.valueOf(uri).replace(DASH + lastPathElement, StringUtils.EMPTY_STRING));
-        return String.valueOf(license).endsWith(DASH)
-                   ? toUriWithoutDashAtTheEnd(license)
-                   : license;
-    }
-
-    private static URI toUriWithoutDashAtTheEnd(URI uri) {
-        return URI.create(org.apache.commons.lang3.StringUtils.removeEnd(String.valueOf(uri), DASH));
+        return URI.create(String.valueOf(uri).replace(DASH + lastPathElement, StringUtils.EMPTY_STRING));
     }
 
     private License defaultLicense() {
         return new License(null, new NvaLicense(DEFAULT_LICENSE));
     }
 
-    private URI toStandardFormatLicenseUri(URI uri) {
+    private static URI toStandardFormatLicenseUri(URI uri) {
         var lastPathElement = UriWrapper.fromUri(uri).getLastPathElement();
         if (isNotAVersion(lastPathElement)) {
             return toUriWithVersionOnly(uri, lastPathElement);
         } else {
-            return String.valueOf(uri).endsWith(DASH)
-                       ? toUriWithoutDashAtTheEnd(uri)
-                       : uri;
+            return uri;
         }
     }
 
-    private boolean isNotAVersion(String lastPathElement) {
+    private static boolean isNotAVersion(String lastPathElement) {
         return !LICENSE_VERSIONS.contains(lastPathElement);
     }
 
@@ -101,8 +96,9 @@ public class LicenseScraper {
         var license = Optional.ofNullable(extractLicense(dublinCore))
                                  .map(this::trim);
         if (license.stream().anyMatch(this::hasCreativeCommonsHost)) {
-            return license.filter(this::hasCreativeCommonsHost).map(URI::create)
-                       .map(this::toStandardFormatLicenseUri)
+            return license.filter(this::hasCreativeCommonsHost)
+                       .map(URI::create)
+                       .map(LicenseScraper::formatLicense)
                        .map(this::constructLicense)
                        .filter(this::isValidLicense)
                        .orElse(defaultLicense());
@@ -112,5 +108,35 @@ public class LicenseScraper {
         } else {
             return defaultLicense();
         }
+    }
+
+    private static URI formatLicense(URI uri) {
+        return Optional.ofNullable(uri)
+                   .map(LicenseScraper::updateUrlProtocol)
+                   .map(LicenseScraper::replaceLicensePathIfNeeded)
+                   .map(LicenseScraper::removeWWWIfNeeded)
+                   .map(LicenseScraper::toStandardFormatLicenseUri)
+                   .orElse(null);
+    }
+
+    private static URI removeWWWIfNeeded(URI uri) {
+        var value = uri.toString();
+        if (value.contains(WWW_SUBDOMAIN)) {
+            return URI.create(value.replace(WWW_SUBDOMAIN, StringUtils.EMPTY_STRING));
+        }
+        return uri;
+    }
+
+    private static URI replaceLicensePathIfNeeded(URI uri) {
+        var value = uri.toString();
+        if (value.contains(INVALID_LICENSES_PATH)) {
+            return URI.create(value.replace(INVALID_LICENSES_PATH, VALID_LICENSES_PATH));
+        } else {
+            return uri;
+        }
+    }
+
+    private static URI updateUrlProtocol(URI uri) {
+        return UriWrapper.fromHost(uri.getHost()).addChild(uri.getPath()).getUri();
     }
 }
