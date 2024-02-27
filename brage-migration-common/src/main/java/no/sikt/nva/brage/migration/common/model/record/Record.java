@@ -41,6 +41,7 @@ public class Record {
     private URI link;
     private Set<URI> subjects;
     private String subjectCode;
+    private String accessCode;
 
     public Record() {
     }
@@ -284,5 +285,13 @@ public class Record {
                && Objects.equals(getBrageLocation(), record.getBrageLocation())
                && Objects.equals(getErrors(), record.getErrors())
                && Objects.equals(getWarnings(), record.getWarnings());
+    }
+
+    public String getAccessCode() {
+        return accessCode;
+    }
+
+    public void setAccessCode(String accessCode) {
+        this.accessCode = accessCode;
     }
 }

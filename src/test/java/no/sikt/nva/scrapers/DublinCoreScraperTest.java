@@ -475,6 +475,15 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldScrapeAccessCode() {
+        var typeDcValue = toDcType("Conference object");
+        var accessCode = new DcValue(Element.RIGHTS, Qualifier.TERMS, randomString());
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, accessCode));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+        assertThat(record.getAccessCode(), is(equalTo(accessCode.getValue())));
+    }
+
+    @Test
     void shouldLoggInvalidDoi() {
         var dcType = toDcType("Book");
         var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "10.1016/ S0140-6736wefwfg.(20)30045-#%wt3");

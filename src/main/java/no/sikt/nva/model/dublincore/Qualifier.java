@@ -206,7 +206,9 @@ public enum Qualifier {
     CRISTIN_ID_MUNIN("cristinID"),
 
     @XmlEnumValue("none")
-    NONE("none");
+    NONE("none"),
+    @XmlEnumValue("terms")
+    TERMS("terms");
 
     private final String value;
 
