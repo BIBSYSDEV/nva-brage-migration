@@ -22,6 +22,7 @@ import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 @SuppressWarnings({"PMD.AvoidFieldNameMatchingMethodName", "PMD.AvoidFileStream", "PMD.AssignmentInOperand"})
 public class MultiPartUploader {
 
+    public static final int END_OF_INPUTSTREAM = 0;
     private static final String CONTENT_DISPOSITION_FILE_NAME_PATTERN = "filename=\"%s\"";
     public static final long PARTITION_SIZE = 10L * 1024 * 1024;
     private final String key;
@@ -61,7 +62,7 @@ public class MultiPartUploader {
         int bytesRead;
 
         try (var inputStream = new BufferedInputStream(new FileInputStream(file))) {
-            while ((bytesRead = readToBuffer(inputStream)) > 0) {
+            while ((bytesRead = readToBuffer(inputStream)) > END_OF_INPUTSTREAM) {
                 var partToUpload = RequestBody.fromBytes(Arrays.copyOf(buffer, bytesRead));
                 var uploadPartResponse = s3Client.uploadPart(createUploadPartRequest(response, part), partToUpload);
                 completedParts.add(createCompletedPart(part, uploadPartResponse));
