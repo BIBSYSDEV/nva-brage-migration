@@ -677,11 +677,12 @@ public class DublinCoreScraper {
     }
 
     private String extractAccessCode(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                    .stream()
-                    .filter(DcValue::isAccessCode)
-                    .map(DcValue::scrapeValueAndSetToScraped)
-                    .findFirst().orElse(null);
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isAccessCode)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .filter(Objects::nonNull)
+                   .map(AccessCodeMapper::toAccessCode)
+                   .findFirst().orElse(null);
     }
 
     private Publication createPublicationWithIdentifier(DublinCore dublinCore,

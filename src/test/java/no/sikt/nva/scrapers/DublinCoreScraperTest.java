@@ -477,10 +477,14 @@ public class DublinCoreScraperTest {
     @Test
     void shouldScrapeAccessCode() {
         var typeDcValue = toDcType("Conference object");
-        var accessCode = new DcValue(Element.RIGHTS, Qualifier.TERMS, randomString());
+        var accessCodeValue =
+            "KLAUSULERING: Dokumentet er klausulert grunnet lovpålagt taushetsplikt. Tilgangskode/Access code C";
+        var accessCode = new DcValue(Element.RIGHTS, Qualifier.TERMS, accessCodeValue);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, accessCode));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
-        assertThat(record.getAccessCode(), is(equalTo(accessCode.getValue())));
+
+        var expectedAccessCode = "Dokumentet er klausulert grunnet lovpålagt taushetsplikt";
+        assertThat(record.getAccessCode(), is(equalTo(expectedAccessCode)));
     }
 
     @Test
