@@ -45,7 +45,6 @@ public class S3StorageImpl implements S3Storage {
     public static final String PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 = "Problem pushing processed records to S3: ";
     private static final String DEVELOP_BUCKET_NAME = "brage-migration-input-files-884807050265";
     private static final ColoredLogger logger = ColoredLogger.create(S3StorageImpl.class);
-    private static final String CONTENT_DISPOSITION_FILE_NAME_PATTERN = "filename=\"%s\"";
     public static final String ZIP = ".zip";
     public static final String FILE_DOES_NOT_EXIST_MESSAGE = "FILE DOES NOT EXIST ";
     private final String bucketName;
@@ -217,13 +216,14 @@ public class S3StorageImpl implements S3Storage {
         var filesToStore = getMappedFiles(record);
         for (UUID fileId : filesToStore.keySet()) {
             var fileKey = createKey(record, fileId.toString());
-            var fileName = URLEncoder.encode(filesToStore.get(fileId).getName(), StandardCharsets.UTF_8);
-            s3Client.putObject(PutObjectRequest
-                                   .builder()
-                                   .bucket(bucketName)
-                                   .contentDisposition(String.format(CONTENT_DISPOSITION_FILE_NAME_PATTERN, fileName))
-                                   .key(fileKey).build(),
-                               RequestBody.fromFile(filesToStore.get(fileId)));
+            var file = filesToStore.get(fileId);
+            var fileName = URLEncoder.encode(file.getName(), StandardCharsets.UTF_8);
+
+            MultiPartUploader.fromKey(fileKey)
+                .bucket(bucketName)
+                .fileName(fileName)
+                .file(file)
+                .upload(s3Client);
         }
     }
 
