@@ -20,7 +20,7 @@ public class DoiValidator {
     public static final String HTTP_STRING = "http";
     public static final String HTTPS_STRING = "https://";
     public static final String DOI_DOMAIN_NAME = "doi.org/";
-    public static final String COLON = ":";
+    public static final String COLON = "doi:";
     public static final String ENCODED_SLASH = "%2F";
     public static final String SLASH = "/";
 

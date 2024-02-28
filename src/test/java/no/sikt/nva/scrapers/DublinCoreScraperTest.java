@@ -1034,7 +1034,15 @@ public class DublinCoreScraperTest {
         assertThat(actualLicense.getNvaLicense().getLicense(), is(equalTo(DEFAULT_LICENSE)));
     }
 
-    @NotNull
+    @Test
+    void shouldParseValidDoiWithColon() {
+    var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "10.46298/LMCS-17(4:14)2021");
+    var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(doi));
+    var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+    assertThat(record.getDoi(), is(notNullValue()));
+    }
+
+
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);
     }
