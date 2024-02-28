@@ -296,6 +296,11 @@ public class DcValue {
         return Element.DATE.equals(this.element) && Qualifier.COPYRIGHT.equals(this.qualifier);
     }
 
+    public boolean isAccessCode() {
+        return Element.RIGHTS.equals(this.element)
+               && Qualifier.TERMS.equals(this.qualifier);
+    }
+
     public boolean isVolume() {
         return Element.SOURCE.equals(this.element) && Qualifier.VOLUME.equals(this.qualifier);
     }

@@ -41,8 +41,53 @@ public class Record {
     private URI link;
     private Set<URI> subjects;
     private String subjectCode;
+    private String accessCode;
 
     public Record() {
+    }
+
+    @JacocoGenerated
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Record record = (Record) o;
+        return Objects.equals(getResourceOwner(), record.getResourceOwner())
+               && Objects.equals(getEntityDescription(), record.getEntityDescription())
+               && Objects.equals(getCustomer(), record.getCustomer())
+               && Objects.equals(getId(), record.getId())
+               && Objects.equals(getDoi(), record.getDoi())
+               && Objects.equals(getType(), record.getType())
+               && Objects.equals(getPublisherAuthority(), record.getPublisherAuthority())
+               && Objects.equals(getRightsholder(), record.getRightsholder())
+               && Objects.equals(getSpatialCoverage(), record.getSpatialCoverage())
+               && Objects.equals(getPartOf(), record.getPartOf())
+               && Objects.equals(getPart(), record.getPart())
+               && Objects.equals(getPublication(), record.getPublication())
+               && Objects.equals(getContentBundle(), record.getContentBundle())
+               && Objects.equals(getPublishedDate(), record.getPublishedDate())
+               && Objects.equals(getCristinId(), record.getCristinId())
+               && Objects.equals(getBrageLocation(), record.getBrageLocation())
+               && Objects.equals(getErrors(), record.getErrors())
+               && Objects.equals(getWarnings(), record.getWarnings())
+               && Objects.equals(getLink(), record.getLink())
+               && Objects.equals(getSubjects(), record.getSubjects())
+               && Objects.equals(getSubjectCode(), record.getSubjectCode())
+               && Objects.equals(getAccessCode(), record.getAccessCode());
+    }
+
+    @JacocoGenerated
+    @Override
+    public int hashCode() {
+        return Objects.hash(getResourceOwner(), getEntityDescription(), getCustomer(), getId(), getDoi(), getType(),
+                            getPublisherAuthority(), getRightsholder(), getSpatialCoverage(), getPartOf(), getPart(),
+                            getPublication(), getContentBundle(), getPublishedDate(), getCristinId(),
+                            getBrageLocation(),
+                            getErrors(), getWarnings(), getLink(), getSubjects(), getSubjectCode(), getAccessCode());
     }
 
     public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
@@ -247,42 +292,11 @@ public class Record {
         return handle.split("/")[1].equals(recordOriginCollection);
     }
 
-    @JacocoGenerated
-    @Override
-    public int hashCode() {
-        return Objects.hash(resourceOwner, getEntityDescription(), getCustomer(), getId(), getDoi(), getType(),
-                            getPublisherAuthority(), getRightsholder(), getSpatialCoverage(), getPartOf(), getPart(),
-                            getPublication(), getContentBundle(), getPublishedDate(), getCristinId(),
-                            getBrageLocation(), getErrors(), getWarnings());
+    public String getAccessCode() {
+        return accessCode;
     }
 
-    @JacocoGenerated
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Record record = (Record) o;
-        return Objects.equals(resourceOwner, record.resourceOwner)
-               && Objects.equals(getEntityDescription(), record.getEntityDescription())
-               && Objects.equals(getCustomer(), record.getCustomer())
-               && Objects.equals(getId(), record.getId())
-               && Objects.equals(getDoi(), record.getDoi())
-               && Objects.equals(getType(), record.getType())
-               && Objects.equals(getPublisherAuthority(), record.getPublisherAuthority())
-               && Objects.equals(getRightsholder(), record.getRightsholder())
-               && Objects.equals(getSpatialCoverage(), record.getSpatialCoverage())
-               && Objects.equals(getPartOf(), record.getPartOf())
-               && Objects.equals(getPart(), record.getPart())
-               && Objects.equals(getPublication(), record.getPublication())
-               && Objects.equals(getContentBundle(), record.getContentBundle())
-               && Objects.equals(getPublishedDate(), record.getPublishedDate())
-               && Objects.equals(getCristinId(), record.getCristinId())
-               && Objects.equals(getBrageLocation(), record.getBrageLocation())
-               && Objects.equals(getErrors(), record.getErrors())
-               && Objects.equals(getWarnings(), record.getWarnings());
+    public void setAccessCode(String accessCode) {
+        this.accessCode = accessCode;
     }
 }

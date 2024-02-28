@@ -672,7 +672,17 @@ public class DublinCoreScraper {
         record.setPartOf(extractPartOf(dublinCore));
         record.setPart(extractHasPart(dublinCore));
         record.setSubjects(extractSubjects(dublinCore));
+        record.setAccessCode(extractAccessCode(dublinCore));
         return record;
+    }
+
+    private String extractAccessCode(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isAccessCode)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .filter(Objects::nonNull)
+                   .map(AccessCodeMapper::toAccessCode)
+                   .findFirst().orElse(null);
     }
 
     private Publication createPublicationWithIdentifier(DublinCore dublinCore,
