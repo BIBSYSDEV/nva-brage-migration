@@ -11,6 +11,7 @@ import nva.commons.core.JacocoGenerated;
 
 public class Embargo {
 
+    public static final int MAX_EMBARGO_YEAR = 9999;
     private String handle;
     private String date;
     private String filename;
@@ -70,7 +71,8 @@ public class Embargo {
 
     public Instant getDateAsInstant() {
         try {
-            return ZonedDateTime.of(LocalDate.parse(date), LocalTime.now(), ZoneId.systemDefault()).toInstant();
+            var dateTime = ZonedDateTime.of(LocalDate.parse(date), LocalTime.now(), ZoneId.systemDefault());
+            return formatEmbargoDate(dateTime);
         } catch (Exception e) {
             return perseFiveYearDateToInstant();
         }
@@ -86,9 +88,17 @@ public class Embargo {
 
     private Instant perseFiveYearDateToInstant() {
         var fiveDigitYear = DateTimeFormatter.ofPattern("yyyyy-MM-dd");
-        return ZonedDateTime.of(LocalDate.parse(date, fiveDigitYear),
+        var dateTime = ZonedDateTime.of(LocalDate.parse(date, fiveDigitYear),
                                 LocalTime.now(),
-                                ZoneId.systemDefault())
-                   .toInstant();
+                                ZoneId.systemDefault());
+        return formatEmbargoDate(dateTime);
+    }
+
+    private static Instant formatEmbargoDate(ZonedDateTime dateTime) {
+        if (dateTime.getYear() > MAX_EMBARGO_YEAR) {
+            return dateTime.withYear(MAX_EMBARGO_YEAR).toInstant();
+        } else {
+            return dateTime.toInstant();
+        }
     }
 }

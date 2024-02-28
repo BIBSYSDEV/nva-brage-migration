@@ -2,6 +2,7 @@ package no.sikt.nva.scrapers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
@@ -10,6 +11,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import java.io.File;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -119,9 +121,13 @@ public class EmbargoScraperTest {
     }
 
     @Test
-    void shouldConvertFiveDigitEmbargoYearToInstant() {
+    void shouldConvertFiveDigitEmbargoYearTo9999() {
         var embargo = new Embargo(HANDLE, FILENAME, "20230-10-01");
-        assertThat(embargo.getDateAsInstant(), is(instanceOf(Instant.class)));
+
+        var dateAsInstant = embargo.getDateAsInstant();
+        assertThat(dateAsInstant, is(instanceOf(Instant.class)));
+        assertThat(dateAsInstant.atZone(ZoneId.systemDefault()).getYear(), is(equalTo(9999)));
+
     }
 
     private ResourceContent contentBundleWithFileNameFromEmbargo(List<String> filenames) {
