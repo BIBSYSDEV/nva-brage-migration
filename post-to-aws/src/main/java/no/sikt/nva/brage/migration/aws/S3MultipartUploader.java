@@ -5,11 +5,18 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import nva.commons.core.attempt.Failure;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.AbortMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
@@ -20,11 +27,14 @@ import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 
 @SuppressWarnings({"PMD.AvoidFieldNameMatchingMethodName", "PMD.AvoidFileStream", "PMD.AssignmentInOperand"})
-public class MultiPartUploader {
+public class S3MultipartUploader {
 
-    public static final int END_OF_INPUTSTREAM = 0;
+    public static final int END_OF_INPUT_STREAM = 0;
+    public static final long PARTITION_SIZE = 5L * 1024 * 1024;
+    private static final ColoredLogger logger = ColoredLogger.create(S3MultipartUploader.class);
     private static final String CONTENT_DISPOSITION_FILE_NAME_PATTERN = "filename=\"%s\"";
-    public static final long PARTITION_SIZE = 10L * 1024 * 1024;
+    public static final String UPLOADING_PART_MESSAGE = "Uploading part %s of file: %s";
+    public static final String COULD_NOT_UPLOAD_FILE_MESSAGE = "Could not upload file: %s";
     private final String key;
     private final String bucket;
     private final String filename;
@@ -33,7 +43,7 @@ public class MultiPartUploader {
     private final byte[] buffer;
     private int part;
 
-    public MultiPartUploader(String key, String bucket, String filename, File file) {
+    public S3MultipartUploader(String key, String bucket, String filename, File file) {
         this.key = key;
         this.bucket = bucket;
         this.filename = filename;
@@ -43,16 +53,54 @@ public class MultiPartUploader {
         this.part = 1;
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static MultiPartUploader fromKey(String value) {
-        return MultiPartUploader.builder().withKey(value).build();
+    public static S3MultipartUploader fromKey(String value) {
+        return S3MultipartUploader.builder().withKey(value).build();
     }
 
     public void upload(S3Client s3Client) {
-        attempt(() -> multiPartUploadUsingClient(s3Client)).orElseThrow();
+        attempt(() -> multiPartUploadUsingClient(s3Client)).orElseThrow(this::logError);
+    }
+
+    public S3MultipartUploader file(File file) {
+        return copy().withFile(file).build();
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public S3MultipartUploader bucket(String bucketName) {
+        return this.copy().withBucket(bucketName).build();
+    }
+
+    public S3MultipartUploader fileName(String fileName) {
+        return this.copy().withFilename(encode(fileName)).build();
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    private static Builder builder() {
+        return new Builder();
+    }
+
+    private static CompletedPart createCompletedPart(int partNumber, UploadPartResponse uploadPartResponse) {
+        return CompletedPart.builder().partNumber(partNumber).eTag(uploadPartResponse.eTag()).build();
+    }
+
+    private static String encode(String fileName) {
+        return URLEncoder.encode(fileName, StandardCharsets.UTF_8);
+    }
+
+    private static CompletedMultipartUpload completeMultipartUpload(List<CompletedPart> completedParts) {
+        return CompletedMultipartUpload.builder().parts(completedParts).build();
+    }
+
+    private RuntimeException logError(Failure<CompleteMultipartUploadResponse> failure) {
+        logger.error(failure.getException().toString());
+        logger.error(String.format(COULD_NOT_UPLOAD_FILE_MESSAGE, filename));
+        return new RuntimeException();
     }
 
     private CompleteMultipartUploadResponse multiPartUploadUsingClient(S3Client s3Client) throws IOException {
@@ -62,16 +110,27 @@ public class MultiPartUploader {
         int bytesRead;
 
         try (var inputStream = new BufferedInputStream(new FileInputStream(file))) {
-            while ((bytesRead = readToBuffer(inputStream)) > END_OF_INPUTSTREAM) {
+            while ((bytesRead = readToBuffer(inputStream)) > END_OF_INPUT_STREAM) {
                 var partToUpload = RequestBody.fromBytes(Arrays.copyOf(buffer, bytesRead));
                 var uploadPartResponse = s3Client.uploadPart(createUploadPartRequest(response, part), partToUpload);
                 completedParts.add(createCompletedPart(part, uploadPartResponse));
+                logger.info(String.format(UPLOADING_PART_MESSAGE, part, filename));
                 part++;
             }
+            var completeMultipartUploadRequest = createCompleteMultipartUploadRequest(response, completedParts);
+            return s3Client.completeMultipartUpload(completeMultipartUploadRequest);
+        } catch (Exception e) {
+            s3Client.abortMultipartUpload(createAbortMultipartUploadRequest(response));
+            return null;
         }
+    }
 
-        var completeMultipartUploadRequest = createCompleteMultipartUploadRequest(response, completedParts);
-        return s3Client.completeMultipartUpload(completeMultipartUploadRequest);
+    private AbortMultipartUploadRequest createAbortMultipartUploadRequest(CreateMultipartUploadResponse response) {
+        return AbortMultipartUploadRequest.builder()
+                   .bucket(bucket)
+                   .key(key)
+                   .uploadId(response.uploadId())
+                   .build();
     }
 
     private int readToBuffer(BufferedInputStream inputStream) throws IOException {
@@ -87,36 +146,8 @@ public class MultiPartUploader {
                    .build();
     }
 
-    private static CompletedPart createCompletedPart(int partNumber, UploadPartResponse uploadPartResponse) {
-        return CompletedPart.builder().partNumber(partNumber).eTag(uploadPartResponse.eTag()).build();
-    }
-
-    public MultiPartUploader file(File file) {
-        return copy().withFile(file).build();
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public Builder copy() {
-        return builder().withBucket(this.bucket).withKey(this.key);
-    }
-
-    public MultiPartUploader bucket(String bucketName) {
-        return this.copy().withBucket(bucketName).build();
-    }
-
-    public MultiPartUploader fileName(String fileName) {
-        return this.copy().withFilename(fileName).build();
-    }
-
-    public String getFilename() {
-        return filename;
-    }
-
-    private static CompletedMultipartUpload completeMultipartUpload(List<CompletedPart> completedParts) {
-        return CompletedMultipartUpload.builder().parts(completedParts).build();
+    private Builder copy() {
+        return builder().withBucket(this.bucket).withKey(this.key).withFilename(this.filename).withFile(this.file);
     }
 
     private CompleteMultipartUploadRequest createCompleteMultipartUploadRequest(CreateMultipartUploadResponse response,
@@ -129,19 +160,28 @@ public class MultiPartUploader {
                    .build();
     }
 
-    private CreateMultipartUploadRequest initiateRequest() {
+    private CreateMultipartUploadRequest initiateRequest() throws IOException {
+        var mimeType = detectMimeType(file);
         return CreateMultipartUploadRequest.builder()
                    .bucket(this.bucket)
                    .key(this.key)
                    .contentDisposition(createContentDisposition())
+                   .contentType(mimeType)
                    .build();
+    }
+
+    private String detectMimeType(File file) throws IOException {
+        return TikaConfig.getDefaultConfig()
+                   .getDetector()
+                   .detect(new BufferedInputStream(TikaInputStream.get(file)), new Metadata())
+                   .toString();
     }
 
     private String createContentDisposition() {
         return String.format(CONTENT_DISPOSITION_FILE_NAME_PATTERN, filename);
     }
 
-    public static final class Builder {
+    private static final class Builder {
 
         private String key;
         private String bucket;
@@ -171,8 +211,8 @@ public class MultiPartUploader {
             return this;
         }
 
-        public MultiPartUploader build() {
-            return new MultiPartUploader(key, bucket, filename, file);
+        public S3MultipartUploader build() {
+            return new S3MultipartUploader(key, bucket, filename, file);
         }
     }
 }
