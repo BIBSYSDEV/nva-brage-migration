@@ -5,8 +5,6 @@ import static nva.commons.core.attempt.Try.attempt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -217,9 +215,13 @@ public class S3StorageImpl implements S3Storage {
         for (UUID fileId : filesToStore.keySet()) {
             var fileKey = createKey(record, fileId.toString());
             var file = filesToStore.get(fileId);
-            var fileName = URLEncoder.encode(file.getName(), StandardCharsets.UTF_8);
+            var fileName = record.getContentBundle().getContentFiles().stream()
+                               .filter(contentFile -> contentFile.getIdentifier().equals(fileId))
+                               .map(ContentFile::getFilename)
+                               .findFirst()
+                               .orElse(null);
 
-            MultiPartUploader.fromKey(fileKey)
+            S3MultipartUploader.fromKey(fileKey)
                 .bucket(bucketName)
                 .fileName(fileName)
                 .file(file)
