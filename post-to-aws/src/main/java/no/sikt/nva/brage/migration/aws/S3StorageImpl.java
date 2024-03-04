@@ -12,12 +12,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
+import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.StringUtils;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -252,8 +254,9 @@ public class S3StorageImpl implements S3Storage {
 
     private ConcurrentMap<UUID, File> mapFilesToUuid(Record record, File resourceFiles) {
         ConcurrentMap<UUID, File> map = new ConcurrentHashMap<>();
-        var contentFiles = record.getContentBundle()
-                               .getContentFiles();
+        var contentFiles = Optional.ofNullable(record.getContentBundle())
+                               .map(ResourceContent::getContentFiles)
+                                   .orElse(List.of());
         contentFiles.forEach(contentFile -> addToMap(map,
                                                      contentFile,
                                                      resourceFiles,
