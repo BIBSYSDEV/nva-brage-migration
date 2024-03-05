@@ -2,12 +2,15 @@ import static no.sikt.nva.brage.migration.aws.S3StorageImpl.COULD_NOT_WRITE_RECO
 import static no.sikt.nva.brage.migration.aws.S3StorageImpl.DEFAULT_ERROR_FILENAME;
 import static no.sikt.nva.brage.migration.aws.S3StorageImpl.DEFAULT_INFO_FILENAME;
 import static no.sikt.nva.brage.migration.aws.S3StorageImpl.DEFAULT_WARNING_FILENAME;
+import static no.sikt.nva.brage.migration.aws.S3StorageImpl.PATH_DELIMITER;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,16 +117,38 @@ public class S3StorageImplTest {
         var s3Client = new FakeS3Client();
         var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
         storageClient.storeInputFile(TEST_PATH, Path.of("NVE", SAMLINGSFIL_TXT).toString());
-        var request = GetObjectRequest.builder()
-                                     .bucket(S3StorageImpl.EXPERIMENTAL_BUCKET_NAME)
-                                     .key(Path.of(CUSTOMER, SAMLINGSFIL_TXT).toString())
-                                     .build();
+        var request = getObjectRequest(Path.of(CUSTOMER, SAMLINGSFIL_TXT).toString());
         var response = s3Client.getObject(request, ResponseTransformer.toBytes());
         var fileContent = new String(response.asByteArray());
         var expectedContent = "2833909\n";
 
         assertThat(fileContent, is(equalTo(expectedContent)));
 
+    }
+
+    @Test
+    void shouldNotFailWhenRecordDoesNotHaveContent() {
+        var s3Client = new FakeS3Client();
+        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
+        var record = new Record();
+        record.setBrageLocation(randomString() + "/" + randomString());
+        var uniqueHandlePath = randomString();
+        record.setId(UriWrapper.fromUri(randomUri()).addChild(uniqueHandlePath).getUri());
+        storageClient.storeRecord(record);
+        var expectedKey = joinByPathDelimiter(CUSTOMER, record.getBrageLocation(), uniqueHandlePath + ".json");
+        var object = s3Client.getObject(getObjectRequest(expectedKey));
+        assertThat(object, is(notNullValue()));
+    }
+
+    private static GetObjectRequest getObjectRequest(String expectedKey) {
+        return GetObjectRequest.builder()
+                   .bucket(
+                       S3StorageImpl.EXPERIMENTAL_BUCKET_NAME)
+                   .key(expectedKey).build();
+    }
+
+    private String joinByPathDelimiter(String... values) {
+        return String.join(PATH_DELIMITER, values);
     }
 
     private ListObjectsRequest createListObjectsRequest(UnixPath folder) {
