@@ -158,10 +158,15 @@ public final class DublinCoreValidator {
     private static Optional<ErrorDetails> getLicenseError(DublinCore dublinCore) {
         if (hasLicense(dublinCore)) {
             var licenseScraper = new LicenseScraper(dublinCore);
-            var license = licenseScraper.generateLicense();
-            if (licenseScraper.isValidLicense(license)) {
-                return Optional.empty();
-            } else {
+            try {
+                var license = licenseScraper.generateLicense();
+                if (licenseScraper.isValidLicense(license)) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(new ErrorDetails(INVALID_DC_RIGHTS_URI,
+                                                        Collections.singleton(licenseScraper.extractLicense(dublinCore))));
+                }
+            } catch (Exception e) {
                 return Optional.of(new ErrorDetails(INVALID_DC_RIGHTS_URI,
                                                     Collections.singleton(licenseScraper.extractLicense(dublinCore))));
             }

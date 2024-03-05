@@ -19,6 +19,7 @@ import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_M
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.SUPERVISOR;
 import static no.sikt.nva.scrapers.LicenseScraper.DEFAULT_LICENSE;
+import static no.sikt.nva.scrapers.LicenseScraper.INVALID_LICENSES_PATH;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -1042,6 +1043,16 @@ public class DublinCoreScraperTest {
     assertThat(record.getDoi(), is(notNullValue()));
     }
 
+    @Test
+    void shouldReturnInvalidLicenseErrorWhenFailingToExtractLicense() {
+        var licenseValue = "http://creativecommons.org/licenses/by/4.0\"";
+        var invalidLicense = new DcValue(Element.RIGHTS, Qualifier.URI, licenseValue);
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(invalidLicense));
+        dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+
+        assertThat(appender.getMessages(), containsString(Error.INVALID_DC_RIGHTS_URI.name()));
+    }
 
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);
