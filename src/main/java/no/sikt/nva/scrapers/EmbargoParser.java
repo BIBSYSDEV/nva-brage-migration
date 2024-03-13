@@ -2,6 +2,7 @@ package no.sikt.nva.scrapers;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.model.Embargo;
@@ -15,6 +16,16 @@ public class EmbargoParser {
     public static final String LICENSE_RDF = "license_rdf";
     public static final String LICENSE_TXT = "license.txt";
     private static final Logger logger = LoggerFactory.getLogger(EmbargoParser.class);
+    private static final String ORE_XML = "ORE.xml";
+
+    private static final String REGEX_SWORD_XML_FILENAME = "sword-\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\"
+                                                           + ".original\\.xml";
+    private static final Pattern PATTERN_SWORD_XML_FILENAME = Pattern.compile(REGEX_SWORD_XML_FILENAME);
+
+    private static final String REGEX_CRISTIN_ZIP_METADATA_FILE = "cristin-\\d+\\.zip";
+    private static final Pattern PATTERN_CRISTIN_ZIP_METADATA_FILE = Pattern.compile(REGEX_CRISTIN_ZIP_METADATA_FILE);
+    private static final String REGEX_CRISTIN_XML_METADATA_FILE = "cristin-\\d+\\.xml";
+    private static final Pattern PATTERN_CRISTIN_XML_METADATA_FILE = Pattern.compile(REGEX_CRISTIN_XML_METADATA_FILE);
 
     public static Record checkForEmbargoFromSuppliedEmbargoFile(Record record, Map<String, List<Embargo>> embargoes) {
         var handle = record.getId().toString();
@@ -81,7 +92,26 @@ public class EmbargoParser {
     private static boolean isIgnoredFile(Embargo embargo) {
         return embargo.getFilename().contains(PDF_TXT)
                || embargo.getFilename().contains(PDF_JPG)
+               || isCristinMetadataZipfile(embargo.getFilename())
+               || isCristinMetadataXmlFile(embargo.getFilename())
+               || isSwordXmlFile(embargo.getFilename())
+               || ORE_XML.equals(embargo.getFilename())
                || LICENSE_RDF.equals(embargo.getFilename())
                || LICENSE_TXT.equals(embargo.getFilename());
+    }
+
+    private static boolean isCristinMetadataXmlFile(String filename) {
+        var matcher = PATTERN_CRISTIN_XML_METADATA_FILE.matcher(filename);
+        return matcher.matches();
+    }
+
+    private static boolean isSwordXmlFile(String filename) {
+        var matcher = PATTERN_SWORD_XML_FILENAME.matcher(filename);
+        return matcher.matches();
+    }
+
+    private static boolean isCristinMetadataZipfile(String filename) {
+        var matcher = PATTERN_CRISTIN_ZIP_METADATA_FILE.matcher(filename);
+        return matcher.matches();
     }
 }
