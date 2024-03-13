@@ -33,6 +33,8 @@ public class EmbargoScraperTest {
     public static final String EMPTY_EMBARGO_FILE = "src/test/resources/EmptyEmbargoFile.txt";
     public static final String TEST_FILE_LOCATION_V2 = "src/test/resources/FileEmbargoV2.txt";
     public static final String TEST_FILE_LOCATION_V3 = "src/test/resources/FileEmbargoV3.txt";
+    private static final String EMBARGO_FILE_WITH_ONLY_IGNORED_FILES = "src/test/resources"
+                                                                       + "/FileEmbargoWithOnlyIgnoredFiles.txt";
     public static final String EMBARGO_WITH_DISTANT_DATE_TXT = "src/test/resources/FileEmbargo_with_distant_date.txt";
 
 
@@ -75,6 +77,14 @@ public class EmbargoScraperTest {
         var embargos = EmbargoScraper.getEmbargoes(new File(TEST_FILE_LOCATION));
         EmbargoParser.logNonEmbargosDetected(embargos);
         assertThat(appender.getMessages(), containsString("Embargo file not found: "));
+    }
+
+    @Test
+    void shouldNotLogCristinMetadataZip() {
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var embargos = EmbargoScraper.getEmbargoes(new File(EMBARGO_FILE_WITH_ONLY_IGNORED_FILES));
+        EmbargoParser.logNonEmbargosDetected(embargos);
+        assertThat(appender.getMessages(), not(containsString("Embargo file not found: ")));
     }
 
     @Test
