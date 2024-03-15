@@ -9,8 +9,6 @@ This repository contains code for extracting metadata from Brage bundles.
 Documentation of this application exits
 on [Jira]( https://unit.atlassian.net/wiki/spaces/NVAP/pages/2571501733/Brage-NVA+migrerings+Applikasjon)
 
-## This tool will not convert publications containing cristin-id or publications that are clausuled
-
 If the dublin_core.xml contains dcvalue with element="identifier" qualifier="cristin", it will be
 skipped (and logged as error).
 
@@ -61,4 +59,18 @@ When migrating same collection many times in row, remember to delete directory w
 /etc/alternatives/jre_11/bin/java -jar nva-brage-migration-1.1-all.jar -c NVE -a -D /brage/nve/app/export
 ```
 
+# How to run Excel scraping:
 
+-j flag can be set to "experimental" (sandbox, no lambda listening), "sandbox", "dev", "test", or "prod"
+
+In build.gradle change main class to "no.sikt.nva.unis.ExcelScrapingCommand" and build.
+```groovy
+application {
+    mainClass = "no.sikt.nva.unis.ExcelScrapingCommand"
+}
+```
+
+
+```shell
+java -jar build/libs/nva-brage-migration-1.2-all.jar -e ~/Desktop/unis/Metadata.xlsx -j experimental
+```
