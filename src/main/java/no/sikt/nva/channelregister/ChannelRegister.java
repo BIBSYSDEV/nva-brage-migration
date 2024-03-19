@@ -170,8 +170,7 @@ public final class ChannelRegister {
                                   .map(ChannelRegisterJournal::getPid)
                                   .distinct()
                                   .collect(SingletonCollector.collectOrElse(null));
-
-                return Optional.ofNullable(channel).orElse(lookupInJournalAliases(title));
+                return Optional.ofNullable(channel).orElseGet(() -> lookupInJournalAliases(title));
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
