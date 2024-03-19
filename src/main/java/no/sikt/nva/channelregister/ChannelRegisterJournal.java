@@ -1,6 +1,7 @@
 package no.sikt.nva.channelregister;
 
 import com.opencsv.bean.CsvBindByName;
+import java.util.Locale;
 import java.util.Optional;
 import nva.commons.core.StringUtils;
 
@@ -60,8 +61,10 @@ public class ChannelRegisterJournal {
     }
 
     public boolean hasTitle(String title) {
-        var originalTitle = Optional.of(this.getOriginalTitle()).orElse(StringUtils.EMPTY_STRING);
+        var originalTitle = Optional.of(this.getOriginalTitle())
+                                .map(value -> value.toLowerCase(Locale.getDefault()))
+                                .orElse(StringUtils.EMPTY_STRING);
 
-        return originalTitle.equalsIgnoreCase(title.trim());
+        return originalTitle.toLowerCase().equalsIgnoreCase(title.trim().toLowerCase(Locale.getDefault()));
     }
 }
