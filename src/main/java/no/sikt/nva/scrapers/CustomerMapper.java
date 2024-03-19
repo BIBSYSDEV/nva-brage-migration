@@ -221,7 +221,7 @@ public class CustomerMapper {
                     entry(PROD, "0e878881-87b9-4392-b4e4-b410bbecbd1d")));
                 put(ODA, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "8db4a8bd-3db5-420b-a2e4-fc17a489aa6d"),
-                                       entry(TEST, ""),
+                                       entry(TEST, "b7c2979e-c56b-4493-84ce-3cfa7bb3ba27"),
                                        entry(PROD, "")));
                 put(HIMOLDE, Map.ofEntries(entry(SANDBOX, ""),
                                            entry(DEVELOP, "2927ca20-cbd0-4b0a-abd3-3de23e8f2065"),
