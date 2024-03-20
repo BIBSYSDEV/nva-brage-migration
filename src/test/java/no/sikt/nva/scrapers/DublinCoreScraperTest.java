@@ -1040,6 +1040,17 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void channelRegisterLookUpShouldNotBeCaseSensitive() {
+        var type = toDcType("Journal article");
+        var journal = new DcValue(Element.SOURCE, Qualifier.JOURNAL, "PlAnT eCoLoGy");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, journal));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
+        var expectedPid = "9DD7452E-5FF9-48BA-BF09-6648C103CDFD";
+        assertThat(record.getPublication().getPublicationContext().getJournal().getPid(), is(equalTo(expectedPid)));
+    }
+
+    @Test
     void shouldReturnInvalidLicenseErrorWhenFailingToExtractLicense() {
         var licenseValue = "http://creativecommons.org/licenses/by/4.0\"";
         var invalidLicense = new DcValue(Element.RIGHTS, Qualifier.URI, licenseValue);
