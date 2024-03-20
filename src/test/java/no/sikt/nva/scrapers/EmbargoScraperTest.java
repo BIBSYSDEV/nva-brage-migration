@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
 import java.io.File;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -97,8 +96,9 @@ public class EmbargoScraperTest {
             List.of("Simulated precipitation fields with variance consistent interpolation.pdf")));
         var updatedRecord = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos);
         assertThat(appender.getMessages(), not(containsString("Embargo file not found: ")));
+        assertThat(updatedRecord.getContentBundle().getContentFiles(), hasSize(1));
         var actualContentFile = updatedRecord.getContentBundle().getContentFiles().get(0);
-        assertThat(actualContentFile.getEmbargoDate(), is(notNullValue()));
+        assertThat(actualContentFile.getEmbargoDate(), is(equalTo(Instant.parse("2023-09-30T22:00:00Z"))));
     }
 
     @Test
@@ -112,10 +112,12 @@ public class EmbargoScraperTest {
                     "My super secret file.pdf")));
         var updatedRecord = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos);
         assertThat(appender.getMessages(), not(containsString("Embargo file not found: ")));
-        updatedRecord.getContentBundle()
-            .getContentFiles()
-            .forEach(actualContentFile ->
-                         assertThat(actualContentFile.getEmbargoDate(), is(notNullValue())));
+
+        assertThat(updatedRecord.getContentBundle().getContentFiles(), hasSize(2));
+        assertThat(updatedRecord.getContentBundle().getContentFiles().get(0).getEmbargoDate(),
+                   is(equalTo(Instant.parse("2023-09-30T22:00:00Z"))));
+        assertThat(updatedRecord.getContentBundle().getContentFiles().get(1).getEmbargoDate(),
+                   is(equalTo(Instant.parse("9999-09-30T22:00:00Z"))));
     }
 
     @Test
