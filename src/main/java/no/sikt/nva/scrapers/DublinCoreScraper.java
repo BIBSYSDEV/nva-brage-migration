@@ -36,6 +36,7 @@ import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
 import no.sikt.nva.brage.migration.common.model.record.PublishedDate;
 import no.sikt.nva.brage.migration.common.model.record.Publisher;
 import no.sikt.nva.brage.migration.common.model.record.PublisherAuthority;
+import no.sikt.nva.brage.migration.common.model.record.PublisherVersion;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.Series;
 import no.sikt.nva.brage.migration.common.model.record.Type;
@@ -614,13 +615,13 @@ public class DublinCoreScraper {
 
     private static PublisherAuthority mapMultipleVersions(Set<String> versions, BrageLocation brageLocation) {
         if (versions.contains(PUBLISHED_VERSION_STRING)) {
-            return new PublisherAuthority(Collections.singleton(PUBLISHED_VERSION_STRING), true);
+            return new PublisherAuthority(Collections.singleton(PUBLISHED_VERSION_STRING), PublisherVersion.PUBLISHED_VERSION);
         }
         if (versions.contains(ACCEPTED_VERSION_STRING)) {
-            return new PublisherAuthority(Collections.singleton(ACCEPTED_VERSION_STRING), false);
+            return new PublisherAuthority(Collections.singleton(ACCEPTED_VERSION_STRING), PublisherVersion.ACCEPTED_VERSION);
         }
         if (versions.contains(SUBMITTED_VERSION)) {
-            return new PublisherAuthority(Collections.singleton(SUBMITTED_VERSION), false);
+            return new PublisherAuthority(Collections.singleton(SUBMITTED_VERSION), PublisherVersion.ACCEPTED_VERSION);
         } else {
             logger.error(new ErrorDetails(MULTIPLE_DC_VERSION_VALUES, versions)
                          + StringUtils.SPACE
@@ -632,9 +633,9 @@ public class DublinCoreScraper {
     private static PublisherAuthority mapSingleVersion(Set<String> versions) {
         var version = versions.iterator().next();
         if (PUBLISHED_VERSION_STRING.equals(version)) {
-            return new PublisherAuthority(Collections.singleton(version), true);
+            return new PublisherAuthority(Collections.singleton(version), PublisherVersion.PUBLISHED_VERSION);
         } else if (ACCEPTED_VERSION_STRING.equals(version)) {
-            return new PublisherAuthority(Collections.singleton(version), false);
+            return new PublisherAuthority(Collections.singleton(version), PublisherVersion.ACCEPTED_VERSION);
         } else {
             return new PublisherAuthority(Collections.singleton(version), null);
         }

@@ -19,7 +19,6 @@ import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_M
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.SUPERVISOR;
 import static no.sikt.nva.scrapers.LicenseScraper.DEFAULT_LICENSE;
-import static no.sikt.nva.scrapers.LicenseScraper.INVALID_LICENSES_PATH;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -51,13 +50,13 @@ import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Pages;
+import no.sikt.nva.brage.migration.common.model.record.PublisherVersion;
 import no.sikt.nva.brage.migration.common.model.record.Range;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.logutils.LogUtils;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -98,18 +97,17 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldConvertValidVersionToPublisherAuthority() {
-        var expectedPublisherAuthority = true;
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
-        assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
+        assertThat(actualPublisherAuthority, is(equalTo(PublisherVersion.PUBLISHED_VERSION)));
     }
 
     @Test
     void shouldConvertMultipleIdenticalValidVersionsToPublisherAuthority() {
-        var expectedPublisherAuthority = true;
+        var expectedPublisherAuthority = PublisherVersion.PUBLISHED_VERSION;
         var firstVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
         var secondVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
         var typeDcValue = toDcType("Others");
@@ -124,7 +122,6 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldConvertDifferentValidVersionsToPublisherAuthority() {
-        var expectedPublisherAuthority = true;
         var firstVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
         var secondVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "submittedVersion");
         var thirdVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "acceptedVersion");
@@ -134,13 +131,12 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
-        assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
+        assertThat(actualPublisherAuthority, is(equalTo(PublisherVersion.PUBLISHED_VERSION)));
         assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_DC_VERSION_VALUES))));
     }
 
     @Test
     void shouldExtractVersionFromDescriptionVersionAndTypeVersionDcValues() {
-        var expectedPublisherAuthority = true;
         var firstVersionDcValue = new DcValue(Element.TYPE, Qualifier.VERSION, "publishedVersion");
         var secondVersionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "submittedVersion");
         var typeDcValue = toDcType("Others");
@@ -149,7 +145,7 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
-        assertThat(actualPublisherAuthority, is(equalTo(expectedPublisherAuthority)));
+        assertThat(actualPublisherAuthority, is(equalTo(PublisherVersion.PUBLISHED_VERSION)));
         assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_DC_VERSION_VALUES))));
     }
 
@@ -513,12 +509,12 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldSetPublisherAuthorityToFalseWhenVersionIsAcceptedVersion() {
+    void shouldSetPublisherAuthorityToAcceptedVersionWhenVersionIsAcceptedVersion() {
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "acceptedVersion");
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, versionDcValue));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
-        assertThat(record.getPublisherAuthority().getNva(), is(false));
+        assertThat(record.getPublisherAuthority().getNva(), is(PublisherVersion.ACCEPTED_VERSION));
     }
 
     @Test

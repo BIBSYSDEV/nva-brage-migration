@@ -9,11 +9,11 @@ import nva.commons.core.JacocoGenerated;
 public class PublisherAuthority {
 
     private Set<String> brage;
-    private Boolean nva;
+    private PublisherVersion nva;
 
     @JsonCreator
     public PublisherAuthority(@JsonProperty("brage") Set<String> brage,
-                              @JsonProperty("nva") Boolean nva) {
+                              @JsonProperty("nva") PublisherVersion nva) {
         this.nva = nva;
         this.brage = brage;
     }
@@ -47,11 +47,11 @@ public class PublisherAuthority {
     }
 
     @JsonProperty("nva")
-    public Boolean getNva() {
+    public PublisherVersion getNva() {
         return nva;
     }
 
-    public void setNva(Boolean nva) {
+    public void setNva(PublisherVersion nva) {
         this.nva = nva;
     }
 }
