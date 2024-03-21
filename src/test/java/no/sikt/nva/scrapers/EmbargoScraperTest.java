@@ -34,8 +34,10 @@ public class EmbargoScraperTest {
     public static final String TEST_FILE_LOCATION_V3 = "src/test/resources/FileEmbargoV3.txt";
     private static final String EMBARGO_FILE_WITH_ONLY_IGNORED_FILES = "src/test/resources"
                                                                        + "/FileEmbargoWithOnlyIgnoredFiles.txt";
-    public static final String EMBARGO_WITH_DISTANT_DATE_TXT = "src/test/resources/FileEmbargo_with_distant_date.txt";
-
+    private static final String EMBARGO_WITH_DISTANT_DATE_TXT = "src/test/resources/FileEmbargo_with_distant_date.txt";
+    private static final String EMBARGO_WITH_SUMMER_AND_WINDER_TIME_EMBARGO = "src/test/resources"
+                                                                              + "/FileEmbargo_with_daylight_saving"
+                                                                              + ".txt";
 
     @Test
     void shouldIgnoreDefaultRowsOfEmbargoFile() {
@@ -118,6 +120,25 @@ public class EmbargoScraperTest {
                    is(equalTo(Instant.parse("2023-09-30T22:00:00Z"))));
         assertThat(updatedRecord.getContentBundle().getContentFiles().get(1).getEmbargoDate(),
                    is(equalTo(Instant.parse("9999-09-30T22:00:00Z"))));
+    }
+
+    @Test
+    void shouldHonorDayTimeSavingWhenSettingEmbargoDate() {
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var embargos = EmbargoScraper.getEmbargoes(new File(EMBARGO_WITH_SUMMER_AND_WINDER_TIME_EMBARGO));
+        var record = new Record();
+        record.setId(UriWrapper.fromUri("https://hdl.handle.net/11250/2683076").getUri());
+        record.setContentBundle(contentBundleWithFileNameFromEmbargo(
+            List.of("Simulated precipitation fields with variance consistent interpolation.pdf",
+                    "Some name.pdf.jpg")));
+        var updatedRecord = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos);
+        assertThat(appender.getMessages(), not(containsString("Embargo file not found: ")));
+
+        assertThat(updatedRecord.getContentBundle().getContentFiles(), hasSize(2));
+        assertThat(updatedRecord.getContentBundle().getContentFiles().get(0).getEmbargoDate(),
+                   is(equalTo(Instant.parse("2023-05-31T22:00:00Z"))));
+        assertThat(updatedRecord.getContentBundle().getContentFiles().get(1).getEmbargoDate(),
+                   is(equalTo(Instant.parse("2023-11-30T23:00:00Z"))));
     }
 
     @Test
