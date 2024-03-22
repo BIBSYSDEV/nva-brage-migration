@@ -11,6 +11,8 @@ import nva.commons.core.JacocoGenerated;
 
 public class Embargo {
 
+    private static final ZoneId EUROPE_OSLO = ZoneId.of("Europe/Oslo");
+    private static final LocalTime START_OF_DAY = LocalTime.ofNanoOfDay(0);
     public static final int MAX_EMBARGO_YEAR = 9999;
     private String handle;
     private String date;
@@ -71,7 +73,9 @@ public class Embargo {
 
     public Instant getDateAsInstant() {
         try {
-            var dateTime = ZonedDateTime.of(LocalDate.parse(date), LocalTime.now(), ZoneId.systemDefault());
+            var dateTime = ZonedDateTime.of(LocalDate.parse(date),
+                                            START_OF_DAY,
+                                            EUROPE_OSLO);
             return formatEmbargoDate(dateTime);
         } catch (Exception e) {
             return perseFiveYearDateToInstant();
@@ -89,8 +93,8 @@ public class Embargo {
     private Instant perseFiveYearDateToInstant() {
         var fiveDigitYear = DateTimeFormatter.ofPattern("yyyyy-MM-dd");
         var dateTime = ZonedDateTime.of(LocalDate.parse(date, fiveDigitYear),
-                                LocalTime.now(),
-                                ZoneId.systemDefault());
+                                START_OF_DAY,
+                                EUROPE_OSLO);
         return formatEmbargoDate(dateTime);
     }
 
