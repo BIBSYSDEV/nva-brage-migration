@@ -1051,6 +1051,15 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldExtractEmbargo() {
+        var embargoDate = "2024-08-26";
+        var dcValue = new DcValue(Element.DATE, Qualifier.fromValue("embargoEndDate"), embargoDate);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcValue));
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore);
+        assertThat(embargo, is(equalTo(embargoDate)));
+    }
+
+    @Test
     void shouldReturnInvalidLicenseErrorWhenFailingToExtractLicense() {
         var licenseValue = "http://creativecommons.org/licenses/by/4.0\"";
         var invalidLicense = new DcValue(Element.RIGHTS, Qualifier.URI, licenseValue);

@@ -1,5 +1,6 @@
 package no.sikt.nva.model.dublincore;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.xml.bind.annotation.XmlEnum;
 import jakarta.xml.bind.annotation.XmlEnumValue;
 import jakarta.xml.bind.annotation.XmlType;
@@ -62,6 +63,7 @@ public enum Element {
     @XmlEnumValue("subjectcode")
     SUBJECT_CODE("subjectcode");
 
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
     private final String value;
 
     Element(String v) {

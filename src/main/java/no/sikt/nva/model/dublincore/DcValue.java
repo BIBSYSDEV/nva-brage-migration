@@ -346,7 +346,8 @@ public class DcValue {
     }
 
     public boolean isEmbargoEndDate() {
-        return Element.DATE.equals(this.element) && Qualifier.EMBARGO_DATE.equals(this.qualifier);
+        return Element.DATE.equals(this.element) && Qualifier.EMBARGO_DATE.equals(this.qualifier)
+            || Element.DATE.equals(this.element) && Qualifier.EMBARGO_DATE_V2.equals(this.qualifier);
     }
 
     public String toXmlString() {
