@@ -55,6 +55,9 @@ public enum Qualifier {
     @XmlEnumValue("embargoenddate")
     EMBARGO_DATE("embargoenddate"),
 
+    @XmlEnumValue("embargoEndDate")
+    EMBARGO_DATE_V2("embargoEndDate"),
+
     @XmlEnumValue("issued")
     ISSUED("issued"),
 
