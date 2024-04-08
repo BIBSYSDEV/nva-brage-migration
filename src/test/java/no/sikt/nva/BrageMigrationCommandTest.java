@@ -177,4 +177,15 @@ public class BrageMigrationCommandTest {
                    containsString(
                        "IllegalArgumentException: src/test/resources/failing_resource/1/1"));
     }
+
+    @Test
+    void shouldStopAndReturnBadExitCodeIfEmbargoFileIsMissing(){
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        arguments.addAll(List.of("-D", TEST_RESOURCE_PATH + "path_to_resources_without_embargo_files", "-O",
+                                 TEST_RESOURCE_PATH + "path_to_resources_without_embargo_files"));
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+            arguments.toArray(String[]::new));
+        assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
+        assertThat(appender.getMessages(), containsString("Embargo File does not exist: "));
+    }
 }
