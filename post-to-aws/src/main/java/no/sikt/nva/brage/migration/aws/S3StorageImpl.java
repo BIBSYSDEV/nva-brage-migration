@@ -119,7 +119,7 @@ public class S3StorageImpl implements S3Storage {
         }
     }
 
-    private static String determineBucketFromAwsEnvironment(String awsBucket) {
+    public static String determineBucketFromAwsEnvironment(String awsBucket) {
         switch (awsBucket) {
             case "sandbox":
                 return SANDBOX_BUCKET_NAME;
