@@ -106,7 +106,7 @@ public final class ChannelRegister {
                                                            String customer) {
         if (typeIsPresentInDublinCore(dublinCore) && !isInCristin(dublinCore)) {
             if (isJournalArticle(dublinCore, customer)) {
-                return getErrorDetailsForJournalArticle(dublinCore, brageLocation);
+                return getErrorDetailsForJournalArticle(dublinCore, brageLocation, customer);
             }
             if (hasPublisher(dublinCore) && isSearchableInPublishers(dublinCore, customer)) {
                 return getErrorDetailsForPublisher(dublinCore, brageLocation, customer);
@@ -352,8 +352,8 @@ public final class ChannelRegister {
     }
 
     private Optional<ErrorDetails> getErrorDetailsForJournalArticle(DublinCore dublinCore,
-                                                                    BrageLocation brageLocation) {
-        var publication = DublinCoreScraper.extractPublication(dublinCore);
+                                                                    BrageLocation brageLocation, String customer) {
+        var publication = DublinCoreScraper.extractPublication(dublinCore, customer);
         var possibleIdentifier = lookUpInJournal(publication, brageLocation);
         if (nonNull(possibleIdentifier)) {
             return Optional.empty();
@@ -367,7 +367,7 @@ public final class ChannelRegister {
                                                                BrageLocation brageLocation,
                                                                String customer) {
         var publisher = formatValue(DublinCoreScraper.extractPublisher(dublinCore));
-        var publication = DublinCoreScraper.extractPublication(dublinCore);
+        var publication = DublinCoreScraper.extractPublication(dublinCore, customer);
         var journalIdentifier = lookUpInJournal(publication, brageLocation);
         var publisherIdentifier = lookUpInPublisher(publisher, customer);
         if (nonNull(journalIdentifier)

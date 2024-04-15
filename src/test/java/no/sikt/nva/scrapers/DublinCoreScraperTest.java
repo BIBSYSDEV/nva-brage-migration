@@ -1015,7 +1015,7 @@ public class DublinCoreScraperTest {
         var journalTitle = new DcValue(Element.IDENTIFIER, Qualifier.JOURNAL_TITLE, journalValue);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(journalTitle));
 
-        assertThat(DublinCoreScraper.extractJournal(dublinCore), is(equalTo(journalValue)));
+        assertThat(DublinCoreScraper.extractJournal(dublinCore, randomString()), is(equalTo(journalValue)));
     }
 
     @Test
@@ -1068,6 +1068,19 @@ public class DublinCoreScraperTest {
         dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
 
         assertThat(appender.getMessages(), containsString(Error.INVALID_DC_RIGHTS_URI.name()));
+    }
+
+    @Test
+    void shouldExtractJournalFromCitationWhenCustomerIsUioAndMissingJournalIssnAndJournalTitleAndNotLogError() {
+        var type = toDcType("Journal article");
+        var citationContainingJournalName = new DcValue(Element.IDENTIFIER, Qualifier.CITATION,
+                                                        "EGU Geodynamics Blog." + randomString());
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "uio");
+
+        assertThat(appender.getMessages(), not(containsString(Error.MISSING_DC_ISSN_AND_DC_JOURNAL.toString())));
+        assertThat(record.getPublication().getJournal(), is(notNullValue()));
     }
 
     private static DcValue toDcType(String t) {
