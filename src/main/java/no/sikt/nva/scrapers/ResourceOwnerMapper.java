@@ -180,7 +180,7 @@ public class ResourceOwnerMapper {
     public static final String STATPED_CRISTIN_IDENTIFIER = "5831.0.0.0";
     public static final String VEGVESEN_OWNER_VALUE = "vegvesen@6056.0.0.0";
     public static final String VEGVESEN_CRISTIN_IDENTIFIER = "6056.0.0.0";
-    public static final String FFI_OWNER_VALUE = "ffi@6056.0.0.0";
+    public static final String FFI_OWNER_VALUE = "ffi@7428.0.0.0";
     public static final String FFI_CRISTIN_IDENTIFIER = "7428.0.0.0";
     public static final String CRISTIN_IDENTIFIER = "CRISTIN_IDENTIFIER";
     public static final String OWNER_VALUE = "OWNER_VALUE";
