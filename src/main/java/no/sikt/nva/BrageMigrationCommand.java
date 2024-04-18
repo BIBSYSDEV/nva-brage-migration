@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.aws.S3Storage;
 import no.sikt.nva.brage.migration.aws.S3StorageImpl;
+import no.sikt.nva.brage.migration.aws.S3StorageValidator;
+import no.sikt.nva.brage.migration.aws.StorageValidatorException;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.Embargo;
@@ -174,6 +176,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
             checkThatCustomerIsValid();
+            if (writeProcessedImportToAws || shouldWriteToAws){
+                checkThatArchiveHasNotBeenPushedToAwsPreviously();
+            }
             var inputDirectory = generateInputDirectory();
             var outputDirectory = generateOutputDirectory();
             if (writeProcessedImportToAws) {
@@ -214,6 +219,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
             logger.error(FAILURE_IN_BRAGE_MIGRATION_COMMAND, e);
             return ERROR_EXIT_CODE;
         }
+    }
+
+    private void checkThatArchiveHasNotBeenPushedToAwsPreviously() throws StorageValidatorException {
+        new S3StorageValidator(s3Client, customer, awsEnvironment.value ).validateStorage();
     }
 
     private static void validateAwsEnvironment(String environment) {
