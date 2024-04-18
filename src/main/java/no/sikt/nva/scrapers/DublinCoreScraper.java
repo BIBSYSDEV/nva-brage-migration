@@ -67,6 +67,7 @@ public class DublinCoreScraper {
     public static final String COMA_ISSN_DELIMITER = ",";
     public static final String EMPTY_SPACES_LINEBREAKS_REGEX = "(\n)|(\b)|(\u200b)|(\t)|(\")";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
+    public static final String DOT = "\\.";
     private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
@@ -147,13 +148,38 @@ public class DublinCoreScraper {
                    .scrapeValueAndSetToScraped();
     }
 
-    public static String extractJournal(DublinCore dublinCore) {
+    public static String extractJournal(DublinCore dublinCore, String customer) {
+        var journal = extractJournalFromDublinCore(dublinCore);
+        var issnSet = extractIssn(dublinCore);
+        if (isNull(journal) && issnSet.isEmpty() && customer.equals(CustomerMapper.UIO)) {
+            return extractJournalFromCitationField(dublinCore);
+        } else {
+            return journal;
+        }
+    }
+
+    private static String extractJournalFromDublinCore(DublinCore dublinCore) {
         var journals = dublinCore.getDcValues()
                            .stream()
                            .filter(DcValue::isJournal)
                            .map(DcValue::scrapeValueAndSetToScraped)
                            .collect(Collectors.toList());
         return journals.isEmpty() ? null : journals.get(0);
+    }
+
+    public static String extractJournalFromCitationField(DublinCore dublinCore) {
+        var journals = dublinCore.getDcValues()
+                           .stream()
+                           .filter(DcValue::isCitationIdentifier)
+                           .map(DcValue::scrapeValueAndSetToScraped)
+                           .map(DublinCoreScraper::getJournalNameFromString)
+                           .filter(Objects::nonNull)
+                           .collect(Collectors.toList());
+        return journals.isEmpty() ? null : journals.get(0);
+    }
+
+    private static String getJournalNameFromString(String value) {
+        return attempt(() -> value.split(DOT)[0]).orElse(failure -> null);
     }
 
     public static Set<String> extractType(DublinCore dublinCore, String customer) {
@@ -186,11 +212,11 @@ public class DublinCoreScraper {
                    .scrapeValueAndSetToScraped();
     }
 
-    public static Publication extractPublication(DublinCore dublinCore) {
+    public static Publication extractPublication(DublinCore dublinCore, String customer) {
         var publication = new Publication();
         publication.setIssnList(extractIssn(dublinCore));
         publication.setIsbnList(extractIsbn(dublinCore));
-        publication.setJournal(extractJournal(dublinCore));
+        publication.setJournal(extractJournal(dublinCore, customer));
         publication.isIssmList(extractIsmn(dublinCore));
         publication.setPartOfSeries(extractPartOfSeries(dublinCore));
         return publication;
@@ -691,7 +717,7 @@ public class DublinCoreScraper {
                                                         Record record,
                                                         boolean shouldLookUpInChannelRegister,
                                                         String customer) {
-        var publication = extractPublication(dublinCore);
+        var publication = extractPublication(dublinCore, customer);
         publication.setPublicationContext(new PublicationContext());
         publication.getPublicationContext().setBragePublisher(extractPublisher(dublinCore));
         record.setPublication(publication);
