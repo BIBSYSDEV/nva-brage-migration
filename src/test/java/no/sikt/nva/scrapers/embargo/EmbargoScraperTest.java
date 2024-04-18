@@ -1,5 +1,7 @@
-package no.sikt.nva.scrapers;
+package no.sikt.nva.scrapers.embargo;
 
+import static no.sikt.nva.scrapers.embargo.EmbargoParser.PERMANENTLY_LOCKED;
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -8,16 +10,35 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
+import java.net.http.HttpHeaders;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.net.ssl.SSLSession;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
+import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.BundleType;
+import no.sikt.nva.brage.migration.common.model.record.license.BrageLicense;
+import no.sikt.nva.brage.migration.common.model.record.license.License;
 import no.sikt.nva.model.Embargo;
+import no.sikt.nva.utils.FakeOnlineEmbargoChecker;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
@@ -96,7 +117,8 @@ public class EmbargoScraperTest {
         record.setId(UriWrapper.fromUri("https://hdl.handle.net/11250/2683076").getUri());
         record.setContentBundle(contentBundleWithFileNameFromEmbargo(
             List.of("Simulated precipitation fields with variance consistent interpolation.pdf")));
-        var updatedRecord = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos);
+        var updatedRecord = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
+                                                                                 new FakeOnlineEmbargoChecker());
         assertThat(appender.getMessages(), not(containsString("Embargo file not found: ")));
         assertThat(updatedRecord.getContentBundle().getContentFiles(), hasSize(1));
         var actualContentFile = updatedRecord.getContentBundle().getContentFiles().get(0);
@@ -112,7 +134,8 @@ public class EmbargoScraperTest {
         record.setContentBundle(contentBundleWithFileNameFromEmbargo(
             List.of("Simulated precipitation fields with variance consistent interpolation.pdf",
                     "My super secret file.pdf")));
-        var updatedRecord = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos);
+        var updatedRecord = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
+                                                                                 new FakeOnlineEmbargoChecker());
         assertThat(appender.getMessages(), not(containsString("Embargo file not found: ")));
 
         assertThat(updatedRecord.getContentBundle().getContentFiles(), hasSize(2));
@@ -131,7 +154,8 @@ public class EmbargoScraperTest {
         record.setContentBundle(contentBundleWithFileNameFromEmbargo(
             List.of("Simulated precipitation fields with variance consistent interpolation.pdf",
                     "Some name.pdf.jpg")));
-        var updatedRecord = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos);
+        var updatedRecord = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
+                                                                                 new FakeOnlineEmbargoChecker());
         assertThat(appender.getMessages(), not(containsString("Embargo file not found: ")));
 
         assertThat(updatedRecord.getContentBundle().getContentFiles(), hasSize(2));
@@ -160,7 +184,140 @@ public class EmbargoScraperTest {
         var dateAsInstant = embargo.getDateAsInstant();
         assertThat(dateAsInstant, is(instanceOf(Instant.class)));
         assertThat(dateAsInstant.atZone(ZoneId.systemDefault()).getYear(), is(equalTo(9999)));
+    }
 
+    @Test
+    void shouldSetFileToEmbargoWhenItIsNotPossibleToQueryFileOnline() throws IOException, InterruptedException {
+        var someHandle = "https://hdl.handle.net/1234/12345";
+        var filename = "somefile.pdf";
+        var record = new Record();
+        var embargos = new HashMap<String, List<Embargo>>();
+        record.setId(UriWrapper.fromUri(someHandle).getUri());
+        record.setContentBundle(new ResourceContent(List.of(new ContentFile(filename, BundleType.ORIGINAL,
+                                                                            randomString(),
+                                                                            UUID.randomUUID(),
+                                                                            License.fromBrageLicense(
+                                                                                BrageLicense.CC_BY),
+                                                                            null))));
+        var httpClient = mock(HttpClient.class);
+        var onlineEmbargoChecker = new OnlineEmbargoCheckerImpl(httpClient);
+        onlineEmbargoChecker.calculateCustomerAddress("ntnu");
+        mock302Response(httpClient);
+        var recordWithEmbargoOnFile = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
+                                                                                           onlineEmbargoChecker);
+        assertThat(recordWithEmbargoOnFile.getContentBundle().getContentFiles().get(0).getEmbargoDate(),
+                   is(equalTo(PERMANENTLY_LOCKED)));
+    }
+
+    @Test
+    void shouldNotSetEmbargoWhenFileIsOpenOnline() throws IOException, InterruptedException {
+        var someHandle = "https://hdl.handle.net/1234/12345";
+        var filename = "some_file.pdf";
+        var record = new Record();
+        var embargos = new HashMap<String, List<Embargo>>();
+        record.setId(UriWrapper.fromUri(someHandle).getUri());
+        record.setContentBundle(new ResourceContent(List.of(new ContentFile(filename, BundleType.ORIGINAL,
+                                                                            randomString(),
+                                                                            UUID.randomUUID(),
+                                                                            License.fromBrageLicense(
+                                                                                BrageLicense.CC_BY),
+                                                                            null))));
+        var httpClient = mock(HttpClient.class);
+        var onlineEmbargoChecker = new OnlineEmbargoCheckerImpl(httpClient);
+        onlineEmbargoChecker.calculateCustomerAddress("ntnu");
+        mock200Response(httpClient);
+        var recordWithEmbargoOnFile = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
+                                                                                           onlineEmbargoChecker);
+        assertThat(recordWithEmbargoOnFile.getContentBundle().getContentFiles().get(0).getEmbargoDate(),
+                   is(nullValue()));
+    }
+
+    private void mock302Response(HttpClient httpClient) throws IOException, InterruptedException {
+        doReturn(new HttpResponse<String>() {
+            @Override
+            public int statusCode() {
+                return 302;
+            }
+
+            @Override
+            public HttpRequest request() {
+                return null;
+            }
+
+            @Override
+            public Optional<HttpResponse<String>> previousResponse() {
+                return Optional.empty();
+            }
+
+            @Override
+            public HttpHeaders headers() {
+                return null;
+            }
+
+            @Override
+            public String body() {
+                return "";
+            }
+
+            @Override
+            public Optional<SSLSession> sslSession() {
+                return Optional.empty();
+            }
+
+            @Override
+            public URI uri() {
+                return null;
+            }
+
+            @Override
+            public Version version() {
+                return null;
+            }
+        }).when(httpClient).send(any(), any());
+    }
+
+    private void mock200Response(HttpClient httpClient) throws IOException, InterruptedException {
+        doReturn(new HttpResponse<String>() {
+            @Override
+            public int statusCode() {
+                return 200;
+            }
+
+            @Override
+            public HttpRequest request() {
+                return null;
+            }
+
+            @Override
+            public Optional<HttpResponse<String>> previousResponse() {
+                return Optional.empty();
+            }
+
+            @Override
+            public HttpHeaders headers() {
+                return null;
+            }
+
+            @Override
+            public String body() {
+                return "";
+            }
+
+            @Override
+            public Optional<SSLSession> sslSession() {
+                return Optional.empty();
+            }
+
+            @Override
+            public URI uri() {
+                return null;
+            }
+
+            @Override
+            public Version version() {
+                return null;
+            }
+        }).when(httpClient).send(any(), any());
     }
 
     private ResourceContent contentBundleWithFileNameFromEmbargo(List<String> filenames) {

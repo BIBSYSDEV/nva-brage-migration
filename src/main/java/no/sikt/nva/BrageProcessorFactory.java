@@ -7,6 +7,7 @@ import java.util.Map;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.model.Embargo;
 import no.sikt.nva.scrapers.AffiliationType;
+import no.sikt.nva.scrapers.embargo.OnlineEmbargoChecker;
 import nva.commons.core.StringUtils;
 
 public class BrageProcessorFactory {
@@ -29,7 +30,9 @@ public class BrageProcessorFactory {
                                                final boolean enableOnlineValidation,
                                                final boolean shouldLookUpInChannelRegister,
                                                final String awsEnvironment,
-                                               String outputDirectory, boolean isUnzipped) {
+                                               String outputDirectory,
+                                               boolean isUnzipped,
+                                               OnlineEmbargoChecker onlineEmbargoChecker) {
         var destinationDirectory = generateDestinationDirectory(outputDirectory, zipfile);
         if (StringUtils.isEmpty(destinationDirectory)) {
             throw new RuntimeException(INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE);
@@ -37,7 +40,7 @@ public class BrageProcessorFactory {
         return new BrageProcessor(zipfile, customer, destinationDirectory,
                                   enableOnlineValidation, shouldLookUpInChannelRegister,
                                   awsEnvironment, embargoes,
-                                  contributors, affiliations, isUnzipped);
+                                  contributors, affiliations, isUnzipped, onlineEmbargoChecker);
     }
 
     private static int getLength(String zipfile) {

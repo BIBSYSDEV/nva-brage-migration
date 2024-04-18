@@ -34,8 +34,10 @@ import no.sikt.nva.scrapers.AffiliationsScraper;
 import no.sikt.nva.scrapers.ContributorScraper;
 import no.sikt.nva.scrapers.CustomerMapper;
 import no.sikt.nva.scrapers.DublinCoreScraper;
-import no.sikt.nva.scrapers.EmbargoParser;
-import no.sikt.nva.scrapers.EmbargoScraper;
+import no.sikt.nva.scrapers.embargo.EmbargoParser;
+import no.sikt.nva.scrapers.embargo.EmbargoScraper;
+import no.sikt.nva.scrapers.embargo.OnlineEmbargoChecker;
+import no.sikt.nva.scrapers.embargo.OnlineEmbargoCheckerImpl;
 import no.unit.nva.s3.S3Driver;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
@@ -128,12 +130,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private RecordStorage recordStorage;
 
+    private final OnlineEmbargoChecker onlineEmbargoChecker;
+
     public BrageMigrationCommand() {
-        this.s3Client = S3Driver.defaultS3Client().build();
+        this(S3Driver.defaultS3Client().build(),
+             new OnlineEmbargoCheckerImpl());
     }
 
-    public BrageMigrationCommand(S3Client s3Client) {
+    public BrageMigrationCommand(S3Client s3Client,
+                                 OnlineEmbargoChecker onlineEmbargoChecker) {
         this.s3Client = s3Client;
+        this.onlineEmbargoChecker = onlineEmbargoChecker;
     }
 
     public static void main(String[] args) {
@@ -189,9 +196,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 var contributors = getContributors(inputDirectory);
                 var affiliations = AffiliationsScraper.getAffiliations(new File(inputDirectory + AFFILIATIONS_FILE));
                 printIgnoredDcValuesFieldsInInfoLog();
+                onlineEmbargoChecker.calculateCustomerAddress(customer);
                 var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes, contributors,
                                                               affiliations,
-                                                              isUnzipped);
+                                                              isUnzipped,
+                                                              onlineEmbargoChecker);
                 //                Synchronized run:
                 brageProcessors.forEach(this::runAndIgnoreException);
                 //                Parellallization run:
@@ -398,16 +407,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private List<BrageProcessor> getBrageProcessorThread(String customer, String outputDirectory,
                                                          Map<String, List<Embargo>> embargoes,
                                                          Map<String, Contributor> contributors,
-                                                         AffiliationType affiliations, boolean isUnzipped) {
+                                                         AffiliationType affiliations, boolean isUnzipped,
+                                                         OnlineEmbargoChecker onlineEmbargoChecker) {
         return createBrageProcessorThread(zipFiles, customer, enableOnlineValidation, shouldLookUpInChannelRegister,
                                           outputDirectory, embargoes, contributors, affiliations,
-                                          isUnzipped);
+                                          isUnzipped, onlineEmbargoChecker);
     }
 
     private Map<String, List<Embargo>> getEmbargoes(String directory) {
         var embargoFile = new File(directory + DEFAULT_EMBARGO_FILE_NAME);
 
-        if (!embargoFile.exists()){
+        if (!embargoFile.exists()) {
             var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             logger.error("Embargo File does not exist: " + embargoFile.getAbsolutePath());
             throw new RuntimeException("Embargo file does not exists");
@@ -512,10 +522,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private List<Record> removeIdenticalRecords(List<Record> records) {
         if (nonNull(records) && !records.isEmpty()) {
             var duplicates = findDuplicates(records);
-            if(!duplicates.isEmpty()) {
+            if (!duplicates.isEmpty()) {
                 var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
                 logger.error("Removing duplicates: {}",
-                             duplicates.stream().map(Record::getId).map(URI::toString).collect(Collectors.joining(System.lineSeparator())));
+                             duplicates.stream()
+                                 .map(Record::getId)
+                                 .map(URI::toString)
+                                 .collect(Collectors.joining(System.lineSeparator())));
             }
             records.removeAll(duplicates);
         }
@@ -561,7 +574,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                             Map<String, List<Embargo>> embargoes,
                                                             Map<String, Contributor> contributors,
                                                             AffiliationType affiliations,
-                                                            boolean isUnzipped) {
+                                                            boolean isUnzipped,
+                                                            OnlineEmbargoChecker onlineEmbargoChecker) {
         var brageProcessorFactory = new BrageProcessorFactory(embargoes, contributors, affiliations);
         return Arrays.stream(zipFiles)
                    .filter(StringUtils::isNotBlank)
@@ -571,7 +585,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                                               shouldLookUpInChannelRegister,
                                                                               awsEnvironment.getValue(),
                                                                               outputDirectory,
-                                                                              isUnzipped))
+                                                                              isUnzipped,
+                                                                              onlineEmbargoChecker))
                    .collect(Collectors.toList());
     }
 

@@ -1,5 +1,7 @@
-package no.sikt.nva.scrapers;
+package no.sikt.nva.scrapers.embargo;
 
+import static java.util.Objects.isNull;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -26,13 +28,36 @@ public class EmbargoParser {
     private static final Pattern PATTERN_CRISTIN_ZIP_METADATA_FILE = Pattern.compile(REGEX_CRISTIN_ZIP_METADATA_FILE);
     private static final String REGEX_CRISTIN_XML_METADATA_FILE = "cristin-\\d+\\.xml";
     private static final Pattern PATTERN_CRISTIN_XML_METADATA_FILE = Pattern.compile(REGEX_CRISTIN_XML_METADATA_FILE);
+    public static final Instant PERMANENTLY_LOCKED = Instant.parse("9998-01-01T16:59:59.999Z");
 
-    public static Record checkForEmbargoFromSuppliedEmbargoFile(Record record, Map<String, List<Embargo>> embargoes) {
+    public static Record checkForEmbargoFromSuppliedEmbargoFile(Record record, Map<String, List<Embargo>> embargoes,
+                                                                OnlineEmbargoChecker onlineEmbargoChecker) {
         var handle = record.getId().toString();
         if (containsHandle(embargoes, handle)) {
             embargoContentFiles(embargoes.get(handle), record);
         }
+        checkOnlineForMissingEmbargos(record, onlineEmbargoChecker);
         return record;
+    }
+
+    private static void checkOnlineForMissingEmbargos(Record record, OnlineEmbargoChecker onlineEmbargoChecker) {
+        record.getContentBundle().getContentFiles().forEach(contentFile -> checkEmbargoOnline(contentFile,
+         record,
+                                                                                              onlineEmbargoChecker));
+
+    }
+
+    private static void checkEmbargoOnline(ContentFile contentFile,
+                                           Record record,
+                                           OnlineEmbargoChecker onlineEmbargoChecker) {
+        if (isNull(contentFile.getEmbargoDate())){
+            var handle = record.getId().toString();
+            var filename = contentFile.getFilename();
+            var isLockedOnline = onlineEmbargoChecker.fileIsLockedOnline(handle, filename);
+            if (isLockedOnline) {
+                contentFile.setEmbargoDate(PERMANENTLY_LOCKED);
+            }
+        }
     }
 
     public static void logNonEmbargosDetected(Map<String, List<Embargo>> embargoes) {

@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.not;
 import java.util.ArrayList;
 import java.util.List;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
+import no.sikt.nva.utils.FakeOnlineEmbargoChecker;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +43,7 @@ public class BrageMigrationCommandTest {
     void shouldThrowExceptionWhenBothInputDirectoryAndZipfileIsSpecified() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         arguments.addAll(List.of("someZipfile.zip", "-D", "some/directory/path"));
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
         assertThat(appender.getMessages(), containsString(INCOMPATIBLE_ARGUMENTS_ZIPFILE_AND_INPUT_DIRECTORY));
@@ -51,7 +52,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessZipFileWithLicenseCorrectly() {
         arguments.add(TEST_RESOURCE_PATH + INPUT_WITH_LICENSE_ZIP_FILE_NAME);
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
     }
@@ -61,7 +62,7 @@ public class BrageMigrationCommandTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         arguments.addAll(List.of(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME, "-O",
                       "someOutputPath"));
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(appender.getMessages(),
                    containsString(COULD_NOT_FIND_HANDLE_IN_HANDLE_FILE_NOR_DUBLIN_CORE_OR_IN_SUPPLIED_CSV));
@@ -70,7 +71,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessFileWithoutHandleInHandleFile() {
         arguments.add(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME);
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
     }
@@ -78,7 +79,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessFileWithOnlineValidator() {
         arguments.addAll(List.of(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME, "-ov"));
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
     }
@@ -87,7 +88,7 @@ public class BrageMigrationCommandTest {
     void shouldNotLoggDoiOfflineErrorWhenBundleContainsInvalidDoiWithValidDoiStructure() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         arguments.add(TEST_RESOURCE_PATH + INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI);
-        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments.toArray(String[]::new));
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(arguments.toArray(String[]::new));
         assertThat(appender.getMessages(),
                    not(containsString(String.valueOf(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK))));
     }
@@ -97,7 +98,7 @@ public class BrageMigrationCommandTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
 
         arguments.add(TEST_RESOURCE_PATH + EMPTY_ZIP_FILE_NAME);
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         var messages = appender.getMessages();
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
@@ -108,7 +109,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldBePossibleToSpecifySubDirectoryWith() {
         arguments.addAll(List.of("-D", TEST_RESOURCE_PATH));
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
     }
@@ -117,14 +118,14 @@ public class BrageMigrationCommandTest {
     void shouldHandleContentFilesWithForwardSlashesInTheirNames() {
         arguments.add(TEST_RESOURCE_PATH + BUNDLE_WITH_FORWARD_SLASHES_ZIP);
         arguments.add(PUSH_TO_AWS);
-        new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(arguments.toArray(String[]::new));
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(arguments.toArray(String[]::new));
     }
 
     @Test
     void shouldCreateRecordWithEmbargo() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         arguments.addAll(List.of("-D", EMBARGO_TEST_DIRECTORY));
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(appender.getMessages(), containsString(EXPECTED_EMBARGO_LOGG_MESSAGE));
         assertThat(status, equalTo(NORMAL_EXIT_CODE));
@@ -133,7 +134,7 @@ public class BrageMigrationCommandTest {
     @Test
     void shouldProcessResourceWithFsDublinCore() {
         arguments.add(TEST_RESOURCE_PATH + INPUT_WITH_LICENSE_ZIP_FILE_NAME);
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
     }
@@ -142,7 +143,7 @@ public class BrageMigrationCommandTest {
     void shouldThrowExceptionIfTestEnvironmentAndInvalidCustomer() {
         arguments = new ArrayList<>(List.of("-c", "someInvalidCustomer", "-O", "someOutputPath", "-j", "test"));
         arguments.add(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME);
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
     }
@@ -151,7 +152,7 @@ public class BrageMigrationCommandTest {
     void shouldThrowExceptionIfProdEnvironmentAndInvalidCustomer() {
         arguments = new ArrayList<>(List.of("-c", "someInvalidCustomer", "-O", "someOutputPath", "-j", "prod"));
         arguments.add(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME);
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
     }
@@ -160,7 +161,7 @@ public class BrageMigrationCommandTest {
     void shouldNotCareAboutInvalidCustomerInDevelop() {
         arguments = new ArrayList<>(List.of("-c", "someInvalidCustomer", "-O", "someOutputPath", "-j", "dev"));
         arguments.add(TEST_RESOURCE_PATH + INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME);
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, is(equalTo(NORMAL_EXIT_CODE)));
     }
@@ -170,7 +171,7 @@ public class BrageMigrationCommandTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         arguments.addAll(List.of("-D", TEST_RESOURCE_PATH + "failing_resource", "-u", "-O",
                                  TEST_RESOURCE_PATH + "failing_resource"));
-        new CommandLine(new BrageMigrationCommand(new FakeS3Client()))
+        new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker()))
             .execute(arguments.toArray(String[]::new));
 
         assertThat(appender.getMessages(),
@@ -183,7 +184,7 @@ public class BrageMigrationCommandTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         arguments.addAll(List.of("-D", TEST_RESOURCE_PATH + "path_to_resources_without_embargo_files", "-O",
                                  TEST_RESOURCE_PATH + "path_to_resources_without_embargo_files"));
-        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client())).execute(
+        int status = new CommandLine(new BrageMigrationCommand(new FakeS3Client(), new FakeOnlineEmbargoChecker())).execute(
             arguments.toArray(String[]::new));
         assertThat(status, not(equalTo(NORMAL_EXIT_CODE)));
         assertThat(appender.getMessages(), containsString("Embargo File does not exist: "));
