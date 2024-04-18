@@ -185,7 +185,7 @@ public class ResourceOwnerMapper {
     public static final String CRISTIN_IDENTIFIER = "CRISTIN_IDENTIFIER";
     public static final String OWNER_VALUE = "OWNER_VALUE";
     public static final String SANDBOX_URI = "https://api.sandbox.nva.aws.unit.no/cristin/organization/";
-    public static final String DEVELOP_URI = "https://api.sandbox.nva.aws.unit.no/cristin/organization/";
+    public static final String DEVELOP_URI = "https://api.dev.nva.aws.unit.no/cristin/organization/";
     public static final String TEST_URI = "https://api.test.nva.aws.unit.no/cristin/organization/";
     public static final String PROD_URI = "https://api.nva.aws.unit.no/cristin/organization/";
     private static final String NB_CRISTIN_IDENTIFIER = "5931.0.0.0";
