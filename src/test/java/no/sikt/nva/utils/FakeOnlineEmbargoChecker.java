@@ -13,4 +13,9 @@ public class FakeOnlineEmbargoChecker implements OnlineEmbargoChecker {
     public void calculateCustomerAddress(String customer) {
         //Do nothing
     }
+
+    @Override
+    public void setOutputDirectory(String outputDirectory) {
+        //Do nothing
+    }
 }

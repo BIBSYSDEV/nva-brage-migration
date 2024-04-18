@@ -1,11 +1,16 @@
 package no.sikt.nva.scrapers.embargo;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 import org.slf4j.Logger;
@@ -14,6 +19,9 @@ import org.slf4j.LoggerFactory;
 public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(OnlineEmbargoCheckerImpl.class);
+    private static final String WARNING_FORMATTED = "%s,%s\n";
+    private static final String FILES_LOCKED_DUE_TO_ONLINE_CHECK_FAILS =
+        "LockedDuringOnlineCheck.csv";
     private static final int TOO_MANY_REQUESTS = 429;
     private static final int OK = 200;
     private static final int REDIRECT = 302;
@@ -21,6 +29,7 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
     private static final int WAIT_TIME = 2000;
     private final HttpClient httpClient;
     private String customerAddress;
+    private String outputDirectory;
 
     @JacocoGenerated
     public OnlineEmbargoCheckerImpl(HttpClient httpClient) {
@@ -36,8 +45,8 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
 
     @Override
     public boolean fileIsLockedOnline(String handle, String filename) {
-        if (customerAddress == null) {
-            throw new IllegalArgumentException("CustomerAddress is null");
+        if (customerAddress == null || outputDirectory == null) {
+            throw new IllegalArgumentException("CustomerAddress or outputDirectory is null");
         }
         var handleSplitted = handle.split("/");
         var handlePrefix = handleSplitted[handleSplitted.length - 2];
@@ -48,13 +57,34 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
                           .addChild(filename)
                           .getUri();
         var request = createRequest(fullUri);
-        return foundLockedFileOnline(request, fullUri, MAX_RETRIES);
+        var isLockedOnline = foundLockedFileOnline(request, fullUri, MAX_RETRIES);
+        if (isLockedOnline){
+            writeOnlineEmbargoToFile(handle, filename);
+        }
+        return isLockedOnline;
     }
 
     @Override
     public void calculateCustomerAddress(String customer) {
         var customerAddressResolver = new CustomerAddressResolver();
         this.customerAddress = customerAddressResolver.getAddressForCustomer(customer);
+    }
+
+    @Override
+    public void setOutputDirectory(String outputDirectory) {
+        this.outputDirectory = outputDirectory;
+    }
+
+    public void writeOnlineEmbargoToFile(String handle, String filename) {
+        try (var write = Files.newBufferedWriter(Path.of(outputDirectory, FILES_LOCKED_DUE_TO_ONLINE_CHECK_FAILS),
+                                                 StandardCharsets.UTF_8,
+                                                 StandardOpenOption.CREATE,
+                                                 StandardOpenOption.APPEND)
+) {
+            write.write(String.format(WARNING_FORMATTED, handle, filename));
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
     }
 
     private boolean foundLockedFileOnline(HttpRequest request, URI fullUri, int retriesLeft) {

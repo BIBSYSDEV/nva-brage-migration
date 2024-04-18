@@ -197,17 +197,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
                 var affiliations = AffiliationsScraper.getAffiliations(new File(inputDirectory + AFFILIATIONS_FILE));
                 printIgnoredDcValuesFieldsInInfoLog();
                 onlineEmbargoChecker.calculateCustomerAddress(customer);
+                onlineEmbargoChecker.setOutputDirectory(outputDirectory);
                 var brageProcessors = getBrageProcessorThread(customer, outputDirectory, embargoes, contributors,
                                                               affiliations,
                                                               isUnzipped,
                                                               onlineEmbargoChecker);
-                //                Synchronized run:
+
                 brageProcessors.forEach(this::runAndIgnoreException);
-                //                Parellallization run:
-                //                var brageProcessorThreads = brageProcessors.stream().map(Thread::new).collect
-                //                (Collectors.toList());
-                //                startProcessors(brageProcessorThreads);
-                //                waitForAllProcesses(brageProcessorThreads);
                 EmbargoParser.logNonEmbargosDetected(embargoes);
                 writeRecordsToFiles(brageProcessors);
                 if (shouldWriteToAws) {
@@ -549,22 +545,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
             }
         }
         return recordsToRemove;
-    }
-
-    @SuppressWarnings({"PMD.UnusedPrivateMethod"})
-    private void waitForAllProcesses(List<Thread> brageProcessors) {
-        brageProcessors.forEach(brageProcessor -> {
-            try {
-                brageProcessor.join();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
-    @SuppressWarnings({"PMD.UnusedPrivateMethod"})
-    private void startProcessors(List<Thread> brageProcessors) {
-        brageProcessors.forEach(Thread::start);
     }
 
     private List<BrageProcessor> createBrageProcessorThread(String[] zipFiles, String customer,

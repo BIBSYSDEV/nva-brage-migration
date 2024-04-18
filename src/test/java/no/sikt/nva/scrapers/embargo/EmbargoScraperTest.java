@@ -202,6 +202,7 @@ public class EmbargoScraperTest {
         var httpClient = mock(HttpClient.class);
         var onlineEmbargoChecker = new OnlineEmbargoCheckerImpl(httpClient);
         onlineEmbargoChecker.calculateCustomerAddress("ntnu");
+        onlineEmbargoChecker.setOutputDirectory("someoutputpath");
         mock302Response(httpClient);
         var recordWithEmbargoOnFile = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
                                                                                            onlineEmbargoChecker);
@@ -225,6 +226,7 @@ public class EmbargoScraperTest {
         var httpClient = mock(HttpClient.class);
         var onlineEmbargoChecker = new OnlineEmbargoCheckerImpl(httpClient);
         onlineEmbargoChecker.calculateCustomerAddress("ntnu");
+        onlineEmbargoChecker.setOutputDirectory("someoutputpath");
         mock200Response(httpClient);
         var recordWithEmbargoOnFile = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
                                                                                            onlineEmbargoChecker);
