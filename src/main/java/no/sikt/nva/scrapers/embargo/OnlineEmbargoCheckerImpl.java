@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Set;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.paths.UriWrapper;
 import org.slf4j.Logger;
@@ -23,9 +24,14 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
     private static final String WARNING_FORMATTED = "%s,%s\n";
     private static final String FILES_LOCKED_DUE_TO_ONLINE_CHECK_FAILS =
         "LockedDuringOnlineCheck.csv";
+    private static final int REDIRECT = 302;
+    private static final int NOT_FOUND = 404;
+    private static final int UNAUTHORIZED = 401;
+    private static final int FORBIDDEN = 403;
+    private static final Set<Integer> SHOULD_BE_LOCKED_STATUS_CODES = Set.of(REDIRECT, NOT_FOUND, UNAUTHORIZED, FORBIDDEN);
     private static final int TOO_MANY_REQUESTS = 429;
     private static final int OK = 200;
-    private static final int REDIRECT = 302;
+
     private static final int MAX_RETRIES = 3;
     private static final int WAIT_TIME = 2000;
     private final HttpClient httpClient;
@@ -59,23 +65,6 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
         return isLockedOnline;
     }
 
-    private boolean checkIfFileIsLockedOnline(String handle, String filename) {
-        var fullUri = extractFullUri(handle, filename);
-        var request = createRequest(fullUri);
-        return foundLockedFileOnline(request, fullUri, MAX_RETRIES);
-    }
-
-    private URI extractFullUri(String handle, String filename) {
-        var handleSplitted = handle.split("/");
-        var handlePrefix = handleSplitted[handleSplitted.length - 2];
-        var handlePostfix = handleSplitted[handleSplitted.length - 1];
-        return UriWrapper.fromUri(customerAddress)
-                          .addChild(handlePrefix)
-                          .addChild(handlePostfix)
-                          .addChild(filename)
-                          .getUri();
-    }
-
     @Override
     public void calculateCustomerAddress(String customer) {
         var customerAddressResolver = new CustomerAddressResolver();
@@ -99,13 +88,30 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
         }
     }
 
+    private boolean checkIfFileIsLockedOnline(String handle, String filename) {
+        var fullUri = extractFullUri(handle, filename);
+        var request = createRequest(fullUri);
+        return foundLockedFileOnline(request, fullUri, MAX_RETRIES);
+    }
+
+    private URI extractFullUri(String handle, String filename) {
+        var handleSplitted = handle.split("/");
+        var handlePrefix = handleSplitted[handleSplitted.length - 2];
+        var handlePostfix = handleSplitted[handleSplitted.length - 1];
+        return UriWrapper.fromUri(customerAddress)
+                   .addChild(handlePrefix)
+                   .addChild(handlePostfix)
+                   .addChild(filename)
+                   .getUri();
+    }
+
     private boolean foundLockedFileOnline(HttpRequest request, URI fullUri, int retriesLeft) {
         try {
             var response = httpClient.send(request, BodyHandlers.ofString());
-            if (response.statusCode() == REDIRECT) {
-                return true;
-            } else if (response.statusCode() == OK) {
+            if (response.statusCode() == OK) {
                 return false;
+            } else if (SHOULD_BE_LOCKED_STATUS_CODES.contains(response.statusCode())) {
+                return true;
             } else if (response.statusCode() == TOO_MANY_REQUESTS) {
                 if (retriesLeft > 0) {
                     Thread.sleep(WAIT_TIME);

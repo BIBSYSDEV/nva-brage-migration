@@ -42,6 +42,8 @@ import no.sikt.nva.utils.FakeOnlineEmbargoChecker;
 import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class EmbargoScraperTest {
 
@@ -186,8 +188,10 @@ public class EmbargoScraperTest {
         assertThat(dateAsInstant.atZone(ZoneId.systemDefault()).getYear(), is(equalTo(9999)));
     }
 
-    @Test
-    void shouldSetFileToEmbargoWhenItIsNotPossibleToQueryFileOnline() throws IOException, InterruptedException {
+    @ParameterizedTest
+    @ValueSource(ints = {302, 401, 404})
+    void shouldSetFileToEmbargoWhenItIsNotPossibleToQueryFileOnline(int statusCode) throws IOException,
+                                                                                      InterruptedException {
         var someHandle = "https://hdl.handle.net/1234/12345";
         var filename = "somefile.pdf";
         var record = new Record();
@@ -203,12 +207,14 @@ public class EmbargoScraperTest {
         var onlineEmbargoChecker = new OnlineEmbargoCheckerImpl(httpClient);
         onlineEmbargoChecker.calculateCustomerAddress("ntnu");
         onlineEmbargoChecker.setOutputDirectory("someoutputpath");
-        mock302Response(httpClient);
+        mockErrorResponse(httpClient, statusCode);
         var recordWithEmbargoOnFile = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
                                                                                            onlineEmbargoChecker);
         assertThat(recordWithEmbargoOnFile.getContentBundle().getContentFiles().get(0).getEmbargoDate(),
                    is(equalTo(PERMANENTLY_LOCKED)));
     }
+
+
 
     @Test
     void shouldNotSetEmbargoWhenFileIsOpenOnline() throws IOException, InterruptedException {
@@ -251,7 +257,7 @@ public class EmbargoScraperTest {
         var onlineEmbargoChecker = new OnlineEmbargoCheckerImpl(httpClient);
         onlineEmbargoChecker.calculateCustomerAddress("ffi");
         onlineEmbargoChecker.setOutputDirectory("someoutputpath");
-        mock302Response(httpClient);
+        mockErrorResponse(httpClient, 302);
         var recordWithEmbargoOnFile = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
                                                                                            onlineEmbargoChecker);
         assertThat(recordWithEmbargoOnFile.getContentBundle().getContentFiles().get(0).getEmbargoDate(),
@@ -259,11 +265,11 @@ public class EmbargoScraperTest {
 
     }
 
-    private void mock302Response(HttpClient httpClient) throws IOException, InterruptedException {
+    private void mockErrorResponse(HttpClient httpClient, int statusCode) throws IOException, InterruptedException {
         doReturn(new HttpResponse<String>() {
             @Override
             public int statusCode() {
-                return 302;
+                return statusCode;
             }
 
             @Override
@@ -302,6 +308,7 @@ public class EmbargoScraperTest {
             }
         }).when(httpClient).send(any(), any());
     }
+
 
     private void mock200Response(HttpClient httpClient) throws IOException, InterruptedException {
         doReturn(new HttpResponse<String>() {
