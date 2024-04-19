@@ -234,6 +234,31 @@ public class EmbargoScraperTest {
                    is(nullValue()));
     }
 
+    @Test
+    void shouldNotCheckFFIforOnlineEmbargo() throws IOException, InterruptedException {
+        var someHandle = "https://hdl.handle.net/1234/12345";
+        var filename = "some_file.pdf";
+        var record = new Record();
+        var embargos = new HashMap<String, List<Embargo>>();
+        record.setId(UriWrapper.fromUri(someHandle).getUri());
+        record.setContentBundle(new ResourceContent(List.of(new ContentFile(filename, BundleType.ORIGINAL,
+                                                                            randomString(),
+                                                                            UUID.randomUUID(),
+                                                                            License.fromBrageLicense(
+                                                                                BrageLicense.CC_BY),
+                                                                            null))));
+        var httpClient = mock(HttpClient.class);
+        var onlineEmbargoChecker = new OnlineEmbargoCheckerImpl(httpClient);
+        onlineEmbargoChecker.calculateCustomerAddress("ffi");
+        onlineEmbargoChecker.setOutputDirectory("someoutputpath");
+        mock302Response(httpClient);
+        var recordWithEmbargoOnFile = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
+                                                                                           onlineEmbargoChecker);
+        assertThat(recordWithEmbargoOnFile.getContentBundle().getContentFiles().get(0).getEmbargoDate(),
+                   is(nullValue()));
+
+    }
+
     private void mock302Response(HttpClient httpClient) throws IOException, InterruptedException {
         doReturn(new HttpResponse<String>() {
             @Override
