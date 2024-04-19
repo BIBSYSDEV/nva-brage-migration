@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers.embargo;
 
+import static no.sikt.nva.scrapers.embargo.CustomerAddressResolver.IGNORED_CUSTOMERS;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -48,20 +49,31 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
         if (customerAddress == null || outputDirectory == null) {
             throw new IllegalArgumentException("CustomerAddress or outputDirectory is null");
         }
+        if (IGNORED_CUSTOMERS.contains(customerAddress)) {
+            return false;
+        }
+        var isLockedOnline = checkIfFileIsLockedOnline(handle, filename);
+        if (isLockedOnline) {
+            writeOnlineEmbargoToFile(handle, filename);
+        }
+        return isLockedOnline;
+    }
+
+    private boolean checkIfFileIsLockedOnline(String handle, String filename) {
+        var fullUri = extractFullUri(handle, filename);
+        var request = createRequest(fullUri);
+        return foundLockedFileOnline(request, fullUri, MAX_RETRIES);
+    }
+
+    private URI extractFullUri(String handle, String filename) {
         var handleSplitted = handle.split("/");
         var handlePrefix = handleSplitted[handleSplitted.length - 2];
         var handlePostfix = handleSplitted[handleSplitted.length - 1];
-        var fullUri = UriWrapper.fromUri(customerAddress)
+        return UriWrapper.fromUri(customerAddress)
                           .addChild(handlePrefix)
                           .addChild(handlePostfix)
                           .addChild(filename)
                           .getUri();
-        var request = createRequest(fullUri);
-        var isLockedOnline = foundLockedFileOnline(request, fullUri, MAX_RETRIES);
-        if (isLockedOnline){
-            writeOnlineEmbargoToFile(handle, filename);
-        }
-        return isLockedOnline;
     }
 
     @Override
@@ -80,7 +92,7 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
                                                  StandardCharsets.UTF_8,
                                                  StandardOpenOption.CREATE,
                                                  StandardOpenOption.APPEND)
-) {
+        ) {
             write.write(String.format(WARNING_FORMATTED, handle, filename));
         } catch (IOException e) {
             logger.error(e.getMessage());
