@@ -1,4 +1,4 @@
-package no.sikt.nva.scrapers;
+package no.sikt.nva.scrapers.embargo;
 
 import static no.sikt.nva.scrapers.ContentScraper.EMPTY_LINE_REGEX;
 import static nva.commons.core.attempt.Try.attempt;

@@ -28,10 +28,11 @@ import no.sikt.nva.scrapers.ContentScraper;
 import no.sikt.nva.scrapers.CustomerMapper;
 import no.sikt.nva.scrapers.DublinCoreFactory;
 import no.sikt.nva.scrapers.DublinCoreScraper;
-import no.sikt.nva.scrapers.EmbargoParser;
+import no.sikt.nva.scrapers.embargo.EmbargoParser;
 import no.sikt.nva.scrapers.HandleScraper;
 import no.sikt.nva.scrapers.LicenseScraper;
 import no.sikt.nva.scrapers.ResourceOwnerMapper;
+import no.sikt.nva.scrapers.embargo.OnlineEmbargoChecker;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
 
@@ -58,6 +59,7 @@ public class BrageProcessor implements Runnable {
     private final AffiliationType affiliationType;
     private List<Record> records;
     private final boolean isUnzipped;
+    private final OnlineEmbargoChecker onlineEmbargoChecker;
 
     @SuppressWarnings({"PMD.AssignmentToNonFinalStatic", "PMD.ExcessiveParameterList"})
     public BrageProcessor(String zipfile, String customer,
@@ -68,7 +70,9 @@ public class BrageProcessor implements Runnable {
                           Map<String, List<Embargo>> embargoes,
                           Map<String, Contributor> contributors,
                           AffiliationType affiliationType,
-                          boolean isUnzipped) {
+                          boolean isUnzipped,
+                          OnlineEmbargoChecker onlineEmbargoChecker
+                          ) {
         this.customer = customer;
         this.zipfile = zipfile;
         this.enableOnlineValidation = enableOnlineValidation;
@@ -80,6 +84,7 @@ public class BrageProcessor implements Runnable {
         this.contributors = contributors;
         this.affiliationType = affiliationType;
         this.isUnzipped = isUnzipped;
+        this.onlineEmbargoChecker = onlineEmbargoChecker;
     }
 
     public Path getContentFilePath(File entryDirectory) {
@@ -232,7 +237,7 @@ public class BrageProcessor implements Runnable {
                    .map(r -> injectBrageLocation(r, brageLocation))
                    .map(this::injectAffiliationsFromExternalFile)
                    .map(record -> injectValuesFromFsDublinCore(record, parseFsDublinCore(entryDirectory)))
-                   .map(r -> EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(r, embargoes));
+                   .map(r -> EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(r, embargoes, onlineEmbargoChecker));
     }
 
     private Record injectValuesFromFsDublinCore(Record record, DublinCore dublinCore) {
