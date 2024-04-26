@@ -47,6 +47,7 @@ public class S3StorageImpl implements S3Storage {
     private static final ColoredLogger logger = ColoredLogger.create(S3StorageImpl.class);
     public static final String ZIP = ".zip";
     public static final String FILE_DOES_NOT_EXIST_MESSAGE = "FILE DOES NOT EXIST ";
+    public static final String SUCCESSFULLY_PROCEEDED_MESSAGE = "Successfully proceeded records to AWS: ";
     private final String bucketName;
     private final S3Client s3Client;
     private final String pathPrefixString;
@@ -84,11 +85,18 @@ public class S3StorageImpl implements S3Storage {
         try {
             var collectionFiles = getCollections(stripZipBundlesToCollections(collections));
             var listOfRecordsCollections = getRecordsJsonFiles(collectionFiles);
-            extractRecords(listOfRecordsCollections).forEach(this::storeRecord);
+            var records = extractRecords(listOfRecordsCollections);
+            records.forEach(this::storeRecord);
+            logSuccessfullyProcessedRecords(records);
             writeLogsToS3(customer);
         } catch (Exception e) {
             logger.error(PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 + e);
         }
+    }
+
+    private static void logSuccessfullyProcessedRecords(List<Record> records) {
+        logger.info(String.join(StringUtils.EMPTY_STRING, SUCCESSFULLY_PROCEEDED_MESSAGE,
+                                String.valueOf(records.size())));
     }
 
     @Override
