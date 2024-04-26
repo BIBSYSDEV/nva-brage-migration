@@ -183,9 +183,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
             checkThatCustomerIsValid();
-            if (writeProcessedImportToAws || shouldWriteToAws){
-                checkThatArchiveHasNotBeenPushedToAwsPreviously();
-            }
+// Temporarily commenting out the following section. It's currently causing issues with running the same archive in multiple parts.
+//            if (writeProcessedImportToAws || shouldWriteToAws){
+//                checkThatArchiveHasNotBeenPushedToAwsPreviously();
+//            }
             var inputDirectory = generateInputDirectory();
             var outputDirectory = generateOutputDirectory();
             if (writeProcessedImportToAws) {
