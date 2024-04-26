@@ -87,14 +87,14 @@ public class S3StorageImpl implements S3Storage {
             var listOfRecordsCollections = getRecordsJsonFiles(collectionFiles);
             var records = extractRecords(listOfRecordsCollections);
             records.forEach(this::storeRecord);
-            logSuccessfullyProceedRecords(records);
+            logSuccessfullyProcessedRecords(records);
             writeLogsToS3(customer);
         } catch (Exception e) {
             logger.error(PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 + e);
         }
     }
 
-    private static void logSuccessfullyProceedRecords(List<Record> records) {
+    private static void logSuccessfullyProcessedRecords(List<Record> records) {
         logger.info(String.join(StringUtils.EMPTY_STRING, SUCCESSFULLY_PROCEEDED_MESSAGE,
                                 String.valueOf(records.size())));
     }
