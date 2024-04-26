@@ -54,7 +54,8 @@ import picocli.CommandLine.Spec;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
-@SuppressWarnings({"PMD.DoNotUseThreads", "PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessiveParameterList"})
+@SuppressWarnings({"PMD.DoNotUseThreads", "PMD.GodClass", "PMD.TooManyFields", "PMD.ExcessiveParameterList",
+    "PMD.UnusedPrivateMethod"})
 @JacocoGenerated
 @Command(name = "Brage migration", description = "Tool for migrating Brage bundles")
 public class BrageMigrationCommand implements Callable<Integer> {
@@ -183,9 +184,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
             this.recordStorage = new RecordStorage();
             checkForIllegalArguments();
             checkThatCustomerIsValid();
-            if (writeProcessedImportToAws || shouldWriteToAws){
-                checkThatArchiveHasNotBeenPushedToAwsPreviously();
-            }
+// Temporarily commenting out the following section. It's currently causing issues with running the same archive in multiple parts.
+//            if (writeProcessedImportToAws || shouldWriteToAws){
+//                checkThatArchiveHasNotBeenPushedToAwsPreviously();
+//            }
             var inputDirectory = generateInputDirectory();
             var outputDirectory = generateOutputDirectory();
             if (writeProcessedImportToAws) {
