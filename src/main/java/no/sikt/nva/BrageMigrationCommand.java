@@ -96,6 +96,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private static final String COLLECTION_FILENAME = "samlingsfil.txt";
     private static final String ZIP_FILE_ENDING = ".zip";
     private static final List<String> handles = Collections.synchronizedList(new ArrayList<>());
+    public static final String PROCEEDING_COLLECTIONS_MESSAGE = "Proceeding following collections: {}";
     private final S3Client s3Client;
     private AwsEnvironment awsEnvironment;
     @Spec
@@ -296,12 +297,13 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return Optional.of(arguments.get(valueArgument + 1));
     }
 
-    private static void logStartingPoint() {
+    private void logStartingPoint() {
         //we need this because the users forgets to delete logs, and they don't want timestamp in logs.
         var startLogMessage = "\n\n================= Starting new import "
                               + FORMATTER.format(Instant.now())
                               + " ==================\n\n";
         var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
+        logger.info("Proceeding collections from collection file: {}", collectionFileName);
         logger.info(startLogMessage);
         logger.warn(startLogMessage);
         logger.error(startLogMessage);
@@ -325,6 +327,8 @@ public class BrageMigrationCommand implements Callable<Integer> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        LoggerFactory.getLogger(BrageMigrationCommand.class).info(PROCEEDING_COLLECTIONS_MESSAGE, zipfiles);
+
         return zipfiles.toArray(new String[0]);
     }
 
