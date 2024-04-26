@@ -131,6 +131,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Option(names = {"-u"}, description = "Run import of unzipped collections")
     private boolean isUnzipped;
 
+    @Option(names = {"-s", "--samlingsfil"}, description = "Samlingsfilnavn")
+    private String collectionFileName;
+
     private RecordStorage recordStorage;
 
     private final OnlineEmbargoChecker onlineEmbargoChecker;
@@ -182,6 +185,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         try {
             logStartingPoint();
             this.recordStorage = new RecordStorage();
+            var collectionFileName = nonNull(this.collectionFileName) ? this.collectionFileName : COLLECTION_FILENAME;
             checkForIllegalArguments();
             checkThatCustomerIsValid();
 // Temporarily commenting out the following section. It's currently causing issues with running the same archive in multiple parts.
@@ -191,11 +195,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
             var inputDirectory = generateInputDirectory();
             var outputDirectory = generateOutputDirectory();
             if (writeProcessedImportToAws) {
-                pushExistingResourcesToNva(readZipFileNamesFromCollectionFile(inputDirectory));
+                pushExistingResourcesToNva(readZipFileNamesFromCollectionFile(inputDirectory, collectionFileName));
             } else {
                 Map<String, List<Embargo>> embargoes;
                 if (isNull(zipFiles)) {
-                    this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory);
+                    this.zipFiles = readZipFileNamesFromCollectionFile(inputDirectory, collectionFileName);
                     embargoes = getEmbargoes(inputDirectory);
                 } else {
                     embargoes = getEmbargoes(Arrays.stream(zipFiles));
@@ -307,9 +311,9 @@ public class BrageMigrationCommand implements Callable<Integer> {
         return brageProcessors.stream().map(BrageProcessor::getEmbargoCounter).reduce(0, Integer::sum);
     }
 
-    private static String[] readZipFileNamesFromCollectionFile(String inputDirectory) {
+    private static String[] readZipFileNamesFromCollectionFile(String inputDirectory, String collectionFileName) {
         var zipfiles = new ArrayList<String>();
-        var filenameWithPath = inputDirectory + COLLECTION_FILENAME;
+        var filenameWithPath = inputDirectory + collectionFileName;
         File collectionsInformationFile = new File(filenameWithPath);
         try (var scanner = new Scanner(collectionsInformationFile)) {
             while (scanner.hasNextLine()) {
