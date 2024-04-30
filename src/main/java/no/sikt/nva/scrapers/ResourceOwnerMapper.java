@@ -200,7 +200,7 @@ public class ResourceOwnerMapper {
     private static final String NLA_CRISTIN_IDENTIFIER = "54.0.0.0";
     private static final String NINA_CRISTIN_IDENTIFIER = "7511.0.0.0";
     private static final String NINA_OWNER_VALUE = "nina@7511.0.0.0";
-    private static final String NMBU_OWNER_VALUE = "nbmu@192.0.0.0";
+    private static final String NMBU_OWNER_VALUE = "nmbu@192.0.0.0";
     private static final String NMBU_CRISTIN_IDENTIFIER = "192.0.0.0";
     private static final String NMH_CRISTIN_IDENTIFIER = "178.0.0.0";
     private static final String NMH_OWNER_VALUE = "nmh@178.0.0.0";
