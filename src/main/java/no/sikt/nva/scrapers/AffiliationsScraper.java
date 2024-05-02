@@ -1,6 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -9,6 +10,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.aws.ColoredLogger;
 import no.sikt.nva.brage.migration.common.model.record.Affiliation;
+import org.apache.tika.parser.txt.CharsetDetector;
+import org.apache.tika.parser.txt.CharsetMatch;
+import org.jetbrains.annotations.NotNull;
 
 public final class AffiliationsScraper {
 
@@ -25,7 +29,7 @@ public final class AffiliationsScraper {
     public static AffiliationType getAffiliations(File file) {
         try {
             if (file.exists()) {
-                var string = Files.readString(file.toPath());
+                var string = readAsString(file);
                 var affiliations = convertStringToAffiliations(string);
                 var types = Arrays.asList(string.split(LINE_BREAK)[0].split(REGEX_COLON));
                 logger.info(NUMBER_OF_AFFILIATIONS_MESSAGE + affiliations.size());
@@ -39,6 +43,14 @@ public final class AffiliationsScraper {
             logger.error("Exception" + e);
             throw new RuntimeException(COULD_NOT_READ_AFFILIATIONS_FILE_MESSAGE);
         }
+    }
+
+    private static String readAsString(File file) throws IOException {
+        byte[] fileContent = Files.readAllBytes(file.toPath());
+        var detector = new CharsetDetector();
+        detector.setText(fileContent);
+        var match = detector.detect();
+        return new String(fileContent, match.getName());
     }
 
     private static Map<String, Affiliation> convertStringToAffiliations(String string) {

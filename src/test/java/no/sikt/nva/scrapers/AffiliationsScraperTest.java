@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import java.io.File;
 import java.util.Map;
-import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import org.junit.jupiter.api.Test;
 
