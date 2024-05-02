@@ -1,36 +1,54 @@
 package no.sikt.nva.scrapers;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import no.sikt.nva.brage.migration.aws.ColoredLogger;
 import no.sikt.nva.brage.migration.common.model.record.Affiliation;
-import org.slf4j.LoggerFactory;
+import org.apache.tika.parser.txt.CharsetDetector;
 
 public final class AffiliationsScraper {
 
     public static final String NUMBER_OF_AFFILIATIONS_MESSAGE =
-        "Provided affiliations file contains following number of affiliations {}";
-    public static final String TYPE_TO_APPLY_ON_MESSAGE = "Affiliations will be applied on following types {}";
+        "Provided affiliations file contains following number of affiliations: ";
+    public static final String TYPE_TO_APPLY_ON_MESSAGE = "Affiliations will be applied on following types: ";
+    private static final ColoredLogger logger = ColoredLogger.create(AffiliationsScraper.class);
     public static final String LINE_BREAK = "\n";
     public static final String REGEX_COLON = ";";
     public static final int ROW_WITH_TYPES = 0;
+    public static final String COULD_NOT_READ_AFFILIATIONS_MESSAGE = "Could not read affiliations file, affiliations will not be applied!";
+    public static final String COULD_NOT_READ_AFFILIATIONS_FILE_MESSAGE = "Could not read affiliations file!";
 
     public static AffiliationType getAffiliations(File file) {
         try {
-            var string = Files.readString(file.toPath());
-            var affiliations = convertStringToAffiliations(string);
-            var types = Arrays.asList(string.split(LINE_BREAK)[0].split(REGEX_COLON));
-            var logger = LoggerFactory.getLogger(AffiliationsScraper.class);
-            logger.info(NUMBER_OF_AFFILIATIONS_MESSAGE, affiliations.size());
-            logger.info(TYPE_TO_APPLY_ON_MESSAGE, types.toArray());
-            return new AffiliationType(affiliations, types);
+            if (file.exists()) {
+                var string = readAsString(file);
+                var affiliations = convertStringToAffiliations(string);
+                var types = Arrays.asList(string.split(LINE_BREAK)[0].split(REGEX_COLON));
+                logger.info(NUMBER_OF_AFFILIATIONS_MESSAGE + affiliations.size());
+                logger.info(TYPE_TO_APPLY_ON_MESSAGE + Arrays.toString(types.toArray()));
+                return new AffiliationType(affiliations, types);
+            } else {
+                return new AffiliationType(Map.of(), List.of());
+            }
         } catch (Exception e) {
-            return new AffiliationType(Map.of(), List.of());
+            logger.error(COULD_NOT_READ_AFFILIATIONS_MESSAGE);
+            logger.error("Exception" + e);
+            throw new RuntimeException(COULD_NOT_READ_AFFILIATIONS_FILE_MESSAGE);
         }
+    }
+
+    private static String readAsString(File file) throws IOException {
+        byte[] fileContent = Files.readAllBytes(file.toPath());
+        var detector = new CharsetDetector();
+        detector.setText(fileContent);
+        var match = detector.detect();
+        return new String(fileContent, match.getName());
     }
 
     private static Map<String, Affiliation> convertStringToAffiliations(String string) {

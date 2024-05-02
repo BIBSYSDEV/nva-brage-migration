@@ -84,6 +84,7 @@ dependencies {
 
     implementation 'org.apache.poi:poi:5.2.2'
     implementation 'org.apache.poi:poi-ooxml:5.2.2'
+    implementation 'org.apache.any23:apache-any23-core:2.7'
 }
 
 compileJava {
