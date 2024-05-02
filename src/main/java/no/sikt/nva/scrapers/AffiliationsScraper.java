@@ -11,8 +11,6 @@ import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.aws.ColoredLogger;
 import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import org.apache.tika.parser.txt.CharsetDetector;
-import org.apache.tika.parser.txt.CharsetMatch;
-import org.jetbrains.annotations.NotNull;
 
 public final class AffiliationsScraper {
 
