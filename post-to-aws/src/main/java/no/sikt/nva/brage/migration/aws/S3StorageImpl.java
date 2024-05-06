@@ -90,6 +90,7 @@ public class S3StorageImpl implements S3Storage {
     @Override
     public void storeProcessedCollections(String succeededRecordsFile, String[] collections) {
         var previouslyProceededRecords = getPreviouslyProceededRecords(succeededRecordsFile);
+        logger.info("Previously proceeded records: " + previouslyProceededRecords.size());
         var successfullyProcessed = new ArrayList<Record>();
         try {
             var records = getRecords(collections);
@@ -111,8 +112,8 @@ public class S3StorageImpl implements S3Storage {
         }
     }
 
-    private List<Record> getRecords(String[] collections) throws IOException {
-        var collectionFiles = getCollections(stripZipBundlesToCollections(collections));
+    private List<Record> getRecords(String... collection) throws IOException {
+        var collectionFiles = getCollections(stripZipBundlesToCollections(collection));
         var listOfRecordsCollections = getRecordsJsonFiles(collectionFiles);
         var records = extractRecords(listOfRecordsCollections);
         return records;
