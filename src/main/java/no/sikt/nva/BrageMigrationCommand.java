@@ -135,6 +135,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
     @Option(names = {"-s", "--samlingsfil"}, description = "Samlingsfilnavn")
     private String collectionFileName;
 
+    @Option(names = {"-p", "--proceeded-records"}, description = "File with successfully proceeded Records from last "
+                                                                 + "import that have failed")
+    private String proceededRecordsFile;
+
     private RecordStorage recordStorage;
 
     private final OnlineEmbargoChecker onlineEmbargoChecker;
@@ -196,7 +200,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
             var inputDirectory = generateInputDirectory();
             var outputDirectory = generateOutputDirectory();
             if (writeProcessedImportToAws) {
-                pushExistingResourcesToNva(readZipFileNamesFromCollectionFile(inputDirectory, collectionFileName));
+                pushExistingResourcesToNva(readZipFileNamesFromCollectionFile(inputDirectory, collectionFileName), proceededRecordsFile);
             } else {
                 Map<String, List<Embargo>> embargoes;
                 if (isNull(zipFiles)) {
@@ -398,10 +402,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     @SuppressWarnings("PMD.UseVarargs")
-    private void pushExistingResourcesToNva(String[] collections) {
+    private void pushExistingResourcesToNva(String[] collections, String proceededRecordsFile) {
         S3Storage storage = new S3StorageImpl(s3Client, userSpecifiedOutputDirectory,
                                               customer, awsEnvironment.getValue());
-        storage.storeProcessedCollections(collections);
+        storage.storeProcessedCollections(proceededRecordsFile, collections);
     }
 
     private void pushToNva(List<BrageProcessor> brageProcessors) {

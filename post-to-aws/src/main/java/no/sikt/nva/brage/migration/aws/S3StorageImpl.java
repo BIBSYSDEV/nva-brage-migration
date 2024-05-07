@@ -1,6 +1,7 @@
 package no.sikt.nva.brage.migration.aws;
 
 import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
 import static nva.commons.core.attempt.Try.attempt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,14 +28,16 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+@SuppressWarnings("PMD.GodClass")
 public class S3StorageImpl implements S3Storage {
 
     public static final String DEFAULT_ERROR_FILENAME = "%s-application-error.log";
     public static final String DEFAULT_WARNING_FILENAME = "%s-application-warn.log";
     public static final String DEFAULT_INFO_FILENAME = "%s-application-info.log";
-    public static final String COULD_NOT_WRITE_RECORD_MESSAGE = "Could not write files to s3 for: ";
+    public static final String COULD_NOT_WRITE_RECORD_MESSAGE = "Could not write files to s3 for resource ";
     public static final String COULD_NOT_WRITE_LOGS_MESSAGE = "Could not write logs to s3: ";
     public static final String JSON_STRING = ".json";
+    public static final String SUCCESSFULLY_PROCEEDED_FILE_NAME = "successfully_proceeded_" + randomUUID() + ".json";
     public static final String APPLICATION_JSON = "application/json";
     public static final String PATH_DELIMITER = "/";
     public static final String EXPERIMENTAL_BUCKET_NAME = "anette-kir-brage-migration-experiment";
@@ -67,7 +71,10 @@ public class S3StorageImpl implements S3Storage {
             writeRecordToS3(record);
             logger.info(record.getId() + " stored to aws");
         } catch (Exception e) {
-            logger.error(COULD_NOT_WRITE_RECORD_MESSAGE + record.getBrageLocation() + " " + e);
+            logger.error(COULD_NOT_WRITE_RECORD_MESSAGE + "\n"
+                         + "located at: " + record.getBrageLocation() + "\n"
+                         + "with handle: " + record.getId());
+            throw new RuntimeException("Could not process record to aws!");
         }
     }
 
@@ -81,17 +88,50 @@ public class S3StorageImpl implements S3Storage {
     }
 
     @Override
-    public void storeProcessedCollections(String[] collections) {
+    public void storeProcessedCollections(String succeededRecordsFile, String[] collections) {
+        var previouslyProceededRecords = getPreviouslyProceededRecords(succeededRecordsFile);
+        logger.info("Previously proceeded records: " + previouslyProceededRecords.size());
+        var successfullyProcessed = new ArrayList<Record>();
         try {
-            var collectionFiles = getCollections(stripZipBundlesToCollections(collections));
-            var listOfRecordsCollections = getRecordsJsonFiles(collectionFiles);
-            var records = extractRecords(listOfRecordsCollections);
-            records.forEach(this::storeRecord);
-            logSuccessfullyProcessedRecords(records);
+            var records = getRecords(collections);
+            records.removeAll(previouslyProceededRecords);
+            for (Record record : records) {
+                storeRecord(record);
+                successfullyProcessed.add(record);
+            }
+            logSuccessfullyProcessedRecords(successfullyProcessed);
             writeLogsToS3(customer);
         } catch (Exception e) {
             logger.error(PROBLEM_PUSHING_PROCESSED_RECORDS_TO_S3 + e);
+            try {
+                Files.write(Path.of(SUCCESSFULLY_PROCEEDED_FILE_NAME), JsonUtils.dtoObjectMapper.writeValueAsBytes(successfullyProcessed));
+                logger.info("Successfully proceeded records has been written to file: " + SUCCESSFULLY_PROCEEDED_FILE_NAME);
+            } catch (IOException ioException) {
+                logger.error("Failed to write successfully processed records to a file" + ioException);
+            }
         }
+    }
+
+    private List<Record> getRecords(String... collection) throws IOException {
+        var collectionFiles = getCollections(stripZipBundlesToCollections(collection));
+        var listOfRecordsCollections = getRecordsJsonFiles(collectionFiles);
+        var records = extractRecords(listOfRecordsCollections);
+        return records;
+    }
+
+    private static List<Record> getPreviouslyProceededRecords(String succeededRecordsFile) {
+        if (nonNull(succeededRecordsFile)) {
+            var path = Paths.get(succeededRecordsFile);
+            if (Files.exists(path)) {
+                try {
+                    return Arrays.asList(JsonUtils.dtoObjectMapper.readValue(Files.readAllBytes(path),
+                                                                             Record[].class));
+                } catch (IOException e) {
+                    logger.error("Failed to read successfully processed records from a file" + e);
+                }
+            }
+        }
+        return List.of();
     }
 
     private static void logSuccessfullyProcessedRecords(List<Record> records) {

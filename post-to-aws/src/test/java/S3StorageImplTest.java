@@ -1,4 +1,3 @@
-import static no.sikt.nva.brage.migration.aws.S3StorageImpl.COULD_NOT_WRITE_RECORD_MESSAGE;
 import static no.sikt.nva.brage.migration.aws.S3StorageImpl.DEFAULT_ERROR_FILENAME;
 import static no.sikt.nva.brage.migration.aws.S3StorageImpl.DEFAULT_INFO_FILENAME;
 import static no.sikt.nva.brage.migration.aws.S3StorageImpl.DEFAULT_WARNING_FILENAME;
@@ -7,10 +6,13 @@ import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,6 @@ import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.unit.nva.stubs.FakeS3Client;
 import nva.commons.core.paths.UnixPath;
 import nva.commons.core.paths.UriWrapper;
-import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
@@ -36,6 +37,7 @@ import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartResponse;
@@ -88,13 +90,10 @@ public class S3StorageImplTest {
 
     @Test
     void shouldThrowExceptionWhenRecordIsNull() {
-        var appender = LogUtils.getTestingAppenderForRootLogger();
         var nullRecord = createNullRecord();
         var s3Client = new FakeS3Client();
         var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
-        storageClient.storeRecord(nullRecord);
-
-        assertThat(appender.getMessages(), containsString(COULD_NOT_WRITE_RECORD_MESSAGE));
+        assertThrows(RuntimeException.class, () -> storageClient.storeRecord(nullRecord));
     }
 
     @Test
@@ -104,7 +103,7 @@ public class S3StorageImplTest {
         var storageClient = new S3StorageImpl(s3Client, "src/test/resources/NVE/", CUSTOMER,
                                               EXPERIMENTAL_BUCKET_SETTTING);
         String[] bundles = {"2833909"};
-        storageClient.storeProcessedCollections(bundles);
+        storageClient.storeProcessedCollections(null,bundles);
         var actualFileKeyFromBucket =
             s3Client.listObjects(createListObjectsRequest(UnixPath.fromString(expectedKeyFromBucket)))
                 .contents()
@@ -138,6 +137,18 @@ public class S3StorageImplTest {
         var expectedKey = joinByPathDelimiter(CUSTOMER, record.getBrageLocation(), uniqueHandlePath + ".json");
         var object = s3Client.getObject(getObjectRequest(expectedKey));
         assertThat(object, is(notNullValue()));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCouldNotProcessRecordToAws() {
+        var s3Client = mock(FakeMultipartUploadS3Client.class);
+        var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
+        when(s3Client.putObject((PutObjectRequest) any(), (RequestBody) any())).thenThrow(new RuntimeException());
+        var record = new Record();
+        record.setBrageLocation(randomString() + "/" + randomString());
+        var uniqueHandlePath = randomString();
+        record.setId(UriWrapper.fromUri(randomUri()).addChild(uniqueHandlePath).getUri());
+        assertThrows(RuntimeException.class, () -> storageClient.storeRecord(record));
     }
 
     private static GetObjectRequest getObjectRequest(String expectedKey) {
@@ -177,7 +188,7 @@ public class S3StorageImplTest {
         return new Record();
     }
 
-    private static final class FakeMultipartUploadS3Client extends FakeS3Client {
+    private static class FakeMultipartUploadS3Client extends FakeS3Client {
 
         private final List<String> keys;
 
