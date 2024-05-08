@@ -1083,6 +1083,17 @@ public class DublinCoreScraperTest {
         assertThat(record.getPublication().getJournal(), is(notNullValue()));
     }
 
+    @Test
+    void shouldScrapeProjectForSintef() {
+        var type = toDcType("Journal article");
+        var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, "Norges forskningsråd: 309622");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "sintef");
+        var project = record.getProjects().iterator().next();
+        assertThat(project.getIdentifier(), is(equalTo("309622")));
+        assertThat(project.getName(), is(equalTo("Norges forskningsråd")));
+    }
+
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);
     }

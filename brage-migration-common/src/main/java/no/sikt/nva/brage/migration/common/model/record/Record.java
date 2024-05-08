@@ -42,6 +42,7 @@ public class Record {
     private Set<URI> subjects;
     private String subjectCode;
     private String accessCode;
+    private Set<Project> projects;
 
     public Record() {
     }
@@ -92,6 +93,14 @@ public class Record {
 
     public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
+
+    public Set<Project> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(Set<Project> projects) {
+        this.projects = projects;
     }
 
     public String getSubjectCode() {
