@@ -710,8 +710,8 @@ public class DublinCoreScraper {
             return dublinCore.getDcValues().stream()
                        .filter(DcValue::isProjectRelation)
                        .map(DcValue::scrapeValueAndSetToScraped)
-                       .filter(Objects::nonNull)
                        .map(Project::fromBrageValue)
+                       .filter(Objects::nonNull)
                        .collect(Collectors.toSet());
         } else {
             return Set.of();
