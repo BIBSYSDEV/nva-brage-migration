@@ -1,6 +1,6 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
-public class Project {
+public final class Project {
 
     private final String identifier;
     private final String name;
