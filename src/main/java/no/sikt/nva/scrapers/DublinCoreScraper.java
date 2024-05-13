@@ -31,6 +31,7 @@ import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Journal;
+import no.sikt.nva.brage.migration.common.model.record.Project;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
 import no.sikt.nva.brage.migration.common.model.record.PublishedDate;
@@ -700,7 +701,21 @@ public class DublinCoreScraper {
         record.setPart(extractHasPart(dublinCore));
         record.setSubjects(extractSubjects(dublinCore));
         record.setAccessCode(extractAccessCode(dublinCore));
+        record.setProjects(extractProjects(dublinCore, customer));
         return record;
+    }
+
+    private Set<Project> extractProjects(DublinCore dublinCore, String customer) {
+        if (CustomerMapper.SINTEF.equals(customer)) {
+            return dublinCore.getDcValues().stream()
+                       .filter(DcValue::isProjectRelation)
+                       .map(DcValue::scrapeValueAndSetToScraped)
+                       .map(Project::fromBrageValue)
+                       .filter(Objects::nonNull)
+                       .collect(Collectors.toSet());
+        } else {
+            return Set.of();
+        }
     }
 
     private String extractAccessCode(DublinCore dublinCore) {

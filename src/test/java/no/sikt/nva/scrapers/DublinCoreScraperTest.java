@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -1081,6 +1082,26 @@ public class DublinCoreScraperTest {
 
         assertThat(appender.getMessages(), not(containsString(Error.MISSING_DC_ISSN_AND_DC_JOURNAL.toString())));
         assertThat(record.getPublication().getJournal(), is(notNullValue()));
+    }
+
+    @Test
+    void shouldScrapeProjectForSintef() {
+        var type = toDcType("Journal article");
+        var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, "Norges forskningsråd: 309622");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "sintef");
+        var project = record.getProjects().iterator().next();
+        assertThat(project.getIdentifier(), is(equalTo("309622")));
+        assertThat(project.getName(), is(equalTo("Norges forskningsråd")));
+    }
+
+    @Test
+    void shouldNotFailWhenScrapingInvalidProjectForSintef() {
+        var type = toDcType("Journal article");
+        var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, randomString());
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "sintef");
+       assertThat(record.getProjects(), is(emptyIterable()));
     }
 
     private static DcValue toDcType(String t) {

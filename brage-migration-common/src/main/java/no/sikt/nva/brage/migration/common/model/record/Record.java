@@ -42,6 +42,7 @@ public class Record {
     private Set<URI> subjects;
     private String subjectCode;
     private String accessCode;
+    private Set<Project> projects;
 
     public Record() {
     }
@@ -77,7 +78,8 @@ public class Record {
                && Objects.equals(getLink(), record.getLink())
                && Objects.equals(getSubjects(), record.getSubjects())
                && Objects.equals(getSubjectCode(), record.getSubjectCode())
-               && Objects.equals(getAccessCode(), record.getAccessCode());
+               && Objects.equals(getAccessCode(), record.getAccessCode())
+               && Objects.equals(getProjects(), record.getProjects());
     }
 
     @JacocoGenerated
@@ -87,11 +89,20 @@ public class Record {
                             getPublisherAuthority(), getRightsholder(), getSpatialCoverage(), getPartOf(), getPart(),
                             getPublication(), getContentBundle(), getPublishedDate(), getCristinId(),
                             getBrageLocation(),
-                            getErrors(), getWarnings(), getLink(), getSubjects(), getSubjectCode(), getAccessCode());
+                            getErrors(), getWarnings(), getLink(), getSubjects(), getSubjectCode(), getAccessCode(),
+                            getProjects());
     }
 
     public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
+    }
+
+    public Set<Project> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(Set<Project> projects) {
+        this.projects = projects;
     }
 
     public String getSubjectCode() {
