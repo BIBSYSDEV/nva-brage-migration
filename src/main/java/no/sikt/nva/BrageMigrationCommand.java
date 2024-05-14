@@ -436,12 +436,17 @@ public class BrageMigrationCommand implements Callable<Integer> {
     private Map<String, List<Embargo>> getEmbargoes(String directory) {
         var embargoFile = new File(directory + DEFAULT_EMBARGO_FILE_NAME);
 
-        if (!embargoFile.exists()) {
+        if (!embargoFile.exists() && customerIsNotFromBrageArchiveWithoutEmbargoFile()) {
             var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
             logger.error("Embargo File does not exist: " + embargoFile.getAbsolutePath());
             throw new RuntimeException("Embargo file does not exists");
         }
         return EmbargoScraper.getEmbargoes(embargoFile);
+    }
+
+    private boolean customerIsNotFromBrageArchiveWithoutEmbargoFile() {
+        var archivesWithoutEmbargoFile = List.of("ffi", "uit", "uio");
+        return archivesWithoutEmbargoFile.stream().noneMatch(archive -> archive.equalsIgnoreCase(customer));
     }
 
     private Map<String, Contributor> getContributors(String directory) {

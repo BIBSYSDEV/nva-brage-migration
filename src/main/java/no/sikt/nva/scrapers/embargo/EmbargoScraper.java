@@ -42,7 +42,6 @@ public final class EmbargoScraper {
                     logger.error(EMPTY_EMBARGO_FILE_MESSAGE);
                 } else {
                     logger.error(ERROR_OCCURRED_EXTRACTING_EMBARGOES);
-                    throw new RuntimeException(e);
                 }
             }
             return new HashMap<>();
