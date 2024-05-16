@@ -1,8 +1,10 @@
 package no.sikt.nva.scrapers.embargo;
 
 import static no.sikt.nva.scrapers.embargo.CustomerAddressResolver.IGNORED_CUSTOMERS;
+import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
@@ -14,7 +16,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Set;
 import nva.commons.core.JacocoGenerated;
-import nva.commons.core.paths.UriWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,11 +99,14 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
         var handleSplitted = handle.split("/");
         var handlePrefix = handleSplitted[handleSplitted.length - 2];
         var handlePostfix = handleSplitted[handleSplitted.length - 1];
-        return UriWrapper.fromUri(customerAddress)
-                   .addChild(handlePrefix)
-                   .addChild(handlePostfix)
-                   .addChild(filename)
-                   .getUri();
+        var uriString = customerAddress + handlePrefix + "/" + handlePostfix + "/" + pathEncodeFilename(filename);
+        return attempt(() -> URI.create(uriString)).orElseThrow();
+    }
+
+    private String pathEncodeFilename(String filename) {
+        return attempt(()-> URLEncoder.encode(filename, StandardCharsets.UTF_8))
+                   .map(withUnsupportedPlusCharacter -> withUnsupportedPlusCharacter.replaceAll("\\+", "%20"))
+                   .orElseThrow();
     }
 
     private boolean foundLockedFileOnline(HttpRequest request, URI fullUri, int retriesLeft) {
