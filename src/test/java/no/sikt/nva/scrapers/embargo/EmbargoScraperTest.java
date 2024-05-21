@@ -12,8 +12,11 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -22,6 +25,7 @@ import java.net.http.HttpClient.Version;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandler;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -43,7 +47,9 @@ import nva.commons.core.paths.UriWrapper;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentMatcher;
 
 public class EmbargoScraperTest {
 
@@ -263,6 +269,33 @@ public class EmbargoScraperTest {
         assertThat(recordWithEmbargoOnFile.getContentBundle().getContentFiles().get(0).getEmbargoDate(),
                    is(nullValue()));
 
+    }
+
+    @Test
+    void shouldUrlEncodeFileNameParameter() throws IOException, InterruptedException {
+        var someHandle = "https://hdl.handle.net/11250/2736303";
+        var filename = "NF_rapport 11_2018 Redusere marint avfall fra fiskeflåten (REMAFISK).pdf";
+        var record = new Record();
+        var embargos = new HashMap<String, List<Embargo>>();
+        record.setId(UriWrapper.fromUri(someHandle).getUri());
+        record.setContentBundle(new ResourceContent(List.of(new ContentFile(filename, BundleType.ORIGINAL,
+                                                                            randomString(),
+                                                                            UUID.randomUUID(),
+                                                                            License.fromBrageLicense(
+                                                                                BrageLicense.CC_BY),
+                                                                            null))));
+        var httpClient = mock(HttpClient.class);
+        var onlineEmbargoChecker = new OnlineEmbargoCheckerImpl(httpClient);
+        onlineEmbargoChecker.calculateCustomerAddress("nforsk");
+        onlineEmbargoChecker.setOutputDirectory("someoutputpath");
+        mock200Response(httpClient);
+        EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
+                                                             onlineEmbargoChecker);
+        verify(httpClient, times(1)).send(argThat(matchesExpectedUrl("NF_rapport%2011_2018%20Redusere%20marint%20avfall%20fra%20fiskefla%CC%8Aten%20%28REMAFISK%29.pdf")), any(BodyHandler.class));
+    }
+
+    private ArgumentMatcher<HttpRequest> matchesExpectedUrl(String url) {
+        return argument -> argument.uri().toString().contains(url);
     }
 
     private void mockErrorResponse(HttpClient httpClient, int statusCode) throws IOException, InterruptedException {
