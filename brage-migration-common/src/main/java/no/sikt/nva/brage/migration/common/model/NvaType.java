@@ -2,6 +2,7 @@ package no.sikt.nva.brage.migration.common.model;
 
 public enum NvaType {
     BOOK("Book"),
+    BOOK_OF_ABSTRACTS("Book of abstracts"),
     CHAPTER("Chapter"),
     DATASET("DataSet"),
     JOURNAL_ARTICLE("JournalArticle"),

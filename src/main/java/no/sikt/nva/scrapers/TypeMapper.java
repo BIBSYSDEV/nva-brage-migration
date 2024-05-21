@@ -34,7 +34,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.BOOK), NvaType.BOOK),
         entry(Set.of(BrageType.NON_FICTION_MONOGRAPH), NvaType.BOOK),
         entry(Set.of(BrageType.ANTHOLOGY), NvaType.ANTHOLOGY),
-        entry(Set.of(BrageType.BOOK_OF_ABSTRACTS), NvaType.BOOK),
+        entry(Set.of(BrageType.BOOK_OF_ABSTRACTS), NvaType.BOOK_OF_ABSTRACTS),
         entry(Set.of(BrageType.CHAPTER), NvaType.CHAPTER),
         entry(Set.of(BrageType.REPORT_CHAPTER), NvaType.CHAPTER),
         entry(Set.of(BrageType.JOURNAL_ARTICLE), NvaType.JOURNAL_ARTICLE),
