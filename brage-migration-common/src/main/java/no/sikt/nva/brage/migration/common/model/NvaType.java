@@ -35,6 +35,7 @@ public enum NvaType {
     SCIENTIFIC_ARTICLE("Vitenskapelig artikkel"),
     TEXTBOOK("Textbook"),
     CONFERENCE_REPORT("ConferenceReport"),
+    CONFERENCE_LECTURE("ConferenceLecture"),
     FILM("Film"),
     EXHIBITION_CATALOGUE("Exhibition catalogue"),
     LITERARY_ARTS("Literary arts"),
