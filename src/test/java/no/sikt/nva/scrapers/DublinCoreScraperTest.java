@@ -519,13 +519,13 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldLogUnknownVersionsAndApplyNullValue() {
+    void shouldLogUnknownVersionsAndApplyPublishedValue() {
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "submittedVersion");
         var typeDcValue = toDcType("Others");
         var brageLocation = new BrageLocation(null);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, versionDcValue));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
-        assertThat(record.getPublisherAuthority().getNva(), is(nullValue()));
+        assertThat(record.getPublisherAuthority().getNva(), is(equalTo(PublisherVersion.PUBLISHED_VERSION)));
     }
 
     @Test

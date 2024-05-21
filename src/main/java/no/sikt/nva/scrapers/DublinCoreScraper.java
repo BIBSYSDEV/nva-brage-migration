@@ -653,7 +653,7 @@ public class DublinCoreScraper {
             logger.error(new ErrorDetails(MULTIPLE_DC_VERSION_VALUES, versions)
                          + StringUtils.SPACE
                          + brageLocation.getOriginInformation());
-            return new PublisherAuthority(versions, null);
+            return new PublisherAuthority(versions, PublisherVersion.PUBLISHED_VERSION);
         }
     }
 
@@ -664,7 +664,7 @@ public class DublinCoreScraper {
         } else if (ACCEPTED_VERSION_STRING.equals(version)) {
             return new PublisherAuthority(Collections.singleton(version), PublisherVersion.ACCEPTED_VERSION);
         } else {
-            return new PublisherAuthority(Collections.singleton(version), null);
+            return new PublisherAuthority(Collections.singleton(version), PublisherVersion.PUBLISHED_VERSION);
         }
     }
 
