@@ -2,9 +2,11 @@ package no.sikt.nva.brage.migration.common.model;
 
 public enum NvaType {
     BOOK("Book"),
+    BOOK_OF_ABSTRACTS("Book of abstracts"),
     CHAPTER("Chapter"),
     DATASET("DataSet"),
     JOURNAL_ARTICLE("JournalArticle"),
+    JOURNAL_ISSUE("JournalIssue"),
     PROFESSIONAL_ARTICLE("Professional article"),
     REPORT("Other report"),
     BACHELOR_THESIS("DegreeBachelor"),
@@ -34,6 +36,7 @@ public enum NvaType {
     SCIENTIFIC_ARTICLE("Vitenskapelig artikkel"),
     TEXTBOOK("Textbook"),
     CONFERENCE_REPORT("ConferenceReport"),
+    CONFERENCE_LECTURE("ConferenceLecture"),
     FILM("Film"),
     EXHIBITION_CATALOGUE("Exhibition catalogue"),
     LITERARY_ARTS("Literary arts"),
