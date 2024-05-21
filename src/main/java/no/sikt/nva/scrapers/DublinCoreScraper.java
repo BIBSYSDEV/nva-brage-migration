@@ -6,9 +6,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIP
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JOURNALS;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PUBLISHERS;
 import static no.sikt.nva.scrapers.CustomerMapper.FFI;
-import static no.sikt.nva.validators.DublinCoreValidator.ACCEPTED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
-import static no.sikt.nva.validators.DublinCoreValidator.PUBLISHED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreErrors;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import static nva.commons.core.attempt.Try.attempt;
@@ -58,7 +56,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("PMD.GodClass")
 public class DublinCoreScraper {
 
-    public static final String SUBMITTED_VERSION = "submittedVersion";
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "This field will not be migrated\n";
     public static final String NEW_LINE_DELIMITER = "\n";
     public static final String SCRAPING_HAS_FAILED = "Scraping has failed: ";
@@ -631,7 +628,8 @@ public class DublinCoreScraper {
             return mapSingleVersion(uniqueVersions);
         }
         if (containsMultipleValues(uniqueVersions)) {
-            return mapMultipleVersions(versions, brageLocation);
+            var versionSet = versions.stream().map(v -> v.toLowerCase(Locale.ROOT)).collect(Collectors.toSet());
+            return mapMultipleVersions(versionSet, brageLocation);
         }
         return new PublisherAuthority(versions, null);
     }
@@ -641,14 +639,15 @@ public class DublinCoreScraper {
     }
 
     private static PublisherAuthority mapMultipleVersions(Set<String> versions, BrageLocation brageLocation) {
-        if (versions.contains(PUBLISHED_VERSION_STRING)) {
-            return new PublisherAuthority(Collections.singleton(PUBLISHED_VERSION_STRING), PublisherVersion.PUBLISHED_VERSION);
+        if (versions.contains(PublisherVersion.PUBLISHED_VERSION.getValue().toLowerCase(Locale.ROOT))) {
+            return new PublisherAuthority(Collections.singleton(PublisherVersion.PUBLISHED_VERSION.getValue()), PublisherVersion.PUBLISHED_VERSION);
         }
-        if (versions.contains(ACCEPTED_VERSION_STRING)) {
-            return new PublisherAuthority(Collections.singleton(ACCEPTED_VERSION_STRING), PublisherVersion.ACCEPTED_VERSION);
+        if (versions.contains(PublisherVersion.ACCEPTED_VERSION.getValue().toLowerCase(Locale.ROOT))) {
+            return new PublisherAuthority(Collections.singleton(PublisherVersion.ACCEPTED_VERSION.getValue()),
+                                          PublisherVersion.ACCEPTED_VERSION);
         }
-        if (versions.contains(SUBMITTED_VERSION)) {
-            return new PublisherAuthority(Collections.singleton(SUBMITTED_VERSION), PublisherVersion.ACCEPTED_VERSION);
+        if (versions.contains(PublisherVersion.SUBMITTED_VERSION.getValue().toLowerCase(Locale.ROOT))) {
+            return new PublisherAuthority(Collections.singleton(PublisherVersion.SUBMITTED_VERSION.getValue()), PublisherVersion.ACCEPTED_VERSION);
         } else {
             logger.error(new ErrorDetails(MULTIPLE_DC_VERSION_VALUES, versions)
                          + StringUtils.SPACE
@@ -659,9 +658,9 @@ public class DublinCoreScraper {
 
     private static PublisherAuthority mapSingleVersion(Set<String> versions) {
         var version = versions.iterator().next();
-        if (PUBLISHED_VERSION_STRING.equals(version)) {
+        if (PublisherVersion.PUBLISHED_VERSION.getValue().equalsIgnoreCase(version)) {
             return new PublisherAuthority(Collections.singleton(version), PublisherVersion.PUBLISHED_VERSION);
-        } else if (ACCEPTED_VERSION_STRING.equals(version)) {
+        } else if (PublisherVersion.ACCEPTED_VERSION.getValue().equalsIgnoreCase(version)) {
             return new PublisherAuthority(Collections.singleton(version), PublisherVersion.ACCEPTED_VERSION);
         } else {
             return new PublisherAuthority(Collections.singleton(version), null);

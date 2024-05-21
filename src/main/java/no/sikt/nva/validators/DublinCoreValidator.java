@@ -49,8 +49,6 @@ import org.apache.commons.validator.routines.ISSNValidator;
 @SuppressWarnings("PMD.GodClass")
 public final class DublinCoreValidator {
 
-    public static final String PUBLISHED_VERSION_STRING = "publishedVersion";
-    public static final String ACCEPTED_VERSION_STRING = "acceptedVersion";
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
     public static final String YEAR_PERIOD_REGEX = "[0-9]{4}-[0-9]{4}";
     public static final String REGEX_BRACKETS_AND_DOT = "(\\.)|(\\[)|(\\])";
