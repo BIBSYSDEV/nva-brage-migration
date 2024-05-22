@@ -90,10 +90,6 @@ public class DcValue {
         return scraped;
     }
 
-    public void setScraped(boolean scraped){
-        this.scraped = scraped;
-    }
-
     public String scrapeValueAndSetToScraped() {
         scraped = true;
         return value;
@@ -239,11 +235,6 @@ public class DcValue {
     public boolean isIllustrator() {
         return Element.CONTRIBUTOR.equals(this.element) && Qualifier.ILLUSTRATOR.equals(this.qualifier)
                || Element.CREATOR.equals(this.element) && Qualifier.ILLUSTRATOR.equals(this.qualifier);
-    }
-
-    public boolean isOtherContributor() {
-        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.OTHER.equals(this.qualifier)
-               || Element.CREATOR.equals(this.element) && Qualifier.OTHER.equals(this.qualifier);
     }
 
     public boolean isPartOfSeries() {

@@ -306,6 +306,7 @@ public final class EntityDescriptionExtractor {
         return publicationInstance;
     }
 
+    @SuppressWarnings("PMD.NPathComplexity")
     private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
         Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped(), null);
         if (isNull(identity.getName()) || identity.getName().isEmpty()) {
@@ -324,7 +325,7 @@ public final class EntityDescriptionExtractor {
         if (dcValue.isIllustrator()) {
             return Optional.of(new Contributor(identity, ILLUSTRATOR, brageRole, Set.of()));
         }
-        if (dcValue.getQualifier() == ORCID) {
+        if (dcValue.getQualifier() == ORCID || dcValue.isCreator() && dcValue.getQualifier() == NONE) {
             return Optional.empty();
         }
         return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole, Set.of()));
