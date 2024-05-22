@@ -237,11 +237,6 @@ public class DcValue {
                || Element.CREATOR.equals(this.element) && Qualifier.ILLUSTRATOR.equals(this.qualifier);
     }
 
-    public boolean isOtherContributor() {
-        return Element.CONTRIBUTOR.equals(this.element) && Qualifier.OTHER.equals(this.qualifier)
-               || Element.CREATOR.equals(this.element) && Qualifier.OTHER.equals(this.qualifier);
-    }
-
     public boolean isPartOfSeries() {
         return Element.RELATION.equals(this.element) && Qualifier.IS_PART_OF_SERIES.equals(this.qualifier);
     }

@@ -2,13 +2,10 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JOURNALS;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PUBLISHERS;
 import static no.sikt.nva.scrapers.CustomerMapper.FFI;
-import static no.sikt.nva.validators.DublinCoreValidator.ACCEPTED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
-import static no.sikt.nva.validators.DublinCoreValidator.PUBLISHED_VERSION_STRING;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreErrors;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import static nva.commons.core.attempt.Try.attempt;
@@ -16,6 +13,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +29,7 @@ import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Journal;
+import no.sikt.nva.brage.migration.common.model.record.PartOfSeries;
 import no.sikt.nva.brage.migration.common.model.record.Project;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
@@ -58,7 +57,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("PMD.GodClass")
 public class DublinCoreScraper {
 
-    public static final String SUBMITTED_VERSION = "submittedVersion";
     public static final String FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE = "This field will not be migrated\n";
     public static final String NEW_LINE_DELIMITER = "\n";
     public static final String SCRAPING_HAS_FAILED = "Scraping has failed: ";
@@ -69,6 +67,7 @@ public class DublinCoreScraper {
     public static final String EMPTY_SPACES_LINEBREAKS_REGEX = "(\n)|(\b)|(\u200b)|(\t)|(\")";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     public static final String DOT = "\\.";
+    public static final String CONTAINS_NUBMER_PATTERN = ".*\\d+.*";
     private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
@@ -235,7 +234,7 @@ public class DublinCoreScraper {
 
     }
 
-    public static boolean isSingleton(Set<String> versions) {
+    public static boolean isSingleton(Collection<String> versions) {
         return versions.size() == 1;
     }
 
@@ -544,14 +543,37 @@ public class DublinCoreScraper {
         }
     }
 
-    private static String extractPartOfSeries(DublinCore dublinCore) {
+    private static PartOfSeries extractPartOfSeries(DublinCore dublinCore) {
         var partOfSeriesValues = dublinCore.getDcValues()
                                      .stream()
                                      .filter(DcValue::isPartOfSeries)
                                      .map(DcValue::scrapeValueAndSetToScraped)
                                      .collect(Collectors.toList());
+       return convertListToPartOfSeries(partOfSeriesValues);
+    }
 
-        return partOfSeriesValues.isEmpty() ? new DcValue().scrapeValueAndSetToScraped() : partOfSeriesValues.get(0);
+    private static PartOfSeries convertListToPartOfSeries(List<String> list) {
+        if (isSingleton(list)) {
+            var parts = Arrays.stream(list.get(0).split(";"))
+                            .map(String::trim)
+                            .filter(value -> !value.isEmpty())
+                            .collect(Collectors.toList());
+            return constructPartOfSeries(parts);
+        } else {
+            return constructPartOfSeries(list);
+        }
+    }
+
+    private static PartOfSeries constructPartOfSeries(List<String> list) {
+        var partOfSeries = new PartOfSeries();
+        for (String value : list) {
+            if (value.matches(CONTAINS_NUBMER_PATTERN)) {
+                partOfSeries.setNumber(value);
+            } else {
+                partOfSeries.setName(value);
+            }
+        }
+        return partOfSeries;
     }
 
     private static String extractPartOf(DublinCore dublinCore) {
@@ -616,22 +638,23 @@ public class DublinCoreScraper {
         }
     }
 
-    private static PublisherAuthority extractVersion(DublinCore dublinCore, BrageLocation brageLocation) {
+    private static PublisherAuthority extractVersion(DublinCore dublinCore) {
         var version = dublinCore.getDcValues()
                           .stream()
                           .filter(DcValue::isOneOfTwoPossibleVersions)
                           .map(DcValue::scrapeValueAndSetToScraped)
                           .collect(Collectors.toSet());
-        return mapToNvaVersion(version, brageLocation);
+        return mapToNvaVersion(version);
     }
 
-    private static PublisherAuthority mapToNvaVersion(Set<String> versions, BrageLocation brageLocation) {
+    private static PublisherAuthority mapToNvaVersion(Set<String> versions) {
         var uniqueVersions = new HashSet<>(versions);
         if (isSingleton(uniqueVersions)) {
             return mapSingleVersion(uniqueVersions);
         }
         if (containsMultipleValues(uniqueVersions)) {
-            return mapMultipleVersions(versions, brageLocation);
+            var versionSet = versions.stream().map(v -> v.toLowerCase(Locale.ROOT)).collect(Collectors.toSet());
+            return mapMultipleVersions(versionSet);
         }
         return new PublisherAuthority(versions, null);
     }
@@ -640,28 +663,20 @@ public class DublinCoreScraper {
         return versions.size() >= 2;
     }
 
-    private static PublisherAuthority mapMultipleVersions(Set<String> versions, BrageLocation brageLocation) {
-        if (versions.contains(PUBLISHED_VERSION_STRING)) {
-            return new PublisherAuthority(Collections.singleton(PUBLISHED_VERSION_STRING), PublisherVersion.PUBLISHED_VERSION);
-        }
-        if (versions.contains(ACCEPTED_VERSION_STRING)) {
-            return new PublisherAuthority(Collections.singleton(ACCEPTED_VERSION_STRING), PublisherVersion.ACCEPTED_VERSION);
-        }
-        if (versions.contains(SUBMITTED_VERSION)) {
-            return new PublisherAuthority(Collections.singleton(SUBMITTED_VERSION), PublisherVersion.ACCEPTED_VERSION);
+    private static PublisherAuthority mapMultipleVersions(Set<String> versions) {
+        if (versions.contains(PublisherVersion.ACCEPTED_VERSION.getValue().toLowerCase(Locale.ROOT))) {
+            return new PublisherAuthority(Collections.singleton(PublisherVersion.ACCEPTED_VERSION.getValue()),
+                                          PublisherVersion.ACCEPTED_VERSION);
         } else {
-            logger.error(new ErrorDetails(MULTIPLE_DC_VERSION_VALUES, versions)
-                         + StringUtils.SPACE
-                         + brageLocation.getOriginInformation());
-            return new PublisherAuthority(versions, null);
+            return new PublisherAuthority(Collections.singleton(PublisherVersion.PUBLISHED_VERSION.getValue()), PublisherVersion.PUBLISHED_VERSION);
         }
     }
 
     private static PublisherAuthority mapSingleVersion(Set<String> versions) {
         var version = versions.iterator().next();
-        if (PUBLISHED_VERSION_STRING.equals(version)) {
+        if (PublisherVersion.PUBLISHED_VERSION.getValue().equalsIgnoreCase(version)) {
             return new PublisherAuthority(Collections.singleton(version), PublisherVersion.PUBLISHED_VERSION);
-        } else if (ACCEPTED_VERSION_STRING.equals(version)) {
+        } else if (PublisherVersion.ACCEPTED_VERSION.getValue().equalsIgnoreCase(version)) {
             return new PublisherAuthority(Collections.singleton(version), PublisherVersion.ACCEPTED_VERSION);
         } else {
             return new PublisherAuthority(Collections.singleton(version), null);
@@ -685,7 +700,7 @@ public class DublinCoreScraper {
         record.setId(brageLocation.getHandle());
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore, customer), dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
-        record.setPublisherAuthority(extractVersion(dublinCore, brageLocation));
+        record.setPublisherAuthority(extractVersion(dublinCore));
         record.setDoi(extractDoi(dublinCore));
         record.setLink(extractLink(dublinCore));
         record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore, contributors, customer));
