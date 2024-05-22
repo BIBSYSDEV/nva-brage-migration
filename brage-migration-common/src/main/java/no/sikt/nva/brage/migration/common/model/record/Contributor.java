@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import nva.commons.core.JacocoGenerated;
 
@@ -16,6 +17,7 @@ public class Contributor {
     private Identity identity;
     private String role;
     private String brageRole;
+    private Integer sequence;
 
     @JsonCreator
     public Contributor(@JsonProperty("identity") Identity identity,
@@ -26,6 +28,7 @@ public class Contributor {
         this.role = role;
         this.brageRole = brageRole;
         this.affiliations = affiliations;
+        this.sequence = null;
     }
 
     @JsonProperty("affiliations")
@@ -71,10 +74,18 @@ public class Contributor {
         return name.equals(this.getIdentity().getName());
     }
 
+    public Integer getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(int sequence) {
+        this.sequence = sequence;
+    }
+
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(getAffiliations(), getIdentity(), getRole(), getBrageRole());
+        return Objects.hash(getAffiliations(), getIdentity(), getRole(), getBrageRole(), getSequence());
     }
 
     @JacocoGenerated
@@ -90,6 +101,7 @@ public class Contributor {
         return Objects.equals(getAffiliations(), that.getAffiliations())
                && Objects.equals(getIdentity(), that.getIdentity())
                && Objects.equals(getRole(), that.getRole())
-               && Objects.equals(getBrageRole(), that.getBrageRole());
+               && Objects.equals(getBrageRole(), that.getBrageRole())
+               && Objects.equals(getSequence(), that.getSequence());
     }
 }

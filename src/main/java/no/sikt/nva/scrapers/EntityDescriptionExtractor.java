@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.EntityDescription;
@@ -90,14 +91,20 @@ public final class EntityDescriptionExtractor {
 
     public static Set<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors,
                                                        String customer) {
-        return dublinCore.getDcValues().stream()
+        var contributorList = dublinCore.getDcValues().stream()
                    .filter(EntityDescriptionExtractor::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
                    .map(contributor -> updateRoleBasedOnType(contributor, dublinCore, customer))
                    .map(contributor -> updateContributor(contributor, contributors))
                    .map(EntityDescriptionExtractor::updateNameOrder)
-                   .collect(Collectors.toSet());
+                   .collect(Collectors.toList());
+       return IntStream.range(0, contributorList.size()).mapToObj(i -> {
+                var contributor = contributorList.get(i);
+                contributor.setSequence(i + 1);
+                return contributor;
+            })
+            .collect(Collectors.toSet());
     }
 
     private static boolean isContributor(DcValue dcValue) {
@@ -321,11 +328,9 @@ public final class EntityDescriptionExtractor {
         }
         if (dcValue.isIllustrator()) {
             return Optional.of(new Contributor(identity, ILLUSTRATOR, brageRole, Set.of()));
-        }
-        if (dcValue.isOtherContributor() || dcValue.isContributor() && isNull(dcValue.getQualifier())) {
+        } else {
             return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole, Set.of()));
         }
-        return Optional.empty();
     }
 
     private static Contributor updateContributor(Contributor contributor, Map<String, Contributor> contributors) {

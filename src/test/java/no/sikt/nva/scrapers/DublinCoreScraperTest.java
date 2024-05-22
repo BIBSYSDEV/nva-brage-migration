@@ -37,9 +37,11 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,13 +73,13 @@ public class DublinCoreScraperTest {
     private static final String SOME_CUSTOMER = "nve";
     public static final String METADATA_FS_XML = "metadata_fs.xml";
 
-    private static boolean SHOUL_VALIDATE_ONLINE = false;
+    private static boolean SHOULD_VALIDATE_ONLINE = false;
     private DublinCoreScraper dcScraper;
 
     @BeforeEach
     void init() {
         dcScraper = new DublinCoreScraper(
-            SHOUL_VALIDATE_ONLINE,
+            SHOULD_VALIDATE_ONLINE,
             SHOULD_LOOKUP_IN_CHANNEL_REGISTER,
             Map.of()
         );
@@ -163,8 +165,11 @@ public class DublinCoreScraperTest {
     @Test
     void shouldCreateContributor() {
 
+        var contributor = new Contributor(new Identity("Person Some", null), SUPERVISOR,
+                                                 Qualifier.ADVISOR.getValue(), Set.of());
+        contributor.setSequence(1);
         var expectedContributors = Set.of(
-            new Contributor(new Identity("Person Some", null), SUPERVISOR, Qualifier.ADVISOR.getValue(), Set.of()));
+            contributor);
         var typeDcValue = toDcType("Others");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Some, Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
@@ -175,8 +180,10 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldCreateContributorFromDcElementCreator() {
-        var expectedContributors = Set.of(
-            new Contributor(new Identity("Person Some", null), SUPERVISOR, Qualifier.ADVISOR.getValue(), Set.of()));
+        var contributor = new Contributor(new Identity("Person Some", null), SUPERVISOR,
+                                                  Qualifier.ADVISOR.getValue(), Set.of());
+        contributor.setSequence(1);
+        var expectedContributors = Set.of(contributor);
         var typeDcValue = toDcType("Others");
         var advisorDcValue = new DcValue(Element.CREATOR, Qualifier.ADVISOR, "Some, Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
@@ -186,9 +193,37 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldExtractContributorsInRightOrderAndInjectSequnceNumber() {
+        var dc = DublinCoreFactory.createDublinCoreFromXml(new File(TEST_RESOURCE_PATH + "dc_with_contributors.xml"));
+        var record = dcScraper.validateAndParseDublinCore(dc, new BrageLocation(null), SOME_CUSTOMER);
+
+        var expectedContributors = Arrays.asList(
+            Map.entry("Jo Rune Ugulen", 1),
+            Map.entry("Tone Merete Bruvik", 2),
+            Map.entry("Rannveig Fluge", 3),
+            Map.entry("Håkon Haugland", 4),
+            Map.entry("Geir Atle Ersland", 5),
+            Map.entry("Arne Solli", 6)
+        );
+
+        var actualContributors = record.getEntityDescription().getContributors();
+
+        for (int i = 0; i < actualContributors.size(); i++) {
+            var expectedSequence = i + 1;
+            var contributor = actualContributors.stream()
+                                  .filter(c -> c.getSequence().equals(expectedSequence))
+                                  .findFirst()
+                                  .orElseThrow();
+            assertEquals(expectedContributors.get(i).getKey(), contributor.getIdentity().getName());
+        }
+    }
+
+    @Test
     void shouldCreateContributorFromContributorOnly() {
+        var contributor = new Contributor(new Identity("Person Some", null), OTHER_CONTRIBUTOR, null, Set.of());
+        contributor.setSequence(1);
         var expectedContributors = Set.of(
-            new Contributor(new Identity("Person Some", null), OTHER_CONTRIBUTOR, null, Set.of()));
+            contributor);
         var typeDcValue = toDcType("Others");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, null, "Some, Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
