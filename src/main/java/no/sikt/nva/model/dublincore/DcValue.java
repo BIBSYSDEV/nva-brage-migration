@@ -90,6 +90,10 @@ public class DcValue {
         return scraped;
     }
 
+    public void setScraped(boolean scraped){
+        this.scraped = scraped;
+    }
+
     public String scrapeValueAndSetToScraped() {
         scraped = true;
         return value;

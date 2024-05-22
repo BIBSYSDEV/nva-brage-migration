@@ -2,6 +2,8 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.model.dublincore.Qualifier.NONE;
+import static no.sikt.nva.model.dublincore.Qualifier.ORCID;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -46,20 +48,12 @@ public final class EntityDescriptionExtractor {
         return titles.isEmpty() ? null : titles.get(0);
     }
 
-    private static List<String> extreactMainTitles(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isMainTitle)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toList());
-    }
-
     public static Set<String> extractAlternativeTitles(DublinCore dublinCore) {
-        var alternativeTitles =  dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isAlternativeTitle)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toSet());
+        var alternativeTitles = dublinCore.getDcValues()
+                                    .stream()
+                                    .filter(DcValue::isAlternativeTitle)
+                                    .map(DcValue::scrapeValueAndSetToScraped)
+                                    .collect(Collectors.toSet());
 
         var mainTitles = extreactMainTitles(dublinCore);
         if (hasMoreThanTwoValues(mainTitles)) {
@@ -67,10 +61,6 @@ public final class EntityDescriptionExtractor {
             return alternativeTitles;
         }
         return alternativeTitles;
-    }
-
-    private static boolean hasMoreThanTwoValues(List<String> values) {
-        return values.size() >= 2;
     }
 
     public static EntityDescription extractEntityDescription(DublinCore dublinCore,
@@ -98,10 +88,6 @@ public final class EntityDescriptionExtractor {
                    .map(contributor -> updateContributor(contributor, contributors))
                    .map(EntityDescriptionExtractor::updateNameOrder)
                    .collect(Collectors.toSet());
-    }
-
-    private static boolean isContributor(DcValue dcValue) {
-        return dcValue.isContributor() || dcValue.isCreator();
     }
 
     public static String extractIssue(DublinCore dublinCore) {
@@ -134,6 +120,22 @@ public final class EntityDescriptionExtractor {
                    .map(s -> s.replaceAll("\\n\\r", StringUtils.SPACE))
                    .map(s -> s.replaceAll(StringUtils.DOUBLE_WHITESPACE, StringUtils.EMPTY_STRING))
                    .orElse(null);
+    }
+
+    private static List<String> extreactMainTitles(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isMainTitle)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toList());
+    }
+
+    private static boolean hasMoreThanTwoValues(List<String> values) {
+        return values.size() >= 2;
+    }
+
+    private static boolean isContributor(DcValue dcValue) {
+        return dcValue.isContributor() || dcValue.isCreator();
     }
 
     private static Contributor updateRoleBasedOnType(Contributor contributor, DublinCore dublinCore, String customer) {
@@ -221,7 +223,7 @@ public final class EntityDescriptionExtractor {
             if (DublinCoreValidator.containsYearAndMonth(date)) {
                 return new PublicationDate(date, constructDateWithYearAndMonth(date));
             }
-            if(DublinCoreValidator.isPeriodDate(date)) {
+            if (DublinCoreValidator.isPeriodDate(date)) {
                 return new PublicationDate(date, constructDateWithYearOnly(date));
             }
             return new PublicationDate(date, constructFullDate(date));
@@ -322,10 +324,10 @@ public final class EntityDescriptionExtractor {
         if (dcValue.isIllustrator()) {
             return Optional.of(new Contributor(identity, ILLUSTRATOR, brageRole, Set.of()));
         }
-        if (dcValue.isOtherContributor() || dcValue.isContributor() && isNull(dcValue.getQualifier())) {
-            return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole, Set.of()));
+        if (dcValue.getQualifier() == ORCID) {
+            return Optional.empty();
         }
-        return Optional.empty();
+        return Optional.of(new Contributor(identity, OTHER_CONTRIBUTOR, brageRole, Set.of()));
     }
 
     private static Contributor updateContributor(Contributor contributor, Map<String, Contributor> contributors) {
