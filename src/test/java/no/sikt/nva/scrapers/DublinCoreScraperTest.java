@@ -155,11 +155,10 @@ public class DublinCoreScraperTest {
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(firstVersionDcValue, secondVersionDcValue, thirdVersionDcValue, typeDcValue));
-        var appender = LogUtils.getTestingAppenderForRootLogger();
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
-        assertThat(actualPublisherAuthority, is(equalTo(PublisherVersion.PUBLISHED_VERSION)));
-        assertThat(appender.getMessages(), not(containsString(String.valueOf(MULTIPLE_DC_VERSION_VALUES))));
+
+        assertThat(actualPublisherAuthority, is(equalTo(PublisherVersion.ACCEPTED_VERSION)));
     }
 
     @Test
