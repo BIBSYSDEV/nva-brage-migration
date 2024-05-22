@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.EntityDescription;
@@ -80,14 +81,20 @@ public final class EntityDescriptionExtractor {
 
     public static Set<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors,
                                                        String customer) {
-        return dublinCore.getDcValues().stream()
+        var contributorList = dublinCore.getDcValues().stream()
                    .filter(EntityDescriptionExtractor::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
                    .map(contributor -> updateRoleBasedOnType(contributor, dublinCore, customer))
                    .map(contributor -> updateContributor(contributor, contributors))
                    .map(EntityDescriptionExtractor::updateNameOrder)
-                   .collect(Collectors.toSet());
+                   .collect(Collectors.toList());
+       return IntStream.range(0, contributorList.size()).mapToObj(i -> {
+                var contributor = contributorList.get(i);
+                contributor.setSequence(i + 1);
+                return contributor;
+            })
+            .collect(Collectors.toSet());
     }
 
     public static String extractIssue(DublinCore dublinCore) {
