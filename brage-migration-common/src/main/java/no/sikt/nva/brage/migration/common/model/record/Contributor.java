@@ -27,7 +27,6 @@ public class Contributor {
         this.role = role;
         this.brageRole = brageRole;
         this.affiliations = affiliations;
-        this.sequence = null;
     }
 
     @JsonProperty("affiliations")
