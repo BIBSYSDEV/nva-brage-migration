@@ -2,7 +2,6 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JOURNALS;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PUBLISHERS;
 import static no.sikt.nva.scrapers.CustomerMapper.FFI;
@@ -613,23 +612,23 @@ public class DublinCoreScraper {
         }
     }
 
-    private static PublisherAuthority extractVersion(DublinCore dublinCore, BrageLocation brageLocation) {
+    private static PublisherAuthority extractVersion(DublinCore dublinCore) {
         var version = dublinCore.getDcValues()
                           .stream()
                           .filter(DcValue::isOneOfTwoPossibleVersions)
                           .map(DcValue::scrapeValueAndSetToScraped)
                           .collect(Collectors.toSet());
-        return mapToNvaVersion(version, brageLocation);
+        return mapToNvaVersion(version);
     }
 
-    private static PublisherAuthority mapToNvaVersion(Set<String> versions, BrageLocation brageLocation) {
+    private static PublisherAuthority mapToNvaVersion(Set<String> versions) {
         var uniqueVersions = new HashSet<>(versions);
         if (isSingleton(uniqueVersions)) {
             return mapSingleVersion(uniqueVersions);
         }
         if (containsMultipleValues(uniqueVersions)) {
             var versionSet = versions.stream().map(v -> v.toLowerCase(Locale.ROOT)).collect(Collectors.toSet());
-            return mapMultipleVersions(versionSet, brageLocation);
+            return mapMultipleVersions(versionSet);
         }
         return new PublisherAuthority(versions, null);
     }
@@ -638,21 +637,12 @@ public class DublinCoreScraper {
         return versions.size() >= 2;
     }
 
-    private static PublisherAuthority mapMultipleVersions(Set<String> versions, BrageLocation brageLocation) {
-        if (versions.contains(PublisherVersion.PUBLISHED_VERSION.getValue().toLowerCase(Locale.ROOT))) {
-            return new PublisherAuthority(Collections.singleton(PublisherVersion.PUBLISHED_VERSION.getValue()), PublisherVersion.PUBLISHED_VERSION);
-        }
+    private static PublisherAuthority mapMultipleVersions(Set<String> versions) {
         if (versions.contains(PublisherVersion.ACCEPTED_VERSION.getValue().toLowerCase(Locale.ROOT))) {
             return new PublisherAuthority(Collections.singleton(PublisherVersion.ACCEPTED_VERSION.getValue()),
                                           PublisherVersion.ACCEPTED_VERSION);
-        }
-        if (versions.contains(PublisherVersion.SUBMITTED_VERSION.getValue().toLowerCase(Locale.ROOT))) {
-            return new PublisherAuthority(Collections.singleton(PublisherVersion.SUBMITTED_VERSION.getValue()), PublisherVersion.ACCEPTED_VERSION);
         } else {
-            logger.error(new ErrorDetails(MULTIPLE_DC_VERSION_VALUES, versions)
-                         + StringUtils.SPACE
-                         + brageLocation.getOriginInformation());
-            return new PublisherAuthority(versions, null);
+            return new PublisherAuthority(Collections.singleton(PublisherVersion.PUBLISHED_VERSION.getValue()), PublisherVersion.PUBLISHED_VERSION);
         }
     }
 
@@ -684,7 +674,7 @@ public class DublinCoreScraper {
         record.setId(brageLocation.getHandle());
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore, customer), dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
-        record.setPublisherAuthority(extractVersion(dublinCore, brageLocation));
+        record.setPublisherAuthority(extractVersion(dublinCore));
         record.setDoi(extractDoi(dublinCore));
         record.setLink(extractLink(dublinCore));
         record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore, contributors, customer));

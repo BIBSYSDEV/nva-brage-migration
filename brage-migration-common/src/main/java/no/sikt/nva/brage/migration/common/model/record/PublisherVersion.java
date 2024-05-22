@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PublisherVersion {
     PUBLISHED_VERSION("PublishedVersion"),
-    ACCEPTED_VERSION("AcceptedVersion"),
-    SUBMITTED_VERSION("SubmittedVersion"),
-    UPDATED_VERSION("UpdatedVersion"),
-    DRAFT("Draft");
+    ACCEPTED_VERSION("AcceptedVersion");
 
     private final String value;
 
