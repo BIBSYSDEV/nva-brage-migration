@@ -51,6 +51,7 @@ import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Identity;
 import no.sikt.nva.brage.migration.common.model.record.Pages;
+import no.sikt.nva.brage.migration.common.model.record.PartOfSeries;
 import no.sikt.nva.brage.migration.common.model.record.PublisherVersion;
 import no.sikt.nva.brage.migration.common.model.record.Range;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
@@ -71,13 +72,38 @@ public class DublinCoreScraperTest {
     private static final String SOME_CUSTOMER = "nve";
     public static final String METADATA_FS_XML = "metadata_fs.xml";
 
-    private static boolean SHOUL_VALIDATE_ONLINE = false;
+    private static boolean SHOULD_VALIDATE_ONLINE = false;
     private DublinCoreScraper dcScraper;
+
+    public static Stream<Arguments> isPartOfSeriesProvider() {
+        return Stream.of(
+            Arguments.of(List.of(partOfSeries("SeriesName")),
+                         new PartOfSeries("SeriesName", null)),
+            Arguments.of(List.of(partOfSeries("SeriesName;   ")),
+                         new PartOfSeries("SeriesName", null)),
+            Arguments.of(List.of(partOfSeries("SeriesName"), partOfSeries("23")),
+                         new PartOfSeries("SeriesName", "23")),
+            Arguments.of(List.of(partOfSeries("SeriesName"), partOfSeries("23:2022")),
+                         new PartOfSeries("SeriesName", "23:2022")),
+            Arguments.of(List.of(partOfSeries("SeriesName; 23")),
+                         new PartOfSeries("SeriesName", "23")),
+            Arguments.of(List.of(partOfSeries("SeriesName; 23:2022")),
+                         new PartOfSeries("SeriesName", "23:2022")),
+            Arguments.of(List.of(partOfSeries("SeriesName; 23/2022")),
+                         new PartOfSeries("SeriesName", "23/2022")),
+            Arguments.of(List.of(partOfSeries("SeriesName; 23/2022")),
+                         new PartOfSeries("SeriesName", "23/2022"))
+        );
+    }
+
+    private static DcValue partOfSeries(String value) {
+        return new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, value);
+    }
 
     @BeforeEach
     void init() {
         dcScraper = new DublinCoreScraper(
-            SHOUL_VALIDATE_ONLINE,
+            SHOULD_VALIDATE_ONLINE,
             SHOULD_LOOKUP_IN_CHANNEL_REGISTER,
             Map.of()
         );
@@ -234,8 +260,8 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldScrapePartOfSeriesDcValue() {
-        var partOfSeries = "Part of some series";
-        var partOfSeriesDcValue = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, partOfSeries);
+        var partOfSeries = new PartOfSeries("Part of some series", null);
+        var partOfSeriesDcValue = partOfSeries(partOfSeries.getName());
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(partOfSeriesDcValue, typeDcValue));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
@@ -260,7 +286,7 @@ public class DublinCoreScraperTest {
         var issnDcValue = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
         var typeDcValue = toDcType("Report");
         var dateDcValue = new DcValue(Element.DATE, Qualifier.ISSUED, "2020");
-        var partOfSeriesDcValue = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, "NVE Rapport;2019:1");
+        var partOfSeriesDcValue = partOfSeries("NVE Rapport;2019:1");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(publisherDcValue, issnDcValue, typeDcValue, dateDcValue, partOfSeriesDcValue));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
@@ -584,7 +610,7 @@ public class DublinCoreScraperTest {
         var dcType = toDcType("Report");
         var dcPublisher = new DcValue(Element.PUBLISHER, null, "KRUS");
         var dcIssn = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "1501-2832");
-        var dcPartOfSeries = new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, "NVE Rapport;2022:13");
+        var dcPartOfSeries = partOfSeries("NVE Rapport;2022:13");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(dcType, dcPublisher, dcIssn, dcPartOfSeries));
         var brageLocation = new BrageLocation(null);
@@ -1102,6 +1128,16 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "sintef");
        assertThat(record.getProjects(), is(emptyIterable()));
+    }
+
+    @ParameterizedTest
+    @MethodSource("isPartOfSeriesProvider")
+    void shouldMapDifferentVersionsOfPartOfSeriesToSinglePartOfSeriesObject(List<DcValue> dcValues,
+                                                                            PartOfSeries expected) {
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "sintef");
+        var partOfSeries = record.getPublication().getPartOfSeries();
+        assertThat(partOfSeries, is(equalTo(expected)));
     }
 
     private static DcValue toDcType(String t) {

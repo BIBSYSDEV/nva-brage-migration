@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +32,7 @@ import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Journal;
+import no.sikt.nva.brage.migration.common.model.record.PartOfSeries;
 import no.sikt.nva.brage.migration.common.model.record.Project;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
@@ -69,6 +71,7 @@ public class DublinCoreScraper {
     public static final String EMPTY_SPACES_LINEBREAKS_REGEX = "(\n)|(\b)|(\u200b)|(\t)|(\")";
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     public static final String DOT = "\\.";
+    public static final String CONTAINS_NUBMER_PATTERN = ".*\\d+.*";
     private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
@@ -235,7 +238,7 @@ public class DublinCoreScraper {
 
     }
 
-    public static boolean isSingleton(Set<String> versions) {
+    public static boolean isSingleton(Collection<String> versions) {
         return versions.size() == 1;
     }
 
@@ -544,14 +547,37 @@ public class DublinCoreScraper {
         }
     }
 
-    private static String extractPartOfSeries(DublinCore dublinCore) {
+    private static PartOfSeries extractPartOfSeries(DublinCore dublinCore) {
         var partOfSeriesValues = dublinCore.getDcValues()
                                      .stream()
                                      .filter(DcValue::isPartOfSeries)
                                      .map(DcValue::scrapeValueAndSetToScraped)
                                      .collect(Collectors.toList());
+       return convertListToPartOfSeries(partOfSeriesValues);
+    }
 
-        return partOfSeriesValues.isEmpty() ? new DcValue().scrapeValueAndSetToScraped() : partOfSeriesValues.get(0);
+    private static PartOfSeries convertListToPartOfSeries(List<String> list) {
+        if (isSingleton(list)) {
+            var parts = Arrays.stream(list.get(0).split(";"))
+                            .map(String::trim)
+                            .filter(value -> !value.isEmpty())
+                            .collect(Collectors.toList());
+            return constructPartOfSeries(parts);
+        } else {
+            return constructPartOfSeries(list);
+        }
+    }
+
+    private static PartOfSeries constructPartOfSeries(List<String> list) {
+        var partOfSeries = new PartOfSeries();
+        for (String value : list) {
+            if (value.matches(CONTAINS_NUBMER_PATTERN)) {
+                partOfSeries.setNumber(value);
+            } else {
+                partOfSeries.setName(value);
+            }
+        }
+        return partOfSeries;
     }
 
     private static String extractPartOf(DublinCore dublinCore) {
