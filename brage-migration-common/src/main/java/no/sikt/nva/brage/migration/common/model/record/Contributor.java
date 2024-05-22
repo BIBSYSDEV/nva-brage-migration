@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import nva.commons.core.JacocoGenerated;
 
