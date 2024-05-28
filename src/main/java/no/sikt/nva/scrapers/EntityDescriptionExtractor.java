@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -111,7 +112,7 @@ public final class EntityDescriptionExtractor {
                    .filter(DcValue::isDescription)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .map(EntityDescriptionExtractor::trim)
-                   .collect(Collectors.toSet());
+                   .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     public static String extractVolume(DublinCore dublinCore) {
