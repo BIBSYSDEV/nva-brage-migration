@@ -6,6 +6,7 @@ import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class EntityDescriptionExtractorTest {
         assertThat(descriptions, hasItem(someLocalCode));
     }
 
-    @Test
+    @RepeatedTest(1000)
     void shouldKeepOriginalOrderOfDescriptions() {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(TEST_RESOURCE_PATH +
                                                                             "dc_with_duplicated_values.xml"));
@@ -52,6 +53,6 @@ public class EntityDescriptionExtractorTest {
                                                                   new BrageLocation(null),
                                                                   SOME_CUSTOMER);
         var descriptions = record.getEntityDescription().getDescriptions();
-        assertThat(descriptions, is(equalTo(Set.of("First description", "Second description"))));
+        assertThat(descriptions, is(equalTo(List.of("First description", "Second description"))));
     }
 }
