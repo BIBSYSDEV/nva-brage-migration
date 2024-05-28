@@ -2,6 +2,8 @@ package no.sikt.nva;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
 import java.io.File;
@@ -51,6 +53,9 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Spec;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
@@ -143,8 +148,10 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
     private final OnlineEmbargoChecker onlineEmbargoChecker;
 
-    public BrageMigrationCommand() {
-        this(S3Driver.defaultS3Client().build(),
+    public BrageMigrationCommand(String environment) {
+        this(S3Driver.defaultS3Client()
+                 .credentialsProvider(AwsEnvironment.fromValue(environment).getCredentialsProviderAwsSdk())
+                 .build(),
              new OnlineEmbargoCheckerImpl());
     }
 
@@ -162,7 +169,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         if (pushToAwsOnly.isPresent() || proceedAndPushToAws.isPresent()) {
             validateAwsEnvironment(environment.orElse(null));
         }
-        int exitCode = new CommandLine(new BrageMigrationCommand()).execute(args);
+        int exitCode = new CommandLine(new BrageMigrationCommand(environment.orElse(null))).execute(args);
         System.exit(exitCode);
     }
 
@@ -242,7 +249,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private static void validateAwsEnvironment(String environment) {
-        var accountId = getAccountId();
+        var accountId = getAccountId(environment);
         var awsEnvironment = AwsEnvironment.fromValue(environment);
         if (doesNotBelongToCurrentAwsEnvironment(accountId, awsEnvironment)) {
             throw new IllegalArgumentException(
@@ -256,10 +263,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
                && !accountId.equals(awsEnvironment.getAccountId());
     }
 
-    private static String getAccountId() {
+    private static String getAccountId(String environment) {
         return AWSSecurityTokenServiceClientBuilder
                    .standard()
                    .withRegion(Region.EU_WEST_1.id())
+                   .withCredentials(AwsEnvironment.fromValue(environment).getCredentialsProviderAwsAuth())
                    .build()
                    .getCallerIdentity(new GetCallerIdentityRequest())
                    .getAccount();
@@ -632,6 +640,49 @@ public class BrageMigrationCommand implements Callable<Integer> {
 
         public String getAccountId() {
             return ID_MAP.get(this);
+        }
+
+        public AwsCredentialsProvider getCredentialsProviderAwsSdk() {
+            switch (this) {
+                case EXPERIMENTAL:
+                case SANDBOX:
+                case DEVELOP:
+                    return defaultProfile();
+                case TEST:
+                    return getProfileCredentialsProviderAwsSdk("nva-test-brage-migration");
+                case PROD:
+                    return getProfileCredentialsProviderAwsSdk("nva-prod-brage-migration");
+                default:
+                    throw new IllegalArgumentException("Unexpected value: " + this);
+            }
+        }
+
+        public AWSCredentialsProvider getCredentialsProviderAwsAuth() {
+            switch (this) {
+                case EXPERIMENTAL:
+                case SANDBOX:
+                case DEVELOP:
+                    return new DefaultAWSCredentialsProviderChain();
+                case TEST:
+                    return getProfileCredentialsProviderAuth("nva-test-brage-migration");
+                case PROD:
+                    return getProfileCredentialsProviderAuth("nva-prod-brage-migration");
+                default:
+                    throw new IllegalArgumentException("Unexpected value: " + this);
+            }
+        }
+
+        private static ProfileCredentialsProvider getProfileCredentialsProviderAwsSdk(String profileName) {
+            return ProfileCredentialsProvider.create(profileName);
+        }
+
+        private static com.amazonaws.auth.profile.ProfileCredentialsProvider getProfileCredentialsProviderAuth(String profileName) {
+
+            return new com.amazonaws.auth.profile.ProfileCredentialsProvider(profileName);
+        }
+
+        private static DefaultCredentialsProvider defaultProfile() {
+            return DefaultCredentialsProvider.builder().build();
         }
     }
 }
