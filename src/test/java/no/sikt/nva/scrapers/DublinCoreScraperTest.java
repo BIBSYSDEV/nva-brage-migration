@@ -219,7 +219,7 @@ public class DublinCoreScraperTest {
 
     @Test
     void shouldExtractContributorsInRightOrderAndInjectSequnceNumber() {
-        var dc = DublinCoreFactory.createDublinCoreFromXml(new File(TEST_RESOURCE_PATH + "dc_with_contributors.xml"));
+        var dc = DublinCoreFactory.createDublinCoreFromXml(new File(TEST_RESOURCE_PATH + "dc_with_duplicated_values.xml"));
         var record = dcScraper.validateAndParseDublinCore(dc, new BrageLocation(null), SOME_CUSTOMER);
 
         var expectedContributors = Arrays.asList(

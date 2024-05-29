@@ -1,6 +1,7 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import nva.commons.core.JacocoGenerated;
@@ -8,7 +9,7 @@ import nva.commons.core.JacocoGenerated;
 public class EntityDescription {
 
     private PublicationDate publicationDate;
-    private Set<String> descriptions;
+    private List<String> descriptions;
     private Set<String> abstracts;
     private String mainTitle;
     private Set<String> alternativeTitles;
@@ -76,11 +77,11 @@ public class EntityDescription {
     }
 
     @JsonProperty
-    public Set<String> getDescriptions() {
+    public List<String> getDescriptions() {
         return descriptions;
     }
 
-    public void setDescriptions(Set<String> descriptions) {
+    public void setDescriptions(List<String> descriptions) {
         this.descriptions = descriptions;
     }
 
