@@ -1,5 +1,6 @@
 package no.sikt.nva.channelregister;
 
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -7,6 +8,8 @@ import static org.hamcrest.Matchers.nullValue;
 import java.util.Set;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
+import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
+import no.sikt.nva.brage.migration.common.model.record.Record;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -53,5 +56,20 @@ public class ChannelRegisterTest {
         var actual = register.lookUpInJournal(publication, brageLocation);
 
         assertThat(actual, is(nullValue()));
+    }
+
+    @Test
+    void shouldLookupPublisherInWildcards() {
+        var record = new Record();
+
+        var register = ChannelRegister.getRegister();
+        var publication = new Publication();
+        publication.setIssnList(Set.of());
+        publication.setPublicationContext(new PublicationContext());
+        publication.getPublicationContext().setBragePublisher(randomString() + "Høgskolen i Oslo og Akershus" + randomString());
+        record.setPublication(publication);
+        var actual = register.lookUpInChannelRegisterForPublisher(record, "ntnu");
+
+        assertThat(actual, is(equalTo("64780E54-AF46-4F0F-805F-D644500AFF92")));
     }
 }
