@@ -1,6 +1,7 @@
 package no.sikt.nva.brage.migration.common.model.record.content;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
@@ -23,7 +24,11 @@ public class ResourceContent {
 
     @JsonProperty("contentFiles")
     public List<ContentFile> getContentFiles() {
-        return contentFiles;
+        return nonNull(contentFiles) ? contentFiles : List.of();
+    }
+
+    public static ResourceContent emptyResourceContent() {
+        return new ResourceContent(List.of());
     }
 
     public void setContentFiles(List<ContentFile> contentFiles) {
