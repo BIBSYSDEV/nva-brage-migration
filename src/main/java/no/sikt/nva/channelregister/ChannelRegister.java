@@ -27,6 +27,7 @@ import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
+import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
@@ -61,6 +62,7 @@ public final class ChannelRegister {
         "nmbu_publisher_channel_registry_faculties.csv";
     public static final String UIB_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH =
         "uib_specific_publisher_channel_registry.csv";
+    public static final String PUBLISHER_WILDCARDS_CSV_NAME = "publisher_wildcards.csv";
     public static final String NTNU = "ntnu";
     private static final String JOURNAL_PATH = "journals_channel_registry_v2.csv";
     private static final String PUBLISHERS_PATH = "publisher_channel_registry_v2.csv";
@@ -72,6 +74,7 @@ public final class ChannelRegister {
     private final List<ChannelRegisterPublisher> channelRegisterPublishers;
     private final List<ChannelRegisterAlias> channelRegisterAliasesJournals;
     private final List<ChannelRegisterAlias> channelRegisterAliasesPublishers;
+    private final List<ChannelRegisterWildcard> publisherWildCards;
     private final List<ChannelRegisterAlias> channelRegisterAliasesForNtnu;
     private final List<ChannelRegisterAlias> channelRegisterAliasesForNmbu;
     private final List<ChannelRegisterAlias> channelRegisterAliasesForBora;
@@ -87,6 +90,22 @@ public final class ChannelRegister {
             getChannelRegisterAliases(UIB_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH);
         this.channelRegisterAliasesForNmbu = getChannelRegisterAliases(
             NMBU_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH);
+        this.publisherWildCards = getPublisherWildcards(PUBLISHER_WILDCARDS_CSV_NAME);
+    }
+
+    private List<ChannelRegisterWildcard> getPublisherWildcards(String filename) {
+        try (var inputStream = Thread.currentThread().getContextClassLoader()
+                                   .getResourceAsStream(filename);
+            var bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+            var microJournal = new CsvToBeanBuilder<ChannelRegisterWildcard>(bufferedReader)
+                                   .withSeparator(SEPARATOR)
+                                   .withType(ChannelRegisterWildcard.class)
+                                   .build();
+            return microJournal.parse();
+        } catch (IOException e) {
+            logger.error(KANALREGISTER_READING_ERROR_MESSAGE);
+            throw new RuntimeException(e);
+        }
     }
 
     public static ChannelRegister getRegister() {
@@ -116,11 +135,12 @@ public final class ChannelRegister {
     }
 
     public String lookUpInChannelRegisterForPublisher(Record record, String customer) {
-        var publisher = formatValue(record.getPublication().getPublicationContext().getBragePublisher());
-        if (extractedIdentifierFromPublishersIsPresent(publisher, customer)) {
-            return lookUpInPublisher(formatValue(publisher), customer);
-        }
-        return null;
+        return Optional.ofNullable(record.getPublication())
+                   .map(Publication::getPublicationContext)
+                   .map(PublicationContext::getBragePublisher)
+                   .map(ChannelRegister::formatValue)
+                   .map(value -> lookUpInPublisher(value, customer))
+                   .orElse(null);
     }
 
     public String lookUpInJournal(Publication publication, BrageLocation brageLocation) {
@@ -185,13 +205,10 @@ public final class ChannelRegister {
 
     public String lookUpInPublisher(String publisher, String customer) {
         try {
-            if (StringUtils.isBlank(publisher)) {
-                return publisher;
-            } else {
-                return nonNull(getPublisherIdentifier(publisher))
-                           ? getPublisherIdentifier(publisher)
-                           : lookupInPublisherAliases(publisher, customer);
-            }
+            return lookupInPublishers(publisher)
+                           .or(() -> lookupInPublisherWildcards(publisher))
+                           .orElseGet(() -> lookupInPublisherAliases(publisher, customer));
+
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_PUBLISHER_IN_CHANNEL_REGISTER,
                                           filterOutNullValues(Set.of(publisher))).toString());
@@ -199,6 +216,18 @@ public final class ChannelRegister {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private Optional<String> lookupInPublisherWildcards(String publisher) {
+        return getPublisherName(publisher)
+                   .map(value -> lookInPublishers(channelRegisterPublishers, value));
+    }
+
+    private Optional<String> getPublisherName(String publisher) {
+        return publisherWildCards.stream()
+                   .filter(wildcard -> publisher.contains(wildcard.getWildcard()))
+                   .map(ChannelRegisterWildcard::getName)
+                   .findFirst();
     }
 
     private static List<ChannelRegisterAlias> getChannelRegisterAliases(String filePath) {
@@ -378,15 +407,7 @@ public final class ChannelRegister {
         }
     }
 
-    private String getPublisherIdentifier(String publisherFromMapper) {
-        return lookInPublishers(channelRegisterPublishers, publisherFromMapper);
-    }
-
-    private boolean extractedIdentifierFromPublishersIsPresent(String publisher, String customer) {
-        if (StringUtils.isNotBlank(publisher)) {
-            var identifierFromPublisher = lookUpInPublisher(publisher, customer);
-            return StringUtils.isNotBlank(identifierFromPublisher);
-        }
-        return false;
+    private Optional<String> lookupInPublishers(String publisherFromMapper) {
+        return Optional.ofNullable(lookInPublishers(channelRegisterPublishers, publisherFromMapper));
     }
 }

@@ -42,6 +42,7 @@ public final class ContentScraper {
                                                                         BundleType.ORE.getValue(),
                                                                         BundleType.METADATA.getValue());
     public static final String EMPTY_LINE_REGEX = "(?m)(^\\s*$\\r?\\n)+";
+    public static final String DEFAULT_LICENSE_FILENAME = "license.txt";
     private static final Logger logger = LoggerFactory.getLogger(ContentScraper.class);
     private final Path contentFilePath;
     private final BrageLocation brageLocation;
@@ -62,12 +63,12 @@ public final class ContentScraper {
             var contentFile = new File(String.valueOf(contentFilePath));
             if (!contentFile.exists()) {
                 logger.error(new ErrorDetails(Error.CONTENT_FILE_MISSING).toString());
-                return null;
+                return ResourceContent.emptyResourceContent();
             }
             var stringFromFile = attempt(() -> Files.readString(contentFilePath)).orElseThrow();
             if (isEmpty(stringFromFile)) {
                 logger.info(new WarningDetails(Warning.MISSING_FILES).toString());
-                return null;
+                return ResourceContent.emptyResourceContent();
             } else {
                 throw new ContentException(CONTENT_FILE_PARSING_ERROR_MESSAGE + e.getMessage());
             }
@@ -116,12 +117,22 @@ public final class ContentScraper {
 
     private Optional<ContentFile> convertToFile(String fileInfo) {
         var fileInformationList = Arrays.asList(fileInfo.split("\t"));
-        if (isOriginalFileBundle(fileInformationList)) {
+        if (isOriginalFileBundle(fileInformationList) || isNonDefaultLicense(fileInformationList)) {
             return Optional.of(extractFileContent(fileInformationList));
         } else {
             logWhenUnknownType(fileInformationList);
             return Optional.empty();
         }
+    }
+
+    private boolean isNonDefaultLicense(List<String> fileInformationList) {
+        return BundleType.LICENSE.name().equals(getBundleType(fileInformationList))
+               && isNotDefaultLicense(fileInformationList);
+        
+    }
+
+    private static boolean isNotDefaultLicense(List<String> fileInformationList) {
+        return !DEFAULT_LICENSE_FILENAME.equals(getFileName(fileInformationList));
     }
 
     private ContentFile extractFileContent(List<String> fileInformationList) {

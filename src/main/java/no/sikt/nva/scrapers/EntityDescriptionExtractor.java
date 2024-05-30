@@ -105,13 +105,14 @@ public final class EntityDescriptionExtractor {
         return !issues.isEmpty() ? issues.get(0) : null;
     }
 
-    public static Set<String> extractDescriptions(DublinCore dublinCore) {
+    public static List<String> extractDescriptions(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isDescription)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .map(EntityDescriptionExtractor::trim)
-                   .collect(Collectors.toSet());
+                   .distinct()
+                   .collect(Collectors.toList());
     }
 
     public static String extractVolume(DublinCore dublinCore) {
