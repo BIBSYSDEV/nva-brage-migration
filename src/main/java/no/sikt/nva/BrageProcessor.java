@@ -200,7 +200,7 @@ public class BrageProcessor implements Runnable {
             var brageLocation = new BrageLocation(Path.of(entryDirectory.getPath()));
             var dublinCore = parseDublinCore(entryDirectory);
             brageLocation.setTitle(DublinCoreScraper.extractMainTitle(dublinCore));
-            brageLocation.setHandle(getHandle(entryDirectory, dublinCore));
+            brageLocation.setHandle(getHandle(entryDirectory, dublinCore, brageLocation));
             String handle = brageLocation.getHandle().toString();
             if (BrageMigrationCommand.alreadyProcessed(handle)) {
                 return Optional.empty();
@@ -277,7 +277,7 @@ public class BrageProcessor implements Runnable {
         return importedHandles.contains(handle);
     }
 
-    private URI getHandle(File entryDirectory, DublinCore dublinCore) throws HandleException {
-        return handleScraper.scrapeHandle(getHandlePath(entryDirectory), dublinCore);
+    private URI getHandle(File entryDirectory, DublinCore dublinCore, BrageLocation brageLocation) throws HandleException {
+        return handleScraper.scrapeHandle(getHandlePath(entryDirectory), dublinCore, brageLocation);
     }
 }
