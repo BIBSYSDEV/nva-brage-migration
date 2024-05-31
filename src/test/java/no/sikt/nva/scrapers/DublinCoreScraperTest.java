@@ -1144,9 +1144,8 @@ public class DublinCoreScraperTest {
         assertThat(record.getPublication().getJournal(), is(notNullValue()));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"Norwegian Research Council: 260190", "EC/H2020/727610", ""})
-    void shouldScrapeProjects() {
+    @Test
+    void shouldScrapeProjectForSintef() {
         var type = toDcType("Journal article");
         var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, "Norges forskningsråd: 309622");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
