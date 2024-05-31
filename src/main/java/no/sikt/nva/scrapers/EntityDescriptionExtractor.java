@@ -49,12 +49,13 @@ public final class EntityDescriptionExtractor {
         return titles.isEmpty() ? null : titles.get(0);
     }
 
-    public static Set<String> extractAlternativeTitles(DublinCore dublinCore) {
+    public static List<String> extractAlternativeTitles(DublinCore dublinCore) {
         var alternativeTitles = dublinCore.getDcValues()
                                     .stream()
                                     .filter(DcValue::isAlternativeTitle)
                                     .map(DcValue::scrapeValueAndSetToScraped)
-                                    .collect(Collectors.toSet());
+                                    .distinct()
+                                    .collect(Collectors.toList());
 
         var mainTitles = extreactMainTitles(dublinCore);
         if (hasMoreThanTwoValues(mainTitles)) {
@@ -79,7 +80,7 @@ public final class EntityDescriptionExtractor {
         return entityDescription;
     }
 
-    public static Set<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors,
+    public static List<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors,
                                                        String customer) {
         var contributorList = dublinCore.getDcValues().stream()
                    .filter(EntityDescriptionExtractor::isContributor)
@@ -94,7 +95,7 @@ public final class EntityDescriptionExtractor {
                 contributor.setSequence(i + 1);
                 return contributor;
             })
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
     }
 
     public static String extractIssue(DublinCore dublinCore) {

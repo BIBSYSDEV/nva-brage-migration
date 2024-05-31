@@ -389,14 +389,15 @@ public class DublinCoreScraper {
         }
     }
 
-    private static Set<URI> extractSubjects(DublinCore dublinCore) {
+    private static List<URI> extractSubjects(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isLocalCode)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .map(DublinCoreScraper::toUri)
                    .filter(Objects::nonNull)
-                   .collect(Collectors.toSet());
+                   .distinct()
+                   .collect(Collectors.toList());
     }
 
     private static URI toUri(String value) {
@@ -585,12 +586,13 @@ public class DublinCoreScraper {
                    .scrapeValueAndSetToScraped();
     }
 
-    private static Set<String> extractHasPart(DublinCore dublinCore) {
+    private static List<String> extractHasPart(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isHasPart)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toSet());
+                   .distinct()
+                   .collect(Collectors.toList());
     }
 
     private static String extractRightsholder(DublinCore dublinCore) {
@@ -716,21 +718,18 @@ public class DublinCoreScraper {
         record.setPart(extractHasPart(dublinCore));
         record.setSubjects(extractSubjects(dublinCore));
         record.setAccessCode(extractAccessCode(dublinCore));
-        record.setProjects(extractProjects(dublinCore, customer));
+        record.setProjects(extractProjects(dublinCore));
         return record;
     }
 
-    private Set<Project> extractProjects(DublinCore dublinCore, String customer) {
-        if (CustomerMapper.SINTEF.equals(customer)) {
-            return dublinCore.getDcValues().stream()
-                       .filter(DcValue::isProjectRelation)
-                       .map(DcValue::scrapeValueAndSetToScraped)
-                       .map(Project::fromBrageValue)
-                       .filter(Objects::nonNull)
-                       .collect(Collectors.toSet());
-        } else {
-            return Set.of();
-        }
+    private List<Project> extractProjects(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isProjectRelation)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(Project::fromBrageValue)
+                   .filter(Objects::nonNull)
+                   .distinct()
+                   .collect(Collectors.toList());
     }
 
     private String extractAccessCode(DublinCore dublinCore) {
