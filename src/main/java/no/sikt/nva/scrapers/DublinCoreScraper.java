@@ -718,18 +718,22 @@ public class DublinCoreScraper {
         record.setPart(extractHasPart(dublinCore));
         record.setSubjects(extractSubjects(dublinCore));
         record.setAccessCode(extractAccessCode(dublinCore));
-        record.setProjects(extractProjects(dublinCore));
+        record.setProjects(extractProjects(dublinCore, customer));
         return record;
     }
 
-    private List<Project> extractProjects(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream()
-                   .filter(DcValue::isProjectRelation)
-                   .map(DcValue::scrapeValueAndSetToScraped)
-                   .map(Project::fromBrageValue)
-                   .filter(Objects::nonNull)
-                   .distinct()
-                   .collect(Collectors.toList());
+    private List<Project> extractProjects(DublinCore dublinCore, String customer) {
+        if (CustomerMapper.SINTEF.equals(customer)) {
+            return dublinCore.getDcValues().stream()
+                       .filter(DcValue::isProjectRelation)
+                       .map(DcValue::scrapeValueAndSetToScraped)
+                       .map(Project::fromBrageValue)
+                       .filter(Objects::nonNull)
+                       .distinct()
+                       .collect(Collectors.toList());
+        } else {
+            return List.of();
+        }
     }
 
     private String extractAccessCode(DublinCore dublinCore) {
