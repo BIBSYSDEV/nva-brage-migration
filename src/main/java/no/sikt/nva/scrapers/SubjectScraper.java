@@ -1,7 +1,7 @@
 package no.sikt.nva.scrapers;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
@@ -30,12 +30,13 @@ public final class SubjectScraper {
         }
     }
 
-    public static Set<String> extractTags(DublinCore dublinCore) {
+    public static List<String> extractTags(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(SubjectScraper::isSubjectAndNotSpecificallyIgnored)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toSet());
+                   .distinct()
+                   .collect(Collectors.toList());
     }
 
     private static boolean isSubjectAndNotSpecificallyIgnored(DcValue dcValue) {

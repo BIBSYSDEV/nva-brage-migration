@@ -30,7 +30,7 @@ public class Record {
     private String rightsholder;
     private List<String> spatialCoverage;
     private String partOf;
-    private Set<String> part;
+    private List<String> part;
     private Publication publication;
     private ResourceContent contentBundle;
     private PublishedDate publishedDate;
@@ -39,10 +39,10 @@ public class Record {
     private Set<ErrorDetails> errors;
     private Set<WarningDetails> warnings;
     private URI link;
-    private Set<URI> subjects;
+    private List<URI> subjects;
     private String subjectCode;
     private String accessCode;
-    private Set<Project> projects;
+    private List<Project> projects;
 
     public Record() {
     }
@@ -97,11 +97,11 @@ public class Record {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
     }
 
-    public Set<Project> getProjects() {
+    public List<Project> getProjects() {
         return projects;
     }
 
-    public void setProjects(Set<Project> projects) {
+    public void setProjects(List<Project> projects) {
         this.projects = projects;
     }
 
@@ -113,11 +113,11 @@ public class Record {
         this.subjectCode = subjectCode;
     }
 
-    public Set<URI> getSubjects() {
+    public List<URI> getSubjects() {
         return subjects;
     }
 
-    public void setSubjects(Set<URI> subjects) {
+    public void setSubjects(List<URI> subjects) {
         this.subjects = subjects;
     }
 
@@ -140,11 +140,11 @@ public class Record {
     }
 
     @JsonProperty("hasPart")
-    public Set<String> getPart() {
+    public List<String> getPart() {
         return part;
     }
 
-    public void setPart(Set<String> part) {
+    public void setPart(List<String> part) {
         this.part = part;
     }
 

@@ -12,9 +12,9 @@ public class EntityDescription {
     private List<String> descriptions;
     private Set<String> abstracts;
     private String mainTitle;
-    private Set<String> alternativeTitles;
-    private Set<Contributor> contributors;
-    private Set<String> tags;
+    private List<String> alternativeTitles;
+    private List<Contributor> contributors;
+    private List<String> tags;
     private PublicationInstance publicationInstance;
     private Language language;
 
@@ -50,20 +50,20 @@ public class EntityDescription {
     }
 
     @JsonProperty("tags")
-    public Set<String> getTags() {
+    public List<String> getTags() {
         return this.tags;
     }
 
-    public void setTags(Set<String> tags) {
+    public void setTags(List<String> tags) {
         this.tags = tags;
     }
 
     @JsonProperty("contributors")
-    public Set<Contributor> getContributors() {
+    public List<Contributor> getContributors() {
         return contributors;
     }
 
-    public void setContributors(Set<Contributor> contributors) {
+    public void setContributors(List<Contributor> contributors) {
         this.contributors = contributors;
     }
 
@@ -95,11 +95,11 @@ public class EntityDescription {
     }
 
     @JsonProperty("alternativeTitles")
-    public Set<String> getAlternativeTitles() {
+    public List<String> getAlternativeTitles() {
         return alternativeTitles;
     }
 
-    public void setAlternativeTitles(Set<String> alternativeTitles) {
+    public void setAlternativeTitles(List<String> alternativeTitles) {
         this.alternativeTitles = alternativeTitles;
     }
 
