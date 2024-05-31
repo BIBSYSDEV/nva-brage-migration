@@ -3,7 +3,6 @@ package no.sikt.nva.brage.migration.common.model.record;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import nva.commons.core.StringUtils;
 
 public final class Project {
 
@@ -82,7 +81,7 @@ public final class Project {
         return name;
     }
 
-    private static boolean hasTwoOrMoreEntries(String[] arrayOfValues) {
-        return arrayOfValues.length >= 2;
+    private static boolean hasTwoOrMoreEntries(String... values) {
+        return values.length >= 2;
     }
 }
