@@ -193,7 +193,7 @@ public class DublinCoreScraperTest {
         var contributor = new Contributor(new Identity("Person Some", null), SUPERVISOR,
                                                  Qualifier.ADVISOR.getValue(), Set.of());
         contributor.setSequence(1);
-        var expectedContributors = Set.of(
+        var expectedContributors = List.of(
             contributor);
         var typeDcValue = toDcType("Others");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Some, Person");
@@ -208,7 +208,7 @@ public class DublinCoreScraperTest {
         var contributor = new Contributor(new Identity("Person Some", null), SUPERVISOR,
                                                   Qualifier.ADVISOR.getValue(), Set.of());
         contributor.setSequence(1);
-        var expectedContributors = Set.of(contributor);
+        var expectedContributors = List.of(contributor);
         var typeDcValue = toDcType("Others");
         var advisorDcValue = new DcValue(Element.CREATOR, Qualifier.ADVISOR, "Some, Person");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
@@ -247,7 +247,7 @@ public class DublinCoreScraperTest {
     void shouldCreateContributorFromContributorOnly() {
         var contributor = new Contributor(new Identity("Person Some", null), OTHER_CONTRIBUTOR, null, Set.of());
         contributor.setSequence(1);
-        var expectedContributors = Set.of(
+        var expectedContributors = List.of(
             contributor);
         var typeDcValue = toDcType("Others");
         var advisorDcValue = new DcValue(Element.CONTRIBUTOR, null, "Some, Person");
