@@ -218,7 +218,7 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldExtractContributorsInRightOrderAndInjectSequnceNumber() {
+    void shouldExtractContributorsInRightOrderAndInjectSequenceNumber() {
         var dc = DublinCoreFactory.createDublinCoreFromXml(new File(TEST_RESOURCE_PATH + "dc_with_duplicated_values.xml"));
         var record = dcScraper.validateAndParseDublinCore(dc, new BrageLocation(null), SOME_CUSTOMER);
 
@@ -1145,7 +1145,7 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldScrapeProjectForSintef() {
+    void shouldScrapeProjectSeparatedByColon() {
         var type = toDcType("Journal article");
         var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, "Norges forskningsråd: 309622");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
@@ -1156,11 +1156,43 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldScrapeProjectSeparatedBySlash() {
+        var type = toDcType("Journal article");
+        var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, "EC/H2020/727610");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "uit");
+        var project = record.getProjects().iterator().next();
+        assertThat(project.getIdentifier(), is(equalTo("727610")));
+        assertThat(project.getName(), is(equalTo("EC/H2020")));
+    }
+
+    @Test
+    void shouldScrapeProjectSeparatedBySlashAndColon() {
+        var type = toDcType("Journal article");
+        var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, "Klima- og miljødepartementet: 22/3615-4");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+        var project = record.getProjects().iterator().next();
+        assertThat(project.getIdentifier(), is(equalTo("22/3615-4")));
+        assertThat(project.getName(), is(equalTo("Klima- og miljødepartementet")));
+    }
+
+    @Test
+    void shouldNotFailWhenProjectCanNotBeConverted() {
+        var type = toDcType("Journal article");
+        var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "sintef");
+        var projects = record.getProjects();
+        assertThat(projects, is(emptyIterable()));
+    }
+
+    @Test
     void shouldNotFailWhenScrapingInvalidProjectForSintef() {
         var type = toDcType("Journal article");
         var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, randomString());
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
-        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "sintef");
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "uio");
        assertThat(record.getProjects(), is(emptyIterable()));
     }
 

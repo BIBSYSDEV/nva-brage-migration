@@ -1,9 +1,14 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import nva.commons.core.StringUtils;
 
 public final class Project {
 
+    public static final String COLON = ":";
+    public static final String SLASH = "/";
     private final String identifier;
     private final String name;
 
@@ -13,18 +18,43 @@ public final class Project {
     }
 
     public static Project fromBrageValue(String value) {
-        var arrayOfValues = value.split(":");
-        if (hasTwoEntries(arrayOfValues)) {
-            var name = arrayOfValues[0].trim();
-            var identifier = arrayOfValues[1].trim();
+        try {
+            if (value.contains(COLON)) {
+                return extractProjectWithColon(value);
+            }
+            if (value.contains(SLASH)) {
+                return extractProjectWithSlash(value);
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static Project extractProjectWithSlash(String value) {
+        var arrayOfValues = value.split(SLASH);
+        if (hasTwoOrMoreEntries(arrayOfValues)) {
+            var name = Arrays.stream(Arrays.copyOfRange(arrayOfValues, 0, arrayOfValues.length - 1))
+                           .map(String::valueOf)
+                           .map(String::trim)
+                           .collect(Collectors.joining(SLASH));
+            var identifier = arrayOfValues[arrayOfValues.length -1].trim();
             return new Project(identifier, name);
         } else {
             return null;
         }
     }
 
-    private static boolean hasTwoEntries(String[] arrayOfValues) {
-        return arrayOfValues.length >= 2;
+    private static Project extractProjectWithColon(String value) {
+        var arrayOfValues = value.split(COLON);
+        if (hasTwoOrMoreEntries(arrayOfValues)) {
+            var name = arrayOfValues[0].trim();
+            var identifier = arrayOfValues[1].trim();
+            return new Project(identifier, name);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -50,5 +80,9 @@ public final class Project {
 
     public String getName() {
         return name;
+    }
+
+    private static boolean hasTwoOrMoreEntries(String[] arrayOfValues) {
+        return arrayOfValues.length >= 2;
     }
 }
