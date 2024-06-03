@@ -66,6 +66,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class DublinCoreScraperTest {
@@ -1144,19 +1145,9 @@ public class DublinCoreScraperTest {
         assertThat(record.getPublication().getJournal(), is(notNullValue()));
     }
 
-    @Test
-    void shouldScrapeProjectSeparatedByColon() {
-        var type = toDcType("Journal article");
-        var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, "Norges forskningsråd: 309622");
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
-        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "sintef");
-        var project = record.getProjects().iterator().next();
-        assertThat(project.getIdentifier(), is(equalTo("309622")));
-        assertThat(project.getName(), is(equalTo("Norges forskningsråd")));
-    }
-
-    @Test
-    void shouldScrapeProjectSeparatedBySlash() {
+    @ParameterizedTest
+    @ValueSource(strings = {"EC/H2020/727610", "EC/H2020: 727610"})
+    void shouldScrapeProject() {
         var type = toDcType("Journal article");
         var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, "EC/H2020/727610");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
@@ -1177,10 +1168,22 @@ public class DublinCoreScraperTest {
         assertThat(project.getName(), is(equalTo("Klima- og miljødepartementet")));
     }
 
-    @Test
-    void shouldNotFailWhenProjectCanNotBeConverted() {
+    @ParameterizedTest
+    @ValueSource(strings = {"/727610", "EC/H2020: ", "12345"})
+    void shouldNotCreateProjectWhenProjectIsMissingANameOrdIdentifier(String value) {
         var type = toDcType("Journal article");
-        var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, null);
+        var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, value);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "sintef");
+        var projects = record.getProjects();
+        assertThat(projects, is(emptyIterable()));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void shouldNotFailWhenProjectCanNotBeConverted(String value) {
+        var type = toDcType("Journal article");
+        var citationContainingJournalName = new DcValue(Element.RELATION, Qualifier.PROJECT, value);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, citationContainingJournalName));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "sintef");
         var projects = record.getProjects();

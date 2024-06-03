@@ -1,8 +1,6 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
-import java.util.Arrays;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public final class Project {
 
@@ -18,42 +16,25 @@ public final class Project {
 
     public static Project fromBrageValue(String value) {
         try {
-            if (value.contains(COLON)) {
-                return extractProjectWithColon(value);
-            }
-            if (value.contains(SLASH)) {
-                return extractProjectWithSlash(value);
-            } else {
-                return null;
-            }
+            var colonIndex = value.lastIndexOf(COLON);
+            var slashIndex = value.lastIndexOf(SLASH);
+
+            var index = getSeparatorIndexPrioritizingColon(colonIndex, slashIndex);
+
+            return extractProject(value, index);
         } catch (Exception e) {
             return null;
         }
     }
 
-    private static Project extractProjectWithSlash(String value) {
-        var arrayOfValues = value.split(SLASH);
-        if (hasTwoOrMoreEntries(arrayOfValues)) {
-            var name = Arrays.stream(Arrays.copyOfRange(arrayOfValues, 0, arrayOfValues.length - 1))
-                           .map(String::valueOf)
-                           .map(String::trim)
-                           .collect(Collectors.joining(SLASH));
-            var identifier = arrayOfValues[arrayOfValues.length -1].trim();
-            return new Project(identifier, name);
-        } else {
-            return null;
-        }
+    private static int getSeparatorIndexPrioritizingColon(int colonIndex, int slashIndex) {
+        return colonIndex > 0 ? colonIndex : slashIndex;
     }
 
-    private static Project extractProjectWithColon(String value) {
-        var arrayOfValues = value.split(COLON);
-        if (hasTwoOrMoreEntries(arrayOfValues)) {
-            var name = arrayOfValues[0].trim();
-            var identifier = arrayOfValues[1].trim();
-            return new Project(identifier, name);
-        } else {
-            return null;
-        }
+    private static Project extractProject(String value, int index) {
+        var identifier = value.substring(index + 1).trim();
+        var name = value.substring(0, index).trim();
+        return !identifier.isEmpty() && !name.isEmpty() ? new Project(identifier, name) : null;
     }
 
     @Override
@@ -79,9 +60,5 @@ public final class Project {
 
     public String getName() {
         return name;
-    }
-
-    private static boolean hasTwoOrMoreEntries(String... values) {
-        return values.length >= 2;
     }
 }
