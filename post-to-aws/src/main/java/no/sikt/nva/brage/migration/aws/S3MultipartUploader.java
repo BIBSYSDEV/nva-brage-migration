@@ -5,12 +5,16 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import no.unit.nva.s3.S3Driver;
 import nva.commons.core.attempt.Failure;
+import nva.commons.core.ioutils.IoUtils;
+import nva.commons.core.paths.UnixPath;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
@@ -23,6 +27,7 @@ import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 
@@ -58,7 +63,23 @@ public class S3MultipartUploader {
     }
 
     public void upload(S3Client s3Client) {
-        attempt(() -> multiPartUploadUsingClient(s3Client)).orElseThrow(this::logError);
+        if (fileIsEmpty()) {
+            putFileToS3(s3Client);
+        } else {
+            attempt(() -> multiPartUploadUsingClient(s3Client)).orElseThrow(this::logError);
+        }
+    }
+
+    private void putFileToS3(S3Client s3Client)  {
+        s3Client.putObject(PutObjectRequest.builder()
+                               .bucket(bucket)
+                               .key(key)
+                               .contentDisposition(createContentDisposition())
+                               .build(), RequestBody.fromFile(file));
+    }
+
+    private boolean fileIsEmpty() {
+        return this.file.length() == 0;
     }
 
     public S3MultipartUploader file(File file) {
@@ -97,7 +118,7 @@ public class S3MultipartUploader {
         return CompletedMultipartUpload.builder().parts(completedParts).build();
     }
 
-    private RuntimeException logError(Failure<CompleteMultipartUploadResponse> failure) {
+    private RuntimeException logError(Failure<?> failure) {
         logger.error(failure.getException().toString());
         logger.error(String.format(COULD_NOT_UPLOAD_FILE_MESSAGE, filename));
         return new RuntimeException();
