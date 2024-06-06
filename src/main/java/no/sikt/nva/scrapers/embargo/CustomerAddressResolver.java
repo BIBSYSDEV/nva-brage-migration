@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class CustomerAddressResolver {
 
-    public static final Set<String> IGNORED_CUSTOMERS = Set.of("ffi");
+    public static final Set<String> IGNORED_CUSTOMERS = Set.of("ffi", "vegvesen");
     private static final Logger logger = LoggerFactory.getLogger(CustomerAddressResolver.class);
     private static final char SEPARATOR = ';';
     private static final String CUSTOMER_ADDRESSES = "customer_address.csv";
