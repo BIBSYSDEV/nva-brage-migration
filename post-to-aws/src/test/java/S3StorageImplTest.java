@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.aws.S3StorageImpl;
 import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.NvaType;
@@ -26,7 +27,6 @@ import no.sikt.nva.brage.migration.common.model.record.Type;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.unit.nva.stubs.FakeS3Client;
-import nva.commons.core.paths.UnixPath;
 import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -36,9 +36,8 @@ import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartResponse;
 
@@ -55,37 +54,35 @@ public class S3StorageImplTest {
     void shouldUploadRecordAndFileToS3() {
         Record testRecord = createValidTestRecord();
         var expectedKeyToRecord = "CUSTOMER/11/1/1.json";
-        var expectedKeyToFile =
-            "CUSTOMER/11/1/" + testRecord.getContentBundle()
-                                   .getContentFileByFilename(VALID_TEST_FILE_NAME)
-                                   .getIdentifier();
+        var fileIdentifier = getFileByName(testRecord,VALID_TEST_FILE_NAME);
+        var expectedKeyToFile = "CUSTOMER/11/1/" + fileIdentifier;
         var s3Client = new FakeMultipartUploadS3Client();
         var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
         storageClient.storeRecord(testRecord);
-        var actualRecordKeyFromBucket =
-            s3Client.listObjects(createListObjectsRequest(UnixPath.fromString(expectedKeyToRecord)))
-                .contents()
-                .get(0).key();
-        var actualFileKeyFromBucket = s3Client.getSingleItem();
+        var actualRecordKeyFromBucket = s3Client.getKeyByIdentifier(expectedKeyToRecord);
+        var actualFileKeyFromBucket = s3Client.getKeyByIdentifier(fileIdentifier);
 
         assertThat(actualRecordKeyFromBucket, is(equalTo(expectedKeyToRecord)));
         assertThat(actualFileKeyFromBucket, is(equalTo(expectedKeyToFile)));
     }
 
+    private static UUID getFileByName(Record testRecord, String filename) {
+        return testRecord.getContentBundle().getContentFileByFilename(filename).getIdentifier();
+    }
+
     @Test
     void shouldUploadLogFilesToS3() {
-        var s3Client = new FakeS3Client();
+        var s3Client = new FakeMultipartUploadS3Client();
         var storageClient = new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING);
         var customer = "someCustomer";
         storageClient.storeLogs(customer);
-        var bucketContent = s3Client.listObjects(createListObjectsRequest(UnixPath.fromString(CUSTOMER)))
-                                .contents();
+        var bucketContent = s3Client.listObjects(CUSTOMER);
 
         assertThat(bucketContent.size(), is(equalTo(3)));
         assertThat(bucketContent,
-                   containsInAnyOrder(S3Object.builder().key(CUSTOMER + "/" +  String.format(DEFAULT_ERROR_FILENAME, customer)).build(),
-                                      S3Object.builder().key(CUSTOMER + "/" + String.format(DEFAULT_INFO_FILENAME, customer)).build(),
-                                      S3Object.builder().key(CUSTOMER + "/" + String.format(DEFAULT_WARNING_FILENAME, customer)).build()));
+                   containsInAnyOrder(Path.of(CUSTOMER, String.format(DEFAULT_ERROR_FILENAME, customer)).toString(),
+                                      Path.of(CUSTOMER, String.format(DEFAULT_INFO_FILENAME, customer)).toString(),
+                                      Path.of(CUSTOMER, String.format(DEFAULT_WARNING_FILENAME, customer)).toString()));
     }
 
     @Test
@@ -104,10 +101,7 @@ public class S3StorageImplTest {
                                               EXPERIMENTAL_BUCKET_SETTTING);
         String[] bundles = {"2833909"};
         storageClient.storeProcessedCollections(null,bundles);
-        var actualFileKeyFromBucket =
-            s3Client.listObjects(createListObjectsRequest(UnixPath.fromString(expectedKeyFromBucket)))
-                .contents()
-                .get(0).key();
+        var actualFileKeyFromBucket = s3Client.listObjects(expectedKeyFromBucket).get(0);
         assertThat(actualFileKeyFromBucket, is(equalTo(expectedKeyFromBucket)));
     }
 
@@ -151,10 +145,23 @@ public class S3StorageImplTest {
         assertThrows(RuntimeException.class, () -> storageClient.storeRecord(record));
     }
 
+    @Test
+    void shouldUploadDublinCoreToS3() {
+        var testRecord = testRecordWithDublinCoreOnly();
+        var dublinCoreIdentifier = testRecord.getContentBundle()
+                                       .getContentFileByFilename("dublin_core.xml")
+                                       .getIdentifier();
+        var s3Client = new FakeMultipartUploadS3Client();
+        new S3StorageImpl(s3Client, TEST_PATH, CUSTOMER, EXPERIMENTAL_BUCKET_SETTTING).storeRecord(testRecord);
+        var actualFileKeyFromBucket = s3Client.getKeyByIdentifier(dublinCoreIdentifier);
+        var expectedKey = "CUSTOMER/11/1/" + dublinCoreIdentifier;
+
+        assertThat(actualFileKeyFromBucket, is(equalTo(expectedKey)));
+    }
+
     private static GetObjectRequest getObjectRequest(String expectedKey) {
         return GetObjectRequest.builder()
-                   .bucket(
-                       S3StorageImpl.EXPERIMENTAL_BUCKET_NAME)
+                   .bucket(S3StorageImpl.EXPERIMENTAL_BUCKET_NAME)
                    .key(expectedKey).build();
     }
 
@@ -162,26 +169,40 @@ public class S3StorageImplTest {
         return String.join(PATH_DELIMITER, values);
     }
 
-    private ListObjectsRequest createListObjectsRequest(UnixPath folder) {
-        return ListObjectsRequest.builder()
-                   .bucket(S3StorageImpl.EXPERIMENTAL_BUCKET_NAME)
-                   .prefix(folder.toString())
-                   .maxKeys(10)
-                   .build();
-    }
-
     private Record createValidTestRecord() {
         var record = new Record();
         record.setType(new Type(Set.of(BrageType.BOOK.getValue()), NvaType.BOOK.getValue()));
         record.setPartOf("partOfSomethingBigger");
         record.setCristinId("cristinId");
+        var contentFile = getContentFile(record);
+        var dublinCoreFile = getDublinCoreFile();
+        record.setContentBundle(new ResourceContent(List.of(contentFile, dublinCoreFile)));
+        record.setId(UriWrapper.fromUri("https://hdl.handle.net/11/1").getUri());
+        return record;
+    }
+
+    private Record testRecordWithDublinCoreOnly() {
+        var record = new Record();
+        record.setType(new Type(Set.of(BrageType.BOOK.getValue()), NvaType.BOOK.getValue()));
+        record.setPartOf("partOfSomethingBigger");
+        record.setCristinId("cristinId");
+        record.setBrageLocation("11/1");
+        var dublinCoreFile = getDublinCoreFile();
+        record.setContentBundle(new ResourceContent(List.of(dublinCoreFile)));
+        record.setId(UriWrapper.fromUri("https://hdl.handle.net/11/1").getUri());
+        return record;
+    }
+
+    private static ContentFile getDublinCoreFile() {
+        return new ContentFile("dublin_core.xml", null, null, UUID.randomUUID(), null, null);
+    }
+
+    private static ContentFile getContentFile(Record record) {
         record.setBrageLocation("11/1");
         var contentFile = new ContentFile();
         contentFile.setFilename(VALID_TEST_FILE_NAME);
         contentFile.setIdentifier(UUID.randomUUID());
-        record.setContentBundle(new ResourceContent(List.of(contentFile)));
-        record.setId(UriWrapper.fromUri("https://hdl.handle.net/11/1").getUri());
-        return record;
+        return contentFile;
     }
 
     private Record createNullRecord() {
@@ -212,8 +233,22 @@ public class S3StorageImplTest {
             return UploadPartResponse.builder().eTag(randomString()).build();
         }
 
-        public String getSingleItem() {
-            return keys.get(0);
+        public String getKeyByIdentifier(Object name) {
+            return keys.stream()
+                       .filter(key -> key.contains(name.toString()))
+                       .findFirst()
+                       .orElseThrow();
+        }
+
+        public List<String> listObjects(String path) {
+            return keys.stream()
+                       .filter(key -> key.startsWith(path))
+                       .collect(Collectors.toList());
+        }
+
+        public PutObjectResponse putObject(PutObjectRequest putObjectRequest, RequestBody requestBody) {
+            keys.add(putObjectRequest.key());
+            return PutObjectResponse.builder().build();
         }
     }
 }

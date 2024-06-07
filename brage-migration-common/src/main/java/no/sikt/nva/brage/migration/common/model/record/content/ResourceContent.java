@@ -76,6 +76,7 @@ public class ResourceContent {
         CCLICENSE("CC-LICENSE"),
         ORE("ORE"),
         SWORD("SWORD"),
+        IGNORED("IGNORED"),
         METADATA("METADATA");
 
         private final String value;
