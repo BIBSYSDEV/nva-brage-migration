@@ -112,7 +112,12 @@ public final class ContentScraper {
                                   .map(this::convertToFile)
                                   .flatMap(Optional::stream)
                                   .collect(Collectors.toList());
+        contentFileList.add(createDublinCoreFile());
         return new ResourceContent(contentFileList);
+    }
+
+    private ContentFile createDublinCoreFile() {
+        return new ContentFile("dublin_core.xml", BundleType.IGNORED, null, UUID.randomUUID(), null, null);
     }
 
     private Optional<ContentFile> convertToFile(String fileInfo) {

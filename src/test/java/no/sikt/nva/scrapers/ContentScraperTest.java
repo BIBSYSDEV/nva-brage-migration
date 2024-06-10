@@ -28,6 +28,7 @@ public class ContentScraperTest {
     public static final String ORIGINAL_FILENAME_1 = "rapport2022_25_1.pdf";
     public static final String ORIGINAL_FILENAME_2 = "rapport2022_25_2.pdf";
     public static final String CUSTOM_LICENSE_PDF_FILENAME = "CustomLicense.pdf";
+    public static final String DUBLIN_CORE_FILE_NAME = "dublin_core.xml";
     private static final License someLicense = new License(null, null);
     private ContentScraper contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
                                                                new BrageLocation(null),
@@ -40,7 +41,8 @@ public class ContentScraperTest {
                                             .stream()
                                             .map(ContentFile::getFilename)
                                             .collect(Collectors.toList());
-        assertThat(actualContentFilenameList, containsInAnyOrder(ORIGINAL_FILENAME_1, ORIGINAL_FILENAME_2, CUSTOM_LICENSE_PDF_FILENAME));
+        assertThat(actualContentFilenameList, containsInAnyOrder(ORIGINAL_FILENAME_1, ORIGINAL_FILENAME_2,
+                                                                 CUSTOM_LICENSE_PDF_FILENAME, DUBLIN_CORE_FILE_NAME));
     }
 
     @Test
@@ -58,11 +60,16 @@ public class ContentScraperTest {
         contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
                                             new BrageLocation(null),
                                             someLicense, "3022-08-24");
-        var actualContentFilenameList = contentScraper.scrapeContent().getContentFiles();
-
+        var actualContentFilenameList = contentScraper.scrapeContent().getContentFiles().stream()
+                                            .filter(ContentScraperTest::isNotDublinCoreFile)
+                                            .collect(Collectors.toList());
         assertTrue(actualContentFilenameList.stream().allMatch(contentFile -> contentFile.getEmbargoDate().equals(expectedEmbargo)));
         assertThat(actualContentFilenameList.stream().map(ContentFile::getFilename).collect(Collectors.toList()),
                    containsInAnyOrder(ORIGINAL_FILENAME_1, ORIGINAL_FILENAME_2, CUSTOM_LICENSE_PDF_FILENAME));
+    }
+
+    private static boolean isNotDublinCoreFile(ContentFile file) {
+        return !DUBLIN_CORE_FILE_NAME.equals(file.getFilename());
     }
 
     @Test
