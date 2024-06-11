@@ -660,9 +660,11 @@ public class BrageMigrationCommand implements Callable<Integer> {
         public AWSCredentialsProvider getCredentialsProviderAwsAuth() {
             switch (this) {
                 case EXPERIMENTAL:
-                case SANDBOX:
-                case DEVELOP:
                     return new DefaultAWSCredentialsProviderChain();
+                case SANDBOX:
+                    return getProfileCredentialsProviderAuth("nva-sandbox-brage-migration");
+                case DEVELOP:
+                    return getProfileCredentialsProviderAuth("nva-dev-brage-migration");
                 case TEST:
                     return getProfileCredentialsProviderAuth("nva-test-brage-migration");
                 case PROD:
