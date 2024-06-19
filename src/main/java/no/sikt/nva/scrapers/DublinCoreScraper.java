@@ -448,7 +448,7 @@ public class DublinCoreScraper {
                    .map(DoiValidator::updateDoiStructureIfNeeded)
                    .map(DoiValidator::replaceCharactersIfNeeded)
                    .map(DoiValidator::attemptToReturnDoi)
-                   .map(convertToUriAttempt())
+                   .map(convertToDoiUriAttempt())
                    .orElse(null);
     }
 
@@ -475,6 +475,20 @@ public class DublinCoreScraper {
             }
         };
     }
+
+    private static Function<String, URI> convertToDoiUriAttempt() {
+        return doi -> {
+            try {
+                return URI.create(doi);
+            } catch (Exception e) {
+                return DoiValidator.isValidDoi(doi)
+                           ? URI.create(DoiValidator.encodeDoiPathIfNeeded(doi))
+                           : null;
+            }
+        };
+    }
+
+
 
     private static void logUnscrapedValues(DublinCore dublinCore, BrageLocation brageLocation) {
         List<String> unscrapedDcValues = findUnscrapedFields(dublinCore);

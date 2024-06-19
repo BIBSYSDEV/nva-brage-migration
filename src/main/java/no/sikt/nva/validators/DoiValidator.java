@@ -3,10 +3,14 @@ package no.sikt.nva.validators;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.model.dublincore.DcValue;
@@ -20,7 +24,8 @@ public class DoiValidator {
     public static final String HTTP_STRING = "http";
     public static final String HTTPS_STRING = "https://";
     public static final String DOI_DOMAIN_NAME = "doi.org/";
-    public static final String COLON = "doi:";
+    public static final String COLON_V1 = "doi:";
+    public static final String COLON_V2 = "DOI:";
     public static final String ENCODED_SLASH = "%2F";
     public static final String SLASH = "/";
 
@@ -51,6 +56,23 @@ public class DoiValidator {
         }
     }
 
+    public static String encodeDoiPathIfNeeded(String value) {
+        try {
+            new URI(value);
+            return value;
+        } catch (URISyntaxException e) {
+            return valueWithEncodedLastPath(value);
+        }
+    }
+
+    private static String valueWithEncodedLastPath(String value) {
+        var parts = value.split(SLASH);
+        var lastPath = parts[parts.length - 1];
+        var encodedLastPath = URLEncoder.encode(lastPath, StandardCharsets.UTF_8);
+        parts[parts.length - 1] = encodedLastPath;
+        return String.join(SLASH, parts);
+    }
+
     public static String updateDoiStructureIfNeeded(String inputDoi) {
         var doi = removeEmptySpaces(inputDoi);
         if (doi.contains(HTTP_STRING)) {
@@ -59,7 +81,7 @@ public class DoiValidator {
         if (doi.contains(DOI_DOMAIN_NAME)) {
             return HTTPS_STRING + doi;
         }
-        if (doi.contains(COLON)) {
+        if (doi.contains(COLON_V1) || doi.contains(COLON_V2)) {
             return handleDoiWithColon(doi);
         } else {
             return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
@@ -79,7 +101,7 @@ public class DoiValidator {
 
 
     private static String handleDoiWithColon(String doi) {
-        var doiPath = doi.split(COLON)[1];
+        var doiPath = getDoiPath(doi);
         if (doiPath.contains(HTTPS_STRING)) {
             return doiPath;
         }
@@ -88,6 +110,10 @@ public class DoiValidator {
         } else {
             return HTTPS_STRING + DOI_DOMAIN_NAME + doiPath;
         }
+    }
+
+    private static String getDoiPath(String doi) {
+        return doi.contains(COLON_V1) ? doi.split(COLON_V1)[1] : doi.split(COLON_V2)[1];
     }
 
     private static Optional<ArrayList<ErrorDetails>> validateDoiListOnline(List<String> doiList) {
@@ -156,7 +182,13 @@ public class DoiValidator {
     }
 
     private static boolean isValidDoiOffline(String doi) {
-        return nva.commons.doi.DoiValidator.validateOffline(doi);
+        return isValidDoi(doi);
+    }
+
+    public static boolean isValidDoi(String doi) {
+        var doiRegex = "^(https?://doi\\.org/)?10.\\d{4,9}/[-._;():A-Z0-9<>\\[\\]]+";
+        var pattern = Pattern.compile(doiRegex, Pattern.CASE_INSENSITIVE);
+        return pattern.matcher(doi).matches();
     }
 
     private static String removeEmptySpaces(String value) {

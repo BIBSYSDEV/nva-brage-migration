@@ -5,45 +5,30 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.scrapers.DublinCoreFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class DoiValidatorTest {
 
-    @Test
-    void shouldValidateDoiWithoutBaseUrlCorrectly() {
-        var doiWithoutBaseUrl = "10.5194/nhess-2018-174";
-        var dcType = new DcValue(Element.TYPE, null, "Book");
-        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doiWithoutBaseUrl);
-        var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
-        var expectedDoiErrors = Optional.empty();
-        var actualDoiErrors = DoiValidator.getDoiErrorDetailsOffline(dublinCoreWithDoi);
-        assertThat(actualDoiErrors, is(equalTo(expectedDoiErrors)));
-    }
-
-    @Test
-    void shouldValidateDoiWithoutHttpsStringCorrectly() {
-        var doiWithoutBaseUrl = "doi.org/10.5194/nhess-2018-174";
-        var dcType = new DcValue(Element.TYPE, null, "Book");
-        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doiWithoutBaseUrl);
-        var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
-        var expectedDoiErrors = Optional.empty();
-        var actualDoiErrors = DoiValidator.getDoiErrorDetailsOffline(dublinCoreWithDoi);
-        assertThat(actualDoiErrors, is(equalTo(expectedDoiErrors)));
-    }
-
-    @Test
-    void shouldValidateDoiCorrectly() {
-        var doiWithoutBaseUrl = "https://doi.org/10.5194/nhess-2018-174";
-        var dcType = new DcValue(Element.TYPE, null, "Book");
-        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doiWithoutBaseUrl);
-        var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
-        var expectedDoiErrors = Optional.empty();
-        var actualDoiErrors = DoiValidator.getDoiErrorDetailsOffline(dublinCoreWithDoi);
-        assertThat(actualDoiErrors, is(equalTo(expectedDoiErrors)));
+    public static Stream<Arguments> doiProvider() {
+        return Stream.of(
+            Arguments.of("DOI:10.1371/journal.pone.0118594"),
+            Arguments.of("doi:10.1371/journal.pone.0118594"),
+        Arguments.of("DOI:10.1371/journal.pone.0125743"),
+        Arguments.of("https://doi.org/10.5194/nhess-2018-174"),
+        Arguments.of("doi.org/10.5194/nhess-2018-174"),
+        Arguments.of("10.5194/nhess-2018-174"),
+        Arguments.of("https://doi.org/10.1577/1548-8667(1998)010<0056:EOOAFI>2.0.CO;2"),
+        Arguments.of("https://doi.org/10.1890/0012-9658(2006)87[2915:DMWITM]2.0.CO;2"),
+        Arguments.of("https://doi.org/10.2983/0730-8000(2008)27[525:EOAMRF]2.0.CO;2")
+        );
     }
 
     @Test
@@ -60,4 +45,14 @@ public class DoiValidatorTest {
         assertThat(actualDoiErrorsOnline, is(equalTo(expectedDoiErrors)));
     }
 
+    @ParameterizedTest
+    @MethodSource("doiProvider")
+    void shouldNotCreateErrorWhenDoiIsValid(String doi) {
+        var dcType = new DcValue(Element.TYPE, null, "Book");
+        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doi);
+        var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
+
+        var doiErrors = DoiValidator.getDoiErrorDetailsOffline(dublinCoreWithDoi);
+        assertThat(doiErrors, is(equalTo(Optional.empty())));
+    }
 }

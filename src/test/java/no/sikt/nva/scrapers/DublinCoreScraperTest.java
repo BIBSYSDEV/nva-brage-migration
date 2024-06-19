@@ -790,6 +790,20 @@ public class DublinCoreScraperTest {
         assertThat(record.getLink(), is(nullValue()));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"https://doi.org/10.1577/1548-8667(1998)010<0056:EOOAFI>2.0.CO;2",
+        "https://doi.org/10.1890/0012-9658(2006)87[2915:DMWITM]2.0.CO;2",
+        "https://doi.org/10.2983/0730-8000(2008)27[525:EOAMRF]2.0.CO;2"})
+    void shouldCreateDoiWhenDoiIsNotValidUriButIsValisDoi(String value) {
+        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, value);
+        var brageLocation = new BrageLocation(null);
+        var typeDcValue = toDcType("Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, doi));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
+
+        assertThat(record.getDoi(), is(not(nullValue())));
+    }
+
     @Test
     void shouldDetectDifferencesBetweenDoiAndLinkAndMapLinkCorrectly() {
         var appender = LogUtils.getTestingAppender(DublinCoreScraper.class);
