@@ -29,6 +29,7 @@ public class EmbargoParser {
     private static final String REGEX_CRISTIN_XML_METADATA_FILE = "cristin-\\d+\\.xml";
     private static final Pattern PATTERN_CRISTIN_XML_METADATA_FILE = Pattern.compile(REGEX_CRISTIN_XML_METADATA_FILE);
     public static final Instant PERMANENTLY_LOCKED = Instant.parse("9998-01-01T16:59:59.999Z");
+    private static final String DUBLIN_CORE_FILE_NAME = "dublin_core.xml";
 
     public static Record checkForEmbargoFromSuppliedEmbargoFile(Record record, Map<String, List<Embargo>> embargoes,
                                                                 OnlineEmbargoChecker onlineEmbargoChecker) {
@@ -41,10 +42,16 @@ public class EmbargoParser {
     }
 
     private static void checkOnlineForMissingEmbargos(Record record, OnlineEmbargoChecker onlineEmbargoChecker) {
-        record.getContentBundle().getContentFiles().forEach(contentFile -> checkEmbargoOnline(contentFile,
+        record.getContentBundle().getContentFiles().stream()
+            .filter(EmbargoParser::isNotDublinCore)
+            .forEach(contentFile -> checkEmbargoOnline(contentFile,
          record,
                                                                                               onlineEmbargoChecker));
 
+    }
+
+    private static boolean isNotDublinCore(ContentFile file) {
+        return !DUBLIN_CORE_FILE_NAME.equals(file.getFilename());
     }
 
     private static void checkEmbargoOnline(ContentFile contentFile,
