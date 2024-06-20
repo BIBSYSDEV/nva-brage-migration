@@ -8,6 +8,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -18,14 +19,14 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import nva.commons.core.StringUtils;
 import nva.commons.doi.UnitHttpClient;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.jetbrains.annotations.NotNull;
 
 public class DoiValidator {
 
     public static final String HTTP_STRING = "http";
     public static final String HTTPS_STRING = "https://";
     public static final String DOI_DOMAIN_NAME = "doi.org/";
-    public static final String COLON_V1 = "doi:";
-    public static final String COLON_V2 = "DOI:";
+    public static final String DOI_WITH_COLON = "DOI:";
     public static final String ENCODED_SLASH = "%2F";
     public static final String SLASH = "/";
 
@@ -66,11 +67,19 @@ public class DoiValidator {
     }
 
     private static String valueWithEncodedLastPath(String value) {
-        var parts = value.split(SLASH);
-        var lastPath = parts[parts.length - 1];
+        if (value.endsWith(SLASH)) {
+            var valueWithoutTrailingSlash = value.substring(0, value.length() - 1);
+            return encodLastPathOf(valueWithoutTrailingSlash);
+        } else {
+            return encodLastPathOf(value);
+        }
+    }
+
+    private static @NotNull String encodLastPathOf(String value) {
+        int lastSlashIndex = value.lastIndexOf(SLASH);
+        var lastPath = value.substring(lastSlashIndex + 1);
         var encodedLastPath = URLEncoder.encode(lastPath, StandardCharsets.UTF_8);
-        parts[parts.length - 1] = encodedLastPath;
-        return String.join(SLASH, parts);
+        return value.substring(0, lastSlashIndex) + SLASH + encodedLastPath;
     }
 
     public static String updateDoiStructureIfNeeded(String inputDoi) {
@@ -81,7 +90,7 @@ public class DoiValidator {
         if (doi.contains(DOI_DOMAIN_NAME)) {
             return HTTPS_STRING + doi;
         }
-        if (doi.contains(COLON_V1) || doi.contains(COLON_V2)) {
+        if (doi.contains(DOI_WITH_COLON) || doi.contains(DOI_WITH_COLON.toLowerCase(Locale.ROOT))) {
             return handleDoiWithColon(doi);
         } else {
             return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
@@ -113,7 +122,9 @@ public class DoiValidator {
     }
 
     private static String getDoiPath(String doi) {
-        return doi.contains(COLON_V1) ? doi.split(COLON_V1)[1] : doi.split(COLON_V2)[1];
+        return doi.contains(DOI_WITH_COLON)
+                   ? doi.split(DOI_WITH_COLON)[1]
+                   : doi.split(DOI_WITH_COLON.toLowerCase(Locale.ROOT))[1];
     }
 
     private static Optional<ArrayList<ErrorDetails>> validateDoiListOnline(List<String> doiList) {
@@ -186,7 +197,7 @@ public class DoiValidator {
     }
 
     public static boolean isValidDoi(String doi) {
-        var doiRegex = "^(https?://doi\\.org/)?10.\\d{4,9}/[-._;():A-Z0-9<>\\[\\]]+";
+        var doiRegex = "^(https?://doi\\.org/)?10.\\d{4,9}/[-._;():A-Z0-9<>\\[\\]]+/?$";
         var pattern = Pattern.compile(doiRegex, Pattern.CASE_INSENSITIVE);
         return pattern.matcher(doi).matches();
     }

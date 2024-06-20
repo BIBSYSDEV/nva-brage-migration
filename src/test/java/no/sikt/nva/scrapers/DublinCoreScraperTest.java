@@ -571,6 +571,19 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldCreateDoiFromUr() {
+        var doi = "doi:10.1007/s12062-016-9157-z";
+        var dcType = toDcType("Book");
+        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doi);
+        var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
+        var appender = LogUtils.getTestingAppenderForRootLogger();
+        var record = dcScraper.validateAndParseDublinCore(
+            dublinCoreWithDoi, new BrageLocation(null), SOME_CUSTOMER);
+        assertThat(record.getDoi().toString(), is(equalTo("https://doi.org/10.1007/s12062-016-9157-z")));
+        assertThat(appender.getMessages(), not(containsString(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK.toString())));
+    }
+
+    @Test
     void shouldSetPublisherAuthorityToAcceptedVersionWhenVersionIsAcceptedVersion() {
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "acceptedVersion");
         var typeDcValue = toDcType("Others");
@@ -796,6 +809,18 @@ public class DublinCoreScraperTest {
         "https://doi.org/10.2983/0730-8000(2008)27[525:EOAMRF]2.0.CO;2"})
     void shouldCreateDoiWhenDoiIsNotValidUriButIsValisDoi(String value) {
         var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, value);
+        var brageLocation = new BrageLocation(null);
+        var typeDcValue = toDcType("Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, doi));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
+
+        assertThat(record.getDoi(), is(not(nullValue())));
+    }
+
+    @Test
+    void shouldCreateDoiWhenDoiIsNotValidUriButIsValisDoiWithTrailingSlash() {
+        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI,
+                              "https://doi.org/10.2983/0730-8000(2008)27[525:EOAMRF]2.0.CO;2/");
         var brageLocation = new BrageLocation(null);
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, doi));
