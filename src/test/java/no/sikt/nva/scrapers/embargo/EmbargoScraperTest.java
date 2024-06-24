@@ -2,6 +2,7 @@ package no.sikt.nva.scrapers.embargo;
 
 import static no.sikt.nva.scrapers.embargo.EmbargoParser.PERMANENTLY_LOCKED;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
+import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -301,6 +302,27 @@ public class EmbargoScraperTest {
         var embargos = new HashMap<String, List<Embargo>>();
         record.setId(UriWrapper.fromUri(someHandle).getUri());
         record.setContentBundle(new ResourceContent(List.of(new ContentFile(filename, BundleType.ORIGINAL,
+                                                                            randomString(),
+                                                                            UUID.randomUUID(),
+                                                                            License.fromBrageLicense(
+                                                                                BrageLicense.CC_BY),
+                                                                            null))));
+        var httpClient = mock(HttpClient.class);
+        var onlineEmbargoChecker = new OnlineEmbargoCheckerImpl(httpClient);
+
+        var recordWithEmbargoOnFile = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
+                                                                                           onlineEmbargoChecker);
+        assertThat(recordWithEmbargoOnFile.getContentBundle().getContentFiles().get(0).getEmbargoDate(),
+                   is(nullValue()));
+
+    }
+
+    @Test
+    void shouldNotCheckLicenseForOnlineEmbargo() {
+        var record = new Record();
+        var embargos = new HashMap<String, List<Embargo>>();
+        record.setId(UriWrapper.fromUri(randomUri()).getUri());
+        record.setContentBundle(new ResourceContent(List.of(new ContentFile(randomString(), BundleType.LICENSE,
                                                                             randomString(),
                                                                             UUID.randomUUID(),
                                                                             License.fromBrageLicense(

@@ -12,6 +12,7 @@ import nva.commons.core.JacocoGenerated;
 
 public class ContentFile implements JsonSerializable {
 
+    private static final String DUBLIN_CORE_FILE_NAME = "dublin_core.xml";
     private String filename;
     private BundleType bundleType;
     private String description;
@@ -119,5 +120,17 @@ public class ContentFile implements JsonSerializable {
     @Override
     public String toString() {
         return this.toJsonString();
+    }
+
+    public boolean shouldBeCheckedForEmbargo() {
+        return isNotDublinCore() && isNotLicense();
+    }
+
+    private boolean isNotLicense() {
+        return !BundleType.LICENSE.equals(this.getBundleType());
+    }
+
+    private boolean isNotDublinCore() {
+        return !DUBLIN_CORE_FILE_NAME.equals(this.getFilename());
     }
 }
