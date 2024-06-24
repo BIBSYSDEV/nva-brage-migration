@@ -1,6 +1,7 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
 import java.util.Objects;
+import java.util.Optional;
 import nva.commons.core.JacocoGenerated;
 
 public class PartOfSeries {
@@ -22,7 +23,7 @@ public class PartOfSeries {
     }
 
     public void setNumber(String number) {
-        this.number = number.trim();
+        this.number = Optional.ofNullable(number).map(String::trim).orElse(null);
     }
 
     public String getName() {
@@ -30,7 +31,7 @@ public class PartOfSeries {
     }
 
     public void setName(String name) {
-        this.name = name.trim();
+        this.name = Optional.ofNullable(name).map(String::trim).orElse(null);
     }
 
     @JacocoGenerated

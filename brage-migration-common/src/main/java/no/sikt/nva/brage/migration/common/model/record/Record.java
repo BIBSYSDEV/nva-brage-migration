@@ -16,7 +16,8 @@ import nva.commons.core.JacocoGenerated;
 
 @JsonPropertyOrder({"customer", "resourceOwner", "brageLocation", "id", "cristinId", "doi", "link", "publishedDate",
     "publisherAuthority", "rightsholder", "type", "partOf", "hasPart", "publisherAuthority", "spatialCoverage", "date",
-    "language", "publication", "entityDescription", "recordContent", "errors", "warnings"})
+    "language", "publication", "entityDescription", "recordContent", "errors", "warnings", "projects", "accessCode",
+    "subjectCode", "subjects"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
 
@@ -97,6 +98,7 @@ public class Record {
         return new HashSet<>(list1).equals(new HashSet<>(list2));
     }
 
+    @JsonProperty("projects")
     public List<Project> getProjects() {
         return projects;
     }
@@ -105,6 +107,7 @@ public class Record {
         this.projects = projects;
     }
 
+    @JsonProperty("subjectCode")
     public String getSubjectCode() {
         return subjectCode;
     }
