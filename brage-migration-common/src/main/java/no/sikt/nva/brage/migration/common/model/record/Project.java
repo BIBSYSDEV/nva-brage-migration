@@ -1,5 +1,7 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 public final class Project {
@@ -9,7 +11,8 @@ public final class Project {
     private final String identifier;
     private final String name;
 
-    private Project(String identifier, String name) {
+    @JsonCreator
+    private Project(@JsonProperty("identifier") String identifier, @JsonProperty("name") String name) {
         this.identifier = identifier;
         this.name = name;
     }

@@ -94,6 +94,7 @@ public class S3StorageImpl implements S3Storage {
         var successfullyProcessed = new ArrayList<Record>();
         try {
             var records = getRecords(collections);
+            logger.info("Records to proceed " + records.size());
             records.removeAll(previouslyProceededRecords);
             for (Record record : records) {
                 storeRecord(record);
@@ -112,11 +113,10 @@ public class S3StorageImpl implements S3Storage {
         }
     }
 
-    private List<Record> getRecords(String... collection) throws IOException {
+    private List<Record> getRecords(String... collection) {
         var collectionFiles = getCollections(stripZipBundlesToCollections(collection));
         var listOfRecordsCollections = getRecordsJsonFiles(collectionFiles);
-        var records = extractRecords(listOfRecordsCollections);
-        return records;
+        return extractRecords(listOfRecordsCollections);
     }
 
     private static List<Record> getPreviouslyProceededRecords(String succeededRecordsFile) {
@@ -151,11 +151,11 @@ public class S3StorageImpl implements S3Storage {
         return pathPrefixString;
     }
 
-    public List<Record> readRecordsFromFile(File recordsFile) throws IOException {
+    public List<Record> readRecordsFromFile(File recordsFile) {
         return attempt(() -> readFileAsString(getPathPrefixString() + recordsFile.getPath()))
                    .map(s -> JsonUtils.dtoObjectMapper.readValue(s, Record[].class))
                    .map(Arrays::asList)
-                   .orElse(failure -> List.<Record>of());
+                   .orElseThrow();
     }
 
     private static String readFileAsString(String path) throws IOException {
@@ -211,8 +211,8 @@ public class S3StorageImpl implements S3Storage {
         }
     }
 
-    private List<Record> extractRecords(List<File> listOfRecordsCollections) throws IOException {
-        List<Record> records = new ArrayList<>();
+    private List<Record> extractRecords(List<File> listOfRecordsCollections) {
+        var records = new ArrayList<Record>();
         for (File file : listOfRecordsCollections) {
             if (nonNull(file)) {
                 records.addAll(readRecordsFromFile(file));
