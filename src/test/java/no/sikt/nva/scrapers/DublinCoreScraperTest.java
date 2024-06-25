@@ -125,14 +125,50 @@ public class DublinCoreScraperTest {
         assertThat(appender.getMessages(), containsString(expectedDcValuedLogged.toXmlString()));
     }
 
-    @Test
-    void shouldConvertValidVersionToPublisherAuthority() {
-        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
+    @ParameterizedTest
+    @ValueSource(strings = {"publishedVersion", "acceptedVersion"})
+    void shouldConvertValidVersionToPublisherAuthority(String value) {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, value);
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
-        assertThat(actualPublisherAuthority, is(equalTo(PublisherVersion.PUBLISHED_VERSION)));
+
+        assertThat(actualPublisherAuthority, is(equalTo(PublisherVersion.fromValue(value))));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"draft", "submittedVersion", "updatedVersion", "abcde"})
+    void shouldMapNotSupportedVersionsToNull(String value) {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, value);
+        var typeDcValue = toDcType("Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+        var actualPublisherAuthority = record.getPublisherAuthority().getNva();
+
+        assertThat(actualPublisherAuthority, is(nullValue()));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"draft", "submittedVersion", "updatedVersion", "abcde"})
+    void shouldAddNotSupportVersionToDescriptionList(String value) {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, value);
+        var typeDcValue = toDcType("Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        assertThat(record.getEntityDescription().getDescriptions(), contains(value));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"publishedVersion", "acceptedVersion"})
+    void shouldNotAddNotSupportVersionToDescriptionList(String value) {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, value);
+        var typeDcValue = toDcType("Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        assertThat(record.getEntityDescription().getDescriptions(), not(contains(value)));
     }
 
     @Test
