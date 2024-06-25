@@ -1,5 +1,7 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
+import static java.util.Objects.nonNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -10,9 +12,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.StringUtils;
 
 @JsonPropertyOrder({"customer", "resourceOwner", "brageLocation", "id", "cristinId", "doi", "link", "publishedDate",
     "publisherAuthority", "rightsholder", "type", "partOf", "hasPart", "publisherAuthority", "spatialCoverage", "date",
@@ -20,6 +24,9 @@ import nva.commons.core.JacocoGenerated;
     "subjectCode", "subjects"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
+
+    private static final List<String> DEGREES = List.of(NvaType.BACHELOR_THESIS.getValue(), NvaType.MASTER_THESIS.getValue(),
+                                                   NvaType.DOCTORAL_THESIS.getValue());
 
     private ResourceOwner resourceOwner;
     private EntityDescription entityDescription;
@@ -304,6 +311,11 @@ public class Record {
     public boolean hasOrigin(String handle) {
         var recordOriginCollection = this.getBrageLocation().split("/")[0];
         return handle.split("/")[1].equals(recordOriginCollection);
+    }
+
+    @JsonIgnore
+    public boolean isDegree(){
+        return nonNull(type) && StringUtils.isNotEmpty(type.getNva()) && DEGREES.contains(type.getNva());
     }
 
     public String getAccessCode() {

@@ -1152,6 +1152,17 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldReadPublisherPidForInstitutionIssuingDegree(){
+        var type = toDcType("Bachelor thesis");
+        var publisher = new DcValue(Element.PUBLISHER, null, "gurba");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, publisher));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, "ntnu");
+        var expectedPid = "D61B0D47-C78A-48DC-8537-3AD87DEF4D5B";
+        assertThat(record.getPublication().getPublicationContext().getPublisher().getPid(), is(equalTo(expectedPid)));
+    }
+
+    @Test
     void shouldExtractEmbargo() {
         var embargoDate = "2024-08-26";
         var dcValue = new DcValue(Element.DATE, Qualifier.fromValue("embargoEndDate"), embargoDate);
