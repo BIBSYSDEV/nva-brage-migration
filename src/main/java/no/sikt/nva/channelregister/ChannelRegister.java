@@ -34,6 +34,7 @@ import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.TypeMapper;
 import no.unit.nva.commons.json.JsonUtils;
@@ -46,6 +47,9 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("PMD.GodClass")
 public final class ChannelRegister {
 
+    public static final Set<String> DEGREES = Set.of(NvaType.BACHELOR_THESIS.getValue(),
+                                                      NvaType.DOCTORAL_THESIS.getValue(),
+                                                      NvaType.MASTER_THESIS.getValue());
     public static final String NO_ISSN_OR_JOURNAL_FOUND = "No issn or journal found";
     public static final String NO_PUBLISHER_FOUND = "No publisher found";
     public static final String KANALREGISTER_READING_ERROR_MESSAGE = "Fatal error, could not read kanalregister";
@@ -141,11 +145,33 @@ public final class ChannelRegister {
             if (isJournalArticle(dublinCore, customer)) {
                 return getErrorDetailsForJournalArticle(dublinCore, brageLocation, customer);
             }
-            if (hasPublisher(dublinCore) && isSearchableInPublishers(dublinCore, customer)) {
+            if (hasPublisher(dublinCore) && isSearchableInPublishers(dublinCore, customer) && doesNotHaveSpecialCaseMappingOverRidingRegularChannelRegistry(dublinCore, customer)) {
                 return getErrorDetailsForPublisher(dublinCore, brageLocation, customer);
             }
         }
         return Optional.empty();
+    }
+
+    private boolean doesNotHaveSpecialCaseMappingOverRidingRegularChannelRegistry(DublinCore dublinCore,
+                                                                               String customer ) {
+        return isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
+    }
+
+    private boolean isDegreeFromInstitutionIssuingDegrees(DublinCore dublinCore, String customer) {
+        return !isDegree(dublinCore) || !customerIssuesDegrees(customer);
+    }
+
+    private boolean isDegree(DublinCore dublinCore) {
+        var dublinCoreTypes = extractTypes(dublinCore);
+        var nvaTypes = TypeMapper.mapToNvaTypeIfMappable(dublinCoreTypes);
+        return DEGREES.contains(nvaTypes);
+    }
+
+    private static Set<String> extractTypes(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(dcValue -> Element.TYPE.equals(dcValue.getElement()))
+                   .map(DcValue::getValue)
+                   .collect(Collectors.toSet());
     }
 
     public String lookUpInChannelRegisterForPublisher(Record record, String customer) {
