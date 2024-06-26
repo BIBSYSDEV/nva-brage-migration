@@ -157,7 +157,7 @@ public final class ChannelRegister {
         return !isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
     }
 
-    private boolean isDegreeFromInstitutionIssuingDegrees(DublinCore dublinCore, String customer) {
+    public boolean isDegreeFromInstitutionIssuingDegrees(DublinCore dublinCore, String customer) {
         return isDegree(dublinCore) && customerIssuesDegrees(customer);
     }
 

@@ -51,6 +51,7 @@ public class Record {
     private String subjectCode;
     private String accessCode;
     private List<Project> projects;
+    private Set<String> prioritizedFields;
 
     public Record() {
     }
@@ -87,6 +88,7 @@ public class Record {
                && Objects.equals(getSubjects(), record.getSubjects())
                && Objects.equals(getSubjectCode(), record.getSubjectCode())
                && Objects.equals(getAccessCode(), record.getAccessCode())
+               && Objects.equals(getPrioritizedProperties(), record.getPrioritizedProperties())
                && Objects.equals(getProjects(), record.getProjects());
     }
 
@@ -96,7 +98,7 @@ public class Record {
         return Objects.hash(getResourceOwner(), getEntityDescription(), getCustomer(), getId(), getDoi(), getType(),
                             getPublisherAuthority(), getRightsholder(), getSpatialCoverage(), getPartOf(), getPart(),
                             getPublication(), getContentBundle(), getPublishedDate(), getCristinId(),
-                            getBrageLocation(),
+                            getBrageLocation(), getPrioritizedProperties(),
                             getErrors(), getWarnings(), getLink(), getSubjects(), getSubjectCode(), getAccessCode(),
                             getProjects());
     }
@@ -293,6 +295,15 @@ public class Record {
 
     public void setDoi(URI doi) {
         this.doi = doi;
+    }
+
+    @JsonProperty("prioritizedProperties")
+    public Set<String> getPrioritizedProperties() {
+        return nonNull(prioritizedFields) ? prioritizedFields : new HashSet<>();
+    }
+
+    public void setPrioritizedProperties(Set<String> prioritizedFields) {
+        this.prioritizedFields = prioritizedFields;
     }
 
     @JsonProperty("entityDescription")
