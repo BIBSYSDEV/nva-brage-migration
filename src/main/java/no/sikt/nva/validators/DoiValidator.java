@@ -4,6 +4,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALI
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DOI_ONLINE_CHECK;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -21,14 +22,16 @@ import nva.commons.doi.UnitHttpClient;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("PMD.GodClass")
 public class DoiValidator {
 
-    public static final String HTTP_STRING = "http";
+    public static final String HTTP_STRING = "http://";
     public static final String HTTPS_STRING = "https://";
     public static final String DOI_DOMAIN_NAME = "doi.org/";
     public static final String DOI_WITH_COLON = "DOI:";
     public static final String ENCODED_SLASH = "%2F";
     public static final String SLASH = "/";
+    public static final String DOI = "doi";
 
     public static Optional<ArrayList<ErrorDetails>> getDoiErrorDetailsOnline(DublinCore dublinCore) {
         var doiList = extractDoiList(dublinCore);
@@ -82,18 +85,29 @@ public class DoiValidator {
         return value.substring(0, lastSlashIndex) + SLASH + encodedLastPath;
     }
 
+
+
+
     public static String updateDoiStructureIfNeeded(String inputDoi) {
         var doi = removeEmptySpaces(inputDoi);
-        if (doi.contains(HTTP_STRING)) {
-            return doi;
+        if (isUri(doi) && !doi.contains(DOI)) {
+            return inputDoi;
         }
-        if (doi.contains(DOI_DOMAIN_NAME)) {
-            return HTTPS_STRING + doi;
-        }
-        if (doi.contains(DOI_WITH_COLON) || doi.contains(DOI_WITH_COLON.toLowerCase(Locale.ROOT))) {
+        if (doi.toLowerCase(Locale.ROOT).contains(DOI_WITH_COLON.toLowerCase(Locale.ROOT))) {
             return handleDoiWithColon(doi);
-        } else {
-            return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
+        }
+        if (doi.toLowerCase(Locale.ROOT).contains(HTTP_STRING.toLowerCase(Locale.ROOT)) || doi.contains(DOI_DOMAIN_NAME)) {
+            return HTTPS_STRING + DOI_DOMAIN_NAME + inputDoi.split(DOI_DOMAIN_NAME)[1];
+        }
+        return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
+    }
+
+    private static boolean isUri(String value) {
+        try {
+            var uri = new URL(value);
+            return "http".equals(uri.getProtocol()) || "https".equals(uri.getProtocol());
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -197,7 +211,7 @@ public class DoiValidator {
     }
 
     public static boolean isValidDoi(String doi) {
-        var doiRegex = "^(https?://doi\\.org/)?10.\\d{4,9}/[-._;():A-Z0-9<>\\[\\]]+/?$";
+        var doiRegex = "^(https?://)?(doi\\.org/)?10.\\d{4,9}/[^\\s#%]+/?$";
         var pattern = Pattern.compile(doiRegex, Pattern.CASE_INSENSITIVE);
         return pattern.matcher(doi).matches();
     }

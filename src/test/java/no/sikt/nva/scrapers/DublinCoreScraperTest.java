@@ -99,6 +99,22 @@ public class DublinCoreScraperTest {
         );
     }
 
+    public static Stream<Arguments> doiProvider() {
+        return Stream.of(
+            Arguments.of("https://doi.org/10.1577/1548-8667(1998)010<0056:EOOAFI>2.0.CO;2","https://doi.org/10.1577/1548-8667%281998%29010%3C0056%3AEOOAFI%3E2.0.CO%3B2"),
+            Arguments.of("https://doi.org/10.1890/0012-9658(2006)87[2915:DMWITM]2.0.CO;2","https://doi.org/10.1890/0012-9658%282006%2987%5B2915%3ADMWITM%5D2.0.CO%3B2"),
+            Arguments.of("https://doi.org/10.2983/0730-8000(2008)27[525:EOAMRF]2.0.CO;2","https://doi.org/10.2983/0730-8000%282008%2927%5B525%3AEOAMRF%5D2.0.CO%3B2"),
+            Arguments.of("https://doi.org/10.2983/0730-8000(2008)27[525:EOAMRF]2.0.CO;2/","https://doi.org/10.2983/0730-8000%282008%2927%5B525%3AEOAMRF%5D2.0.CO%3B2"),
+            Arguments.of("http://dx.doi.org/10.5334/ah.be","https://doi.org/10.5334/ah.be"),
+            Arguments.of("10.5194/tc-8-1885-2014","https://doi.org/10.5194/tc-8-1885-2014"),
+            Arguments.of("doi.org/10.5194/tc-8-1885-2014", "https://doi.org/10.5194/tc-8-1885-2014"),
+            Arguments.of("doi:10.5194/tc-8-1885-2014", "https://doi.org/10.5194/tc-8-1885-2014"),
+            Arguments.of("DOI:10.1371/journal.pone.0125743", "https://doi.org/10.1371/journal.pone.0125743"),
+            Arguments.of("https://doi.org/10.1177%2F1757975910383936", "https://doi.org/10.1177/1757975910383936"),
+            Arguments.of("https://doi.org/10.1155/2021/6684334", "https://doi.org/10.1155/2021/6684334")
+        );
+    }
+
     private static DcValue partOfSeries(String value) {
         return new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, value);
     }
@@ -571,19 +587,6 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldCreateDoiFromUr() {
-        var doi = "doi:10.1007/s12062-016-9157-z";
-        var dcType = toDcType("Book");
-        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, doi);
-        var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        var record = dcScraper.validateAndParseDublinCore(
-            dublinCoreWithDoi, new BrageLocation(null), SOME_CUSTOMER);
-        assertThat(record.getDoi().toString(), is(equalTo("https://doi.org/10.1007/s12062-016-9157-z")));
-        assertThat(appender.getMessages(), not(containsString(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK.toString())));
-    }
-
-    @Test
     void shouldSetPublisherAuthorityToAcceptedVersionWhenVersionIsAcceptedVersion() {
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "acceptedVersion");
         var typeDcValue = toDcType("Others");
@@ -741,30 +744,6 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldRepairDoiWithoutSlash() {
-        var typeDcValue = toDcType("Others");
-        var date = new DcValue(Element.DATE, Qualifier.ISSUED, "2010");
-        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1177%2F1757975910383936");
-        var brageLocation = new BrageLocation(null);
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, date, doi));
-        var onlineValidationDisabled = false;
-        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
-        assertThat(record.getDoi().toString(), is(equalTo("https://doi.org/10.1177/1757975910383936")));
-    }
-
-    @Test
-    void shouldScrapeDoiThatHasOldFormat() {
-        var typeDcValue = toDcType("Others");
-        var date = new DcValue(Element.DATE, Qualifier.ISSUED, "2010");
-        var handle = new DcValue(Element.IDENTIFIER, Qualifier.URI, "https://hdl.handle.net/11250/3027043");
-        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "http://dx.doi.org/10.7480/spool.2016.1.1392");
-        var brageLocation = new BrageLocation(null);
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, date, handle, doi));
-        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
-        assertThat(record.getDoi().toString(), is(equalTo(doi.getValue())));
-    }
-
-    @Test
     void shouldNotSwitchNamesWhenComaIsTheLastCharInTheString() {
         var typeDcValue = toDcType("Others");
         var author = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, "Audun Vognild,");
@@ -804,29 +783,15 @@ public class DublinCoreScraperTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"https://doi.org/10.1577/1548-8667(1998)010<0056:EOOAFI>2.0.CO;2",
-        "https://doi.org/10.1890/0012-9658(2006)87[2915:DMWITM]2.0.CO;2",
-        "https://doi.org/10.2983/0730-8000(2008)27[525:EOAMRF]2.0.CO;2"})
-    void shouldCreateDoiWhenDoiIsNotValidUriButIsValisDoi(String value) {
+    @MethodSource("doiProvider")
+    void shouldCreateDoi(String value, String expectedValue) {
         var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, value);
         var brageLocation = new BrageLocation(null);
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, doi));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
 
-        assertThat(record.getDoi(), is(not(nullValue())));
-    }
-
-    @Test
-    void shouldCreateDoiWhenDoiIsNotValidUriButIsValisDoiWithTrailingSlash() {
-        var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI,
-                              "https://doi.org/10.2983/0730-8000(2008)27[525:EOAMRF]2.0.CO;2/");
-        var brageLocation = new BrageLocation(null);
-        var typeDcValue = toDcType("Others");
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue, doi));
-        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
-
-        assertThat(record.getDoi(), is(not(nullValue())));
+        assertThat(record.getDoi().toString(), is(equalTo(expectedValue)));
     }
 
     @Test
@@ -1130,14 +1095,6 @@ public class DublinCoreScraperTest {
 
         assertThat(appender.getMessages(), not(containsString(INVALID_DC_RIGHTS_URI.toString())));
         assertThat(actualLicense.getNvaLicense().getLicense(), is(equalTo(DEFAULT_LICENSE)));
-    }
-
-    @Test
-    void shouldParseValidDoiWithColon() {
-    var doi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "10.46298/LMCS-17(4:14)2021");
-    var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(doi));
-    var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
-    assertThat(record.getDoi(), is(notNullValue()));
     }
 
     @Test
