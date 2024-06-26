@@ -154,11 +154,11 @@ public final class ChannelRegister {
 
     private boolean doesNotHaveSpecialCaseMappingOverRidingRegularChannelRegistry(DublinCore dublinCore,
                                                                                String customer ) {
-        return isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
+        return !isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
     }
 
     private boolean isDegreeFromInstitutionIssuingDegrees(DublinCore dublinCore, String customer) {
-        return !isDegree(dublinCore) || !customerIssuesDegrees(customer);
+        return isDegree(dublinCore) && customerIssuesDegrees(customer);
     }
 
     private boolean isDegree(DublinCore dublinCore) {
