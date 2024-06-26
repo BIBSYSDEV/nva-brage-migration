@@ -29,7 +29,8 @@ public class DoiValidatorTest {
             Arguments.of("https://doi.org/10.1890/0012-9658(2006)87[2915:DMWITM]2.0.CO;2"),
             Arguments.of("https://doi.org/10.2983/0730-8000(2008)27[525:EOAMRF]2.0.CO;2"),
             Arguments.of("https:/doi.org/10.1080/08039410.2015.1114517"),
-            Arguments.of("http://dx.doi.org/10.5334/ah.be")
+            Arguments.of("http://dx.doi.org/10.5334/ah.be"),
+             Arguments.of("https://doi.org/10.1155/2021/6684334")
         );
     }
 

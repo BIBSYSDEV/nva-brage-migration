@@ -211,7 +211,7 @@ public class DoiValidator {
     }
 
     public static boolean isValidDoi(String doi) {
-        var doiRegex = "^(https?://doi\\.org/)?10.\\d{4,9}/[-._;():A-Z0-9<>\\[\\]]+/?$";
+        var doiRegex = "^(https?://)?(doi\\.org/)?10.\\d{4,9}/[^\\s#%]+/?$";
         var pattern = Pattern.compile(doiRegex, Pattern.CASE_INSENSITIVE);
         return pattern.matcher(doi).matches();
     }
