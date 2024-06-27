@@ -11,10 +11,13 @@ import static no.sikt.nva.scrapers.CustomerMapper.BORA;
 import static no.sikt.nva.scrapers.CustomerMapper.NMBU;
 import static no.sikt.nva.scrapers.DublinCoreScraper.isInCristin;
 import static no.sikt.nva.validators.DublinCoreValidator.filterOutNullValues;
+import static nva.commons.core.attempt.Try.attempt;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -31,16 +34,22 @@ import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
 import no.sikt.nva.brage.migration.common.model.record.Record;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
+import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.scrapers.DublinCoreScraper;
 import no.sikt.nva.scrapers.TypeMapper;
+import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.SingletonCollector;
 import nva.commons.core.StringUtils;
+import nva.commons.core.ioutils.IoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.GodClass")
 public final class ChannelRegister {
 
+    public static final Set<String> DEGREES = Set.of(NvaType.BACHELOR_THESIS.getValue(),
+                                                      NvaType.DOCTORAL_THESIS.getValue(),
+                                                      NvaType.MASTER_THESIS.getValue());
     public static final String NO_ISSN_OR_JOURNAL_FOUND = "No issn or journal found";
     public static final String NO_PUBLISHER_FOUND = "No publisher found";
     public static final String KANALREGISTER_READING_ERROR_MESSAGE = "Fatal error, could not read kanalregister";
@@ -62,6 +71,7 @@ public final class ChannelRegister {
         "nmbu_publisher_channel_registry_faculties.csv";
     public static final String UIB_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH =
         "uib_specific_publisher_channel_registry.csv";
+    public static final String CUSTOMERS_ISSUING_DEGREES = "customer_pids_for_customers_issuing_degrees.json";
     public static final String PUBLISHER_WILDCARDS_CSV_NAME = "publisher_wildcards.csv";
     public static final String NTNU = "ntnu";
     private static final String JOURNAL_PATH = "journals_channel_registry_v2.csv";
@@ -78,6 +88,7 @@ public final class ChannelRegister {
     private final List<ChannelRegisterAlias> channelRegisterAliasesForNtnu;
     private final List<ChannelRegisterAlias> channelRegisterAliasesForNmbu;
     private final List<ChannelRegisterAlias> channelRegisterAliasesForBora;
+    private static final Set<CustomerIssuingDegrees> customerIssuingDegrees = getCustomersIssuingDegrees();
 
     private ChannelRegister() {
         this.channelRegisterJournals = getJournalsFromCsv();
@@ -91,6 +102,12 @@ public final class ChannelRegister {
         this.channelRegisterAliasesForNmbu = getChannelRegisterAliases(
             NMBU_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH);
         this.publisherWildCards = getPublisherWildcards(PUBLISHER_WILDCARDS_CSV_NAME);
+    }
+
+    private static Set<CustomerIssuingDegrees> getCustomersIssuingDegrees() {
+        var json = IoUtils.stringFromResources(Path.of(CUSTOMERS_ISSUING_DEGREES));
+        return attempt(() -> JsonUtils.dtoObjectMapper.readValue(json,
+                                                                      new TypeReference<Set<CustomerIssuingDegrees>>() {})).orElseThrow();
     }
 
     private List<ChannelRegisterWildcard> getPublisherWildcards(String filename) {
@@ -127,20 +144,63 @@ public final class ChannelRegister {
             if (isJournalArticle(dublinCore, customer)) {
                 return getErrorDetailsForJournalArticle(dublinCore, brageLocation, customer);
             }
-            if (hasPublisher(dublinCore) && isSearchableInPublishers(dublinCore, customer)) {
+            if (hasPublisher(dublinCore) && isSearchableInPublishers(dublinCore, customer) && doesNotHaveSpecialCaseMappingOverRidingRegularChannelRegistry(dublinCore, customer)) {
                 return getErrorDetailsForPublisher(dublinCore, brageLocation, customer);
             }
         }
         return Optional.empty();
     }
 
+    private static boolean doesNotHaveSpecialCaseMappingOverRidingRegularChannelRegistry(DublinCore dublinCore,
+                                                                               String customer ) {
+        return !isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
+    }
+
+    public static boolean isDegreeFromInstitutionIssuingDegrees(DublinCore dublinCore, String customer) {
+        return isDegree(dublinCore) && customerIssuesDegrees(customer);
+    }
+
+    private static boolean isDegree(DublinCore dublinCore) {
+        var dublinCoreTypes = extractTypes(dublinCore);
+        var nvaTypes = TypeMapper.mapToNvaTypeIfMappable(dublinCoreTypes);
+        if (StringUtils.isBlank(nvaTypes)) {
+            return false;
+        }
+        return DEGREES.contains(nvaTypes);
+    }
+
+    private static Set<String> extractTypes(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(dcValue -> Element.TYPE.equals(dcValue.getElement()))
+                   .map(DcValue::getValue)
+                   .collect(Collectors.toSet());
+    }
+
     public String lookUpInChannelRegisterForPublisher(Record record, String customer) {
-        return Optional.ofNullable(record.getPublication())
+        return shouldLookUpInDegreePids(record, customer)
+            ? lookUpInDegreePids(customer)
+            :         Optional.ofNullable(record.getPublication())
                    .map(Publication::getPublicationContext)
                    .map(PublicationContext::getBragePublisher)
                    .map(ChannelRegister::formatValue)
                    .map(value -> lookUpInPublisher(value, customer))
                    .orElse(null);
+    }
+
+    private static String lookUpInDegreePids(String customer) {
+        var customerIssuingDegree =
+            customerIssuingDegrees.stream().filter(c -> c.getBrage().equals(customer)).findFirst().get();
+        return  customerIssuingDegree.getChannelRegistryPidProd();
+    }
+
+
+
+    private boolean shouldLookUpInDegreePids(Record record, String customer) {
+        return record.isDegree() && customerIssuesDegrees(customer);
+    }
+
+    private static boolean customerIssuesDegrees(String customer) {
+        return customerIssuingDegrees.stream().anyMatch(customerIssuingDegree ->  customerIssuingDegree.getBrage().equals(customer));
     }
 
     public String lookUpInJournal(Publication publication, BrageLocation brageLocation) {

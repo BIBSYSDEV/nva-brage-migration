@@ -269,4 +269,19 @@ public class DublinCoreValidatorTest {
                                           brageLocation, SOME_CUSTOMER);
         assertThat(actualError, is(Optional.empty()));
     }
+
+    @Test
+    void shouldNotReturnChannelRegistryErrorsIfTheBragePostIsADegreeAndInstitutionIssuesDegrees() {
+        var dcValues = List.of(
+            new DcValue(Element.TYPE, null, BrageType.MASTER_THESIS.getValue()),
+            new DcValue(Element.PUBLISHER, null, "something not in channel registry"));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var brageLocation = new BrageLocation(null);
+        var customerIssuingDegree= "ntnu";
+        var actualError =
+            ChannelRegister.getRegister()
+                .getChannelRegisterErrors(dublinCore,
+                                          brageLocation, customerIssuingDegree);
+        assertThat(actualError, is(Optional.empty()));
+    }
 }

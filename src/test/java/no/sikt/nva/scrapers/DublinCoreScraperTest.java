@@ -12,6 +12,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIP
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_VALUES;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.PUBLISHER;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
@@ -47,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails.Error;
 import no.sikt.nva.brage.migration.common.model.NvaType;
@@ -1109,6 +1111,17 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldReadPublisherPidForInstitutionIssuingDegree(){
+        var type = toDcType("Bachelor thesis");
+        var publisher = new DcValue(Element.PUBLISHER, null, "gurba");
+        var brageLocation = new BrageLocation(null);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, publisher));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, "ntnu");
+        var expectedPid = "D61B0D47-C78A-48DC-8537-3AD87DEF4D5B";
+        assertThat(record.getPublication().getPublicationContext().getPublisher().getPid(), is(equalTo(expectedPid)));
+    }
+
+    @Test
     void shouldExtractEmbargo() {
         var embargoDate = "2024-08-26";
         var dcValue = new DcValue(Element.DATE, Qualifier.fromValue("embargoEndDate"), embargoDate);
@@ -1203,6 +1216,33 @@ public class DublinCoreScraperTest {
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "sintef");
         var partOfSeries = record.getPublication().getPartOfSeries();
         assertThat(partOfSeries, is(equalTo(expected)));
+    }
+
+    @Test
+    void shouldSetPrioritizePublisherWhenTheDublinCoreIsDegreeAndCustomerIssuesDegrees(){
+        var dcValues = List.of(
+            new DcValue(Element.TYPE, null, BrageType.MASTER_THESIS.getValue()),
+            new DcValue(Element.PUBLISHER, null, randomString())
+        );
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var customerIssuingDegrees = "ntnu";
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), customerIssuingDegrees);
+        var actualPrioritizedProperties = record.getPrioritizedProperties();
+        assertThat(actualPrioritizedProperties, hasItem(PUBLISHER.getValue()));
+        assertThat(record.getPublication().getPublicationContext().getPublisher().getPid(), is(notNullValue()));
+    }
+
+    @Test
+    void shouldNotPrioritizePublisherWhenCustomerIsNotIssuingDegrees(){
+        var dcValues = List.of(
+            new DcValue(Element.TYPE, null, BrageType.MASTER_THESIS.getValue()),
+            new DcValue(Element.PUBLISHER, null, randomString())
+        );
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var customerNotIssuingDegrees = "nve";
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), customerNotIssuingDegrees);
+        var actualPrioritizedProperties = record.getPrioritizedProperties();
+        assertThat(actualPrioritizedProperties, not(hasItem(PUBLISHER.getValue())));
     }
 
     private static DcValue toDcType(String t) {

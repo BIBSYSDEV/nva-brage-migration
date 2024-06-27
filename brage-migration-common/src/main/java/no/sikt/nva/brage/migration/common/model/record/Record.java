@@ -1,5 +1,7 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
+import static java.util.Objects.nonNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -10,9 +12,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
+import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.StringUtils;
 
 @JsonPropertyOrder({"customer", "resourceOwner", "brageLocation", "id", "cristinId", "doi", "link", "publishedDate",
     "publisherAuthority", "rightsholder", "type", "partOf", "hasPart", "publisherAuthority", "spatialCoverage", "date",
@@ -20,6 +24,9 @@ import nva.commons.core.JacocoGenerated;
     "subjectCode", "subjects"})
 @SuppressWarnings("PMD.TooManyFields")
 public class Record {
+
+    private static final List<String> DEGREES = List.of(NvaType.BACHELOR_THESIS.getValue(), NvaType.MASTER_THESIS.getValue(),
+                                                   NvaType.DOCTORAL_THESIS.getValue());
 
     private ResourceOwner resourceOwner;
     private EntityDescription entityDescription;
@@ -44,6 +51,7 @@ public class Record {
     private String subjectCode;
     private String accessCode;
     private List<Project> projects;
+    private Set<String> prioritizedFields;
 
     public Record() {
     }
@@ -80,6 +88,7 @@ public class Record {
                && Objects.equals(getSubjects(), record.getSubjects())
                && Objects.equals(getSubjectCode(), record.getSubjectCode())
                && Objects.equals(getAccessCode(), record.getAccessCode())
+               && Objects.equals(getPrioritizedProperties(), record.getPrioritizedProperties())
                && Objects.equals(getProjects(), record.getProjects());
     }
 
@@ -89,7 +98,7 @@ public class Record {
         return Objects.hash(getResourceOwner(), getEntityDescription(), getCustomer(), getId(), getDoi(), getType(),
                             getPublisherAuthority(), getRightsholder(), getSpatialCoverage(), getPartOf(), getPart(),
                             getPublication(), getContentBundle(), getPublishedDate(), getCristinId(),
-                            getBrageLocation(),
+                            getBrageLocation(), getPrioritizedProperties(),
                             getErrors(), getWarnings(), getLink(), getSubjects(), getSubjectCode(), getAccessCode(),
                             getProjects());
     }
@@ -288,6 +297,15 @@ public class Record {
         this.doi = doi;
     }
 
+    @JsonProperty("prioritizedProperties")
+    public Set<String> getPrioritizedProperties() {
+        return nonNull(prioritizedFields) ? prioritizedFields : new HashSet<>();
+    }
+
+    public void setPrioritizedProperties(Set<String> prioritizedFields) {
+        this.prioritizedFields = prioritizedFields;
+    }
+
     @JsonProperty("entityDescription")
     public EntityDescription getEntityDescription() {
         return entityDescription;
@@ -304,6 +322,11 @@ public class Record {
     public boolean hasOrigin(String handle) {
         var recordOriginCollection = this.getBrageLocation().split("/")[0];
         return handle.split("/")[1].equals(recordOriginCollection);
+    }
+
+    @JsonIgnore
+    public boolean isDegree(){
+        return nonNull(type) && StringUtils.isNotEmpty(type.getNva()) && DEGREES.contains(type.getNva());
     }
 
     public String getAccessCode() {
