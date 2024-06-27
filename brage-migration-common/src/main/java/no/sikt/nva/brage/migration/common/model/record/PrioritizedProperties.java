@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PrioritizedProperties {
 
-    PUBLISHER("publisher");
+    PUBLISHER("publisher"),
+    CONTRIBUTORS_WITH_AUTHOR_ROLE("contributorsWithAuthorRole");
 
     private final String value;
 

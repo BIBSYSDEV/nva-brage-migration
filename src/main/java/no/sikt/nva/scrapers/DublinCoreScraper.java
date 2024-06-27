@@ -743,7 +743,14 @@ public class DublinCoreScraper {
         if (shouldPrioritizePublisher(dublinCore, customer)){
             prioritizedProperties.add(PrioritizedProperties.PUBLISHER.getValue());
         }
+        if (shouldPrioritizeContributorsWithAuthorRole(dublinCore, customer)){
+            prioritizedProperties.add(PrioritizedProperties.CONTRIBUTORS_WITH_AUTHOR_ROLE.getValue());
+        }
         return prioritizedProperties;
+    }
+
+    private boolean shouldPrioritizeContributorsWithAuthorRole(DublinCore dublinCore, String customer) {
+        return ChannelRegister.isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
     }
 
     private boolean shouldPrioritizePublisher(DublinCore dublinCore, String customer) {
