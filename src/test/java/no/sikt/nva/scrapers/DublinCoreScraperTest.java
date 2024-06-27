@@ -126,6 +126,7 @@ public class DublinCoreScraperTest {
             SHOULD_LOOKUP_IN_CHANNEL_REGISTER,
             Map.of()
         );
+
     }
 
     @Test
