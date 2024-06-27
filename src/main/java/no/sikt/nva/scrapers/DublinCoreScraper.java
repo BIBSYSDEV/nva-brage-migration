@@ -747,7 +747,7 @@ public class DublinCoreScraper {
     }
 
     private boolean shouldPrioritizePublisher(DublinCore dublinCore, String customer) {
-        return channelRegister.isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
+        return ChannelRegister.isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
     }
 
     private List<Project> extractProjects(DublinCore dublinCore) {

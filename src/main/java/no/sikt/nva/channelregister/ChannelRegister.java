@@ -88,7 +88,7 @@ public final class ChannelRegister {
     private final List<ChannelRegisterAlias> channelRegisterAliasesForNtnu;
     private final List<ChannelRegisterAlias> channelRegisterAliasesForNmbu;
     private final List<ChannelRegisterAlias> channelRegisterAliasesForBora;
-    private final Set<CustomerIssuingDegrees> customerIssuingDegrees;
+    private static final Set<CustomerIssuingDegrees> customerIssuingDegrees = getCustomersIssuingDegrees();
 
     private ChannelRegister() {
         this.channelRegisterJournals = getJournalsFromCsv();
@@ -102,7 +102,6 @@ public final class ChannelRegister {
         this.channelRegisterAliasesForNmbu = getChannelRegisterAliases(
             NMBU_PUBLISHER_CHANNEL_REGISTRY_FACULTIES_CSV_PATH);
         this.publisherWildCards = getPublisherWildcards(PUBLISHER_WILDCARDS_CSV_NAME);
-        this.customerIssuingDegrees  = getCustomersIssuingDegrees();
     }
 
     private static Set<CustomerIssuingDegrees> getCustomersIssuingDegrees() {
@@ -152,18 +151,21 @@ public final class ChannelRegister {
         return Optional.empty();
     }
 
-    private boolean doesNotHaveSpecialCaseMappingOverRidingRegularChannelRegistry(DublinCore dublinCore,
+    private static boolean doesNotHaveSpecialCaseMappingOverRidingRegularChannelRegistry(DublinCore dublinCore,
                                                                                String customer ) {
         return !isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
     }
 
-    public boolean isDegreeFromInstitutionIssuingDegrees(DublinCore dublinCore, String customer) {
+    public static boolean isDegreeFromInstitutionIssuingDegrees(DublinCore dublinCore, String customer) {
         return isDegree(dublinCore) && customerIssuesDegrees(customer);
     }
 
-    private boolean isDegree(DublinCore dublinCore) {
+    private static boolean isDegree(DublinCore dublinCore) {
         var dublinCoreTypes = extractTypes(dublinCore);
         var nvaTypes = TypeMapper.mapToNvaTypeIfMappable(dublinCoreTypes);
+        if (StringUtils.isBlank(nvaTypes)) {
+            return false;
+        }
         return DEGREES.contains(nvaTypes);
     }
 
@@ -185,7 +187,7 @@ public final class ChannelRegister {
                    .orElse(null);
     }
 
-    private String lookUpInDegreePids(String customer) {
+    private static String lookUpInDegreePids(String customer) {
         var customerIssuingDegree =
             customerIssuingDegrees.stream().filter(c -> c.getBrage().equals(customer)).findFirst().get();
         return  customerIssuingDegree.getChannelRegistryPidProd();
@@ -197,7 +199,7 @@ public final class ChannelRegister {
         return record.isDegree() && customerIssuesDegrees(customer);
     }
 
-    private boolean customerIssuesDegrees(String customer) {
+    private static boolean customerIssuesDegrees(String customer) {
         return customerIssuingDegrees.stream().anyMatch(customerIssuingDegree ->  customerIssuingDegree.getBrage().equals(customer));
     }
 

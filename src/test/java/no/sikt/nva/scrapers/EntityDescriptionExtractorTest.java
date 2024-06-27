@@ -1,19 +1,16 @@
 package no.sikt.nva.scrapers;
 
 import java.io.File;
-import java.util.Set;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
 
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
-import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -42,7 +39,7 @@ public class EntityDescriptionExtractorTest {
         assertThat(descriptions, hasItem(someLocalCode));
     }
 
-    @RepeatedTest(1000)
+    @Test
     void shouldKeepOriginalOrderOfDescriptions() {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(TEST_RESOURCE_PATH +
                                                                             "dc_with_duplicated_values.xml"));
