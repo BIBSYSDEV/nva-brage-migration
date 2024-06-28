@@ -744,7 +744,7 @@ public class DublinCoreScraper {
             prioritizedProperties.add(PrioritizedProperties.PUBLISHER.getValue());
         }
         if (shouldPrioritizeContributorsWithAuthorRole(dublinCore, customer)){
-            prioritizedProperties.add(PrioritizedProperties.CONTRIBUTORS_WITH_AUTHOR_ROLE.getValue());
+            prioritizedProperties.add(PrioritizedProperties.CONTRIBUTORS_WITH_CREATOR_ROLE.getValue());
         }
         return prioritizedProperties;
     }
