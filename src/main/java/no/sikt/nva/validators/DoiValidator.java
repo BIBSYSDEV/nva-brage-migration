@@ -97,7 +97,7 @@ public class DoiValidator {
             return handleDoiWithColon(doi);
         }
         if (doi.toLowerCase(Locale.ROOT).contains(HTTP_STRING.toLowerCase(Locale.ROOT)) || doi.contains(DOI_DOMAIN_NAME)) {
-            return HTTPS_STRING + DOI_DOMAIN_NAME + inputDoi.split(DOI_DOMAIN_NAME)[1];
+            return HTTPS_STRING + DOI_DOMAIN_NAME + doi.split(DOI_DOMAIN_NAME)[1];
         }
         return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
     }
@@ -211,7 +211,7 @@ public class DoiValidator {
     }
 
     public static boolean isValidDoi(String doi) {
-        var doiRegex = "^(https?://)?(doi\\.org/)?10.\\d{4,9}/[^\\s#%]+/?$";
+        var doiRegex = "^(https?://)?(doi\\.org/)?10.\\d{4,9}/\\S+/?$";
         var pattern = Pattern.compile(doiRegex, Pattern.CASE_INSENSITIVE);
         return pattern.matcher(doi).matches();
     }
