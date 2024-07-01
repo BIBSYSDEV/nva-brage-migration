@@ -30,7 +30,6 @@ import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Journal;
 import no.sikt.nva.brage.migration.common.model.record.PartOfSeries;
-import no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties;
 import no.sikt.nva.brage.migration.common.model.record.Project;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
@@ -655,13 +654,17 @@ public class DublinCoreScraper {
         }
     }
 
-    private static PublisherAuthority extractVersion(DublinCore dublinCore) {
-        var version = dublinCore.getDcValues()
-                          .stream()
-                          .filter(DcValue::isOneOfTwoPossibleVersions)
-                          .map(DcValue::scrapeValueAndSetToScraped)
-                          .collect(Collectors.toSet());
+    public static PublisherAuthority extractPublisherAuthority(DublinCore dublinCore) {
+        var version = getVersions(dublinCore);
         return mapToNvaVersion(version);
+    }
+
+    public static Set<String> getVersions(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isOneOfTwoPossibleVersions)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .collect(Collectors.toSet());
     }
 
     private static PublisherAuthority mapToNvaVersion(Set<String> versions) {
@@ -684,8 +687,13 @@ public class DublinCoreScraper {
         if (versions.contains(PublisherVersion.ACCEPTED_VERSION.getValue().toLowerCase(Locale.ROOT))) {
             return new PublisherAuthority(Collections.singleton(PublisherVersion.ACCEPTED_VERSION.getValue()),
                                           PublisherVersion.ACCEPTED_VERSION);
+        }
+        if (versions.contains(PublisherVersion.PUBLISHED_VERSION.getValue().toLowerCase(Locale.ROOT))){
+            return new PublisherAuthority(Collections.singleton(PublisherVersion.PUBLISHED_VERSION.getValue()),
+                                          PublisherVersion.PUBLISHED_VERSION);
+
         } else {
-            return new PublisherAuthority(Collections.singleton(PublisherVersion.PUBLISHED_VERSION.getValue()), PublisherVersion.PUBLISHED_VERSION);
+            return new PublisherAuthority(versions, null);
         }
     }
 
@@ -717,7 +725,7 @@ public class DublinCoreScraper {
         record.setId(brageLocation.getHandle());
         record.setType(mapOriginTypeToNvaType(extractType(dublinCore, customer), dublinCore));
         record.setRightsHolder(extractRightsholder(dublinCore));
-        record.setPublisherAuthority(extractVersion(dublinCore));
+        record.setPublisherAuthority(extractPublisherAuthority(dublinCore));
         record.setDoi(extractDoi(dublinCore));
         record.setLink(extractLink(dublinCore));
         record.setEntityDescription(EntityDescriptionExtractor.extractEntityDescription(dublinCore, contributors, customer));
@@ -739,23 +747,10 @@ public class DublinCoreScraper {
     }
 
     private Set<String> determinePrioritizedProperties(DublinCore dublinCore, String customer) {
-        var prioritizedProperties = new HashSet<String>();
-        if (shouldPrioritizePublisher(dublinCore, customer)){
-            prioritizedProperties.add(PrioritizedProperties.PUBLISHER.getValue());
-        }
-        if (shouldPrioritizeContributorsWithAuthorRole(dublinCore, customer)){
-            prioritizedProperties.add(PrioritizedProperties.CONTRIBUTORS_WITH_CREATOR_ROLE.getValue());
-        }
-        return prioritizedProperties;
+        return PrioritizeField.getPrioritizedFields(dublinCore, customer);
     }
 
-    private boolean shouldPrioritizeContributorsWithAuthorRole(DublinCore dublinCore, String customer) {
-        return ChannelRegister.isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
-    }
 
-    private boolean shouldPrioritizePublisher(DublinCore dublinCore, String customer) {
-        return ChannelRegister.isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
-    }
 
     private List<Project> extractProjects(DublinCore dublinCore) {
             return dublinCore.getDcValues().stream()

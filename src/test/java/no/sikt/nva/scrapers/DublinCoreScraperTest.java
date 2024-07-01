@@ -12,8 +12,15 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIP
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_VALUES;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ABSTRACT;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ALTERNATIVE_ABSTRACTS;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ALTERNATIVE_TITLES;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.FUNDINGS;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.MAIN_TITLE;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.CONTRIBUTORS_WITH_CREATOR_ROLE;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.PUBLISHER;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.REFERENCE;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.TAGS;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
@@ -114,7 +121,8 @@ public class DublinCoreScraperTest {
             Arguments.of("doi:10.5194/tc-8-1885-2014", "https://doi.org/10.5194/tc-8-1885-2014"),
             Arguments.of("DOI:10.1371/journal.pone.0125743", "https://doi.org/10.1371/journal.pone.0125743"),
             Arguments.of("https://doi.org/10.1177%2F1757975910383936", "https://doi.org/10.1177/1757975910383936"),
-            Arguments.of("https://doi.org/10.1155/2021/6684334", "https://doi.org/10.1155/2021/6684334")
+            Arguments.of("https://doi.org/10.1155/2021/6684334", "https://doi.org/10.1155/2021/6684334"),
+            Arguments.of("https://doi.org/10.1016/j.isci. 2020.101414", "https://doi.org/10.1016/j.isci.2020.101414")
         );
     }
 
@@ -144,14 +152,50 @@ public class DublinCoreScraperTest {
         assertThat(appender.getMessages(), containsString(expectedDcValuedLogged.toXmlString()));
     }
 
-    @Test
-    void shouldConvertValidVersionToPublisherAuthority() {
-        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, "publishedVersion");
+    @ParameterizedTest
+    @ValueSource(strings = {"publishedVersion", "acceptedVersion"})
+    void shouldConvertValidVersionToPublisherAuthority(String value) {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, value);
         var typeDcValue = toDcType("Others");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
-        assertThat(actualPublisherAuthority, is(equalTo(PublisherVersion.PUBLISHED_VERSION)));
+
+        assertThat(actualPublisherAuthority, is(equalTo(PublisherVersion.fromValue(value))));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"draft", "submittedVersion", "updatedVersion", "abcde"})
+    void shouldMapNotSupportedVersionsToNull(String value) {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, value);
+        var typeDcValue = toDcType("Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+        var actualPublisherAuthority = record.getPublisherAuthority().getNva();
+
+        assertThat(actualPublisherAuthority, is(nullValue()));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"draft", "submittedVersion", "updatedVersion", "abcde"})
+    void shouldAddNotSupportVersionToDescriptionList(String value) {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, value);
+        var typeDcValue = toDcType("Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        assertThat(record.getEntityDescription().getDescriptions(), contains(value));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"publishedVersion", "acceptedVersion"})
+    void shouldNotAddNotSupportVersionToDescriptionList(String value) {
+        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, value);
+        var typeDcValue = toDcType("Others");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        assertThat(record.getEntityDescription().getDescriptions(), not(contains(value)));
     }
 
     @Test
@@ -568,7 +612,7 @@ public class DublinCoreScraperTest {
     @Test
     void shouldLoggInvalidDoi() {
         var dcType = toDcType("Book");
-        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "10.1016/ S0140-6736wefwfg.(20)30045-#%wt3");
+        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "0.1016/S0140-6736wefwfg.(20)30045-#%wt3");
         var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
         var appender = LogUtils.getTestingAppenderForRootLogger();
         dcScraper.validateAndParseDublinCore(
@@ -1257,6 +1301,23 @@ public class DublinCoreScraperTest {
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), customerNotIssuingDegrees);
         var actualPrioritizedProperties = record.getPrioritizedProperties();
         assertThat(actualPrioritizedProperties, not(hasItem(PUBLISHER.getValue())));
+    }
+
+    @Test
+    void shouldPrioritizeCertainMetadataFieldsWhenDublinCoreIsDegreeAndCustomerIssuesDegrees(){
+        var dcValues = List.of(
+            new DcValue(Element.TYPE, null, BrageType.MASTER_THESIS.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var customerIssuingDegrees = "ntnu";
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), customerIssuingDegrees);
+        var actualPrioritizedProperties = record.getPrioritizedProperties();
+        assertThat(actualPrioritizedProperties, hasItem(MAIN_TITLE.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(ALTERNATIVE_TITLES.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(ABSTRACT.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(ALTERNATIVE_ABSTRACTS.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(FUNDINGS.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(REFERENCE.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(TAGS.getValue()));
     }
 
     private static DcValue toDcType(String t) {
