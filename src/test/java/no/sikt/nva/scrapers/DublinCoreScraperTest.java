@@ -17,6 +17,7 @@ import static no.sikt.nva.brage.migration.common.model.record.PrioritizedPropert
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ALTERNATIVE_TITLES;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.FUNDINGS;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.MAIN_TITLE;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.CONTRIBUTORS_WITH_CREATOR_ROLE;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.PUBLISHER;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.REFERENCE;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.TAGS;
@@ -1274,6 +1275,19 @@ public class DublinCoreScraperTest {
         var actualPrioritizedProperties = record.getPrioritizedProperties();
         assertThat(actualPrioritizedProperties, hasItem(PUBLISHER.getValue()));
         assertThat(record.getPublication().getPublicationContext().getPublisher().getPid(), is(notNullValue()));
+    }
+
+    @Test
+    void shouldPrioritizeContributorsWithAuthorRoleWhenTheDublinCoreIsDegreeAndCustomerIssuesDegrees(){
+        var dcValues = List.of(
+            new DcValue(Element.TYPE, null, BrageType.MASTER_THESIS.getValue()),
+            new DcValue(Element.PUBLISHER, null, randomString())
+        );
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var customerIssuingDegrees = "ntnu";
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), customerIssuingDegrees);
+        var actualPrioritizedProperties = record.getPrioritizedProperties();
+        assertThat(actualPrioritizedProperties, hasItem(CONTRIBUTORS_WITH_CREATOR_ROLE.getValue()));
     }
 
     @Test
