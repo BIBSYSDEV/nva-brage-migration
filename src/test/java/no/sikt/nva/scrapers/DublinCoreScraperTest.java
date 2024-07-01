@@ -12,7 +12,14 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIP
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_VALUES;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ABSTRACT;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ALTERNATIVE_ABSTRACTS;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ALTERNATIVE_TITLES;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.FUNDINGS;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.MAIN_TITLE;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.PUBLISHER;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.REFERENCE;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.TAGS;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
@@ -1280,6 +1287,23 @@ public class DublinCoreScraperTest {
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), customerNotIssuingDegrees);
         var actualPrioritizedProperties = record.getPrioritizedProperties();
         assertThat(actualPrioritizedProperties, not(hasItem(PUBLISHER.getValue())));
+    }
+
+    @Test
+    void shouldPrioritizeCertainMetadataFieldsWhenDublinCoreIsDegreeAndCustomerIssuesDegrees(){
+        var dcValues = List.of(
+            new DcValue(Element.TYPE, null, BrageType.MASTER_THESIS.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var customerIssuingDegrees = "ntnu";
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), customerIssuingDegrees);
+        var actualPrioritizedProperties = record.getPrioritizedProperties();
+        assertThat(actualPrioritizedProperties, hasItem(MAIN_TITLE.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(ALTERNATIVE_TITLES.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(ABSTRACT.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(ALTERNATIVE_ABSTRACTS.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(FUNDINGS.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(REFERENCE.getValue()));
+        assertThat(actualPrioritizedProperties, hasItem(TAGS.getValue()));
     }
 
     private static DcValue toDcType(String t) {

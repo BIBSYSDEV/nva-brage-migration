@@ -30,7 +30,6 @@ import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.Journal;
 import no.sikt.nva.brage.migration.common.model.record.PartOfSeries;
-import no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties;
 import no.sikt.nva.brage.migration.common.model.record.Project;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
@@ -748,16 +747,10 @@ public class DublinCoreScraper {
     }
 
     private Set<String> determinePrioritizedProperties(DublinCore dublinCore, String customer) {
-        var prioritizedProperties = new HashSet<String>();
-        if (shouldPrioritizePublisher(dublinCore, customer)){
-            prioritizedProperties.add(PrioritizedProperties.PUBLISHER.getValue());
-        }
-        return prioritizedProperties;
+        return PrioritizeField.getPrioritizedFields(dublinCore, customer);
     }
 
-    private boolean shouldPrioritizePublisher(DublinCore dublinCore, String customer) {
-        return ChannelRegister.isDegreeFromInstitutionIssuingDegrees(dublinCore, customer);
-    }
+
 
     private List<Project> extractProjects(DublinCore dublinCore) {
             return dublinCore.getDcValues().stream()
