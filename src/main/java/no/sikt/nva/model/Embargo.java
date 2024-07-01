@@ -12,9 +12,9 @@ import nva.commons.core.JacocoGenerated;
 
 public class Embargo {
 
+    public static final int MAX_EMBARGO_YEAR = 9999;
     private static final ZoneId EUROPE_OSLO = ZoneId.of("Europe/Oslo");
     private static final LocalTime START_OF_DAY = LocalTime.ofNanoOfDay(0);
-    public static final int MAX_EMBARGO_YEAR = 9999;
     private String handle;
     private String date;
     private String filename;
@@ -83,18 +83,6 @@ public class Embargo {
         }
     }
 
-    private Instant parseUnusualDateFormats() {
-        var weirdFromats = List.of("yyyyy-MM-dd", "yyyyyy-MM-dd", "yyyyyyy-MM-dd","yyyyyyyy-MM-dd");
-        for (var dateFormat : weirdFromats) {
-            try {
-                return  perseDateOnSpecifiedFormatToInstant(dateFormat);
-            }catch (Exception e) {
-                //ignored
-            }
-        }
-        throw new RuntimeException("Unable to parse unusual format date:" + date);
-    }
-
     public String getFilename() {
         return filename;
     }
@@ -103,19 +91,32 @@ public class Embargo {
         this.filename = filename;
     }
 
-    private Instant perseDateOnSpecifiedFormatToInstant(String format) {
-        var dateTimeFormatter = DateTimeFormatter.ofPattern(format);
-        var dateTime = ZonedDateTime.of(LocalDate.parse(date, dateTimeFormatter),
-                                START_OF_DAY,
-                                EUROPE_OSLO);
-        return formatEmbargoDate(dateTime);
-    }
-
     private static Instant formatEmbargoDate(ZonedDateTime dateTime) {
         if (dateTime.getYear() > MAX_EMBARGO_YEAR) {
             return dateTime.withYear(MAX_EMBARGO_YEAR).toInstant();
         } else {
             return dateTime.toInstant();
         }
+    }
+
+    @SuppressWarnings("PMD.EmptyCatchBlock")
+    private Instant parseUnusualDateFormats() {
+        var weirdFromats = List.of("yyyyy-MM-dd", "yyyyyy-MM-dd", "yyyyyyy-MM-dd", "yyyyyyyy-MM-dd");
+        for (var dateFormat : weirdFromats) {
+            try {
+                return perseDateOnSpecifiedFormatToInstant(dateFormat);
+            } catch (Exception e) {
+                //ignored
+            }
+        }
+        throw new RuntimeException("Unable to parse unusual format date:" + date);
+    }
+
+    private Instant perseDateOnSpecifiedFormatToInstant(String format) {
+        var dateTimeFormatter = DateTimeFormatter.ofPattern(format);
+        var dateTime = ZonedDateTime.of(LocalDate.parse(date, dateTimeFormatter),
+                                        START_OF_DAY,
+                                        EUROPE_OSLO);
+        return formatEmbargoDate(dateTime);
     }
 }
