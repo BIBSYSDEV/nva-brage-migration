@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
@@ -78,8 +79,20 @@ public class Embargo {
                                             EUROPE_OSLO);
             return formatEmbargoDate(dateTime);
         } catch (Exception e) {
-            return perseFiveYearDateToInstant();
+            return parseUnusualDateFormats();
         }
+    }
+
+    private Instant parseUnusualDateFormats() {
+        var weirdFromats = List.of("yyyyy-MM-dd", "yyyyyy-MM-dd", "yyyyyyy-MM-dd","yyyyyyyy-MM-dd");
+        for (var dateFormat : weirdFromats) {
+            try {
+                return  perseDateOnSpecifiedFormatToInstant(dateFormat);
+            }catch (Exception e) {
+                //ignored
+            }
+        }
+        throw new RuntimeException("Unable to parse unusual format date:" + date);
     }
 
     public String getFilename() {
@@ -90,9 +103,9 @@ public class Embargo {
         this.filename = filename;
     }
 
-    private Instant perseFiveYearDateToInstant() {
-        var fiveDigitYear = DateTimeFormatter.ofPattern("yyyyy-MM-dd");
-        var dateTime = ZonedDateTime.of(LocalDate.parse(date, fiveDigitYear),
+    private Instant perseDateOnSpecifiedFormatToInstant(String format) {
+        var dateTimeFormatter = DateTimeFormatter.ofPattern(format);
+        var dateTime = ZonedDateTime.of(LocalDate.parse(date, dateTimeFormatter),
                                 START_OF_DAY,
                                 EUROPE_OSLO);
         return formatEmbargoDate(dateTime);

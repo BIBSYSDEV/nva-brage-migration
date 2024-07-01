@@ -141,15 +141,17 @@ public class EmbargoScraperTest {
         record.setId(UriWrapper.fromUri("https://hdl.handle.net/11250/2683076").getUri());
         record.setContentBundle(contentBundleWithFileNameFromEmbargo(
             List.of("Simulated precipitation fields with variance consistent interpolation.pdf",
-                    "My super secret file.pdf")));
+                    "My super secret file.pdf", "open-when-civilzation-has-ended.pdf")));
         var updatedRecord = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
                                                                                  new FakeOnlineEmbargoChecker());
         assertThat(appender.getMessages(), not(containsString("Embargo file not found: ")));
 
-        assertThat(updatedRecord.getContentBundle().getContentFiles(), hasSize(2));
+        assertThat(updatedRecord.getContentBundle().getContentFiles(), hasSize(3));
         assertThat(updatedRecord.getContentBundle().getContentFiles().get(0).getEmbargoDate(),
                    is(equalTo(Instant.parse("2023-09-30T22:00:00Z"))));
         assertThat(updatedRecord.getContentBundle().getContentFiles().get(1).getEmbargoDate(),
+                   is(equalTo(Instant.parse("9999-09-30T22:00:00Z"))));
+        assertThat(updatedRecord.getContentBundle().getContentFiles().get(2).getEmbargoDate(),
                    is(equalTo(Instant.parse("9999-09-30T22:00:00Z"))));
     }
 
