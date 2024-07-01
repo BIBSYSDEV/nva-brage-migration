@@ -113,7 +113,8 @@ public class DublinCoreScraperTest {
             Arguments.of("doi:10.5194/tc-8-1885-2014", "https://doi.org/10.5194/tc-8-1885-2014"),
             Arguments.of("DOI:10.1371/journal.pone.0125743", "https://doi.org/10.1371/journal.pone.0125743"),
             Arguments.of("https://doi.org/10.1177%2F1757975910383936", "https://doi.org/10.1177/1757975910383936"),
-            Arguments.of("https://doi.org/10.1155/2021/6684334", "https://doi.org/10.1155/2021/6684334")
+            Arguments.of("https://doi.org/10.1155/2021/6684334", "https://doi.org/10.1155/2021/6684334"),
+            Arguments.of("https://doi.org/10.1016/j.isci. 2020.101414", "https://doi.org/10.1016/j.isci.2020.101414")
         );
     }
 
@@ -603,7 +604,7 @@ public class DublinCoreScraperTest {
     @Test
     void shouldLoggInvalidDoi() {
         var dcType = toDcType("Book");
-        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "10.1016/ S0140-6736wefwfg.(20)30045-#%wt3");
+        var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "0.1016/S0140-6736wefwfg.(20)30045-#%wt3");
         var dublinCoreWithDoi = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcType, dcDoi));
         var appender = LogUtils.getTestingAppenderForRootLogger();
         dcScraper.validateAndParseDublinCore(
