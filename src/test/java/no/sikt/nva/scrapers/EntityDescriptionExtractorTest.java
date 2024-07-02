@@ -1,20 +1,18 @@
 package no.sikt.nva.scrapers;
 
-import java.io.File;
-import no.sikt.nva.brage.migration.common.model.BrageLocation;
-import no.sikt.nva.model.dublincore.DcValue;
-import no.sikt.nva.model.dublincore.Element;
-import no.sikt.nva.model.dublincore.Qualifier;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
-
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.model.dublincore.DcValue;
+import no.sikt.nva.model.dublincore.Element;
+import no.sikt.nva.model.dublincore.Qualifier;
+import org.junit.jupiter.api.Test;
 
 public class EntityDescriptionExtractorTest {
 

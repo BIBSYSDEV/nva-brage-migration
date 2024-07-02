@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -240,9 +241,19 @@ public class BrageProcessor implements Runnable {
                    .map(r -> EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(r, embargoes, onlineEmbargoChecker));
     }
 
-    private Record injectValuesFromFsDublinCore(Record record, DublinCore dublinCore) {
-        record.setSubjectCode(DublinCoreScraper.extractSubjectCode(dublinCore));
+    public static Record injectValuesFromFsDublinCore(Record record, DublinCore dublinCore) {
+        var subjectCode = DublinCoreScraper.extractSubjectCode(dublinCore);
+        record.setSubjectCode(subjectCode);
+        updateDescriptionsIfNeeded(record, subjectCode);
         return record;
+    }
+
+    private static void updateDescriptionsIfNeeded(Record record, String subjectCode) {
+        if (nonNull(subjectCode)) {
+            var descriptions = new ArrayList<>(record.getEntityDescription().getDescriptions());
+            descriptions.remove(subjectCode);
+            record.getEntityDescription().setDescriptions(descriptions);
+        }
     }
 
     private Record injectBrageLocation(Record record, BrageLocation brageLocation) {
