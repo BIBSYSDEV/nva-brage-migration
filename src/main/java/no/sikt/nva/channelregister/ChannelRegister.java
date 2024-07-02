@@ -9,6 +9,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSIN
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_PUBLISHER;
 import static no.sikt.nva.scrapers.CustomerMapper.BORA;
 import static no.sikt.nva.scrapers.CustomerMapper.NMBU;
+import static no.sikt.nva.scrapers.CustomerMapper.OMSORGSFORSKNING;
 import static no.sikt.nva.scrapers.DublinCoreScraper.isInCristin;
 import static no.sikt.nva.validators.DublinCoreValidator.filterOutNullValues;
 import static nva.commons.core.attempt.Try.attempt;
@@ -392,7 +393,7 @@ public final class ChannelRegister {
     }
 
     private Optional<String> lookupInCustomerSpecificCsv(String publisher, String customer) {
-        if (NTNU.equalsIgnoreCase(customer)) {
+        if (NTNU.equalsIgnoreCase(customer) || OMSORGSFORSKNING.equalsIgnoreCase(customer)) {
             return Optional.ofNullable(lookupInPublisherAliases(channelRegisterPublishers, channelRegisterAliasesForNtnu, publisher));
         }
         if (BORA.equalsIgnoreCase(customer)) {

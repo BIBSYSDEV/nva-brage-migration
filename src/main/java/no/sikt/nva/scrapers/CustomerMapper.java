@@ -101,8 +101,8 @@ public class CustomerMapper {
                 entry(PROD, "")));
                 put(OMSORGSFORSKNING, Map.ofEntries(
                     entry(SANDBOX, ""),
-                    entry(DEVELOP, ""),
-                    entry(TEST, ""),
+                    entry(DEVELOP, "8ddecceb-7d64-4df3-a842-489fe4d98f3a"), // customer address to NTNU
+                    entry(TEST, "33c17ef6-864b-4267-bc9d-0cee636e247e"), // customer address to NTNU
                     entry(PROD, "")));
                 put(INN, Map.ofEntries(
                     entry(SANDBOX, ""),
