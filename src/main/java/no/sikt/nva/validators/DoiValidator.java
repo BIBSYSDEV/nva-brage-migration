@@ -32,6 +32,7 @@ public class DoiValidator {
     public static final String ENCODED_SLASH = "%2F";
     public static final String SLASH = "/";
     public static final String DOI = "doi";
+    public static final String ORG = "org/";
 
     public static Optional<ArrayList<ErrorDetails>> getDoiErrorDetailsOnline(DublinCore dublinCore) {
         var doiList = extractDoiList(dublinCore);
@@ -97,7 +98,7 @@ public class DoiValidator {
             return handleDoiWithColon(doi);
         }
         if (doi.toLowerCase(Locale.ROOT).contains(HTTP_STRING.toLowerCase(Locale.ROOT)) || doi.contains(DOI_DOMAIN_NAME)) {
-            return HTTPS_STRING + DOI_DOMAIN_NAME + doi.split(DOI_DOMAIN_NAME)[1];
+            return HTTPS_STRING + DOI_DOMAIN_NAME + doi.split(ORG)[1];
         }
         return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
     }
