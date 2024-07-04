@@ -67,7 +67,6 @@ public final class DublinCoreValidator {
         getIssnErrors(dublinCore).ifPresent(errors::add);
         getDateError(dublinCore).ifPresent(errors::add);
         getIsmnError(dublinCore).ifPresent(errors::add);
-        BrageNvaLanguageMapper.getLanguageError(dublinCore).ifPresent(errors::add);
         getMultipleUnmappableTypeError(dublinCore, customer).ifPresent(errors::add);
         getMultipleValues(dublinCore).ifPresent(errors::addAll);
         getLicenseError(dublinCore).ifPresent(errors::add);
