@@ -122,7 +122,8 @@ public class DublinCoreScraperTest {
             Arguments.of("DOI:10.1371/journal.pone.0125743", "https://doi.org/10.1371/journal.pone.0125743"),
             Arguments.of("https://doi.org/10.1177%2F1757975910383936", "https://doi.org/10.1177/1757975910383936"),
             Arguments.of("https://doi.org/10.1155/2021/6684334", "https://doi.org/10.1155/2021/6684334"),
-            Arguments.of("https://doi.org/10.1016/j.isci. 2020.101414", "https://doi.org/10.1016/j.isci.2020.101414")
+            Arguments.of("https://doi.org/10.1016/j.isci. 2020.101414", "https://doi.org/10.1016/j.isci.2020.101414"),
+            Arguments.of("http://doi.acm.org/10.1145/2530539", "https://doi.org/10.1145/2530539")
         );
     }
 

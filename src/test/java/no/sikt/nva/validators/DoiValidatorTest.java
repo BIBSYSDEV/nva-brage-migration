@@ -33,7 +33,8 @@ public class DoiValidatorTest {
             Arguments.of("https://doi.org/10.1155/2021/6684334"),
             Arguments.of("https://doi.org/10.1016/j.isci. 2020.101414"),
             Arguments.of("https://doi.org/10.1007/978-3-031-05276-7_12#DOI"),
-            Arguments.of("https://doi.org/10.1007/JHEP05%282024%29260")
+            Arguments.of("https://doi.org/10.1007/JHEP05%282024%29260"),
+            Arguments.of("http://doi.acm.org/10.1145/2530539")
         );
     }
 
