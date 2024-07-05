@@ -421,7 +421,7 @@ public final class DublinCoreValidator {
         if (TypeMapper.hasValidType(uniqueTypes.iterator().next())) {
             return Optional.empty();
         }
-        if (nonNull(mapOriginTypeToNvaType(uniqueTypes, dublinCore).getNva())) {
+        if (nonNull(mapOriginTypeToNvaType(uniqueTypes, dublinCore, customer).getNva())) {
             return Optional.empty();
         }
         if (nonNull(mapToNvaTypeIfMappable(uniqueTypes))) {
@@ -437,7 +437,7 @@ public final class DublinCoreValidator {
                         .stream()
                         .distinct()
                         .collect(Collectors.toSet());
-        var mappedType = mapOriginTypeToNvaType(types, dublinCore);
+        var mappedType = mapOriginTypeToNvaType(types, dublinCore, customer);
         if (nonNull(mappedType.getNva())) {
             return Optional.empty();
         }

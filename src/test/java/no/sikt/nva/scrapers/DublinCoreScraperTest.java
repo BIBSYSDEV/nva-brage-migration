@@ -77,6 +77,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.EnumSource.Mode;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -1321,6 +1323,16 @@ public class DublinCoreScraperTest {
         assertThat(actualPrioritizedProperties, hasItem(FUNDINGS.getValue()));
         assertThat(actualPrioritizedProperties, hasItem(REFERENCE.getValue()));
         assertThat(actualPrioritizedProperties, hasItem(TAGS.getValue()));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = BrageType.class, mode = Mode.INCLUDE, names =  {"REPORT", "RESEARCH_REPORT", "OTHER_TYPE_OF_REPORT"})
+    void shouldMapProvidedReportTypesFromBrageAsResearchReportWhenCustomerIsFFI(BrageType brageType) {
+        var dcValues = List.of(new DcValue(Element.TYPE, null, brageType.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
+
+        assertThat(record.getType().getNva(), equalTo(NvaType.RESEARCH_REPORT.getValue()));
     }
 
     @Test
