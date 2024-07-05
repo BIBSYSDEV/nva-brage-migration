@@ -98,8 +98,10 @@ pmd {
     ignoreFailures = false
 }
 
-test {
-    useJUnitPlatform()
+tasks.named('test') {
+    useJUnitPlatform {
+        excludeTags "RemoteTest"
+    }
     failFast = true
     finalizedBy jacocoTestReport
 }

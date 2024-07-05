@@ -21,12 +21,14 @@ import static org.mockito.Mockito.verify;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -241,10 +243,12 @@ public class EmbargoScraperTest {
         var onlineEmbargoChecker = new OnlineEmbargoCheckerImpl(httpClient);
         onlineEmbargoChecker.calculateCustomerAddress("ntnu");
         onlineEmbargoChecker.setOutputDirectory("someoutputpath");
-        mock200Response(httpClient);
         var recordWithEmbargoOnFile = EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
                                                                                            onlineEmbargoChecker);
-        assertThat(recordWithEmbargoOnFile.getContentBundle().getContentFiles().get(0).getEmbargoDate(),
+        var contentFile = recordWithEmbargoOnFile.getContentBundle().getContentFiles().get(0);
+        mock200Response(httpClient, contentFile, onlineEmbargoChecker.getCustomerAddress());
+
+        assertThat(contentFile.getEmbargoDate(),
                    is(nullValue()));
     }
 
@@ -290,9 +294,11 @@ public class EmbargoScraperTest {
         var onlineEmbargoChecker = new OnlineEmbargoCheckerImpl(httpClient);
         onlineEmbargoChecker.calculateCustomerAddress("nforsk");
         onlineEmbargoChecker.setOutputDirectory("someoutputpath");
-        mock200Response(httpClient);
+        var contentFile = record.getContentBundle().getContentFiles().get(0);
+        mock200Response(httpClient, contentFile, onlineEmbargoChecker.getCustomerAddress());
         EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(record, embargos,
                                                              onlineEmbargoChecker);
+
         verify(httpClient, times(1)).send(argThat(matchesExpectedUrl("NF_rapport%2011_2018%20Redusere%20marint%20avfall%20fra%20fiskefla%CC%8Aten%20%28REMAFISK%29.pdf")), any(BodyHandler.class));
     }
 
@@ -378,7 +384,7 @@ public class EmbargoScraperTest {
 
             @Override
             public URI uri() {
-                return null;
+                return randomUri();
             }
 
             @Override
@@ -389,7 +395,7 @@ public class EmbargoScraperTest {
     }
 
 
-    private void mock200Response(HttpClient httpClient) throws IOException, InterruptedException {
+    private void mock200Response(HttpClient httpClient, ContentFile contentFile, String customerAddress) throws IOException, InterruptedException {
         doReturn(new HttpResponse<String>() {
             @Override
             public int statusCode() {
@@ -423,7 +429,8 @@ public class EmbargoScraperTest {
 
             @Override
             public URI uri() {
-                return null;
+                return UriWrapper.fromHost(customerAddress).addChild(URLEncoder.encode(contentFile.getFilename(),
+                                                                                       StandardCharsets.UTF_8)).getUri();
             }
 
             @Override
