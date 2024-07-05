@@ -93,4 +93,13 @@ class OnlineEmbargoCheckerImplTest {
 
         assertTrue(locked);
     }
+
+    @Test
+    void shouldNotBeLockedNR() {
+        onlineEmbargoChecker.calculateCustomerAddress("nr");
+        var locked = onlineEmbargoChecker.fileIsLockedOnline(
+            "https://hdl.handle.net/11250/3076509", "Fuglerud+et+al+2023+iSt%C3%B8tet+sluttrapport-t.pdf");
+
+        assertFalse(locked);
+    }
 }
