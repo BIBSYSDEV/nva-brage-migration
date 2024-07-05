@@ -36,6 +36,7 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
     private static final int MAX_RETRIES = 3;
     private static final int WAIT_TIME = 2000;
     private final HttpClient httpClient;
+
     private String customerAddress;
     private String outputDirectory;
 
@@ -47,7 +48,7 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
     public OnlineEmbargoCheckerImpl() {
         this(HttpClient.newBuilder()
                  .version(Version.HTTP_2)
-                 .followRedirects(Redirect.NEVER)
+                 .followRedirects(Redirect.NORMAL)
                  .build());
     }
 
@@ -89,6 +90,10 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
         }
     }
 
+    public String getCustomerAddress() {
+        return customerAddress;
+    }
+
     private boolean checkIfFileIsLockedOnline(String handle, String filename) {
         var fullUri = extractFullUri(handle, filename);
         var request = createRequest(fullUri);
@@ -109,9 +114,13 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
                    .orElseThrow();
     }
 
+    @SuppressWarnings("PMD.CognitiveComplexity")
     private boolean foundLockedFileOnline(HttpRequest request, URI fullUri, int retriesLeft) {
         try {
             var response = httpClient.send(request, BodyHandlers.ofString());
+            if (!response.uri().getRawPath().equals(request.uri().getRawPath())) {
+                return true;
+            }
             if (response.statusCode() == OK) {
                 return false;
             } else if (SHOULD_BE_LOCKED_STATUS_CODES.contains(response.statusCode())) {
