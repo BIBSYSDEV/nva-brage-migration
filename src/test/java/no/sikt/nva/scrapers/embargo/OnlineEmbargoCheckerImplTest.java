@@ -14,7 +14,7 @@ class OnlineEmbargoCheckerImplTest {
 
     /**
      * Tests for OnlineEmbargoCheckerImpl, validating that it correctly identifies whether files in various Brage
-     * archives are locked or unlocked.
+     * archives are locked or unlocked. Tests are marked as RemoteTest to not make online calls when running build.
      */
 
     private OnlineEmbargoCheckerImpl onlineEmbargoChecker;
