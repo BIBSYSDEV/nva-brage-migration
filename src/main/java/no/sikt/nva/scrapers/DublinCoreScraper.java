@@ -2,6 +2,9 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.brage.migration.common.model.BrageType.OTHER_TYPE_OF_REPORT;
+import static no.sikt.nva.brage.migration.common.model.BrageType.REPORT;
+import static no.sikt.nva.brage.migration.common.model.BrageType.RESEARCH_REPORT;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JOURNALS;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PUBLISHERS;
 import static no.sikt.nva.scrapers.CustomerMapper.FFI;
@@ -25,6 +28,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
+import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
@@ -286,14 +290,26 @@ public class DublinCoreScraper {
                    .orElse(null);
     }
 
-    public static Type mapOriginTypeToNvaType(Set<String> types, DublinCore dublinCore) {
+    public static Type mapOriginTypeToNvaType(Set<String> types, DublinCore dublinCore, String customer) {
         var uniqueTypes = translateTypesInNorwegian(types);
         var type = new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
         if (isNull(type.getNva()) && nonNull(extractCristinId(dublinCore))) {
             return new Type(types, NvaType.CRISTIN_RECORD.getValue());
-        } else {
+        }
+        if (FFI.equals(customer) && shouldBeMappedToResearchReport(type)) {
+            return new Type(types, NvaType.RESEARCH_REPORT.getValue());
+        }
+        else {
             return type;
         }
+    }
+
+    private static boolean shouldBeMappedToResearchReport(Type type) {
+        return type.getBrage().stream()
+                   .anyMatch(t ->
+                                 REPORT.getValue().equals(t)
+                                 || RESEARCH_REPORT.getValue().equals(t)
+                                 || OTHER_TYPE_OF_REPORT.getValue().equals(t));
     }
 
     public static String extractSubjectCode(DublinCore dublinCore) {
@@ -723,7 +739,7 @@ public class DublinCoreScraper {
                                                               String customer) {
         var record = new Record();
         record.setId(brageLocation.getHandle());
-        record.setType(mapOriginTypeToNvaType(extractType(dublinCore, customer), dublinCore));
+        record.setType(mapOriginTypeToNvaType(extractType(dublinCore, customer), dublinCore, customer));
         record.setRightsHolder(extractRightsholder(dublinCore));
         record.setPublisherAuthority(extractPublisherAuthority(dublinCore));
         record.setDoi(extractDoi(dublinCore));

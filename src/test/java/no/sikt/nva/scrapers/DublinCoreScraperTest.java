@@ -47,6 +47,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
@@ -66,6 +67,8 @@ import no.sikt.nva.brage.migration.common.model.record.Pages;
 import no.sikt.nva.brage.migration.common.model.record.PartOfSeries;
 import no.sikt.nva.brage.migration.common.model.record.PublisherVersion;
 import no.sikt.nva.brage.migration.common.model.record.Range;
+import no.sikt.nva.brage.migration.common.model.record.Record;
+import no.sikt.nva.brage.migration.common.model.record.Type;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
@@ -75,6 +78,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.EnumSource.Mode;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -1319,6 +1324,16 @@ public class DublinCoreScraperTest {
         assertThat(actualPrioritizedProperties, hasItem(FUNDINGS.getValue()));
         assertThat(actualPrioritizedProperties, hasItem(REFERENCE.getValue()));
         assertThat(actualPrioritizedProperties, hasItem(TAGS.getValue()));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = BrageType.class, mode = Mode.INCLUDE, names =  {"REPORT", "RESEARCH_REPORT", "OTHER_TYPE_OF_REPORT"})
+    void shouldMapProvidedReportTypesFromBrageAsResearchReportWhenCustomerIsFFI(BrageType brageType) {
+        var dcValues = List.of(new DcValue(Element.TYPE, null, brageType.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
+
+        assertThat(record.getType().getNva(), equalTo(NvaType.RESEARCH_REPORT.getValue()));
     }
 
     private static DcValue toDcType(String t) {
