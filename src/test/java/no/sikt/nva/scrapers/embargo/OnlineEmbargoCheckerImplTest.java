@@ -7,9 +7,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-@Disabled
 class OnlineEmbargoCheckerImplTest {
 
     /**
@@ -25,6 +25,7 @@ class OnlineEmbargoCheckerImplTest {
         onlineEmbargoChecker.setOutputDirectory(randomString());
     }
 
+    @Tag("RemoteTest")
     @Test
     void shouldNotBeLockedUIO() {
         onlineEmbargoChecker.calculateCustomerAddress("uio");
@@ -34,7 +35,7 @@ class OnlineEmbargoCheckerImplTest {
         assertFalse(locked);
     }
 
-
+    @Tag("RemoteTest")
     @Test
     void shouldBeLockedUIO() {
         onlineEmbargoChecker.calculateCustomerAddress("uio");
@@ -44,6 +45,7 @@ class OnlineEmbargoCheckerImplTest {
         assertTrue(locked);
     }
 
+    @Tag("RemoteTest")
     @Test
     void shouldNotBeLockedNTNU() {
         onlineEmbargoChecker.calculateCustomerAddress("ntnu");
@@ -53,6 +55,7 @@ class OnlineEmbargoCheckerImplTest {
         assertFalse(locked);
     }
 
+    @Tag("RemoteTest")
     @Test
     void shouldBeLockedNTNU() {
         onlineEmbargoChecker.calculateCustomerAddress("ntnu");
@@ -62,6 +65,7 @@ class OnlineEmbargoCheckerImplTest {
         assertTrue(locked);
     }
 
+    @Tag("RemoteTest")
     @Test
     void shouldNotBeLockedUIT() {
         onlineEmbargoChecker.calculateCustomerAddress("uit");
@@ -70,6 +74,7 @@ class OnlineEmbargoCheckerImplTest {
         assertFalse(locked);
     }
 
+    @Tag("RemoteTest")
     @Test
     void shouldBeLockedUIT() {
         onlineEmbargoChecker.calculateCustomerAddress("uit");
@@ -78,6 +83,7 @@ class OnlineEmbargoCheckerImplTest {
         assertTrue(locked);
     }
 
+    @Tag("RemoteTest")
     @Test
     void shouldNotBeLockedBORA() {
         onlineEmbargoChecker.calculateCustomerAddress("bora");
@@ -86,6 +92,7 @@ class OnlineEmbargoCheckerImplTest {
         assertFalse(locked);
     }
 
+    @Tag("RemoteTest")
     @Test
     void shouldBeLockedBORA() {
         onlineEmbargoChecker.calculateCustomerAddress("bora");
@@ -94,6 +101,7 @@ class OnlineEmbargoCheckerImplTest {
         assertTrue(locked);
     }
 
+    @Tag("RemoteTest")
     @Test
     void shouldNotBeLockedNR() {
         onlineEmbargoChecker.calculateCustomerAddress("nr");
