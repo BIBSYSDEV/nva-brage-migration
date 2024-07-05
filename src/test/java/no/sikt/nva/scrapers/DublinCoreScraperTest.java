@@ -4,7 +4,6 @@ import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DC_PUBLISHER_NOT_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK;
-import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_LANGUAGE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_RIGHTS_URI;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
@@ -15,12 +14,13 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIP
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ABSTRACT;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ALTERNATIVE_ABSTRACTS;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ALTERNATIVE_TITLES;
+import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.CONTRIBUTORS_WITH_CREATOR_ROLE;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.FUNDINGS;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.MAIN_TITLE;
-import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.CONTRIBUTORS_WITH_CREATOR_ROLE;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.PUBLISHER;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.REFERENCE;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.TAGS;
+import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.LANGUAGE_MAPPED_TO_UNDEFINED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
@@ -31,6 +31,7 @@ import static no.sikt.nva.scrapers.LicenseScraper.DEFAULT_LICENSE;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
+import static nva.commons.core.language.LanguageMapper.LEXVO_URI_UNDEFINED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -47,7 +48,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
@@ -67,8 +67,7 @@ import no.sikt.nva.brage.migration.common.model.record.Pages;
 import no.sikt.nva.brage.migration.common.model.record.PartOfSeries;
 import no.sikt.nva.brage.migration.common.model.record.PublisherVersion;
 import no.sikt.nva.brage.migration.common.model.record.Range;
-import no.sikt.nva.brage.migration.common.model.record.Record;
-import no.sikt.nva.brage.migration.common.model.record.Type;
+import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
@@ -495,7 +494,7 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void nonIsoLanguageShouldBeLoggedAsError() {
+    void nonIsoLanguageShouldLoggedAsWarning() {
         var nonIsoLanguage = randomString();
         var typeDcValue = toDcType("Journal Article");
         var peerReviewed = toDcType("Peer reviewed");
@@ -503,7 +502,7 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(nonIsoLanguageDcValue, typeDcValue, peerReviewed));
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
-        assertThat(record.getErrors(), hasItem(new ErrorDetails(INVALID_DC_LANGUAGE, Set.of(nonIsoLanguage))));
+        assertThat(record.getWarnings(), hasItem(new WarningDetails(LANGUAGE_MAPPED_TO_UNDEFINED, Set.of(nonIsoLanguage))));
     }
 
     @Test
@@ -1334,6 +1333,19 @@ public class DublinCoreScraperTest {
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
 
         assertThat(record.getType().getNva(), equalTo(NvaType.RESEARCH_REPORT.getValue()));
+    }
+
+    @Test
+    void shouldCreateRecordWithUndefinedLanguageWhenLanguageIsUndefined() {
+        var dcValues = List.of(
+            new DcValue(Element.TYPE, null, BrageType.MASTER_THESIS.getValue()),
+            new DcValue(Element.LANGUAGE, null, randomString()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var customerIssuingDegrees = "ntnu";
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), customerIssuingDegrees);
+
+        assertThat(record.getEntityDescription().getLanguage().getNva(),
+                   is(equalTo(LEXVO_URI_UNDEFINED)));
     }
 
     private static DcValue toDcType(String t) {
