@@ -36,6 +36,7 @@ public enum BrageType {
     POSTER("Poster"),
     PRESENTATION("Presentasjon"),
     CONFERENCE_OBJECT("Conference object"),
+    CONFERENCE_ABSTRACT("Conference abstract"),
     CONFERENCE_REPORT("Conference report"),
     CONFERENCE_PAPER("Conference paper"),
     CONFERENCE_POSTER("Conference poster"),
