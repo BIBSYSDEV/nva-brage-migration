@@ -1348,6 +1348,17 @@ public class DublinCoreScraperTest {
                    is(equalTo(LEXVO_URI_UNDEFINED)));
     }
 
+    @Test
+    void shouldScrapeSamiLanguageCodeSmiToNorthernSami(){
+        var dcValues = List.of(
+            new DcValue(Element.LANGUAGE, Qualifier.ISO, "smi"),
+            toDcType("Journal article")
+        );
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+        assertThat(record.getEntityDescription().getLanguage().getNva().toString(), containsString("sme"));
+    }
+
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);
     }

@@ -53,6 +53,7 @@ public class BrageNvaLanguageMapper {
         var isoLanguages = brageLanguages.stream()
                                .filter(DcValue::isIsoLanguage)
                                .map(DcValue::getValue)
+                               .map(BrageNvaLanguageMapper::convertSmiCode)
                                .collect(Collectors.toSet());
         return isoLanguages.iterator().hasNext()
                    ? isoLanguages.iterator().next()
@@ -60,6 +61,12 @@ public class BrageNvaLanguageMapper {
                          .map(DcValue::getValue)
                          .iterator()
                          .next();
+    }
+
+    private static String convertSmiCode(String value) {
+        return "smi".equalsIgnoreCase(value)
+                   ? "sme"
+                   : value;
     }
 
     private static boolean isLanguageAndLexVoUriUndefined(DcValue dcValue) {
