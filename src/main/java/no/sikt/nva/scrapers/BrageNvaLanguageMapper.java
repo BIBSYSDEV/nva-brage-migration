@@ -13,6 +13,8 @@ import nva.commons.core.language.LanguageMapper;
 
 public class BrageNvaLanguageMapper {
 
+    public static final String SAMI_LANGUAGE_GROUP_ISO_CODE = "smi";
+    public static final String NORTHERN_SAMI_ISO_CODE = "sme";
 
     public static Language extractLanguage(DublinCore dublinCore) {
         var languagesDcValues = getLanguagesAsDcValues(dublinCore);
@@ -64,8 +66,8 @@ public class BrageNvaLanguageMapper {
     }
 
     private static String convertSmiCode(String value) {
-        return "smi".equalsIgnoreCase(value)
-                   ? "sme"
+        return SAMI_LANGUAGE_GROUP_ISO_CODE.equalsIgnoreCase(value)
+                   ? NORTHERN_SAMI_ISO_CODE
                    : value;
     }
 
