@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
@@ -38,11 +39,24 @@ import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.scrapers.DublinCoreFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class DublinCoreValidatorTest {
 
     private static final String SOME_CUSTOMER = "nve";
+
+    public static Stream<Arguments> validIsmnProvider() {
+        return Stream.of(
+            Arguments.of("M-9005112-1-8"),
+            Arguments.of("m-9005112-1-8"),
+            Arguments.of("979-0-9005112-1-8"),
+            Arguments.of("9790900511218"),
+            Arguments.of("m900511218"),
+            Arguments.of("M900511218")
+        );
+    }
 
     @Test
     void validIssnAndIsbnDoesNotAppendProblemsToProblemList() {
@@ -249,10 +263,19 @@ public class DublinCoreValidatorTest {
 
     @Test
     void shouldReturnErrorWhenInvalidIsmnIsSupplied() {
-        var ismn = new DcValue(Element.IDENTIFIER, Qualifier.ISMN, "some invalid ismn");
+        var ismn = new DcValue(Element.IDENTIFIER, Qualifier.ISMN, "M-9005112-1-876");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(ismn));
         var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
         assertThat(errors, hasItem(new ErrorDetails(INVALID_ISMN)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("validIsmnProvider")
+    void shouldNotLogValidIsmn(String value) {
+        var ismn = new DcValue(Element.IDENTIFIER, Qualifier.ISMN, value);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(ismn));
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
+        assertThat(errors, not(hasItem(new ErrorDetails(INVALID_ISMN, Set.of(value)))));
     }
 
     @Test

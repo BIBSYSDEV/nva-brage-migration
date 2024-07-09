@@ -71,6 +71,8 @@ public class DublinCoreScraper {
     private static final Logger logger = LoggerFactory.getLogger(DublinCoreScraper.class);
     public static final String DOT = "\\.";
     public static final String CONTAINS_NUBMER_PATTERN = ".*\\d+.*";
+    public static final String NEW_ISMN_FIRST_ELEMENT = "9790";
+    public static final String OLD_ISMN_FIRST_ELEMENT = "m";
     private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
@@ -129,15 +131,22 @@ public class DublinCoreScraper {
                    .filter(DcValue::isIsbnAndNotEmptyValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .distinct()
-                   .map(DublinCoreScraper::attemptToRepairIsbnAndIsmn)
+                   .map(DublinCoreScraper::attemptToRepairIsbn)
                    .filter(StringUtils::isNotBlank)
                    .collect(Collectors.toSet());
     }
 
-    public static String attemptToRepairIsbnAndIsmn(String value) {
+    public static String attemptToRepairIsbn(String value) {
         return Optional.ofNullable(value)
                    .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
                    .map(isbn -> isbn.replaceAll("[^0-9]", ""))
+                   .map(isbn -> isbn.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING))
+                   .orElse(null);
+    }
+
+    public static String attemptToRepairIsmn(String value) {
+        return Optional.ofNullable(value)
+                   .map(isbn -> isbn.replaceAll(DEHYPHENATION_REGEX, StringUtils.EMPTY_STRING))
                    .map(isbn -> isbn.replaceAll(StringUtils.WHITESPACES, StringUtils.EMPTY_STRING))
                    .orElse(null);
     }
@@ -231,10 +240,20 @@ public class DublinCoreScraper {
                    .filter(DcValue::isIsmnAndNotEmptyValue)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .distinct()
-                   .map(DublinCoreScraper::attemptToRepairIsbnAndIsmn)
+                   .map(DublinCoreScraper::attemptToRepairIsmn)
+                   .map(DublinCoreScraper::fixOldIsmnFormatIfNeeded)
                    .filter(StringUtils::isNotBlank)
                    .collect(Collectors.toSet());
 
+    }
+
+    private static String fixOldIsmnFormatIfNeeded(String value) {
+        var formattedIsmn = value.toLowerCase(Locale.ROOT);
+        if (formattedIsmn.contains(OLD_ISMN_FIRST_ELEMENT)) {
+            return formattedIsmn.replaceAll(OLD_ISMN_FIRST_ELEMENT, NEW_ISMN_FIRST_ELEMENT);
+        } else {
+            return value;
+        }
     }
 
     public static boolean isSingleton(Collection<String> versions) {
