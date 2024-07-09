@@ -1,6 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
@@ -35,6 +36,7 @@ public final class SubjectScraper {
                    .stream()
                    .filter(SubjectScraper::isSubjectAndNotSpecificallyIgnored)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .filter(Objects::nonNull)
                    .distinct()
                    .collect(Collectors.toList());
     }
