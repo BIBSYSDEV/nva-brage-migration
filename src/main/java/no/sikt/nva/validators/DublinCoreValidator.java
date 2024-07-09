@@ -109,21 +109,14 @@ public final class DublinCoreValidator {
 
     private static Optional<ErrorDetails> getIsmnError(DublinCore dublinCore) {
         if (hasIsmn(dublinCore)) {
-            var invalidIsmnList = getInvalidIsmnList(dublinCore);
+            var invalidIsmnList = DublinCoreScraper.extractIsmn(dublinCore).stream()
+                                      .filter(ismn -> !isValidIsmn(ismn))
+                                      .collect(Collectors.toSet());
             return !invalidIsmnList.isEmpty()
                        ? Optional.of(new ErrorDetails(INVALID_ISMN, invalidIsmnList))
                        : Optional.empty();
         }
         return Optional.empty();
-    }
-
-    private static Set<String> getInvalidIsmnList(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
-                   .stream()
-                   .filter(DcValue::isIsmnAndNotEmptyValue)
-                   .map(DcValue::getValue)
-                   .filter(ismn -> !isValidIsmn(ismn))
-                   .collect(Collectors.toSet());
     }
 
     private static boolean isValidIsmn(String ismn) {
