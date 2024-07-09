@@ -353,16 +353,21 @@ public class BrageMigrationCommand implements Callable<Integer> {
     }
 
     private void checkThatCustomerIsValid() {
-        if (AwsEnvironment.TEST.equals(awsEnvironment)
-            || AwsEnvironment.PROD.equals(awsEnvironment)) {
-            var customerUri = new CustomerMapper().getCustomerUri(customer, awsEnvironment.getValue());
-            if (isNull(customerUri)) {
+        if (shouldValidateEnvironment() && customerDoesNotExistInEnvironment()) {
                 var logger = LoggerFactory.getLogger(BrageMigrationCommand.class);
                 logger.error(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
                 throw new IllegalArgumentException(CUSTOMER_ID_DOES_NOT_EXIST_FOR_THIS_ENVIRONMENT + customer);
             }
         }
+
+    private boolean customerDoesNotExistInEnvironment() {
+        return !CustomerMapper.customerExistsInEnvironment(customer, awsEnvironment.getValue());
     }
+
+    private boolean shouldValidateEnvironment() {
+        return AwsEnvironment.TEST.equals(awsEnvironment) || AwsEnvironment.PROD.equals(awsEnvironment);
+    }
+
 
     private void runAndIgnoreException(BrageProcessor brageProcessor) {
         try {
@@ -599,7 +604,6 @@ public class BrageMigrationCommand implements Callable<Integer> {
                                                                               customer,
                                                                               enableOnlineValidation,
                                                                               shouldLookUpInChannelRegister,
-                                                                              awsEnvironment.getValue(),
                                                                               outputDirectory,
                                                                               isUnzipped,
                                                                               onlineEmbargoChecker))

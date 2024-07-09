@@ -9,15 +9,13 @@ import static no.sikt.nva.unis.UnisContentValidator.validateAndExtractLicense;
 import static no.sikt.nva.unis.UnisContentValidator.validateAndExtractPublisherAuthority;
 import static no.sikt.nva.unis.UnisContentValidator.validateAndExtractTitle;
 import static no.sikt.nva.unis.UnisContentValidator.validateRow;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
+import no.sikt.nva.brage.migration.common.model.record.Customer;
 import no.sikt.nva.brage.migration.common.model.record.EntityDescription;
 import no.sikt.nva.brage.migration.common.model.record.PublisherAuthorityEnum;
 import no.sikt.nva.brage.migration.common.model.record.Record;
-import no.sikt.nva.brage.migration.common.model.record.ResourceOwner;
 import no.sikt.nva.brage.migration.common.model.record.Type;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
@@ -31,9 +29,8 @@ public final class UnisContent {
 
     public static final String DUMMY_HANDLE_THAT_EXIST_FOR_PROCESSING_UNIS
         = "dummy_handle_unis";
-    public static final String UNIS_ID = "unis@195.0.0.0";
     public static final String EMPTY_STRING = "";
-    public static final String UNIS_FOLDER = "unis/";
+    public static final String UNIS_CUSTOMER = "unis";
     private int cristinId;
     private String title;
     private PublisherAuthorityEnum publisherAuthority;
@@ -108,15 +105,15 @@ public final class UnisContent {
         this.filename = filename;
     }
 
-    public Record toRecord() throws URISyntaxException {
+    public Record toRecord() {
         var record = new Record();
         record.setId(UriWrapper.fromUri(DUMMY_HANDLE_THAT_EXIST_FOR_PROCESSING_UNIS + getCristinId()).getUri());
         record.setCristinId(Integer.toString(getCristinId()));
-        record.setResourceOwner(new ResourceOwner(UNIS_ID, new URI("")));
         record.setPublisherAuthority(getPublisherAuthority().toPublisherAuthority());
         record.setEntityDescription(new EntityDescription());
         record.setType(new Type(Set.of(CRISTIN_RECORD.getValue()), CRISTIN_RECORD.getValue()));
         record.setBrageLocation(EMPTY_STRING);
+        record.setCustomer(new Customer(UNIS_CUSTOMER, null));
 
         var fileIdentifier = UUID.randomUUID();
         var contentFile = new ContentFile(

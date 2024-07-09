@@ -1,7 +1,6 @@
 package no.sikt.nva.unis;
 
 import static java.util.Objects.nonNull;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,7 +28,7 @@ public final class UnisContentScrapingResult {
     }
 
     public static UnisContentScrapingResult fromWorkbook(Workbook workbook)
-        throws ExcelException, InvalidUnisContentException, URISyntaxException {
+        throws ExcelException, InvalidUnisContentException {
 
         Sheet sheet = workbook.getSheetAt(0);
 
@@ -55,8 +54,7 @@ public final class UnisContentScrapingResult {
         this.results = results;
     }
 
-    private static void processUnisContent(Map<String, Record> processedRecords, UnisContent unisContent)
-        throws URISyntaxException {
+    private static void processUnisContent(Map<String, Record> processedRecords, UnisContent unisContent) {
 
         var newRecord = unisContent.toRecord();
         if (processedRecords.containsKey(newRecord.getCristinId())) {

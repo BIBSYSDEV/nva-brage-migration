@@ -1,7 +1,6 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Map.entry;
-import java.net.URI;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -428,30 +427,11 @@ public class CustomerMapper {
                                    entry(PROD, "")));
         }};
 
-    private static final String SANDBOX_URI = "https://api.sandbox.nva.aws.unit.no/customer/";
-    private static final String DEVELOP_URI = "https://api.dev.nva.aws.unit.no/customer/";
-    private static final String TEST_URI = "https://api.test.nva.aws.unit.no/customer/";
-    private static final String PROD_URI = "https://api.nva.aws.unit.no/customer/";
-    private static final Map<String, String> ENVIRONMENT_URI_MAP = Map.ofEntries(
-        entry(SANDBOX, SANDBOX_URI),
-        entry(DEVELOP, DEVELOP_URI),
-        entry(TEST, TEST_URI),
-        entry(PROD, PROD_URI));
-
-    public CustomerMapper() {
-
-    }
-
-    public URI getCustomerUri(String customerShortName, String environment) {
+    public static boolean customerExistsInEnvironment(String customerShortName, String environment) {
         return Optional.ofNullable(customerShortName)
                    .map(customer -> CUSTOMER_MAP.get(customer.toLowerCase(Locale.ROOT)))
                    .map(environmentMap -> environmentMap.get(environment))
                    .filter(StringUtils::isNotBlank)
-                   .map(customerIdentifier -> constructCustomerUri(environment, customerIdentifier))
-                   .orElse(null);
-    }
-
-    private URI constructCustomerUri(String environment, String customerIdentifier) {
-        return URI.create(ENVIRONMENT_URI_MAP.get(environment) + customerIdentifier);
+                   .isPresent();
     }
 }

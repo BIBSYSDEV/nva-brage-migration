@@ -29,7 +29,6 @@ public class BrageProcessorFactory {
                                                final String customer,
                                                final boolean enableOnlineValidation,
                                                final boolean shouldLookUpInChannelRegister,
-                                               final String awsEnvironment,
                                                String outputDirectory,
                                                boolean isUnzipped,
                                                OnlineEmbargoChecker onlineEmbargoChecker) {
@@ -38,8 +37,7 @@ public class BrageProcessorFactory {
             throw new RuntimeException(INVALID_ZIPFILE_NAME_EXCEPTION_MESSAGE);
         }
         return new BrageProcessor(zipfile, customer, destinationDirectory,
-                                  enableOnlineValidation, shouldLookUpInChannelRegister,
-                                  awsEnvironment, embargoes,
+                                  enableOnlineValidation, shouldLookUpInChannelRegister, embargoes,
                                   contributors, affiliations, isUnzipped, onlineEmbargoChecker);
     }
 

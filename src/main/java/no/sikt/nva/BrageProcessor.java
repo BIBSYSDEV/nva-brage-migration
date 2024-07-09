@@ -26,13 +26,11 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.scrapers.AffiliationType;
 import no.sikt.nva.scrapers.AlreadyImportedHandlesScraper;
 import no.sikt.nva.scrapers.ContentScraper;
-import no.sikt.nva.scrapers.CustomerMapper;
 import no.sikt.nva.scrapers.DublinCoreFactory;
 import no.sikt.nva.scrapers.DublinCoreScraper;
-import no.sikt.nva.scrapers.embargo.EmbargoParser;
 import no.sikt.nva.scrapers.HandleScraper;
 import no.sikt.nva.scrapers.LicenseScraper;
-import no.sikt.nva.scrapers.ResourceOwnerMapper;
+import no.sikt.nva.scrapers.embargo.EmbargoParser;
 import no.sikt.nva.scrapers.embargo.OnlineEmbargoChecker;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
@@ -56,7 +54,6 @@ public class BrageProcessor implements Runnable {
     private final Map<String, Contributor> contributors;
     @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
     private final String customer;
-    private final String awsEnvironment;
     private final AffiliationType affiliationType;
     private List<Record> records;
     private final boolean isUnzipped;
@@ -67,7 +64,6 @@ public class BrageProcessor implements Runnable {
                           String destinationDirectory,
                           boolean enableOnlineValidation,
                           boolean shouldLookUpInChannelRegister,
-                          String awsEnvironment,
                           Map<String, List<Embargo>> embargoes,
                           Map<String, Contributor> contributors,
                           AffiliationType affiliationType,
@@ -80,7 +76,6 @@ public class BrageProcessor implements Runnable {
         this.shouldLookUpInChannelRegister = shouldLookUpInChannelRegister;
         this.destinationDirectory = destinationDirectory;
         this.handleScraper = new HandleScraper();
-        this.awsEnvironment = awsEnvironment;
         this.embargoes = embargoes;
         this.contributors = contributors;
         this.affiliationType = affiliationType;
@@ -179,12 +174,7 @@ public class BrageProcessor implements Runnable {
     }
 
     private Record injectCustomer(Record record) {
-        record.setCustomer(new Customer(customer, new CustomerMapper().getCustomerUri(customer, awsEnvironment)));
-        return record;
-    }
-
-    private Record injectResourceOwner(Record record) {
-        record.setResourceOwner(new ResourceOwnerMapper().getResourceOwner(customer, awsEnvironment));
+        record.setCustomer(new Customer(customer, null));
         return record;
     }
 
@@ -233,7 +223,6 @@ public class BrageProcessor implements Runnable {
                                                                         brageLocation,
                                                                         customer))
                    .map(this::injectCustomer)
-                   .map(this::injectResourceOwner)
                    .map(r -> injectResourceContent(entryDirectory, brageLocation, dublinCore, r))
                    .map(r -> injectBrageLocation(r, brageLocation))
                    .map(this::injectAffiliationsFromExternalFile)

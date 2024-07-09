@@ -28,7 +28,6 @@ public class Record {
     private static final List<String> DEGREES = List.of(NvaType.BACHELOR_THESIS.getValue(), NvaType.MASTER_THESIS.getValue(),
                                                    NvaType.DOCTORAL_THESIS.getValue());
 
-    private ResourceOwner resourceOwner;
     private EntityDescription entityDescription;
     private Customer customer;
     private URI id;
@@ -66,8 +65,7 @@ public class Record {
             return false;
         }
         Record record = (Record) o;
-        return Objects.equals(getResourceOwner(), record.getResourceOwner())
-               && Objects.equals(getEntityDescription(), record.getEntityDescription())
+        return Objects.equals(getEntityDescription(), record.getEntityDescription())
                && Objects.equals(getCustomer(), record.getCustomer())
                && Objects.equals(getId(), record.getId())
                && Objects.equals(getDoi(), record.getDoi())
@@ -95,16 +93,12 @@ public class Record {
     @JacocoGenerated
     @Override
     public int hashCode() {
-        return Objects.hash(getResourceOwner(), getEntityDescription(), getCustomer(), getId(), getDoi(), getType(),
+        return Objects.hash(getEntityDescription(), getCustomer(), getId(), getDoi(), getType(),
                             getPublisherAuthority(), getRightsholder(), getSpatialCoverage(), getPartOf(), getPart(),
                             getPublication(), getContentBundle(), getPublishedDate(), getCristinId(),
                             getBrageLocation(), getPrioritizedProperties(),
                             getErrors(), getWarnings(), getLink(), getSubjects(), getSubjectCode(), getAccessCode(),
                             getProjects());
-    }
-
-    public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
-        return new HashSet<>(list1).equals(new HashSet<>(list2));
     }
 
     @JsonProperty("projects")
@@ -140,15 +134,6 @@ public class Record {
 
     public void setLink(URI link) {
         this.link = link;
-    }
-
-    @JsonProperty("resourceOwner")
-    public ResourceOwner getResourceOwner() {
-        return resourceOwner;
-    }
-
-    public void setResourceOwner(ResourceOwner resourceOwner) {
-        this.resourceOwner = resourceOwner;
     }
 
     @JsonProperty("hasPart")
