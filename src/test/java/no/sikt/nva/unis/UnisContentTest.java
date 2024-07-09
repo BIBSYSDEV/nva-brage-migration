@@ -1,7 +1,6 @@
 package no.sikt.nva.unis;
 
 import static no.sikt.nva.unis.UnisContent.DUMMY_HANDLE_THAT_EXIST_FOR_PROCESSING_UNIS;
-import static no.sikt.nva.unis.UnisContent.UNIS_ID;
 import static no.sikt.nva.brage.migration.common.model.NvaType.CRISTIN_RECORD;
 import static no.sikt.nva.unis.ExcelTestingUtils.EMPTY_STRING;
 import static no.sikt.nva.unis.ExcelTestingUtils.INVALID_DATE_FORMAT_EXAMPLE;
@@ -171,13 +170,6 @@ class UnisContentTest {
         throws ExcelException, InvalidUnisContentException, URISyntaxException {
         var record = UnisContent.fromRow(createRow(VALID_ROW)).toRecord();
         assertThat(record.getId().toString(), containsString(DUMMY_HANDLE_THAT_EXIST_FOR_PROCESSING_UNIS));
-    }
-
-    @Test
-    void shouldSetUnisAsResourceOwnerWhenCreatingRecord()
-        throws ExcelException, InvalidUnisContentException, URISyntaxException {
-        var record = UnisContent.fromRow(createRow(VALID_ROW)).toRecord();
-        assertThat(record.getResourceOwner().getOwner(), is(equalTo(UNIS_ID)));
     }
 
     @Test

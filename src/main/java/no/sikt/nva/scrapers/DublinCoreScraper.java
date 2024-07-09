@@ -8,6 +8,7 @@ import static no.sikt.nva.brage.migration.common.model.BrageType.RESEARCH_REPORT
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JOURNALS;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PUBLISHERS;
 import static no.sikt.nva.scrapers.CustomerMapper.FFI;
+import static no.sikt.nva.scrapers.CustomerMapper.UIO;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreErrors;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
@@ -154,7 +155,7 @@ public class DublinCoreScraper {
     public static String extractJournal(DublinCore dublinCore, String customer) {
         var journal = extractJournalFromDublinCore(dublinCore);
         var issnSet = extractIssn(dublinCore);
-        if (isNull(journal) && issnSet.isEmpty() && customer.equals(CustomerMapper.UIO)) {
+        if (isNull(journal) && issnSet.isEmpty() && customer.equals(UIO)) {
             return extractJournalFromCitationField(dublinCore);
         } else {
             return journal;

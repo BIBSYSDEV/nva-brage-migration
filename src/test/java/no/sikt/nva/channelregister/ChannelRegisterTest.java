@@ -15,7 +15,6 @@ import no.sikt.nva.brage.migration.common.model.record.Customer;
 import no.sikt.nva.brage.migration.common.model.record.Publication;
 import no.sikt.nva.brage.migration.common.model.record.PublicationContext;
 import no.sikt.nva.brage.migration.common.model.record.Record;
-import no.sikt.nva.brage.migration.common.model.record.ResourceOwner;
 import no.sikt.nva.brage.migration.common.model.record.Type;
 import nva.commons.core.paths.UriWrapper;
 import org.junit.jupiter.api.Test;
@@ -94,19 +93,11 @@ public class ChannelRegisterTest {
     @MethodSource("provideDegrees")
     void shouldUseInstitutionPidWhenTheInstitutionIssuesDegrees(String nvaType) {
         var record = new Record();
-        var resourceOwnerIssuingDegrees = "bi@158.0.0.0";
         record.setCustomer(new Customer("bi",
                                         UriWrapper.fromUri("https://api.test"
                                                            + ".nva.aws.unit"
                                                            + ".no/customer"
                                                            + "/some-customer").getUri()));
-        record.setResourceOwner(new ResourceOwner(resourceOwnerIssuingDegrees,
-                                                  UriWrapper.fromUri("https://api.test"
-                                                                     + ".nva.aws.unit"
-                                                                     + ".no/cristin"
-                                                                     + "/organization"
-                                                                     + "/some"
-                                                                     + "-institution").getUri()));
         var publication = new Publication();
         var publicationContext = new PublicationContext();
         publicationContext.setBragePublisher("something not in channel registered and will be ignored");
@@ -125,11 +116,6 @@ public class ChannelRegisterTest {
     @MethodSource("provideDegrees")
     void shouldNotUseInstitionPidWhenTheInstitutionDoesNotIssueDegrees(String nvaType) {
         var record = new Record();
-        var resourceOwnerIssuingDegrees = "vegvesenet@158.0.0.0";
-        record.setResourceOwner(new ResourceOwner(resourceOwnerIssuingDegrees, UriWrapper.fromUri("https://api.test"
-                                                                                                  + ".nva.aws.unit"
-                                                                                                  + ".no/customer"
-                                                                                                  + "/some-customer").getUri()));
         var publication = new Publication();
         var publicationContext = new PublicationContext();
         publicationContext.setBragePublisher("something not in channel registered and will be ignored");
