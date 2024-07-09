@@ -271,7 +271,7 @@ public class DublinCoreValidatorTest {
 
     @ParameterizedTest
     @MethodSource("validIsmnProvider")
-    void shouldRepairInvalidIsmnAndNotLogError(String value) {
+    void shouldNotLogValidIsmn(String value) {
         var ismn = new DcValue(Element.IDENTIFIER, Qualifier.ISMN, value);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(ismn));
         var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
