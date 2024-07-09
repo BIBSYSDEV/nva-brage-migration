@@ -13,6 +13,8 @@ import nva.commons.core.language.LanguageMapper;
 
 public class BrageNvaLanguageMapper {
 
+    public static final String SAMI_LANGUAGE_GROUP_ISO_CODE = "smi";
+    public static final String NORTHERN_SAMI_ISO_CODE = "sme";
 
     public static Language extractLanguage(DublinCore dublinCore) {
         var languagesDcValues = getLanguagesAsDcValues(dublinCore);
@@ -53,6 +55,7 @@ public class BrageNvaLanguageMapper {
         var isoLanguages = brageLanguages.stream()
                                .filter(DcValue::isIsoLanguage)
                                .map(DcValue::getValue)
+                               .map(BrageNvaLanguageMapper::convertSmiCode)
                                .collect(Collectors.toSet());
         return isoLanguages.iterator().hasNext()
                    ? isoLanguages.iterator().next()
@@ -60,6 +63,12 @@ public class BrageNvaLanguageMapper {
                          .map(DcValue::getValue)
                          .iterator()
                          .next();
+    }
+
+    private static String convertSmiCode(String value) {
+        return SAMI_LANGUAGE_GROUP_ISO_CODE.equalsIgnoreCase(value)
+                   ? NORTHERN_SAMI_ISO_CODE
+                   : value;
     }
 
     private static boolean isLanguageAndLexVoUriUndefined(DcValue dcValue) {
