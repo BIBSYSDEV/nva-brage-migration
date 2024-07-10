@@ -1348,22 +1348,6 @@ public class DublinCoreScraperTest {
                    is(equalTo(LEXVO_URI_UNDEFINED)));
     }
 
-    @Test
-    void some() {
-        List<DcValue> dcValues = List.of(
-            new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()),
-            new DcValue(Element.TYPE, null, "Peer reviewed"),
-            new DcValue(Element.TYPE, null, "Tidsskriftartikkel")
-        );
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var customerIssuingDegrees = "ntnu";
-        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), customerIssuingDegrees);
-
-        assertThat(record.getEntityDescription().getLanguage().getNva(),
-                   is(equalTo(LEXVO_URI_UNDEFINED)));
-    }
-
-
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);
     }
