@@ -15,6 +15,8 @@ import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import static nva.commons.core.attempt.Try.attempt;
 import java.net.URI;
 import java.net.URL;
+import java.time.Instant;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,12 +49,12 @@ import no.sikt.nva.brage.migration.common.model.record.Type;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.exceptions.DublinCoreException;
+import no.sikt.nva.model.Embargo;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DoiValidator;
-import nva.commons.core.SingletonCollector;
 import nva.commons.core.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -288,13 +290,20 @@ public class DublinCoreScraper {
     }
 
     public static String extractEmbargo(DublinCore dublinCore) {
-        return dublinCore.getDcValues()
+        return dublinCore
+                   .getDcValues()
                    .stream()
                    .filter(DcValue::isEmbargoEndDate)
                    .map(DcValue::scrapeValueAndSetToScraped)
-                   .collect(Collectors.toSet())
-                   .stream()
-                   .collect(SingletonCollector.collectOrElse(null));
+                   .filter(StringUtils::isNotEmpty)
+                   .map(stringDate -> new SimpleEntry<>(stringDate, Embargo.getDateAsInstant(stringDate)))
+                   .max(DublinCoreScraper::compareDates)
+                   .map(SimpleEntry::getKey)
+                   .orElse(null);
+    }
+
+    private static int compareDates(SimpleEntry<String, Instant> entry1, SimpleEntry<String, Instant> entry2) {
+        return entry1.getValue().compareTo(entry2.getValue());
     }
 
     public static String extractCristinId(DublinCore dublinCore) {

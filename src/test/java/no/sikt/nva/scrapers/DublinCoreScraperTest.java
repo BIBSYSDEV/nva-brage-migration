@@ -1181,6 +1181,21 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldPickMostRecentEmbargoDate(){
+        var invalidEmbargoDate = "";
+        var embargoDate = "2024-08-26";
+        var embargoDateMostRecent = "2025-08-26";
+        var dcValueInvalidEmbargoDate = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, invalidEmbargoDate);
+        var dcValueEmbargoDate = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, embargoDate);
+        var dvValueEmbargoMostRecent = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, embargoDateMostRecent);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcValueInvalidEmbargoDate,
+                                                                                dcValueEmbargoDate,
+                                                                                dvValueEmbargoMostRecent));
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore);
+        assertThat(embargo, is(equalTo(embargoDateMostRecent)));
+    }
+
+    @Test
     void shouldReturnInvalidLicenseErrorWhenFailingToExtractLicense() {
         var licenseValue = "http://creativecommons.org/licenses/by/4.0\"";
         var invalidLicense = new DcValue(Element.RIGHTS, Qualifier.URI, licenseValue);
