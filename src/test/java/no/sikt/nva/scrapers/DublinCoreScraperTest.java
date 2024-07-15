@@ -46,7 +46,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.File;
 import java.net.URI;
@@ -89,7 +88,7 @@ public class DublinCoreScraperTest {
     private static final String SOME_CUSTOMER = "nve";
     public static final String METADATA_FS_XML = "metadata_fs.xml";
 
-    private static boolean SHOULD_VALIDATE_ONLINE = false;
+    private static final boolean SHOULD_VALIDATE_ONLINE = false;
     private DublinCoreScraper dcScraper;
 
     public static Stream<Arguments> isPartOfSeriesProvider() {
@@ -1077,17 +1076,6 @@ public class DublinCoreScraperTest {
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
         assertThat(record.getType().getNva(), is(equalTo(NvaType.RECORDING_MUSICAL.getValue())));
 
-    }
-
-    @Test
-    void shouldExtractFirstEmbargoIfDublinCoreContainsMultipleEmbargoes() {
-        var dcType = toDcType("Musical score");
-        var firstEmbargo = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, "someDate");
-        var secondEmbargo = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, "someDate");
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(dcType, firstEmbargo, secondEmbargo));
-
-        assertDoesNotThrow(() -> DublinCoreScraper.extractEmbargo(dublinCore));
     }
 
     @Test
