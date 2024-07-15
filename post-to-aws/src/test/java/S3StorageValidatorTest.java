@@ -25,12 +25,12 @@ public class S3StorageValidatorTest {
     @Test
     void shouldThrowExceptionWhenBucketContainsObjectsFromSameCustomer() throws IOException {
         putObjectInS3();
-        assertThrows(StorageValidatorException.class, ()-> s3StorageValidator.validateStorage());
+        assertThrows(StorageValidatorException.class, () -> s3StorageValidator.validateStorage());
     }
 
     @Test
-    void shouldDoNothingWhenBucketDoesNotContainObjectsFromSameCustomer() throws IOException {
-        assertDoesNotThrow(()-> s3StorageValidator.validateStorage());
+    void shouldDoNothingWhenBucketDoesNotContainObjectsFromSameCustomer() {
+        assertDoesNotThrow(() -> s3StorageValidator.validateStorage());
     }
 
     private void putObjectInS3() throws IOException {

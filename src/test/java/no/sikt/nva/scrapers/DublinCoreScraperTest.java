@@ -46,7 +46,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.File;
 import java.net.URI;
@@ -89,7 +88,7 @@ public class DublinCoreScraperTest {
     private static final String SOME_CUSTOMER = "nve";
     public static final String METADATA_FS_XML = "metadata_fs.xml";
 
-    private static boolean SHOULD_VALIDATE_ONLINE = false;
+    private static final boolean SHOULD_VALIDATE_ONLINE = false;
     private DublinCoreScraper dcScraper;
 
     public static Stream<Arguments> isPartOfSeriesProvider() {
@@ -1080,17 +1079,6 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldExtractFirstEmbargoIfDublinCoreContainsMultipleEmbargoes() {
-        var dcType = toDcType("Musical score");
-        var firstEmbargo = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, "someDate");
-        var secondEmbargo = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, "someDate");
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(dcType, firstEmbargo, secondEmbargo));
-
-        assertDoesNotThrow(() -> DublinCoreScraper.extractEmbargo(dublinCore));
-    }
-
-    @Test
     void shouldExtractIssnFromDcSourceIssn() {
         var dcType = toDcType("Musical score");
         var value = randomIssn();
@@ -1178,6 +1166,21 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcValue));
         var embargo = DublinCoreScraper.extractEmbargo(dublinCore);
         assertThat(embargo, is(equalTo(embargoDate)));
+    }
+
+    @Test
+    void shouldPickMostRecentEmbargoDate(){
+        var invalidEmbargoDate = "";
+        var embargoDate = "2024-08-26";
+        var embargoDateMostRecent = "2025-08-26";
+        var dcValueInvalidEmbargoDate = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, invalidEmbargoDate);
+        var dcValueEmbargoDate = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, embargoDate);
+        var dvValueEmbargoMostRecent = new DcValue(Element.DATE, Qualifier.EMBARGO_DATE, embargoDateMostRecent);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcValueInvalidEmbargoDate,
+                                                                                dcValueEmbargoDate,
+                                                                                dvValueEmbargoMostRecent));
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore);
+        assertThat(embargo, is(equalTo(embargoDateMostRecent)));
     }
 
     @Test
