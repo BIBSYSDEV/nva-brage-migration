@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(OnlineEmbargoCheckerImpl.class);
-    private static final String WARNING_FORMATTED = "%s,%s\n";
+    private static final String WARNING_FORMATTED = "%s , %s\n";
     private static final String FILES_LOCKED_DUE_TO_ONLINE_CHECK_FAILS =
         "LockedDuringOnlineCheck.csv";
     private static final int REDIRECT = 302;
