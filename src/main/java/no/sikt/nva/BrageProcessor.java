@@ -207,7 +207,10 @@ public class BrageProcessor implements Runnable {
             if (nonNull(brageLocation.getHandle())) {
                 logger.error(e + StringUtils.SPACE + brageLocation.getOriginInformation());
             } else {
-                logger.error(e + StringUtils.SPACE + brageLocation.getBrageBundlePath());
+                logger.error(e + StringUtils.SPACE + brageLocation.getBrageBundlePath() + StringUtils.SPACE + brageLocation.getTitle());
+                logger.error(brageLocation.getBrageBundlePath() + StringUtils.SPACE + "this post is most likely "
+                             + "bugged and not searchable, or in a unfinished state. Search result for this title is "
+                             + "most likely a duplicate post.");
             }
             return Optional.empty();
         }
