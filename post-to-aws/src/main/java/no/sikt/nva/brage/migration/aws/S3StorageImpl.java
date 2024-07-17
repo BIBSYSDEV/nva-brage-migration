@@ -52,6 +52,8 @@ public class S3StorageImpl implements S3Storage {
     public static final String ZIP = ".zip";
     public static final String FILE_DOES_NOT_EXIST_MESSAGE = "FILE DOES NOT EXIST ";
     public static final String SUCCESSFULLY_PROCEEDED_MESSAGE = "Successfully proceeded records to AWS: ";
+    public static final String EMPTY_JSON_COLLECTION = "[]";
+    public static final String PROCEEDING_WITH_MIGRATION_MESSAGE = "Proceeding with migration";
     private final String bucketName;
     private final S3Client s3Client;
     private final String pathPrefixString;
@@ -163,7 +165,8 @@ public class S3StorageImpl implements S3Storage {
             return Files.readString(Path.of(path));
         } catch (NoSuchFileException e) {
             logger.error(FILE_DOES_NOT_EXIST_MESSAGE + path);
-            return null;
+            logger.error(PROCEEDING_WITH_MIGRATION_MESSAGE);
+            return EMPTY_JSON_COLLECTION;
         }
     }
 
