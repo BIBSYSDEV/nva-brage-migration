@@ -148,6 +148,7 @@ public final class EntityDescriptionExtractor {
                    .stream()
                    .filter(DcValue::isMainTitle)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .filter(StringUtils::isNotBlank)
                    .collect(Collectors.toList());
     }
 

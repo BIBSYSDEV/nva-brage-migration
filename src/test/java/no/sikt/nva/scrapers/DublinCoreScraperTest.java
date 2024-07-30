@@ -1352,6 +1352,21 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldScrapeMainTitleWithPresentValue() {
+        var title = randomString();
+        var dcValues = List.of(
+            new DcValue(Element.TYPE, null, BrageType.MASTER_THESIS.getValue()),
+            new DcValue(Element.TITLE, Qualifier.NONE, ""),
+            new DcValue(Element.TITLE, Qualifier.NONE, null),
+            new DcValue(Element.TITLE, Qualifier.NONE, title));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var customerIssuingDegrees = "ntnu";
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), customerIssuingDegrees);
+
+        assertThat(record.getEntityDescription().getMainTitle(), is(equalTo(title)));
+    }
+
+    @Test
     void shouldScrapeSamiLanguageCodeSmiToNorthernSami(){
         var dcValues = List.of(
             new DcValue(Element.LANGUAGE, Qualifier.ISO, "smi"),
