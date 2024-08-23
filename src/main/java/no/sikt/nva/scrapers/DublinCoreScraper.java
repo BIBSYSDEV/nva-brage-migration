@@ -844,6 +844,35 @@ public class DublinCoreScraper {
         if (isJournal(record)) {
             setChannelRegisterIdentifierForJournal(brageLocation, record);
         }
+        if (isBook(record)) {
+            setChannelRegisterIdentifierForBook(brageLocation, record);
+        }
+    }
+
+    private void setChannelRegisterIdentifierForBook(BrageLocation brageLocation, Record record) {
+        record.getPublication()
+            .getPublicationContext()
+            .setSeries(
+                new Series(extractChannelRegisterIdentifierForSeries(brageLocation, record.getPublication())));
+    }
+
+    private String extractChannelRegisterIdentifierForSeries(BrageLocation brageLocation, Publication publication) {
+        return partOfSeriesIsPresent(publication)
+                   ? channelRegister.lookUpInJournalByTitle(publication.getPartOfSeries().getName(), brageLocation)
+                   : null;
+    }
+
+    private static boolean partOfSeriesIsPresent(Publication publication) {
+        return Optional.ofNullable(publication)
+                   .map(Publication::getPartOfSeries)
+                   .map(PartOfSeries::getName)
+                   .isPresent();
+    }
+
+    private boolean isBook(Record record) {
+        return NvaType.BOOK.getValue().equals(record.getType().getNva())
+               || NvaType.TEXTBOOK.getValue().equals(record.getType().getNva())
+               || NvaType.BOOK_OF_ABSTRACTS.getValue().equals(record.getType().getNva());
     }
 
     private void setChannelRegisterIdentifierForJournal(BrageLocation brageLocation, Record record) {
