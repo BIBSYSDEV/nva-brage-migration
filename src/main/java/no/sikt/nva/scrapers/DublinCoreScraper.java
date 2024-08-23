@@ -870,9 +870,10 @@ public class DublinCoreScraper {
     }
 
     private boolean isBook(Record record) {
-        return NvaType.BOOK.getValue().equals(record.getType().getNva())
-               || NvaType.TEXTBOOK.getValue().equals(record.getType().getNva())
-               || NvaType.BOOK_OF_ABSTRACTS.getValue().equals(record.getType().getNva());
+        var type = record.getType().getNva();
+        return NvaType.BOOK.getValue().equals(type)
+               || NvaType.TEXTBOOK.getValue().equals(type)
+               || NvaType.BOOK_OF_ABSTRACTS.getValue().equals(type);
     }
 
     private void setChannelRegisterIdentifierForJournal(BrageLocation brageLocation, Record record) {

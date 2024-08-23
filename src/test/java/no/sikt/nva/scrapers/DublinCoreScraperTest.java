@@ -73,6 +73,7 @@ import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -1377,6 +1378,9 @@ public class DublinCoreScraperTest {
         assertThat(record.getEntityDescription().getLanguage().getNva().toString(), containsString("sme"));
     }
 
+    @DisplayName("When brage record has type Book, Textbook or Book of abstract, and " +
+                 "publication has partOfSeries field which is present, looking up for series name" +
+                 "in channel register csv file and if we get a match we are setting series pid in publication context")
     @ParameterizedTest
     @ValueSource(strings = {"Book", "Textbook", "Book of abstracts"})
     void shouldLookUpSeriesInChannelRegisterWhenPublicationIsBookWithPartOfSeries(String type){
