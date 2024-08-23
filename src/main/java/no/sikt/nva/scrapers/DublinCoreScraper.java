@@ -15,6 +15,7 @@ import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
 import static nva.commons.core.attempt.Try.attempt;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -50,12 +51,15 @@ import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.Embargo;
+import no.sikt.nva.brage.migration.common.model.record.FundingSources;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DoiValidator;
+import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.StringUtils;
+import nva.commons.core.ioutils.IoUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +83,8 @@ public class DublinCoreScraper {
     private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
-    public ChannelRegister channelRegister;
+    private ChannelRegister channelRegister;
+    private final FundingSources fundingSources;
 
     @SuppressWarnings("PMD.AssignmentToNonFinalStatic")
     public DublinCoreScraper(boolean enableOnlineValidation, boolean shouldLookUpInChannelRegister,
@@ -87,11 +92,17 @@ public class DublinCoreScraper {
         this.enableOnlineValidation = enableOnlineValidation;
         this.shouldLookUpInChannelRegister = shouldLookUpInChannelRegister;
         DublinCoreScraper.contributors = contributors;
+        this.fundingSources = readFundingSources();
         if (shouldLookUpInChannelRegister) {
             this.channelRegister = ChannelRegister.getRegister();
         }
     }
 
+    private FundingSources readFundingSources() {
+        var value = IoUtils.stringFromResources(Path.of("funding_sources.json"));
+        return attempt(() -> JsonUtils.dtoObjectMapper.readValue(value, FundingSources.class))
+                   .orElseThrow();
+    }
 
     public static Set<String> extractIssn(DublinCore dublinCore) {
         return dublinCore.getDcValues()
@@ -352,7 +363,7 @@ public class DublinCoreScraper {
                                              BrageLocation brageLocation,
                                              String customer) {
         try {
-            var errors = getDublinCoreErrors(dublinCore, customer);
+            var errors = getDublinCoreErrors(dublinCore, customer, fundingSources);
             if (lookUpInChannelRegisterIsEnabled()) {
                 channelRegister.getChannelRegisterErrors(dublinCore,
                                                          brageLocation,
@@ -785,7 +796,7 @@ public class DublinCoreScraper {
         record.setPart(extractHasPart(dublinCore));
         record.setSubjects(extractSubjects(dublinCore));
         record.setAccessCode(extractAccessCode(dublinCore));
-        record.setProjects(extractProjects(dublinCore));
+        record.setProjects(extractProjects(dublinCore, fundingSources));
         record.setPrioritizedProperties(determinePrioritizedProperties(dublinCore, customer));
         return record;
     }
@@ -796,11 +807,11 @@ public class DublinCoreScraper {
 
 
 
-    private List<Project> extractProjects(DublinCore dublinCore) {
+    public static List<Project> extractProjects(DublinCore dublinCore, FundingSources fundingSources) {
             return dublinCore.getDcValues().stream()
                        .filter(DcValue::isProjectRelation)
                        .map(DcValue::scrapeValueAndSetToScraped)
-                       .map(Project::fromBrageValue)
+                       .map(value -> Project.fromBrageValue(value, fundingSources))
                        .filter(Objects::nonNull)
                        .distinct()
                        .collect(Collectors.toList());

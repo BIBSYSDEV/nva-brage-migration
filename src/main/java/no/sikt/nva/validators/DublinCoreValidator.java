@@ -1,5 +1,6 @@
 package no.sikt.nva.validators;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DATE_NOT_PRESENT_DC_DATE_ISSUED;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_DATE_ISSUED;
@@ -29,6 +30,8 @@ import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageType;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails.Error;
+import no.sikt.nva.brage.migration.common.model.record.FundingSources;
+import no.sikt.nva.brage.migration.common.model.record.Project;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
@@ -59,7 +62,8 @@ public final class DublinCoreValidator {
     private static final int ONE_DESCRIPTION = 1;
     public static final String NO_CUSTOMER = null;
 
-    public static Set<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, String customer) {
+    public static Set<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, String customer,
+                                                        FundingSources fundingSources) {
 
         var errors = new HashSet<ErrorDetails>();
         DoiValidator.getDoiErrorDetailsOffline(dublinCore).ifPresent(errors::addAll);
@@ -70,7 +74,39 @@ public final class DublinCoreValidator {
         getMultipleUnmappableTypeError(dublinCore, customer).ifPresent(errors::add);
         getMultipleValues(dublinCore).ifPresent(errors::addAll);
         getLicenseError(dublinCore).ifPresent(errors::add);
+        getProjectError(dublinCore, fundingSources).ifPresent(errors::add);
         return errors;
+    }
+
+    private static Optional<ErrorDetails> getProjectError(DublinCore dublinCore, FundingSources fundingSources) {
+        if (!hasProject(dublinCore)) {
+            return Optional.empty();
+        }
+
+        var projectsWithoutFundingSource = getProjectsWithoutFundingSource(dublinCore, fundingSources);
+        if (projectsWithoutFundingSource.isEmpty()) {
+            return Optional.empty();
+        }
+
+        var projectIdentifiers = collectProjectIdentifiers(dublinCore);
+        return Optional.of(new ErrorDetails(Error.UNKNOWN_PROJECT, projectIdentifiers));
+    }
+
+    private static List<Project> getProjectsWithoutFundingSource(DublinCore dublinCore, FundingSources fundingSources) {
+        return DublinCoreScraper.extractProjects(dublinCore, fundingSources).stream()
+                   .filter(project -> isNull(project.getFundingSource()))
+                   .collect(Collectors.toList());
+    }
+
+    private static Set<String> collectProjectIdentifiers(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+                   .filter(DcValue::isProjectRelation)
+                   .map(DcValue::getValue)
+                   .collect(Collectors.toSet());
+    }
+
+    private static boolean hasProject(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream().anyMatch(DcValue::isProjectRelation);
     }
 
     public static Set<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore, String customer) {
