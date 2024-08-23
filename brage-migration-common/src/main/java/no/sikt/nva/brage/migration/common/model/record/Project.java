@@ -26,7 +26,7 @@ public final class Project {
             var slashIndex = value.lastIndexOf(SLASH);
             var commaIndex = value.lastIndexOf(COMMA);
 
-            var index = getSeparatorIndexPrioritizingColon(colonIndex, slashIndex, commaIndex);
+            var index = getSeparatorIndex(colonIndex, slashIndex, commaIndex);
             var project = extractProject(value, index);
             return nonNull(project) ? project.copy()
                                           .withFundingSource(findFundingsSource(fundingSources, project))
@@ -85,7 +85,7 @@ public final class Project {
                    .orElse(null);
     }
 
-    private static int getSeparatorIndexPrioritizingColon(int colonIndex, int slashIndex, int commaIndex) {
+    private static int getSeparatorIndex(int colonIndex, int slashIndex, int commaIndex) {
         if (commaIndex > 0) {
             return commaIndex;
         } else if (colonIndex > 0) {
