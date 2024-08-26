@@ -1,5 +1,6 @@
 package no.sikt.nva.scrapers;
 
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -80,18 +81,6 @@ public class LicenseScraperTest {
     }
 
     @Test
-    void shouldReplaceVocabToPagePathParamWhenPresentInLicense() {
-        var value = "https://rightsstatements.org/vocab/InC/1.0/";
-        var typeDcValue = new DcValue(Element.RIGHTS, Qualifier.URI, value);
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
-        var licenseScraper = new LicenseScraper(dublinCore);
-        var license = licenseScraper.generateLicense();
-
-        var expectedLicense = URI.create("https://rightsstatements.org/page/InC/1.0/");
-        assertThat(license.getNvaLicense().getLicense(), is(equalTo(expectedLicense)));
-    }
-
-    @Test
     void shouldReplaceHttpWithHttps() {
         var value = "http://creativecommons.org/licenses/by/2.5";
         var typeDcValue = new DcValue(Element.RIGHTS, Qualifier.URI, value);
@@ -136,6 +125,18 @@ public class LicenseScraperTest {
         var license = licenseScraper.generateLicense();
 
         var expectedLicense = URI.create("https://creativecommons.org/licenses/by/2.5");
+        assertThat(license.getNvaLicense().getLicense(), is(equalTo(expectedLicense)));
+    }
+
+    @Test
+    void shouldReturnDefaultLicenseWhenUnknownLicense() {
+        var value = randomString();
+        var typeDcValue = new DcValue(Element.RIGHTS, Qualifier.URI, value);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(typeDcValue));
+        var licenseScraper = new LicenseScraper(dublinCore);
+        var license = licenseScraper.generateLicense();
+
+        var expectedLicense = URI.create("https://rightsstatements.org/vocab/InC/1.0/");
         assertThat(license.getNvaLicense().getLicense(), is(equalTo(expectedLicense)));
     }
 }

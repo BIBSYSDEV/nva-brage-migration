@@ -14,7 +14,7 @@ import nva.commons.core.paths.UriWrapper;
 public class LicenseScraper {
 
     public static final String CREATIVE_COMMONS_BASE_URL = "creativecommons.org";
-    public static final URI DEFAULT_LICENSE = URI.create("https://rightsstatements.org/page/InC/1.0/");
+    public static final URI DEFAULT_LICENSE = URI.create("https://rightsstatements.org/vocab/InC/1.0/");
     public static final String DASH = "/";
     private static final String CREATIVE_COMMONS_HOST_NAME = "creativecommons.org";
     private static final List<String> LICENSE_VERSIONS = List.of("1.0",
