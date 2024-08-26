@@ -47,6 +47,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
@@ -1376,6 +1377,37 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         assertThat(record.getEntityDescription().getLanguage().getNva().toString(), containsString("sme"));
+    }
+
+    @Test
+    void shouldLookUpProjectInFundingsSources(){
+        var dcValues = List.of(
+            toDcType("Journal article"),
+            new DcValue(Element.LANGUAGE, Qualifier.ISO, "smi"),
+            new DcValue(Element.RELATION, Qualifier.PROJECT, "Norges forskningsråd: 237906")
+        );
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        var project = record.getProjects().iterator().next();
+
+        assertThat(project.getFundingSource().getIdentifier(), is(equalTo("NFR")));
+    }
+
+    @Test
+    void shouldCreateProjectWithoutFundingsSourcesWhenProjectIsNotPresentInFundingSourcesAndLogError(){
+        var dcValues = List.of(
+            toDcType("Journal article"),
+            new DcValue(Element.LANGUAGE, Qualifier.ISO, "smi"),
+            new DcValue(Element.RELATION, Qualifier.PROJECT, "EU/Horizon 2020, No 679266 (GRACE)")
+        );
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        var project = record.getProjects().iterator().next();
+
+        assertThat(project.getFundingSource(), is(nullValue()));
+        assertThat(record.getErrors().toString(), containsString(Error.UNKNOWN_PROJECT.name()));
     }
 
     @DisplayName("When brage record has type Book, Textbook or Book of abstract, and " +
