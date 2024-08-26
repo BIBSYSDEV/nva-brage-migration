@@ -58,7 +58,7 @@ public class EntityDescriptionExtractorTest {
     }
 
     @Test
-    void shouldNotCreateContributorWithOrcidWhenBrageRecordHasMultipleContributorsAndOrcIds() {
+    void shouldCreateContributorWithoutOrcidWhenBrageRecordHasMultipleContributorsAndOrcIds() {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
             List.of(randomContributor(), randomContributor(), orcIdWithValue(randomString()),
                     orcIdWithValue(randomString())));
