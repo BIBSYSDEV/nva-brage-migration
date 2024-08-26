@@ -28,12 +28,16 @@ public final class Project {
 
             var index = getSeparatorIndex(colonIndex, slashIndex, commaIndex);
             var project = extractProject(value, index);
-            return nonNull(project) ? project.copy()
-                                          .withFundingSource(findFundingsSource(fundingSources, project))
-                                          .build() : null;
+            return nonNull(project) ? injectFundingSource(fundingSources, project) : null;
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private static Project injectFundingSource(FundingSources fundingSources, Project project) {
+        return project.copy()
+                   .withFundingSource(findFundingsSource(fundingSources, project))
+                   .build();
     }
 
     public FundingSource getFundingSource() {

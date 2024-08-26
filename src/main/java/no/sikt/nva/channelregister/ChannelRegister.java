@@ -57,7 +57,10 @@ public final class ChannelRegister {
     public static final String NOT_FOUND_IN_CHANNEL_REGISTER = "NOT_FOUND_IN_CHANNEL_REGISTER: ";
     public static final List<NvaType> SEARCHABLE_TYPES_IN_JOURNALS = List.of(NvaType.JOURNAL_ARTICLE,
                                                                              NvaType.SCIENTIFIC_ARTICLE,
-                                                                             NvaType.REPORT);
+                                                                             NvaType.REPORT,
+                                                                             NvaType.BOOK,
+                                                                             NvaType.BOOK_OF_ABSTRACTS,
+                                                                             NvaType.TEXTBOOK);
     public final static List<NvaType> SEARCHABLE_TYPES_IN_PUBLISHERS = List.of(
         NvaType.BOOK, NvaType.DATASET, NvaType.REPORT, NvaType.BACHELOR_THESIS, NvaType.MASTER_THESIS,
         NvaType.DOCTORAL_THESIS, NvaType.WORKING_PAPER, NvaType.STUDENT_PAPER, NvaType.STUDENT_PAPER_OTHERS,

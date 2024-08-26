@@ -79,7 +79,7 @@ public final class DublinCoreValidator {
     }
 
     private static Optional<ErrorDetails> getProjectError(DublinCore dublinCore, FundingSources fundingSources) {
-        if (!hasProject(dublinCore)) {
+        if (hasNoProject(dublinCore)) {
             return Optional.empty();
         }
 
@@ -105,8 +105,8 @@ public final class DublinCoreValidator {
                    .collect(Collectors.toSet());
     }
 
-    private static boolean hasProject(DublinCore dublinCore) {
-        return dublinCore.getDcValues().stream().anyMatch(DcValue::isProjectRelation);
+    private static boolean hasNoProject(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream().noneMatch(DcValue::isProjectRelation);
     }
 
     public static Set<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore, String customer) {
