@@ -353,6 +353,11 @@ public class DcValue {
                    .replace("\n", StringUtils.EMPTY_STRING);
     }
 
+    public boolean isOrcId() {
+        return Element.CONTRIBUTOR.equals(this.element)
+               && Qualifier.ORCID.equals(this.qualifier);
+    }
+
     private boolean isImn() {
         return Element.IDENTIFIER.equals(this.element)
                && Qualifier.ISMN.equals(this.qualifier);

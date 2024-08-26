@@ -98,6 +98,15 @@ public class DublinCoreScraper {
         }
     }
 
+    public static List<String> extractOrcIds(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isOrcId)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .filter(Objects::nonNull)
+                   .collect(Collectors.toList());
+    }
+
     private FundingSources readFundingSources() {
         var value = IoUtils.stringFromResources(Path.of("funding_sources.json"));
         return attempt(() -> JsonUtils.dtoObjectMapper.readValue(value, FundingSources.class))
@@ -270,7 +279,7 @@ public class DublinCoreScraper {
         }
     }
 
-    public static boolean isSingleton(Collection<String> versions) {
+    public static boolean isSingleton(Collection<?> versions) {
         return versions.size() == 1;
     }
 
