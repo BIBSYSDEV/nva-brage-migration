@@ -28,6 +28,7 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("PMD.GodClass")
 public final class EntityDescriptionExtractor {
@@ -86,12 +87,14 @@ public final class EntityDescriptionExtractor {
         var contributorList = constructContributors(dublinCore, contributors, customer);
         var contributorsWithSequence = injectSequenceNumberToContributors(contributorList);
         var orcIdList = DublinCoreScraper.extractOrcIds(dublinCore);
-        if (orcIdList.isEmpty()) {
-            return contributorsWithSequence;
-        }
-        if (containsSingleContributorAndOrcId(contributorsWithSequence, orcIdList)) {
-            contributorsWithSequence.get(0).getIdentity().setOrcId(orcIdList.get(0));
-        }
+        return containsSingleContributorAndOrcId(contributorsWithSequence, orcIdList)
+                   ? createSingleContributorWithOrcId(contributorsWithSequence, orcIdList)
+                   : contributorsWithSequence;
+    }
+
+    private static @NotNull List<Contributor> createSingleContributorWithOrcId(List<Contributor> contributorsWithSequence,
+                                                              List<String> orcIdList) {
+        contributorsWithSequence.get(0).getIdentity().setOrcId(orcIdList.get(0));
         return contributorsWithSequence;
     }
 

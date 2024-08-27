@@ -7,14 +7,20 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Named.named;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class EntityDescriptionExtractorTest {
 
@@ -22,6 +28,18 @@ public class EntityDescriptionExtractorTest {
     private static final boolean ONLINE_VALIDATION_DISABLED = false;
 
     private static final boolean LOOKUP_IN_CHANNEL_REGISTER = false;
+
+    public static Stream<Arguments> contributorAndOrcIdProvider() {
+        return Stream.of(arguments(named("Multiple contributors and single orcId",
+                                         List.of(randomContributor(), randomContributor(),
+                                                 orcIdWithValue(randomString())))), arguments(
+                             named("Multiple orcIds and single contributor",
+                                   List.of(randomContributor(), orcIdWithValue(randomString()),
+                                           orcIdWithValue(randomString())))),
+                         arguments(named("Multiple contributors and multiple orcIds",
+                                         List.of(randomContributor(), randomContributor(),
+                                                 orcIdWithValue(randomString()), orcIdWithValue(randomString())))));
+    }
 
     @Test
     void shouldMapLocalCodeToDescription() {
@@ -57,11 +75,10 @@ public class EntityDescriptionExtractorTest {
         assertThat(contributor.getIdentity().getOrcId(), is(equalTo(orcId)));
     }
 
-    @Test
-    void shouldCreateContributorWithoutOrcidWhenBrageRecordHasMultipleContributorsAndOrcIds() {
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(randomContributor(), randomContributor(), orcIdWithValue(randomString()),
-                    orcIdWithValue(randomString())));
+    @ParameterizedTest()
+    @MethodSource("contributorAndOrcIdProvider")
+    void shouldCreateContributorWithoutOrcidWhenBrageRecordHas(List<DcValue> dcValues) {
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var dublinCoreScraper = new DublinCoreScraper(ONLINE_VALIDATION_DISABLED, LOOKUP_IN_CHANNEL_REGISTER, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
 
