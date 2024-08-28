@@ -4,6 +4,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.model.dublincore.Qualifier.NONE;
 import static no.sikt.nva.model.dublincore.Qualifier.ORCID;
+import static no.sikt.nva.scrapers.DublinCoreScraper.isSingleton;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -27,6 +28,7 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("PMD.GodClass")
 public final class EntityDescriptionExtractor {
@@ -82,7 +84,27 @@ public final class EntityDescriptionExtractor {
 
     public static List<Contributor> extractContributors(DublinCore dublinCore, Map<String, Contributor> contributors,
                                                        String customer) {
-        var contributorList = dublinCore.getDcValues().stream()
+        var contributorList = constructContributors(dublinCore, contributors, customer);
+        var contributorsWithSequence = injectSequenceNumberToContributors(contributorList);
+        var orcIdList = DublinCoreScraper.extractOrcIds(dublinCore);
+        return containsSingleContributorAndOrcId(contributorsWithSequence, orcIdList)
+                   ? createSingleContributorWithOrcId(contributorsWithSequence, orcIdList)
+                   : contributorsWithSequence;
+    }
+
+    private static @NotNull List<Contributor> createSingleContributorWithOrcId(List<Contributor> contributorsWithSequence,
+                                                              List<String> orcIdList) {
+        contributorsWithSequence.get(0).getIdentity().setOrcId(orcIdList.get(0));
+        return contributorsWithSequence;
+    }
+
+    private static boolean containsSingleContributorAndOrcId(List<Contributor> contributorsWithSequence, List<String> orcIdList) {
+        return isSingleton(contributorsWithSequence) && isSingleton(orcIdList);
+    }
+
+    private static List<Contributor> constructContributors(DublinCore dublinCore, Map<String, Contributor> contributors,
+                                                                    String customer) {
+        return dublinCore.getDcValues().stream()
                    .filter(EntityDescriptionExtractor::isContributor)
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
@@ -90,12 +112,14 @@ public final class EntityDescriptionExtractor {
                    .map(contributor -> updateContributor(contributor, contributors))
                    .map(EntityDescriptionExtractor::updateNameOrder)
                    .collect(Collectors.toList());
-       return IntStream.range(0, contributorList.size()).mapToObj(i -> {
-                var contributor = contributorList.get(i);
-                contributor.setSequence(i + 1);
-                return contributor;
-            })
-            .collect(Collectors.toList());
+    }
+
+    private static List<Contributor> injectSequenceNumberToContributors(List<Contributor> contributorList) {
+        return IntStream.range(0, contributorList.size()).mapToObj(i -> {
+            var contributor = contributorList.get(i);
+            contributor.setSequence(i + 1);
+            return contributor;
+        }).collect(Collectors.toList());
     }
 
     public static String extractIssue(DublinCore dublinCore) {

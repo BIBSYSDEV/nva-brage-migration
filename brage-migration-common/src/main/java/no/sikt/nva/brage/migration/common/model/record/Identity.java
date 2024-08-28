@@ -10,11 +10,36 @@ public class Identity {
 
     private final String identifier;
     private String name;
+    private String orcId;
 
     public Identity(@JsonProperty("name") String name,
                     @JsonProperty("identifier") String identifier) {
         this.name = name;
         this.identifier = identifier;
+    }
+
+    @JacocoGenerated
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Identity)) {
+            return false;
+        }
+        Identity identity = (Identity) o;
+        return Objects.equals(identifier, identity.identifier) && Objects.equals(name, identity.name) &&
+               Objects.equals(orcId, identity.orcId);
+    }
+
+    @JacocoGenerated
+    @Override
+    public int hashCode() {
+        return Objects.hash(identifier, name, orcId);
+    }
+    @JsonProperty("orcId")
+    public String getOrcId() {
+        return orcId;
     }
 
     public String getIdentifier() {
@@ -29,23 +54,7 @@ public class Identity {
         this.name = name;
     }
 
-    @JacocoGenerated
-    @Override
-    public int hashCode() {
-        return Objects.hash(getIdentifier(), getName());
-    }
-
-    @JacocoGenerated
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Identity identity = (Identity) o;
-        return Objects.equals(getIdentifier(), identity.getIdentifier()) && Objects.equals(getName(),
-                                                                                           identity.getName());
+    public void setOrcId(String orcId) {
+        this.orcId = orcId;
     }
 }
