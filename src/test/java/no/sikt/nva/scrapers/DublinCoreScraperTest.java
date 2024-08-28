@@ -14,7 +14,6 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIP
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ABSTRACT;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ALTERNATIVE_ABSTRACTS;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.ALTERNATIVE_TITLES;
-import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.CONTRIBUTORS_WITH_CREATOR_ROLE;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.FUNDINGS;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.MAIN_TITLE;
 import static no.sikt.nva.brage.migration.common.model.record.PrioritizedProperties.PUBLISHER;
@@ -47,7 +46,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
@@ -1285,19 +1283,6 @@ public class DublinCoreScraperTest {
         var actualPrioritizedProperties = record.getPrioritizedProperties();
         assertThat(actualPrioritizedProperties, hasItem(PUBLISHER.getValue()));
         assertThat(record.getPublication().getPublicationContext().getPublisher().getPid(), is(notNullValue()));
-    }
-
-    @Test
-    void shouldPrioritizeContributorsWithAuthorRoleWhenTheDublinCoreIsDegreeAndCustomerIssuesDegrees(){
-        var dcValues = List.of(
-            new DcValue(Element.TYPE, null, BrageType.MASTER_THESIS.getValue()),
-            new DcValue(Element.PUBLISHER, null, randomString())
-        );
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var customerIssuingDegrees = "ntnu";
-        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), customerIssuingDegrees);
-        var actualPrioritizedProperties = record.getPrioritizedProperties();
-        assertThat(actualPrioritizedProperties, hasItem(CONTRIBUTORS_WITH_CREATOR_ROLE.getValue()));
     }
 
     @Test
