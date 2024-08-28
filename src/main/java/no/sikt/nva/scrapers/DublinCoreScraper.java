@@ -35,6 +35,7 @@ import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
+import no.sikt.nva.brage.migration.common.model.record.FundingSources;
 import no.sikt.nva.brage.migration.common.model.record.Journal;
 import no.sikt.nva.brage.migration.common.model.record.PartOfSeries;
 import no.sikt.nva.brage.migration.common.model.record.Project;
@@ -51,7 +52,6 @@ import no.sikt.nva.brage.migration.common.model.record.WarningDetails;
 import no.sikt.nva.channelregister.ChannelRegister;
 import no.sikt.nva.exceptions.DublinCoreException;
 import no.sikt.nva.model.Embargo;
-import no.sikt.nva.brage.migration.common.model.record.FundingSources;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Element;
@@ -644,15 +644,9 @@ public class DublinCoreScraper {
     }
 
     private static PartOfSeries constructPartOfSeries(List<String> list) {
-        var partOfSeries = new PartOfSeries();
-        for (String value : list) {
-            if (value.matches(CONTAINS_NUBMER_PATTERN)) {
-                partOfSeries.setNumber(value);
-            } else {
-                partOfSeries.setName(value);
-            }
-        }
-        return partOfSeries;
+        var name = attempt(() -> list.get(0)).orElse(failure -> null);
+        var number = attempt(() -> list.get(1)).orElse(failure -> null);
+        return new PartOfSeries(name, number);
     }
 
     private static String extractPartOf(DublinCore dublinCore) {
