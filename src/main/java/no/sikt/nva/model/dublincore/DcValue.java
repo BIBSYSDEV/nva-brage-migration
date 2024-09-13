@@ -214,7 +214,7 @@ public class DcValue {
     }
 
     public boolean isContributor() {
-        return Element.CONTRIBUTOR.equals(this.element);
+        return Element.CONTRIBUTOR.equals(this.element) && !Qualifier.DEPARTMENT.equals(this.qualifier);
     }
 
     public boolean isAdvisor() {

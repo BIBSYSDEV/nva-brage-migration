@@ -1380,6 +1380,18 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldNotCreateContributorFromDcQualifierDepartment(){
+        var dcValues = List.of(
+            toDcType("Journal article"),
+            new DcValue(Element.CONTRIBUTOR, Qualifier.DEPARTMENT, randomString())
+        );
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        assertThat(record.getEntityDescription().getContributors(), is(emptyIterable()));
+    }
+
+    @Test
     void shouldCreateProjectWithoutFundingsSourcesWhenProjectIsNotPresentInFundingSourcesAndLogError(){
         var dcValues = List.of(
             toDcType("Journal article"),
