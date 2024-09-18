@@ -1407,6 +1407,25 @@ public class DublinCoreScraperTest {
         assertThat(record.getErrors().toString(), containsString(Error.UNKNOWN_PROJECT.name()));
     }
 
+    @Test
+    void shouldScrapeWiseflowAndInsperaIdentifiers(){
+        var insperaIdentifier = "no.ntnu:inspera:22222:22222";
+        var wiseFlowIdentifier = "no.usn:wiseflow:11111:11111";
+        var dcValues = List.of(
+            toDcType("Journal article"),
+            new DcValue(Element.IDENTIFIER, null, insperaIdentifier),
+            new DcValue(Element.IDENTIFIER, null, wiseFlowIdentifier),
+            new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1016/j.scitotenv.2021.151958"),
+            new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "2038-324X"),
+            new DcValue(Element.IDENTIFIER, Qualifier.CITATION, randomString())
+        );
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        assertThat(record.getInsperaIdentifier(), is(equalTo(insperaIdentifier)));
+        assertThat(record.getWiseflowIdentifier(), is(equalTo(wiseFlowIdentifier)));
+    }
+
     @DisplayName("When brage record has type Book, Textbook or Book of abstract, and " +
                  "publication has partOfSeries field which is present, looking up for series name" +
                  "in channel register csv file and if we get a match we are setting series pid in publication context")

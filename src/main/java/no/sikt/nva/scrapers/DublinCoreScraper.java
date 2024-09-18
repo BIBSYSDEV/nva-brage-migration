@@ -338,6 +338,24 @@ public class DublinCoreScraper {
                    .orElse(null);
     }
 
+    public static String extractInsperaIdentifier(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isInsperaIdentifier)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .findAny()
+                   .orElse(null);
+    }
+
+    public static String extractWiseflowIdentifier(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isaWiseflowIdentifier)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .findAny()
+                   .orElse(null);
+    }
+
     public static Type mapOriginTypeToNvaType(Set<String> types, DublinCore dublinCore, String customer) {
         var uniqueTypes = translateTypesInNorwegian(types);
         var type = new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
@@ -801,6 +819,8 @@ public class DublinCoreScraper {
         record.setAccessCode(extractAccessCode(dublinCore));
         record.setProjects(extractProjects(dublinCore, fundingSources));
         record.setPrioritizedProperties(determinePrioritizedProperties(dublinCore, customer));
+        record.setInsperaIdentifier(extractInsperaIdentifier(dublinCore));
+        record.setWiseflowIdentifier(extractWiseflowIdentifier(dublinCore));
         return record;
     }
 
