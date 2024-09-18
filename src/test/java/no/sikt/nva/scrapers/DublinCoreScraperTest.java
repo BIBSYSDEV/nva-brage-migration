@@ -1160,12 +1160,21 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldExtractEmbargo() {
+    void shouldExtractEmbargoWhenCustomerIsUio() {
         var embargoDate = "2024-08-26";
         var dcValue = new DcValue(Element.DATE, Qualifier.fromValue("embargoEndDate"), embargoDate);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcValue));
-        var embargo = DublinCoreScraper.extractEmbargo(dublinCore);
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore, CustomerMapper.UIO);
         assertThat(embargo, is(equalTo(embargoDate)));
+    }
+
+    @Test
+    void shouldNotExtractEmbargoWhenCustomerIsNotUio() {
+        var embargoDate = "2024-08-26";
+        var dcValue = new DcValue(Element.DATE, Qualifier.fromValue("embargoEndDate"), embargoDate);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcValue));
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore, CustomerMapper.NTNU);
+        assertThat(embargo, is(nullValue()));
     }
 
     @Test
@@ -1179,7 +1188,7 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcValueInvalidEmbargoDate,
                                                                                 dcValueEmbargoDate,
                                                                                 dvValueEmbargoMostRecent));
-        var embargo = DublinCoreScraper.extractEmbargo(dublinCore);
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore, "uio");
         assertThat(embargo, is(equalTo(embargoDateMostRecent)));
     }
 
