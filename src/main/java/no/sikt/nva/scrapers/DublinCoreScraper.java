@@ -313,7 +313,7 @@ public class DublinCoreScraper {
         return UIO.equals(customer) ? extractEmbargo(dublinCore) : null;
     }
 
-    private static String extractEmbargo(DublinCore dublinCore) {
+    public static String extractEmbargo(DublinCore dublinCore) {
         return dublinCore
                    .getDcValues()
                    .stream()
