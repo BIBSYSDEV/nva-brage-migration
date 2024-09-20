@@ -14,6 +14,8 @@ public class DcValue {
 
     public static final String XML_PREFIX = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
     private static final String DOI_PREFIX = "10.";
+    public static final String INSPERA = "inspera";
+    public static final String WISEFLOW = "wiseflow";
     @XmlAttribute
     private Element element;
 
@@ -343,6 +345,14 @@ public class DcValue {
     public boolean isEmbargoEndDate() {
         return Element.DATE.equals(this.element) && Qualifier.EMBARGO_DATE.equals(this.qualifier)
             || Element.DATE.equals(this.element) && Qualifier.EMBARGO_DATE_V2.equals(this.qualifier);
+    }
+
+    public boolean isInsperaIdentifier() {
+        return Element.IDENTIFIER.equals(this.element) && this.value.contains(INSPERA);
+    }
+
+    public boolean isaWiseflowIdentifier() {
+        return Element.IDENTIFIER.equals(this.element) && this.value.contains(WISEFLOW);
     }
 
     public String toXmlString() {

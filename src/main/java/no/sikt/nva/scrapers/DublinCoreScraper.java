@@ -309,6 +309,10 @@ public class DublinCoreScraper {
                                                                                   + issn.substring(4) : issn;
     }
 
+    public static String extractEmbargo(DublinCore dublinCore, String customer) {
+        return UIO.equals(customer) ? extractEmbargo(dublinCore) : null;
+    }
+
     public static String extractEmbargo(DublinCore dublinCore) {
         return dublinCore
                    .getDcValues()
@@ -334,6 +338,24 @@ public class DublinCoreScraper {
                    .map(DublinCoreScraper::removeAllUnnecessaryStrings)
                    .filter(Objects::nonNull)
                    .filter(DublinCoreScraper::isNumeric)
+                   .findAny()
+                   .orElse(null);
+    }
+
+    public static String extractInsperaIdentifier(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isInsperaIdentifier)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .findAny()
+                   .orElse(null);
+    }
+
+    public static String extractWiseflowIdentifier(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isaWiseflowIdentifier)
+                   .map(DcValue::scrapeValueAndSetToScraped)
                    .findAny()
                    .orElse(null);
     }
@@ -801,6 +823,8 @@ public class DublinCoreScraper {
         record.setAccessCode(extractAccessCode(dublinCore));
         record.setProjects(extractProjects(dublinCore, fundingSources));
         record.setPrioritizedProperties(determinePrioritizedProperties(dublinCore, customer));
+        record.setInsperaIdentifier(extractInsperaIdentifier(dublinCore));
+        record.setWiseflowIdentifier(extractWiseflowIdentifier(dublinCore));
         return record;
     }
 

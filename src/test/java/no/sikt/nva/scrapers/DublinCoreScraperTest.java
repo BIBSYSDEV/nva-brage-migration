@@ -1160,12 +1160,21 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldExtractEmbargo() {
+    void shouldExtractEmbargoWhenCustomerIsUio() {
         var embargoDate = "2024-08-26";
         var dcValue = new DcValue(Element.DATE, Qualifier.fromValue("embargoEndDate"), embargoDate);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcValue));
-        var embargo = DublinCoreScraper.extractEmbargo(dublinCore);
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore, CustomerMapper.UIO);
         assertThat(embargo, is(equalTo(embargoDate)));
+    }
+
+    @Test
+    void shouldNotExtractEmbargoWhenCustomerIsNotUio() {
+        var embargoDate = "2024-08-26";
+        var dcValue = new DcValue(Element.DATE, Qualifier.fromValue("embargoEndDate"), embargoDate);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcValue));
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore, CustomerMapper.NTNU);
+        assertThat(embargo, is(nullValue()));
     }
 
     @Test
@@ -1179,7 +1188,7 @@ public class DublinCoreScraperTest {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcValueInvalidEmbargoDate,
                                                                                 dcValueEmbargoDate,
                                                                                 dvValueEmbargoMostRecent));
-        var embargo = DublinCoreScraper.extractEmbargo(dublinCore);
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore, "uio");
         assertThat(embargo, is(equalTo(embargoDateMostRecent)));
     }
 
@@ -1405,6 +1414,25 @@ public class DublinCoreScraperTest {
 
         assertThat(project.getFundingSource(), is(nullValue()));
         assertThat(record.getErrors().toString(), containsString(Error.UNKNOWN_PROJECT.name()));
+    }
+
+    @Test
+    void shouldScrapeWiseflowAndInsperaIdentifiers(){
+        var insperaIdentifier = "no.ntnu:inspera:22222:22222";
+        var wiseFlowIdentifier = "no.usn:wiseflow:11111:11111";
+        var dcValues = List.of(
+            toDcType("Journal article"),
+            new DcValue(Element.IDENTIFIER, null, insperaIdentifier),
+            new DcValue(Element.IDENTIFIER, null, wiseFlowIdentifier),
+            new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1016/j.scitotenv.2021.151958"),
+            new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "2038-324X"),
+            new DcValue(Element.IDENTIFIER, Qualifier.CITATION, randomString())
+        );
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        assertThat(record.getInsperaIdentifier(), is(equalTo(insperaIdentifier)));
+        assertThat(record.getWiseflowIdentifier(), is(equalTo(wiseFlowIdentifier)));
     }
 
     @DisplayName("When brage record has type Book, Textbook or Book of abstract, and " +

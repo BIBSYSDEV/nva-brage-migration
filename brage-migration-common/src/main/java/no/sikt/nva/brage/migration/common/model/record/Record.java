@@ -42,6 +42,8 @@ public class Record {
     private ResourceContent contentBundle;
     private PublishedDate publishedDate;
     private String cristinId;
+    private String insperaIdentifier;
+    private String wiseflowIdentifier;
     private String brageLocation;
     private Set<ErrorDetails> errors;
     private Set<WarningDetails> warnings;
@@ -61,44 +63,45 @@ public class Record {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof Record)) {
             return false;
         }
         Record record = (Record) o;
-        return Objects.equals(getEntityDescription(), record.getEntityDescription())
-               && Objects.equals(getCustomer(), record.getCustomer())
-               && Objects.equals(getId(), record.getId())
-               && Objects.equals(getDoi(), record.getDoi())
-               && Objects.equals(getType(), record.getType())
-               && Objects.equals(getPublisherAuthority(), record.getPublisherAuthority())
-               && Objects.equals(getRightsholder(), record.getRightsholder())
-               && Objects.equals(getSpatialCoverage(), record.getSpatialCoverage())
-               && Objects.equals(getPartOf(), record.getPartOf())
-               && Objects.equals(getPart(), record.getPart())
-               && Objects.equals(getPublication(), record.getPublication())
-               && Objects.equals(getContentBundle(), record.getContentBundle())
-               && Objects.equals(getPublishedDate(), record.getPublishedDate())
-               && Objects.equals(getCristinId(), record.getCristinId())
-               && Objects.equals(getBrageLocation(), record.getBrageLocation())
-               && Objects.equals(getErrors(), record.getErrors())
-               && Objects.equals(getWarnings(), record.getWarnings())
-               && Objects.equals(getLink(), record.getLink())
-               && Objects.equals(getSubjects(), record.getSubjects())
-               && Objects.equals(getSubjectCode(), record.getSubjectCode())
-               && Objects.equals(getAccessCode(), record.getAccessCode())
-               && Objects.equals(getPrioritizedProperties(), record.getPrioritizedProperties())
-               && Objects.equals(getProjects(), record.getProjects());
+        return Objects.equals(getEntityDescription(), record.getEntityDescription()) &&
+               Objects.equals(getCustomer(), record.getCustomer()) &&
+               Objects.equals(getId(), record.getId()) && Objects.equals(getDoi(), record.getDoi()) &&
+               Objects.equals(getType(), record.getType()) &&
+               Objects.equals(getPublisherAuthority(), record.getPublisherAuthority()) &&
+               Objects.equals(getRightsholder(), record.getRightsholder()) &&
+               Objects.equals(getSpatialCoverage(), record.getSpatialCoverage()) &&
+               Objects.equals(getPartOf(), record.getPartOf()) &&
+               Objects.equals(getPart(), record.getPart()) &&
+               Objects.equals(getPublication(), record.getPublication()) &&
+               Objects.equals(getContentBundle(), record.getContentBundle()) &&
+               Objects.equals(getPublishedDate(), record.getPublishedDate()) &&
+               Objects.equals(getCristinId(), record.getCristinId()) &&
+               Objects.equals(getInsperaIdentifier(), record.getInsperaIdentifier()) &&
+               Objects.equals(getWiseflowIdentifier(), record.getWiseflowIdentifier()) &&
+               Objects.equals(getBrageLocation(), record.getBrageLocation()) &&
+               Objects.equals(getErrors(), record.getErrors()) &&
+               Objects.equals(getWarnings(), record.getWarnings()) &&
+               Objects.equals(getLink(), record.getLink()) &&
+               Objects.equals(getSubjects(), record.getSubjects()) &&
+               Objects.equals(getSubjectCode(), record.getSubjectCode()) &&
+               Objects.equals(getAccessCode(), record.getAccessCode()) &&
+               Objects.equals(getProjects(), record.getProjects()) &&
+               Objects.equals(prioritizedFields, record.prioritizedFields);
     }
 
     @JacocoGenerated
     @Override
     public int hashCode() {
         return Objects.hash(getEntityDescription(), getCustomer(), getId(), getDoi(), getType(),
-                            getPublisherAuthority(), getRightsholder(), getSpatialCoverage(), getPartOf(), getPart(),
-                            getPublication(), getContentBundle(), getPublishedDate(), getCristinId(),
-                            getBrageLocation(), getPrioritizedProperties(),
-                            getErrors(), getWarnings(), getLink(), getSubjects(), getSubjectCode(), getAccessCode(),
-                            getProjects());
+                            getPublisherAuthority(),
+                            getRightsholder(), getSpatialCoverage(), getPartOf(), getPart(), getPublication(),
+                            getContentBundle(), getPublishedDate(), getCristinId(), getInsperaIdentifier(),
+                            getWiseflowIdentifier(), getBrageLocation(), getErrors(), getWarnings(), getLink(),
+                            getSubjects(), getSubjectCode(), getAccessCode(), getProjects(), prioritizedFields);
     }
 
     @JsonProperty("projects")
@@ -108,6 +111,24 @@ public class Record {
 
     public void setProjects(List<Project> projects) {
         this.projects = projects;
+    }
+
+    @JsonProperty("insperaIdentifier")
+    public String getInsperaIdentifier() {
+        return insperaIdentifier;
+    }
+
+    @JsonProperty("wiseflowIdentifier")
+    public String getWiseflowIdentifier() {
+        return wiseflowIdentifier;
+    }
+
+    public void setInsperaIdentifier(String insperaIdentifier) {
+        this.insperaIdentifier = insperaIdentifier;
+    }
+
+    public void setWiseflowIdentifier(String wiseflowIdentifier) {
+        this.wiseflowIdentifier = wiseflowIdentifier;
     }
 
     @JsonProperty("subjectCode")
