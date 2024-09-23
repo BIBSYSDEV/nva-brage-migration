@@ -2,6 +2,7 @@ package no.sikt.nva;
 
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.AUTHOR;
+import static nva.commons.core.attempt.Try.attempt;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -229,15 +230,25 @@ public class BrageProcessor implements Runnable {
                    .map(r -> injectResourceContent(entryDirectory, brageLocation, dublinCore, r))
                    .map(r -> injectBrageLocation(r, brageLocation))
                    .map(this::injectAffiliationsFromExternalFile)
-                   .map(record -> injectValuesFromFsDublinCore(record, parseFsDublinCore(entryDirectory)))
+                   .map(record -> injectValuesFromFsDublinCore(record, dublinCore, parseFsDublinCore(entryDirectory)))
                    .map(r -> EmbargoParser.checkForEmbargoFromSuppliedEmbargoFile(r, embargoes, onlineEmbargoChecker));
     }
 
-    public static Record injectValuesFromFsDublinCore(Record record, DublinCore dublinCore) {
-        var subjectCode = DublinCoreScraper.extractSubjectCode(dublinCore);
+    public static Record injectValuesFromFsDublinCore(Record record, DublinCore brageDublinCore, DublinCore fsDublinCore) {
+        var subjectCode = getSubjectCode(fsDublinCore, brageDublinCore);
         record.setSubjectCode(subjectCode);
         updateDescriptionsIfNeeded(record, subjectCode);
         return record;
+    }
+
+    private static String getSubjectCode(DublinCore fsDublinCore, DublinCore brageDublinCore) {
+        var subjectCodeFromFs = DublinCoreScraper.extractSubjectCodeFromFsXml(fsDublinCore);
+        var subjectCodesFromBrage = DublinCoreScraper.extractSubjectCodesFromDublinCore(brageDublinCore);
+        return nonNull(subjectCodeFromFs) ? subjectCodeFromFs : getFirstOrElseNull(subjectCodesFromBrage);
+    }
+
+    private static String getFirstOrElseNull(List<String> subjectCodesFromBrage) {
+        return attempt(() -> subjectCodesFromBrage.get(0)).orElse(failure -> null);
     }
 
     private static void updateDescriptionsIfNeeded(Record record, String subjectCode) {
