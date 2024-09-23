@@ -80,6 +80,7 @@ public class DublinCoreScraper {
     public static final String CONTAINS_NUBMER_PATTERN = ".*\\d+.*";
     public static final String NEW_ISMN_FIRST_ELEMENT = "9790";
     public static final String OLD_ISMN_FIRST_ELEMENT = "m";
+    public static final int MAX_SUBJECT_CODE_LENGTH = 15;
     private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
@@ -382,7 +383,7 @@ public class DublinCoreScraper {
                                  || OTHER_TYPE_OF_REPORT.getValue().equals(t));
     }
 
-    public static String extractSubjectCode(DublinCore dublinCore) {
+    public static String extractSubjectCodeFromFsXml(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isSubjectCode)
                    .map(DcValue::scrapeValueAndSetToScraped)
@@ -484,6 +485,20 @@ public class DublinCoreScraper {
                    .filter(Objects::nonNull)
                    .distinct()
                    .collect(Collectors.toList());
+    }
+
+    public static List<String> extractSubjectCodesFromDublinCore(DublinCore dublinCore) {
+        return dublinCore.getDcValues()
+                   .stream()
+                   .filter(DcValue::isLocalCode)
+                   .map(DcValue::scrapeValueAndSetToScraped)
+                   .filter(DublinCoreScraper::isSubjectCode)
+                   .distinct()
+                   .collect(Collectors.toList());
+    }
+
+    private static boolean isSubjectCode(String value) {
+        return value.length() < MAX_SUBJECT_CODE_LENGTH;
     }
 
     private static URI toUri(String value) {
@@ -831,8 +846,6 @@ public class DublinCoreScraper {
     private Set<String> determinePrioritizedProperties(DublinCore dublinCore, String customer) {
         return PrioritizeField.getPrioritizedFields(dublinCore, customer);
     }
-
-
 
     public static List<Project> extractProjects(DublinCore dublinCore, FundingSources fundingSources) {
             return dublinCore.getDcValues().stream()

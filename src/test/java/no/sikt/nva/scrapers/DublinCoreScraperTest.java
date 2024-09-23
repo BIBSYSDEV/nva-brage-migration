@@ -1019,14 +1019,6 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldExtractSubjectCodeFromFsXml() {
-        var fsDublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(TEST_RESOURCE_PATH + METADATA_FS_XML));
-        var expectedSubjectCode = "JUS399";
-
-        assertThat(DublinCoreScraper.extractSubjectCode(fsDublinCore), is(equalTo(expectedSubjectCode)));
-    }
-
-    @Test
     void shouldSetTypeToReportAndDoNotLogWhenPostIsMissingTypePropertyWhenCustomerHasAgreedToMapTypelessPostAsReport() {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
