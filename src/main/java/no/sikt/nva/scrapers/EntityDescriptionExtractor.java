@@ -131,18 +131,6 @@ public final class EntityDescriptionExtractor {
     }
 
     public static List<String> extractDescriptions(DublinCore dublinCore) {
-        var descriptions = getDescriptions(dublinCore);
-        var versions = extractDescriptionFromVersionField(dublinCore);
-        descriptions.addAll(versions);
-        return descriptions;
-    }
-
-    private static Set<String> extractDescriptionFromVersionField(DublinCore dublinCore) {
-        var publisherAuthority = DublinCoreScraper.extractPublisherAuthority(dublinCore);
-        return isNull(publisherAuthority.getNva()) ? DublinCoreScraper.getVersions(dublinCore) : Set.of();
-    }
-
-    private static List<String> getDescriptions(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isDescription)
