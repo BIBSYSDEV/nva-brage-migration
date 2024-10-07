@@ -9,6 +9,7 @@ import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JO
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PUBLISHERS;
 import static no.sikt.nva.scrapers.CustomerMapper.FFI;
 import static no.sikt.nva.scrapers.CustomerMapper.UIO;
+import static no.sikt.nva.validators.DoiValidator.isUri;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreErrors;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
@@ -60,6 +61,7 @@ import no.sikt.nva.validators.DoiValidator;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.StringUtils;
 import nva.commons.core.ioutils.IoUtils;
+import nva.commons.core.paths.UriWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +81,7 @@ public class DublinCoreScraper {
     public static final String DOT = "\\.";
     public static final String CONTAINS_NUBMER_PATTERN = ".*\\d+.*";
     public static final String NEW_ISMN_FIRST_ELEMENT = "9790";
+    public static final String ORC_ID_HOST = "https://orcid.org";
     public static final String OLD_ISMN_FIRST_ELEMENT = "m";
     public static final int MAX_SUBJECT_CODE_LENGTH = 15;
     private static Map<String, Contributor> contributors;
@@ -99,13 +102,24 @@ public class DublinCoreScraper {
         }
     }
 
-    public static List<String> extractOrcIds(DublinCore dublinCore) {
+    public static List<URI> extractOrcIds(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isOrcId)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(DublinCoreScraper::toUriWithOrcidPrefix)
                    .filter(Objects::nonNull)
                    .collect(Collectors.toList());
+    }
+
+    private static URI toUriWithOrcidPrefix(String value) {
+        if (isUri(value)) {
+            return attempt(() -> URI.create(value)).orElse(failure -> null);
+        } else if (!StringUtils.isBlank(value)) {
+            return attempt(() -> UriWrapper.fromHost(ORC_ID_HOST).addChild(value).getUri()).orElse(failure -> null);
+        } else {
+            return null;
+        }
     }
 
     private FundingSources readFundingSources() {

@@ -2,6 +2,7 @@ package no.sikt.nva.brage.migration.common.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.net.URI;
 import java.util.Objects;
 import nva.commons.core.JacocoGenerated;
 
@@ -10,7 +11,7 @@ public class Identity {
 
     private final String identifier;
     private String name;
-    private String orcId;
+    private URI orcId;
 
     public Identity(@JsonProperty("name") String name,
                     @JsonProperty("identifier") String identifier) {
@@ -38,7 +39,7 @@ public class Identity {
         return Objects.hash(identifier, name, orcId);
     }
     @JsonProperty("orcId")
-    public String getOrcId() {
+    public URI getOrcId() {
         return orcId;
     }
 
@@ -54,7 +55,7 @@ public class Identity {
         this.name = name;
     }
 
-    public void setOrcId(String orcId) {
+    public void setOrcId(URI orcId) {
         this.orcId = orcId;
     }
 }

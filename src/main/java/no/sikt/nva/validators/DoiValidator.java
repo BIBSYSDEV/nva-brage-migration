@@ -103,7 +103,7 @@ public class DoiValidator {
         return HTTPS_STRING + DOI_DOMAIN_NAME + doi;
     }
 
-    private static boolean isUri(String value) {
+    public static boolean isUri(String value) {
         try {
             var uri = new URL(value);
             return "http".equals(uri.getProtocol()) || "https".equals(uri.getProtocol());
