@@ -62,8 +62,7 @@ public final class DublinCoreValidator {
     private static final int ONE_DESCRIPTION = 1;
     public static final String NO_CUSTOMER = null;
 
-    public static Set<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, String customer,
-                                                        FundingSources fundingSources) {
+    public static Set<ErrorDetails> getDublinCoreErrors(DublinCore dublinCore, String customer) {
 
         var errors = new HashSet<ErrorDetails>();
         DoiValidator.getDoiErrorDetailsOffline(dublinCore).ifPresent(errors::addAll);
@@ -74,11 +73,10 @@ public final class DublinCoreValidator {
         getMultipleUnmappableTypeError(dublinCore, customer).ifPresent(errors::add);
         getMultipleValues(dublinCore).ifPresent(errors::addAll);
         getLicenseError(dublinCore).ifPresent(errors::add);
-        getProjectError(dublinCore, fundingSources).ifPresent(errors::add);
         return errors;
     }
 
-    private static Optional<ErrorDetails> getProjectError(DublinCore dublinCore, FundingSources fundingSources) {
+    private static Optional<WarningDetails> getProjectError(DublinCore dublinCore, FundingSources fundingSources) {
         if (hasNoProject(dublinCore)) {
             return Optional.empty();
         }
@@ -89,7 +87,7 @@ public final class DublinCoreValidator {
         }
 
         var projectIdentifiers = collectProjectIdentifiers(dublinCore);
-        return Optional.of(new ErrorDetails(Error.UNKNOWN_PROJECT, projectIdentifiers));
+        return Optional.of(new WarningDetails(Warning.UNKNOWN_PROJECT, projectIdentifiers));
     }
 
     private static List<Project> getProjectsWithoutFundingSource(DublinCore dublinCore, FundingSources fundingSources) {
@@ -109,7 +107,7 @@ public final class DublinCoreValidator {
         return dublinCore.getDcValues().stream().noneMatch(DcValue::isProjectRelation);
     }
 
-    public static Set<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore, String customer) {
+    public static Set<WarningDetails> getDublinCoreWarnings(DublinCore dublinCore, String customer, FundingSources fundingSources) {
         var warnings = new HashSet<WarningDetails>();
         SubjectScraper.getSubjectsWarnings(dublinCore).ifPresent(warnings::add);
         BrageNvaLanguageMapper.getLanguageWarning(dublinCore).ifPresent(warnings::add);
@@ -119,6 +117,7 @@ public final class DublinCoreValidator {
         getPageNumberWarning(dublinCore).ifPresent(warnings::add);
         getNonContributorsError(dublinCore).ifPresent(warnings::add);
         getTypesWarnings(dublinCore, customer).ifPresent(warnings::add);
+        getProjectError(dublinCore, fundingSources).ifPresent(warnings::add);
         return warnings;
     }
 

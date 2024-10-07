@@ -136,7 +136,7 @@ public class BrageProcessor implements Runnable {
 
     private Record injectContentBundle(Record record, File entryDirectory, BrageLocation brageLocation,
                                        DublinCore dublinCore) throws ContentException {
-        var embargo = DublinCoreScraper.extractEmbargo(dublinCore);
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore, customer);
         record.setContentBundle(getContent(entryDirectory, brageLocation, dublinCore, embargo));
         return record;
     }

@@ -64,7 +64,7 @@ public class DublinCoreValidatorTest {
     void validIssnAndIsbnDoesNotAppendProblemsToProblemList() {
         var dublinCore = DublinCoreFactory.createDublinCoreFromXml(new File(
             TEST_RESOURCE_PATH + VALID_DUBLIN_CORE_XML_FILE_NAME));
-        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
 
         assertThat(actualProblemsList, not(contains(new ErrorDetails(INVALID_ISSN, Set.of()),
                                                     new WarningDetails(Warning.INVALID_ISBN_WARNING, Set.of()))));
@@ -74,7 +74,7 @@ public class DublinCoreValidatorTest {
     void shouldNotAppendEmptyIsbnXmlTagsInDublinCoreToProblemList() {
         var emtpyIsbnTag = new DcValue(Element.IDENTIFIER, Qualifier.ISBN, null);
         var dublinCore = new DublinCore(List.of(emtpyIsbnTag));
-        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
         assertThat(actualProblemsList, not(contains(new WarningDetails(Warning.INVALID_ISBN_WARNING, Set.of()))));
     }
 
@@ -84,7 +84,7 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "invalid_issn"),
                                new DcValue(Element.IDENTIFIER, Qualifier.ISBN, "invalid_isbn"));
         var dublinCore = new DublinCore(dcValues);
-        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualProblemsList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
         assertThat(actualProblemsList, hasItems(new ErrorDetails(INVALID_ISSN, Set.of())));
     }
 
@@ -93,7 +93,7 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(new DcValue(Element.SUBJECT, Qualifier.SLUG, randomString()),
                                new DcValue(Element.SUBJECT, Qualifier.SLUG, randomString()));
         var dublinCore = new DublinCore(dcValues);
-        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore, NO_CUSTOMER);
+        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore, NO_CUSTOMER, fundingSources);
 
         assertThat(actualWarningList, hasItems(new WarningDetails(Warning.SUBJECT_WARNING, Set.of())));
     }
@@ -102,7 +102,7 @@ public class DublinCoreValidatorTest {
     void shouldReturnErrorDetailsWithDoiErrorIfDoiIsInvalid() {
         var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.DOI, randomString()));
         var dublinCore = new DublinCore(dcValues);
-        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
 
         assertThat(actualErrorList, hasItems(new ErrorDetails(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK, Set.of())));
     }
@@ -112,7 +112,7 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10"
                                                                               + ".5194/tc-8-1885-2014"));
         var dublinCore = new DublinCore(dcValues);
-        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
 
         assertThat(actualErrorList,
                    not(hasItems(new ErrorDetails(INVALID_DC_IDENTIFIER_DOI_OFFLINE_CHECK, Set.of()))));
@@ -122,7 +122,7 @@ public class DublinCoreValidatorTest {
     void shouldReturnErrorWhenInvalidDate() {
         var dcValues = List.of(new DcValue(Element.DATE, Qualifier.ISSUED, "someDate"));
         var dublinCore = new DublinCore(dcValues);
-        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
 
         assertThat(actualErrorList, hasItems(new ErrorDetails(INVALID_DC_DATE_ISSUED, Set.of())));
     }
@@ -132,7 +132,7 @@ public class DublinCoreValidatorTest {
     void shouldNotReturnDateErrorWhenDateIsValid(String date) {
         var dcValues = List.of(new DcValue(Element.DATE, Qualifier.ISSUED, date));
         var dublinCore = new DublinCore(dcValues);
-        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
 
         assertThat(actualErrorList, not(hasItems(new ErrorDetails(INVALID_DC_DATE_ISSUED, Set.of()))));
     }
@@ -141,7 +141,7 @@ public class DublinCoreValidatorTest {
     void shouldReturnErrorDateNotPresent() {
         var dcValues = List.of(new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "someLastName, someFirstName"));
         var dublinCore = new DublinCore(dcValues);
-        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualErrorList = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
 
         assertThat(actualErrorList, hasItems(new ErrorDetails(DATE_NOT_PRESENT_DC_DATE_ISSUED, Set.of())));
     }
@@ -150,7 +150,7 @@ public class DublinCoreValidatorTest {
     void shouldReturnWarningIfLanguageIsUndefined() {
         var dcValues = List.of(new DcValue(Element.LANGUAGE, Qualifier.NONE, "someInvalidLanguage"));
         var dublinCore = new DublinCore(dcValues);
-        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore, NO_CUSTOMER);
+        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore, NO_CUSTOMER, fundingSources);
 
         assertThat(actualWarningList, hasItems(new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED, Set.of())));
     }
@@ -159,7 +159,7 @@ public class DublinCoreValidatorTest {
     void shouldMapValidLanguageToNvaLanguage() {
         var dcValues = List.of(new DcValue(Element.LANGUAGE, Qualifier.NONE, "nob"));
         var dublinCore = new DublinCore(dcValues);
-        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore, NO_CUSTOMER);
+        var actualWarningList = DublinCoreValidator.getDublinCoreWarnings(dublinCore, NO_CUSTOMER, fundingSources);
 
         assertThat(actualWarningList,
                    not(hasItems(new WarningDetails(Warning.LANGUAGE_MAPPED_TO_UNDEFINED, Set.of()))));
@@ -202,7 +202,7 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.IDENTIFIER, Qualifier.DOI, inputDoi),
             new DcValue(Element.TYPE, null, "Book"));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(INVALID_DOI_ONLINE_CHECK, Set.of()))));
     }
@@ -228,7 +228,7 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "2038-324X"),
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(MISSING_DC_ISSN_AND_DC_JOURNAL, Set.of()))));
     }
@@ -239,7 +239,7 @@ public class DublinCoreValidatorTest {
             new DcValue(Element.SOURCE, Qualifier.JOURNAL, "Fisheries management and ecology"),
             new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(MISSING_DC_ISSN_AND_DC_JOURNAL, Set.of()))));
     }
@@ -249,7 +249,7 @@ public class DublinCoreValidatorTest {
         var dcValues = List.of(new DcValue(Element.TYPE, null, BrageType.JOURNAL_ARTICLE.getValue()),
                                new DcValue(Element.TYPE, null, BrageType.PEER_REVIEWED.getValue()));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var actualErrors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
 
         assertThat(actualErrors, not(hasItems(new ErrorDetails(INVALID_DC_TYPE, Set.of()))));
     }
@@ -259,7 +259,7 @@ public class DublinCoreValidatorTest {
     void shouldNotLogInvalidDateIssuedWhenDateIsPeriod(String value) {
         var date = new DcValue(Element.DATE, Qualifier.ISSUED, value);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(date));
-        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
         assertThat(errors, not(hasItems(new ErrorDetails(INVALID_DC_DATE_ISSUED))));
     }
 
@@ -267,7 +267,7 @@ public class DublinCoreValidatorTest {
     void shouldReturnErrorWhenInvalidIsmnIsSupplied() {
         var ismn = new DcValue(Element.IDENTIFIER, Qualifier.ISMN, "M-9005112-1-876");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(ismn));
-        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
         assertThat(errors, hasItem(new ErrorDetails(INVALID_ISMN)));
     }
 
@@ -276,7 +276,7 @@ public class DublinCoreValidatorTest {
     void shouldNotLogValidIsmn(String value) {
         var ismn = new DcValue(Element.IDENTIFIER, Qualifier.ISMN, value);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(ismn));
-        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER);
         assertThat(errors, not(hasItem(new ErrorDetails(INVALID_ISMN, Set.of(value)))));
     }
 
@@ -311,14 +311,14 @@ public class DublinCoreValidatorTest {
     }
 
     @Test
-    void shouldReturnUnknownProjectErrorWhenProjectIsNotPresentInFundingSources() {
+    void shouldReturnUnknownProjectWarningWhenProjectIsNotPresentInFundingSources() {
         var project = "EU/Horizon 2020, No 679266 (GRACE)";
         var dcValues = List.of(
             new DcValue(Element.TYPE, null, BrageType.MASTER_THESIS.getValue()),
             new DcValue(Element.RELATION, Qualifier.PROJECT, project));
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
-        var errors = DublinCoreValidator.getDublinCoreErrors(dublinCore, NO_CUSTOMER, fundingSources);
+        var errors = DublinCoreValidator.getDublinCoreWarnings(dublinCore, NO_CUSTOMER, fundingSources);
 
-        assertThat(errors, hasItem(new ErrorDetails(ErrorDetails.Error.UNKNOWN_PROJECT, Set.of(project))));
+        assertThat(errors, hasItem(new WarningDetails(WarningDetails.Warning.UNKNOWN_PROJECT, Set.of(project))));
     }
 }
