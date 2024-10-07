@@ -1394,7 +1394,7 @@ public class DublinCoreScraperTest {
         var project = record.getProjects().iterator().next();
 
         assertThat(project.getFundingSource(), is(nullValue()));
-        assertThat(record.getErrors().toString(), containsString(Error.UNKNOWN_PROJECT.name()));
+        assertThat(record.getWarnings().toString(), containsString(Warning.UNKNOWN_PROJECT.name()));
     }
 
     @Test

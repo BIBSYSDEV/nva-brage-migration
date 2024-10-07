@@ -395,7 +395,7 @@ public class DublinCoreScraper {
                                              BrageLocation brageLocation,
                                              String customer) {
         try {
-            var errors = getDublinCoreErrors(dublinCore, customer, fundingSources);
+            var errors = getDublinCoreErrors(dublinCore, customer);
             if (lookUpInChannelRegisterIsEnabled()) {
                 channelRegister.getChannelRegisterErrors(dublinCore,
                                                          brageLocation,
@@ -405,7 +405,7 @@ public class DublinCoreScraper {
             if (onlineValidationIsEnabled()) {
                 DoiValidator.getDoiErrorDetailsOnline(dublinCore).ifPresent(errors::addAll);
             }
-            var warnings = getDublinCoreWarnings(dublinCore, customer);
+            var warnings = getDublinCoreWarnings(dublinCore, customer, fundingSources);
             var record = createRecordFromDublinCoreAndBrageLocation(dublinCore,
                                                                     brageLocation,
                                                                     shouldLookUpInChannelRegister,
