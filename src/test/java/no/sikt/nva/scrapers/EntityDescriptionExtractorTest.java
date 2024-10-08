@@ -3,7 +3,6 @@ package no.sikt.nva.scrapers;
 import static no.sikt.nva.ResourceNameConstants.TEST_RESOURCE_PATH;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -32,8 +31,8 @@ public class EntityDescriptionExtractorTest {
     private static final boolean ONLINE_VALIDATION_DISABLED = false;
 
     private static final boolean LOOKUP_IN_CHANNEL_REGISTER = false;
-    public static final String ORC_ID_VALUE = "0000-0000-0000-0000";
-    public static final URI ORC_ID_URI = URI.create("https://orcid.org/0000-0000-0000-0000");
+    public static final String ORCID_VALUE = "0000-0000-0000-0000";
+    public static final URI ORCID_URI = URI.create("https://orcid.org/0000-0000-0000-0000");
 
     public static Stream<Arguments> contributorAndOrcIdProvider() {
         return Stream.of(arguments(named("Multiple contributors and single orcId",
@@ -48,8 +47,10 @@ public class EntityDescriptionExtractorTest {
     }
 
     public static Stream<Arguments> orcIdProvider() {
-        return Stream.of(arguments(named("OrcId String", "https://orcid.org/" + ORC_ID_VALUE)),
-                         arguments(named("OrcId Uri", ORC_ID_VALUE)));
+        return Stream.of(arguments(named("OrcId Uri", "https://orcid.org/" + ORCID_VALUE)),
+                         arguments(named("OrcId Uri", "http://orcid.org/" + ORCID_VALUE)),
+                         arguments(named("OrcId String", ORCID_VALUE)),
+                         arguments(named("OrcId String", "http://www.orcid.org/" + ORCID_VALUE)));
     }
 
     @Test
@@ -77,12 +78,12 @@ public class EntityDescriptionExtractorTest {
     @Test
     void shouldCreateContributorWithOrcidWhenBrageRecordHasSingleContributorAndSingleOrcId() {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
-            List.of(randomContributor(), orcIdWithValue(ORC_ID_VALUE)));
+            List.of(randomContributor(), orcIdWithValue(ORCID_VALUE)));
         var dublinCoreScraper = new DublinCoreScraper(ONLINE_VALIDATION_DISABLED, LOOKUP_IN_CHANNEL_REGISTER, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var contributor = record.getEntityDescription().getContributors().get(0);
 
-        assertThat(contributor.getIdentity().getOrcId(), is(equalTo(ORC_ID_URI)));
+        assertThat(contributor.getIdentity().getOrcId(), is(equalTo(ORCID_URI)));
     }
 
     @ParameterizedTest()
@@ -103,7 +104,7 @@ public class EntityDescriptionExtractorTest {
         var dublinCore = new DublinCore(List.of(new DcValue(Element.CONTRIBUTOR, Qualifier.ORCID, value)));
         var orcId = DublinCoreScraper.extractOrcIds(dublinCore).get(0);
 
-        assertThat(orcId, is(equalTo(ORC_ID_URI)));
+        assertThat(orcId, is(equalTo(ORCID_URI)));
     }
 
     @Test

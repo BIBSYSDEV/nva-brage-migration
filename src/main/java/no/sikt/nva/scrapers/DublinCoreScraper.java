@@ -9,7 +9,6 @@ import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JO
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PUBLISHERS;
 import static no.sikt.nva.scrapers.CustomerMapper.FFI;
 import static no.sikt.nva.scrapers.CustomerMapper.UIO;
-import static no.sikt.nva.validators.DoiValidator.isUri;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreErrors;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
@@ -81,7 +80,8 @@ public class DublinCoreScraper {
     public static final String DOT = "\\.";
     public static final String CONTAINS_NUBMER_PATTERN = ".*\\d+.*";
     public static final String NEW_ISMN_FIRST_ELEMENT = "9790";
-    public static final String ORC_ID_HOST = "https://orcid.org";
+    public static final String ORCID_HOST = "https://orcid.org/";
+    public static final String ORCID_HOST_REGEX = "https?://(www\\.)?orcid\\.org/";
     public static final String OLD_ISMN_FIRST_ELEMENT = "m";
     public static final int MAX_SUBJECT_CODE_LENGTH = 15;
     private static Map<String, Contributor> contributors;
@@ -113,13 +113,15 @@ public class DublinCoreScraper {
     }
 
     private static URI toUriWithOrcidPrefix(String value) {
-        if (isUri(value)) {
-            return attempt(() -> URI.create(value)).orElse(failure -> null);
-        } else if (!StringUtils.isBlank(value)) {
-            return attempt(() -> UriWrapper.fromHost(ORC_ID_HOST).addChild(value).getUri()).orElse(failure -> null);
-        } else {
-            return null;
-        }
+        var orcid = value.replaceAll(ORCID_HOST_REGEX, StringUtils.EMPTY_STRING);
+        return Optional.ofNullable(orcid)
+            .filter(StringUtils::isNotBlank)
+            .map(DublinCoreScraper::toOrcidUri)
+            .orElse(null);
+    }
+
+    private static URI toOrcidUri(String orcid) {
+        return UriWrapper.fromHost(ORCID_HOST).addChild(orcid).getUri();
     }
 
     private FundingSources readFundingSources() {
