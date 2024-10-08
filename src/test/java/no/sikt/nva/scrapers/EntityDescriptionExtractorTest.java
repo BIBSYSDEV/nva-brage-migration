@@ -108,7 +108,7 @@ public class EntityDescriptionExtractorTest {
     }
 
     @Test
-    void shouldNotThrowExceptionWhenOrcIdIsInvalid() {
+    void shouldNotThrowExceptionWhenUnableToParseOrcidToUri() {
         var dublinCore = new DublinCore(List.of(new DcValue(Element.CONTRIBUTOR, Qualifier.ORCID, "")));
         var orcIdList = DublinCoreScraper.extractOrcIds(dublinCore);
 
