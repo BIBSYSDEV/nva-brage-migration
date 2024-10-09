@@ -60,6 +60,7 @@ import no.sikt.nva.validators.DoiValidator;
 import no.unit.nva.commons.json.JsonUtils;
 import nva.commons.core.StringUtils;
 import nva.commons.core.ioutils.IoUtils;
+import nva.commons.core.paths.UriWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +80,8 @@ public class DublinCoreScraper {
     public static final String DOT = "\\.";
     public static final String CONTAINS_NUBMER_PATTERN = ".*\\d+.*";
     public static final String NEW_ISMN_FIRST_ELEMENT = "9790";
+    public static final String ORCID_HOST = "https://orcid.org/";
+    public static final String ORCID_HOST_REGEX = "https?://(www\\.)?orcid\\.org/";
     public static final String OLD_ISMN_FIRST_ELEMENT = "m";
     public static final int MAX_SUBJECT_CODE_LENGTH = 15;
     private static Map<String, Contributor> contributors;
@@ -99,13 +102,26 @@ public class DublinCoreScraper {
         }
     }
 
-    public static List<String> extractOrcIds(DublinCore dublinCore) {
+    public static List<URI> extractOrcIds(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
                    .filter(DcValue::isOrcId)
                    .map(DcValue::scrapeValueAndSetToScraped)
+                   .map(DublinCoreScraper::toUriWithOrcidPrefix)
                    .filter(Objects::nonNull)
                    .collect(Collectors.toList());
+    }
+
+    private static URI toUriWithOrcidPrefix(String value) {
+        var orcid = value.replaceAll(ORCID_HOST_REGEX, StringUtils.EMPTY_STRING);
+        return Optional.ofNullable(orcid)
+            .filter(StringUtils::isNotBlank)
+            .map(DublinCoreScraper::toOrcidUri)
+            .orElse(null);
+    }
+
+    private static URI toOrcidUri(String orcid) {
+        return UriWrapper.fromHost(ORCID_HOST).addChild(orcid).getUri();
     }
 
     private FundingSources readFundingSources() {

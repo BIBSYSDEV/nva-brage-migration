@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import static no.sikt.nva.model.dublincore.Qualifier.NONE;
 import static no.sikt.nva.model.dublincore.Qualifier.ORCID;
 import static no.sikt.nva.scrapers.DublinCoreScraper.isSingleton;
+import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -28,7 +29,6 @@ import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Qualifier;
 import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.core.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("PMD.GodClass")
 public final class EntityDescriptionExtractor {
@@ -92,13 +92,14 @@ public final class EntityDescriptionExtractor {
                    : contributorsWithSequence;
     }
 
-    private static @NotNull List<Contributor> createSingleContributorWithOrcId(List<Contributor> contributorsWithSequence,
-                                                              List<String> orcIdList) {
+    private static List<Contributor> createSingleContributorWithOrcId(List<Contributor> contributorsWithSequence,
+                                                              List<URI> orcIdList) {
         contributorsWithSequence.get(0).getIdentity().setOrcId(orcIdList.get(0));
         return contributorsWithSequence;
     }
 
-    private static boolean containsSingleContributorAndOrcId(List<Contributor> contributorsWithSequence, List<String> orcIdList) {
+    private static boolean containsSingleContributorAndOrcId(List<Contributor> contributorsWithSequence,
+                                                             List<URI> orcIdList) {
         return isSingleton(contributorsWithSequence) && isSingleton(orcIdList);
     }
 
