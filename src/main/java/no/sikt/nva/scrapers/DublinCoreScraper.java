@@ -681,25 +681,34 @@ public class DublinCoreScraper {
                                      .filter(DcValue::isPartOfSeries)
                                      .map(DcValue::scrapeValueAndSetToScraped)
                                      .collect(Collectors.toList());
-       return convertListToPartOfSeries(partOfSeriesValues);
+       return convertListToPartOfSeries(partOfSeriesValues, dublinCore);
     }
 
-    private static PartOfSeries convertListToPartOfSeries(List<String> list) {
+    private static PartOfSeries convertListToPartOfSeries(List<String> list, DublinCore dublinCore) {
         if (isSingleton(list)) {
             var parts = Arrays.stream(list.get(0).split(";"))
                             .map(String::trim)
                             .filter(value -> !value.isEmpty())
                             .collect(Collectors.toList());
-            return constructPartOfSeries(parts);
+            return constructPartOfSeries(parts, dublinCore);
         } else {
-            return constructPartOfSeries(list);
+            return constructPartOfSeries(list, dublinCore);
         }
     }
 
-    private static PartOfSeries constructPartOfSeries(List<String> list) {
+    private static PartOfSeries constructPartOfSeries(List<String> list, DublinCore dublinCore) {
         var name = attempt(() -> list.get(0)).orElse(failure -> null);
-        var number = attempt(() -> list.get(1)).orElse(failure -> null);
-        return new PartOfSeries(name, number);
+        var number = Optional.ofNullable(attempt(() -> list.get(1)).orElse(failure -> null))
+                         .or(() -> Optional.ofNullable(extractPartOf(dublinCore)))
+                         .orElse(null);
+        return isSeriesName(name)
+                   ? new PartOfSeries(name, number)
+                   : new PartOfSeries(number, name);
+    }
+
+    private static boolean isSeriesName(String value) {
+        // Assuming series names are non-null and not in the format of a series number
+        return value != null && !value.matches("\\d{4}\\W\\d{2}") && !value.matches("\\d+");
     }
 
     private static String extractPartOf(DublinCore dublinCore) {
@@ -907,11 +916,12 @@ public class DublinCoreScraper {
     private void setIdFromJournals(BrageLocation brageLocation, Record record) {
         if (isReport(record)) {
             setChannelRegisterIdentifierForReport(brageLocation, record);
+            return;
         }
         if (isJournal(record)) {
             setChannelRegisterIdentifierForJournal(brageLocation, record);
         }
-        if (isBook(record)) {
+        if (hasPartOfSeries(record)) {
             setChannelRegisterIdentifierForBook(brageLocation, record);
         }
     }
@@ -936,11 +946,8 @@ public class DublinCoreScraper {
                    .isPresent();
     }
 
-    private boolean isBook(Record record) {
-        var type = record.getType().getNva();
-        return NvaType.BOOK.getValue().equals(type)
-               || NvaType.TEXTBOOK.getValue().equals(type)
-               || NvaType.BOOK_OF_ABSTRACTS.getValue().equals(type);
+    private boolean hasPartOfSeries(Record record) {
+        return nonNull(record.getPublication().getPartOfSeries());
     }
 
     private void setChannelRegisterIdentifierForJournal(BrageLocation brageLocation, Record record) {

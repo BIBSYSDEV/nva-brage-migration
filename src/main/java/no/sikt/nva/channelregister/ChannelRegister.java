@@ -60,7 +60,8 @@ public final class ChannelRegister {
                                                                              NvaType.REPORT,
                                                                              NvaType.BOOK,
                                                                              NvaType.BOOK_OF_ABSTRACTS,
-                                                                             NvaType.TEXTBOOK);
+                                                                             NvaType.TEXTBOOK,
+                                                                             NvaType.WORKING_PAPER);
     public final static List<NvaType> SEARCHABLE_TYPES_IN_PUBLISHERS = List.of(
         NvaType.BOOK, NvaType.DATASET, NvaType.REPORT, NvaType.BACHELOR_THESIS, NvaType.MASTER_THESIS,
         NvaType.DOCTORAL_THESIS, NvaType.WORKING_PAPER, NvaType.STUDENT_PAPER, NvaType.STUDENT_PAPER_OTHERS,
@@ -249,12 +250,8 @@ public final class ChannelRegister {
             if (StringUtils.isBlank(title)) {
                 return title;
             } else {
-                var channel = channelRegisterJournals.stream()
-                                  .filter(item -> item.hasTitle(title))
-                                  .map(ChannelRegisterJournal::getPid)
-                                  .distinct()
-                                  .collect(SingletonCollector.collectOrElse(null));
-                return Optional.ofNullable(channel).orElseGet(() -> lookupInJournalAliases(title));
+                return Optional.ofNullable(lookUpInJournalsByTitle(title))
+                           .orElseGet(() -> lookupInJournalAliases(title));
             }
         } catch (IllegalStateException e) {
             logger.error(new ErrorDetails(DUPLICATE_JOURNAL_IN_CHANNEL_REGISTER,
@@ -265,6 +262,14 @@ public final class ChannelRegister {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private String lookUpInJournalsByTitle(String title) {
+        return channelRegisterJournals.stream()
+                   .filter(item -> item.hasTitle(title))
+                   .map(ChannelRegisterJournal::getPid)
+                   .distinct()
+                   .collect(SingletonCollector.collectOrElse(null));
     }
 
     public String lookUpInPublisher(String publisher, String customer) {
@@ -414,11 +419,7 @@ public final class ChannelRegister {
                    .map(ChannelRegisterAlias::getOriginalTitle)
                    .distinct()
                    .collect(SingletonCollector.collectOrElse(null));
-        return channelRegisterJournals.stream()
-                   .filter(item -> item.hasTitle(originalTitle))
-                   .map(ChannelRegisterJournal::getPid)
-                   .distinct()
-                   .collect(SingletonCollector.collectOrElse(null));
+        return lookUpInJournalsByTitle(originalTitle);
     }
 
     private String lookupInPublisherAliases(List<ChannelRegisterPublisher> publishers, List<ChannelRegisterAlias> aliases, String publisher) {
