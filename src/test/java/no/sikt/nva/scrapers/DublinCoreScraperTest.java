@@ -132,6 +132,11 @@ public class DublinCoreScraperTest {
         );
     }
 
+    public static Stream<Arguments> seriesSupplier() {
+        return Stream.of(Arguments.of("Cicero Working papers", "2010:03"),
+                         Arguments.of("2010:03", "Cicero Working papers"));
+    }
+
     private static DcValue partOfSeries(String value) {
         return new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, value);
     }
@@ -1435,14 +1440,16 @@ public class DublinCoreScraperTest {
                    is(equalTo("5FCE7321-320B-4EB6-B890-A2AD85B1BFC1")));
     }
 
-    @Test
-    void shouldConvertPartOfAndPartOfSeriesFieldsToPartOfSeriesAndLookUpForSeriesInChannelRegister() {
+    @ParameterizedTest
+    @MethodSource("seriesSupplier")
+    void shouldConvertPartOfAndPartOfSeriesFieldsToPartOfSeriesAndLookUpForSeriesInChannelRegister(String firstValue,
+                                                                                                   String secondValue) {
         var seriesName = "Cicero Working papers";
         var seriesNumber = "2010:03";
         var dcValues = List.of(
             toDcType("Working paper"),
-            new DcValue(Element.RELATION, Qualifier.IS_PART_OF, seriesName),
-            new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, seriesNumber)
+            new DcValue(Element.RELATION, Qualifier.IS_PART_OF, firstValue),
+            new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, secondValue)
         );
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);

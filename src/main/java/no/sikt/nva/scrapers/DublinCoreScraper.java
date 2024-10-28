@@ -697,18 +697,21 @@ public class DublinCoreScraper {
     }
 
     private static PartOfSeries constructPartOfSeries(List<String> list, DublinCore dublinCore) {
-        var name = attempt(() -> list.get(0)).orElse(failure -> null);
-        var number = Optional.ofNullable(attempt(() -> list.get(1)).orElse(failure -> null))
+        var firstEntry = attempt(() -> list.get(0)).orElse(failure -> null);
+        var secondEntry = Optional.ofNullable(attempt(() -> list.get(1)).orElse(failure -> null))
                          .or(() -> Optional.ofNullable(extractPartOf(dublinCore)))
                          .orElse(null);
-        return isSeriesName(name)
-                   ? new PartOfSeries(name, number)
-                   : new PartOfSeries(number, name);
+        return extractSeries(firstEntry, secondEntry);
+    }
+
+    private static PartOfSeries extractSeries(String firstEntry, String secondEntry) {
+        return isSeriesName(firstEntry)
+                   ? new PartOfSeries(firstEntry, secondEntry)
+                   : new PartOfSeries(secondEntry, firstEntry);
     }
 
     private static boolean isSeriesName(String value) {
-        // Assuming series names are non-null and not in the format of a series number
-        return value != null && !value.matches("\\d{4}\\W\\d{2}") && !value.matches("\\d+");
+        return StringUtils.isNotBlank(value) && !value.matches("\\d{4}\\W\\d{2}") && !value.matches("\\d+");
     }
 
     private static String extractPartOf(DublinCore dublinCore) {
