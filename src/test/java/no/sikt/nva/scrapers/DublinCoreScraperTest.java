@@ -46,6 +46,8 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
@@ -128,6 +130,11 @@ public class DublinCoreScraperTest {
             Arguments.of("https://doi.org/10.1016/j.isci. 2020.101414", "https://doi.org/10.1016/j.isci.2020.101414"),
             Arguments.of("http://doi.acm.org/10.1145/2530539", "https://doi.org/10.1145/2530539")
         );
+    }
+
+    public static Stream<Arguments> seriesSupplier() {
+        return Stream.of(Arguments.of("Cicero Working papers", "2010:03"),
+                         Arguments.of("2010:03", "Cicero Working papers"));
     }
 
     private static DcValue partOfSeries(String value) {
@@ -1421,7 +1428,7 @@ public class DublinCoreScraperTest {
                  "in channel register csv file and if we get a match we are setting series pid in publication context")
     @ParameterizedTest
     @ValueSource(strings = {"Book", "Textbook", "Book of abstracts"})
-    void shouldLookUpSeriesInChannelRegisterWhenPublicationIsBookWithPartOfSeries(String type){
+    void shouldLookUpSeriesInChannelRegisterWhenPublicationHasPartOfSeriesWithPartOfSeries(String type){
         var dcValues = List.of(
             toDcType(type),
             new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, "The Bryggen Papers;9")
@@ -1431,6 +1438,26 @@ public class DublinCoreScraperTest {
 
         assertThat(record.getPublication().getPublicationContext().getSeries().getPid(),
                    is(equalTo("5FCE7321-320B-4EB6-B890-A2AD85B1BFC1")));
+    }
+
+    @ParameterizedTest
+    @MethodSource("seriesSupplier")
+    void shouldConvertPartOfAndPartOfSeriesFieldsToPartOfSeriesAndLookUpForSeriesInChannelRegister(String firstValue,
+                                                                                                   String secondValue) {
+        var seriesName = "Cicero Working papers";
+        var seriesNumber = "2010:03";
+        var dcValues = List.of(
+            toDcType("Working paper"),
+            new DcValue(Element.RELATION, Qualifier.IS_PART_OF, firstValue),
+            new DcValue(Element.RELATION, Qualifier.IS_PART_OF_SERIES, secondValue)
+        );
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        var expectedPartOfSeries = new PartOfSeries(seriesName, seriesNumber);
+
+        assertNotNull(record.getPublication().getPublicationContext().getSeries().getPid());
+        assertTrue(record.getPublication().getPartOfSeries().equals(expectedPartOfSeries));
     }
 
     private static DcValue toDcType(String t) {
