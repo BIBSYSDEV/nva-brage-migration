@@ -78,4 +78,25 @@ public class TypeMapperTest {
         var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("Article", "Journal article"));
         assertThat(actualType, is(equalTo(expectedNvaType)));
     }
+
+    @Test
+    void shouldMapVitenAsJournalIssue() {
+        var expectedNvaType = NvaType.JOURNAL_ISSUE.getValue();
+        var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("Viten"));
+        assertThat(actualType, is(equalTo(expectedNvaType)));
+    }
+
+    @Test
+    void shouldMapFagartikkelAsPopularScienceArticle() {
+        var expectedNvaType = NvaType.POPULAR_SCIENCE_ARTICLE.getValue();
+        var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("Fagartikkel"));
+        assertThat(actualType, is(equalTo(expectedNvaType)));
+    }
+
+    @Test
+    void shouldMapEksernnotatAsReport() {
+        var expectedNvaType = NvaType.REPORT.getValue();
+        var actualType = TypeMapper.convertBrageTypeToNvaType(Set.of("Eksternnotat"));
+        assertThat(actualType, is(equalTo(expectedNvaType)));
+    }
 }

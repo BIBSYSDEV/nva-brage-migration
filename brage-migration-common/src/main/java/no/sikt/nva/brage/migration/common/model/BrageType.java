@@ -61,7 +61,10 @@ public enum BrageType {
     LITERARY_ARTS("Literary arts"),
     POPULAR_SCIENCE_MONOGRAPH("Popular science monograph"),
     EDITORIAL("Editorial"),
-    FILM("Film");
+    FILM("Film"),
+    VITEN("Viten"),
+    FAGARTIKKEL("Fagartikkel"),
+    EKSTERNNOTAT("Eksternnotat");
 
     private static final String RAPPORT = "Rapport";
     private static final String BOOK_CHAPTER = "Book chapter";

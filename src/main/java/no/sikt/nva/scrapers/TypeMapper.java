@@ -40,6 +40,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.JOURNAL_ARTICLE), NvaType.JOURNAL_ARTICLE),
         entry(Set.of(BrageType.ARTICLE), NvaType.JOURNAL_ARTICLE),
         entry(Set.of(BrageType.JOURNAL_ISSUE), NvaType.JOURNAL_ISSUE),
+        entry(Set.of(BrageType.VITEN), NvaType.JOURNAL_ISSUE),
         entry(Set.of(BrageType.PROFESSIONAL_ARTICLE), NvaType.PROFESSIONAL_ARTICLE),
         entry(Set.of(BrageType.DATASET), NvaType.DATASET),
         entry(Set.of(BrageType.DATA_SET), NvaType.DATASET),
@@ -47,6 +48,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.OTHER), NvaType.REPORT),
         entry(Set.of(BrageType.REPORT), NvaType.REPORT),
         entry(Set.of(BrageType.NOTES), NvaType.REPORT),
+        entry(Set.of(BrageType.EKSTERNNOTAT), NvaType.REPORT),
         entry(Set.of(BrageType.POSTER), NvaType.CONFERENCE_POSTER),
         entry(Set.of(BrageType.NON_FICTION_CHAPTER), NvaType.CHAPTER),
         entry(Set.of(BrageType.PRESENTATION), NvaType.LECTURE),
@@ -86,6 +88,7 @@ public final class TypeMapper {
         entry(Set.of(BrageType.LITERARY_ARTS), NvaType.LITERARY_ARTS),
         entry(Set.of(BrageType.EDITORIAL), NvaType.EDITORIAL),
         entry(Set.of(BrageType.POPULAR_SCIENCE_MONOGRAPH), NvaType.POPULAR_SCIENCE_MONOGRAPH),
+        entry(Set.of(BrageType.FAGARTIKKEL), NvaType.POPULAR_SCIENCE_ARTICLE),
         entry(Set.of(BrageType.FILM), NvaType.FILM));
 
     public static String convertBrageTypeToNvaType(Set<String> inputTypes) {
