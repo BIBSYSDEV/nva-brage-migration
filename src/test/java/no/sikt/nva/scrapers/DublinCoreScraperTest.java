@@ -268,6 +268,20 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldCreateContributorWithoutAuthorStringFromContributorName() {
+        var contributor = new Contributor(new Identity("Torbjørn Hanson", null), "Creator",
+                                          Qualifier.AUTHOR.getValue(), Set.of());
+        contributor.setSequence(1);
+        var typeDcValue = toDcType("Others");
+        var advisorDcValue = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, "Author::Hanson, Torbjørn");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(advisorDcValue, typeDcValue));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+        var actualContributors = record.getEntityDescription().getContributors();
+
+        assertThat(actualContributors, is(equalTo(List.of(contributor))));
+    }
+
+    @Test
     void shouldCreateContributorFromDcElementCreator() {
         var contributor = new Contributor(new Identity("Person Some", null), SUPERVISOR,
                                                   Qualifier.ADVISOR.getValue(), Set.of());
