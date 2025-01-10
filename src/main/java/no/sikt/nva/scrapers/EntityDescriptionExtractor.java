@@ -343,7 +343,10 @@ public final class EntityDescriptionExtractor {
 
     @SuppressWarnings("PMD.NPathComplexity")
     private static Optional<Contributor> createContributorFromDcValue(DcValue dcValue) {
-        Identity identity = new Identity(dcValue.scrapeValueAndSetToScraped(), null);
+        var name = Optional.ofNullable(dcValue.scrapeValueAndSetToScraped())
+                       .map(value -> value.replace("Author::", StringUtils.EMPTY_STRING))
+                       .orElse(null);
+        var identity = new Identity(name, null);
         if (isNull(identity.getName()) || identity.getName().isEmpty()) {
             return Optional.empty();
         }
