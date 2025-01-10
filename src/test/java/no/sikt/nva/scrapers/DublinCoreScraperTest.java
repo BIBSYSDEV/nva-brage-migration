@@ -489,6 +489,20 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldScrapeSubjectAndRemoveTermsetEmneordFromItsValue() {
+        var value = "TermSet Emneord::Kommunikasjon";
+        var normalTagWithQualifierNone = new DcValue(Element.SUBJECT, null, value);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(
+            List.of(normalTagWithQualifierNone, toDcType("Journal Article")));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        var expectedTag = "Kommunikasjon";
+
+        assertEquals(expectedTag, record.getEntityDescription().getTags().get(0));
+    }
+
+
+    @Test
     void shouldScrapeUnrecognizedSubjectsAndWarnAboutUnrecognizedSubject() {
         var tag = randomString();
         var typeDcValue = toDcType("Journal Article");
