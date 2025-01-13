@@ -10,6 +10,7 @@ import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.DublinCore;
 import no.sikt.nva.model.dublincore.Qualifier;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.StringUtils;
 
 public final class SubjectScraper {
 
@@ -37,6 +38,7 @@ public final class SubjectScraper {
                    .filter(SubjectScraper::isSubjectAndNotSpecificallyIgnored)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .filter(Objects::nonNull)
+                   .map(value -> value.replace("TermSet Emneord::", StringUtils.EMPTY_STRING))
                    .distinct()
                    .collect(Collectors.toList());
     }
