@@ -1488,6 +1488,30 @@ public class DublinCoreScraperTest {
         assertTrue(record.getPublication().getPartOfSeries().equals(expectedPartOfSeries));
     }
 
+    @Test
+    void shouldSetFFIAsPublisherForAllFFIRecordsMissingPublisher() {
+        var type = toDcType("Report");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
+
+        var expectedPid = "39D2B1A7-091E-44C5-9579-65A75C6A6F01";
+
+        assertEquals(expectedPid, record.getPublication().getPublicationContext().getPublisher().getPid());
+    }
+
+    @Test
+    void shouldScrapeJournalFromRelationJournalField() {
+        var type = toDcType("Journal article");
+        var relationJournal = new DcValue(Element.RELATION, Qualifier.JOURNAL, "Underwater Acoustics Conference & Exhibition (UACE)");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, relationJournal));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
+
+        var expectedPid = "9E7821F8-B0B5-4686-B8E3-6F13F96D84C0";
+
+
+        assertEquals(expectedPid, record.getPublication().getPublicationContext().getJournal().getPid());
+    }
+
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);
     }

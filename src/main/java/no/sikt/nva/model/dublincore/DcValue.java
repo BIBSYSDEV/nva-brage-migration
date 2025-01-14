@@ -135,7 +135,8 @@ public class DcValue {
 
     public boolean isJournal() {
         return Element.SOURCE.equals(this.element) && Qualifier.JOURNAL.equals(this.qualifier)
-               || Element.IDENTIFIER.equals(this.element) && Qualifier.JOURNAL_TITLE.equals(this.qualifier);
+               || Element.IDENTIFIER.equals(this.element) && Qualifier.JOURNAL_TITLE.equals(this.qualifier)
+               || Element.RELATION.equals(this.element) && Qualifier.JOURNAL.equals(this.qualifier);
     }
 
     public boolean isIssnValue() {
