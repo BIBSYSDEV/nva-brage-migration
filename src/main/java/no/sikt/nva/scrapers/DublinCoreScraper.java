@@ -426,6 +426,9 @@ public class DublinCoreScraper {
                                                                     brageLocation,
                                                                     shouldLookUpInChannelRegister,
                                                                     customer);
+
+            handleRecordFromFFI(record, customer);
+
             record.setErrors(errors);
             record.setWarnings(warnings);
             logUnscrapedValues(dublinCore, brageLocation);
@@ -436,6 +439,20 @@ public class DublinCoreScraper {
         } catch (Exception e) {
             throw new DublinCoreException(SCRAPING_HAS_FAILED + e.getMessage());
         }
+    }
+
+    private void handleRecordFromFFI(Record record, String customer) {
+        if (FFI.equals(customer) && publisherIsMissing(record)) {
+            record.getPublication().getPublicationContext().setPublisher(new Publisher("39D2B1A7-091E-44C5-9579-65A75C6A6F01"));
+        }
+    }
+
+    private static boolean publisherIsMissing(Record record) {
+        return Optional.ofNullable(record.getPublication())
+                   .map(Publication::getPublicationContext)
+                   .map(PublicationContext::getPublisher)
+                   .map(Publisher::getPid)
+                   .isEmpty();
     }
 
     public boolean onlineValidationIsEnabled() {
