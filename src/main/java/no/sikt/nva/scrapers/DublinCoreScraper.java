@@ -3,6 +3,7 @@ package no.sikt.nva.scrapers;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.BrageType.OTHER_TYPE_OF_REPORT;
+import static no.sikt.nva.brage.migration.common.model.BrageType.RAPPORT;
 import static no.sikt.nva.brage.migration.common.model.BrageType.REPORT;
 import static no.sikt.nva.brage.migration.common.model.BrageType.RESEARCH_REPORT;
 import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JOURNALS;
@@ -395,6 +396,7 @@ public class DublinCoreScraper {
         return type.getBrage().stream()
                    .anyMatch(t ->
                                  REPORT.getValue().equals(t)
+                                 || RAPPORT.equals(t)
                                  || RESEARCH_REPORT.getValue().equals(t)
                                  || OTHER_TYPE_OF_REPORT.getValue().equals(t));
     }
