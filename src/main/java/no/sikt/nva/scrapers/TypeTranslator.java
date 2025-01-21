@@ -19,7 +19,8 @@ public final class TypeTranslator {
         entry(NorwegianType.OTHERS.getValue(), BrageType.OTHERS),
         entry(NorwegianType.WORKING_PAPER.getValue(), BrageType.WORKING_PAPER),
         entry(NorwegianType.CHRONICLE.getValue(), BrageType.CHRONICLE),
-        entry(NorwegianType.CONFERENCE_OBJECT.getValue(), BrageType.CONFERENCE_OBJECT)
+        entry(NorwegianType.CONFERENCE_OBJECT.getValue(), BrageType.CONFERENCE_OBJECT),
+        entry(NorwegianType.REPORT.getValue(), BrageType.REPORT)
     );
 
     public static String translateToEnglish(String value) {
@@ -44,7 +45,8 @@ public final class TypeTranslator {
         WORKING_PAPER("Arbeidsnotat"),
         CHRONICLE("Kronikk"),
         CONFERENCE_OBJECT("Konferansebidrag"),
-        DOCTORAL_THESIS_V2("Doktoravhandling");
+        DOCTORAL_THESIS_V2("Doktoravhandling"),
+        REPORT("Rapport");
 
         private final String value;
 

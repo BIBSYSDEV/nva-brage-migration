@@ -379,7 +379,7 @@ public class DublinCoreScraper {
 
     public static Type mapOriginTypeToNvaType(Set<String> types, DublinCore dublinCore, String customer) {
         var uniqueTypes = translateTypesInNorwegian(types);
-        var type = new Type(types, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
+        var type = new Type(uniqueTypes, TypeMapper.convertBrageTypeToNvaType(uniqueTypes));
         if (isNull(type.getNva()) && nonNull(extractCristinId(dublinCore))) {
             return new Type(types, NvaType.CRISTIN_RECORD.getValue());
         }
@@ -393,10 +393,10 @@ public class DublinCoreScraper {
 
     private static boolean shouldBeMappedToResearchReport(Type type) {
         return type.getBrage().stream()
-                   .anyMatch(t ->
-                                 REPORT.getValue().equals(t)
-                                 || RESEARCH_REPORT.getValue().equals(t)
-                                 || OTHER_TYPE_OF_REPORT.getValue().equals(t));
+                   .anyMatch(brageType ->
+                                 REPORT.getValue().equals(brageType)
+                                 || RESEARCH_REPORT.getValue().equals(brageType)
+                                 || OTHER_TYPE_OF_REPORT.getValue().equals(brageType));
     }
 
     public static String extractSubjectCodeFromFsXml(DublinCore dublinCore) {
