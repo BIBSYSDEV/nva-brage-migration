@@ -1512,6 +1512,16 @@ public class DublinCoreScraperTest {
         assertEquals(expectedPid, record.getPublication().getPublicationContext().getJournal().getPid());
     }
 
+    @Test
+    void shouldMapReportToResearchReportWhenCustomerIsFFI() {
+        var type = toDcType("Rapport");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
+
+
+        assertEquals(NvaType.RESEARCH_REPORT.getValue(), record.getType().getNva());
+    }
+
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);
     }
