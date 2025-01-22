@@ -1489,6 +1489,20 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void lookUpSeriesByIssnWhenPartOfSeriesIsPresentButNotInChannelRegisterAndIssnIsPresent() {
+        var dcValues = List.of(
+            toDcType("Working paper"),
+            new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "0804-4511")
+        );
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        var expectedPid = "72896F98-72CB-47F9-89A8-922CB9F52FC2";
+
+        assertEquals(expectedPid, record.getPublication().getPublicationContext().getSeries().getPid());
+    }
+
+    @Test
     void shouldSetFFIAsPublisherForAllFFIRecordsMissingPublisher() {
         var type = toDcType("Report");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type));
