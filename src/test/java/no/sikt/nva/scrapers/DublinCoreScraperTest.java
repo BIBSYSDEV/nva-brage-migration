@@ -1054,13 +1054,13 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void shouldSetTypeToReportAndDoNotLogWhenPostIsMissingTypePropertyWhenCustomerHasAgreedToMapTypelessPostAsReport() {
+    void shouldSetTypeToResearchReportAndDoNotLogWhenPostIsMissingTypePropertyWhenCustomerHasAgreedToMapTypelessPostAsReport() {
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of());
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
 
         assertThat(appender.getMessages(), not(containsString(INVALID_DC_TYPE.toString())));
-        assertThat(record.getType().getNva(), is(equalTo(NvaType.REPORT.getValue())));
+        assertThat(record.getType().getNva(), is(equalTo(NvaType.RESEARCH_REPORT.getValue())));
     }
 
     @Test

@@ -237,7 +237,7 @@ public class DublinCoreScraper {
     public static Set<String> extractType(DublinCore dublinCore, String customer) {
         var types = extractType(dublinCore);
         return types.isEmpty() && customerHasAgreedToImportTypeLessPostsAsReport(customer)
-                   ? Set.of(NvaType.REPORT.getValue())
+                   ? Set.of(NvaType.RESEARCH_REPORT.getValue())
                    : types;
     }
 
