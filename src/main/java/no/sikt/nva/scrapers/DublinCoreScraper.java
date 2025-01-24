@@ -956,7 +956,7 @@ public class DublinCoreScraper {
     private String extractChannelRegisterIdentifierForSeries(BrageLocation brageLocation, Publication publication) {
         return partOfSeriesIsPresent(publication)
                    ? channelRegister.lookUpInJournalByTitle(publication.getPartOfSeries().getName(), brageLocation)
-                   : null;
+                   : channelRegister.lookUpInJournal(publication, brageLocation);
     }
 
     private static boolean partOfSeriesIsPresent(Publication publication) {
