@@ -5,8 +5,6 @@ import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.BrageType.OTHER_TYPE_OF_REPORT;
 import static no.sikt.nva.brage.migration.common.model.BrageType.REPORT;
 import static no.sikt.nva.brage.migration.common.model.BrageType.RESEARCH_REPORT;
-import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_JOURNALS;
-import static no.sikt.nva.channelregister.ChannelRegister.SEARCHABLE_TYPES_IN_PUBLISHERS;
 import static no.sikt.nva.scrapers.CustomerMapper.FFI;
 import static no.sikt.nva.scrapers.CustomerMapper.UIO;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
@@ -538,41 +536,6 @@ public class DublinCoreScraper {
         return attempt(() -> new URL(value).toURI()).orElse(failure -> null);
     }
 
-    private static boolean brageJournalChannelPresent(Publication publication) {
-        return issnPresent(publication) || journalNameIsPresent(publication);
-    }
-
-    private static boolean journalNameIsPresent(Publication publication) {
-        return StringUtils.isNotBlank(publication.getJournal());
-    }
-
-    private static boolean issnPresent(Publication publication) {
-        return !publication.getIssnSet().isEmpty();
-    }
-
-    private static boolean isJournal(Record record) {
-        return NvaType.JOURNAL_ARTICLE.getValue().equals(record.getType().getNva())
-               || NvaType.SCIENTIFIC_ARTICLE.getValue().equals(record.getType().getNva());
-    }
-
-    private static boolean isReport(Record record) {
-        return NvaType.REPORT.getValue().equals(record.getType().getNva());
-    }
-
-    private static boolean isSearchableInJournals(Record record) {
-        return SEARCHABLE_TYPES_IN_JOURNALS.stream()
-                   .map(NvaType::getValue)
-                   .collect(Collectors.toList())
-                   .contains(record.getType().getNva());
-    }
-
-    private static boolean isSearchableInPublishers(Record record) {
-        return SEARCHABLE_TYPES_IN_PUBLISHERS.stream()
-                   .map(NvaType::getValue)
-                   .collect(Collectors.toList())
-                   .contains(record.getType().getNva());
-    }
-
     private static URI extractDoi(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
@@ -928,75 +891,25 @@ public class DublinCoreScraper {
     }
 
     private void searchForSeriesAndJournalsInChannelRegister(BrageLocation brageLocation, Record record) {
-        if (isSearchableInJournals(record)) {
-            setIdFromJournals(brageLocation, record);
-        }
+        record.getPublication().getPublicationContext().setSeries(new Series(getSeriesPid(brageLocation, record).orElse(null)));
+        record.getPublication().getPublicationContext().setJournal(new Journal(getJournalPid(brageLocation, record).orElse(null)));
     }
 
-    private void setIdFromJournals(BrageLocation brageLocation, Record record) {
-        if (isReport(record)) {
-            setChannelRegisterIdentifierForReport(brageLocation, record);
-            return;
-        }
-        if (isJournal(record)) {
-            setChannelRegisterIdentifierForJournal(brageLocation, record);
-        }
-        if (hasPartOfSeries(record)) {
-            setChannelRegisterIdentifierForBook(brageLocation, record);
-        }
+    private Optional<String> getJournalPid(BrageLocation brageLocation, Record record) {
+        return Optional.ofNullable(record.getPublication())
+                   .map(publication -> channelRegister.lookUpInJournal(publication, brageLocation));
     }
 
-    private void setChannelRegisterIdentifierForBook(BrageLocation brageLocation, Record record) {
-        record.getPublication()
-            .getPublicationContext()
-            .setSeries(
-                new Series(extractChannelRegisterIdentifierForSeries(brageLocation, record.getPublication())));
-    }
-
-    private String extractChannelRegisterIdentifierForSeries(BrageLocation brageLocation, Publication publication) {
-        return partOfSeriesIsPresent(publication)
-                   ? channelRegister.lookUpInJournalByTitle(publication.getPartOfSeries().getName(), brageLocation)
-                   : channelRegister.lookUpInJournal(publication, brageLocation);
-    }
-
-    private static boolean partOfSeriesIsPresent(Publication publication) {
-        return Optional.ofNullable(publication)
-                   .map(Publication::getPartOfSeries)
-                   .map(PartOfSeries::getName)
-                   .isPresent();
-    }
-
-    private boolean hasPartOfSeries(Record record) {
-        return nonNull(record.getPublication().getPartOfSeries());
-    }
-
-    private void setChannelRegisterIdentifierForJournal(BrageLocation brageLocation, Record record) {
-        record.getPublication()
-            .getPublicationContext()
-            .setJournal(
-                new Journal(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
-    }
-
-    private void setChannelRegisterIdentifierForReport(BrageLocation brageLocation, Record record) {
-        record.getPublication()
-            .getPublicationContext()
-            .setSeries(
-                new Series(extractChannelRegisterIdentifierForSeriesJournal(brageLocation, record.getPublication())));
-    }
-
-    private String extractChannelRegisterIdentifierForSeriesJournal(BrageLocation brageLocation,
-                                                                    Publication publication) {
-        return brageJournalChannelPresent(publication)
-                   ? channelRegister.lookUpInJournal(publication, brageLocation)
-                   : null;
+    private Optional<String> getSeriesPid(BrageLocation brageLocation, Record record) {
+        return Optional.of(record.getPublication())
+                   .map(publication -> channelRegister.lookUpInJournal(publication, brageLocation))
+                   .or(() -> Optional.ofNullable(channelRegister.lookUpInJournalByTitle(record.getPublication().getPartOfSeries().getName(), brageLocation)));
     }
 
     private void searchForPublisherInChannelRegister(Record record, String customer) {
-        if (isSearchableInPublishers(record)) {
-            var publisherId = channelRegister.lookUpInChannelRegisterForPublisher(record, customer);
-            if (nonNull(publisherId)) {
-                record.getPublication().getPublicationContext().setPublisher(new Publisher(publisherId));
-            }
+        var publisherId = channelRegister.lookUpInChannelRegisterForPublisher(record, customer);
+        if (nonNull(publisherId)) {
+            record.getPublication().getPublicationContext().setPublisher(new Publisher(publisherId));
         }
     }
 }
