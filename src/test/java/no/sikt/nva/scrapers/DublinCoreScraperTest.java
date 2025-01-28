@@ -1527,6 +1527,19 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldLookUpJournalIssueInChannelRegister() {
+        var type = toDcType("Viten");
+        var issn = new DcValue(Element.IDENTIFIER, Qualifier.ISSN, "2535-2687");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, issn));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
+
+        var expectedPid = "E91978F6-BB4F-44CC-B8A6-9A02E69B4A3C";
+
+
+        assertEquals(expectedPid, record.getPublication().getPublicationContext().getJournal().getPid());
+    }
+
+    @Test
     void shouldMapReportToResearchReportWhenCustomerIsFFI() {
         var type = toDcType("Rapport");
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type));
