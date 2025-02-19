@@ -53,7 +53,7 @@ import org.apache.commons.validator.routines.ISSNValidator;
 public final class DublinCoreValidator {
 
     public static final String DEHYPHENATION_REGEX = "(‐|·|-|\u00AD|&#x20;)";
-    public static final String YEAR_PERIOD_REGEX = "[0-9]{4}-[0-9]{4}";
+    public static final String YEAR_PERIOD_REGEX = "[0-9]{4}[-–][0-9]{4}";
     public static final String REGEX_BRACKETS_AND_DOT = "(\\.)|(\\[)|(\\])";
     public static final String UNKNOWN_YEAR_PERIOD_REGEX = "[0-9]{4}[?]";
     public static final String QUESTION_MARK = "?";
@@ -139,7 +139,9 @@ public final class DublinCoreValidator {
     }
 
     public static boolean isPeriodDate(String date) {
-        return date.matches(YEAR_PERIOD_REGEX) || date.matches(UNKNOWN_YEAR_PERIOD_REGEX);
+        return date.matches(YEAR_PERIOD_REGEX)
+               || date.matches(UNKNOWN_YEAR_PERIOD_REGEX)
+               || date.matches(YEAR_PERIOD_REGEX);
     }
 
     private static Optional<ErrorDetails> getIsmnError(DublinCore dublinCore) {
