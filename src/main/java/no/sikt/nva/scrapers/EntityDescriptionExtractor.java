@@ -5,6 +5,9 @@ import static java.util.Objects.nonNull;
 import static no.sikt.nva.model.dublincore.Qualifier.NONE;
 import static no.sikt.nva.model.dublincore.Qualifier.ORCID;
 import static no.sikt.nva.scrapers.DublinCoreScraper.isSingleton;
+import static no.sikt.nva.validators.DublinCoreValidator.DASH;
+import static no.sikt.nva.validators.DublinCoreValidator.HYPHEN;
+import static no.sikt.nva.validators.DublinCoreValidator.containsYearOnly;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -249,7 +252,7 @@ public final class EntityDescriptionExtractor {
             if (isNull(date) || isEmptyString(date)) {
                 return new PublicationDate(null, new PublicationDateNva.Builder().build());
             }
-            if (DublinCoreValidator.containsYearOnly(date)) {
+            if (containsYearOnly(date)) {
                 return new PublicationDate(date, constructDateWithYearOnly(date));
             }
             if (DublinCoreValidator.containsTwoDigitYearOnly(date)) {
@@ -268,7 +271,14 @@ public final class EntityDescriptionExtractor {
     }
 
     private static PublicationDateNva constructDateWithYearOnly(String date) {
-        return new Builder().withYear(date).build();
+        if (containsYearOnly(date.split(HYPHEN)[0])) {
+            return new Builder().withYear(date.split(HYPHEN)[0]).build();
+        }
+        if (containsYearOnly(date.split(DASH)[0])) {
+            return new Builder().withYear(date.split(DASH)[0]).build();
+        } else {
+            return new Builder().withYear(date).build();
+        }
     }
 
     private static String extractDate(DublinCore dublinCore) {

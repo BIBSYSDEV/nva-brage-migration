@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.io.File;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class EntityDescriptionExtractorTest {
 
@@ -113,6 +115,18 @@ public class EntityDescriptionExtractorTest {
         var orcIdList = DublinCoreScraper.extractOrcIds(dublinCore);
 
         assertThat(orcIdList, is(emptyIterable()));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"1967-1989", "1967–1989"})
+    void shouldMepFirstYearInPeriodToPublicationDate(String date) {
+        var dublinCore = new DublinCore(List.of(new DcValue(Element.DATE, Qualifier.ISSUED, date)));
+        var dublinCoreScraper = new DublinCoreScraper(ONLINE_VALIDATION_DISABLED, LOOKUP_IN_CHANNEL_REGISTER, Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        var year = record.getEntityDescription().getPublicationDate().getNva().getYear();
+
+        assertEquals("1967", year);
     }
 
     private static DcValue orcIdWithValue(String orcId) {
