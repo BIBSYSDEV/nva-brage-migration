@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
 import no.sikt.nva.brage.migration.common.model.ErrorDetails;
 import no.sikt.nva.brage.migration.common.model.NvaType;
+import no.sikt.nva.brage.migration.common.model.record.Affiliation;
 import no.sikt.nva.brage.migration.common.model.record.Contributor;
 import no.sikt.nva.brage.migration.common.model.record.FundingSources;
 import no.sikt.nva.brage.migration.common.model.record.Journal;
@@ -440,9 +441,23 @@ public class DublinCoreScraper {
     }
 
     private void handleRecordFromFFI(Record record, String customer) {
-        if (FFI.equals(customer) && publisherIsMissing(record)) {
-            record.getPublication().getPublicationContext().setPublisher(new Publisher("39D2B1A7-091E-44C5-9579-65A75C6A6F01"));
+        if (FFI.equals(customer)) {
+            var ffiPublisher = new Publisher("39D2B1A7-091E-44C5-9579-65A75C6A6F01");
+            if (publisherIsMissing(record)) {
+                record.getPublication().getPublicationContext().setPublisher(ffiPublisher);
+            }
+            var nvaType = record.getType().getNva();
+            if (hasFfiPublisherAndIsReport(record, ffiPublisher, nvaType)) {
+                record.getEntityDescription().getContributors()
+                    .forEach(contributor -> contributor.setAffiliations(Set.of(new Affiliation("7428.0.0.0", "FFI", null))));
+            }
+
         }
+    }
+
+    private static boolean hasFfiPublisherAndIsReport(Record record, Publisher ffiPublisher, String nvaType) {
+        return record.getPublication().getPublicationContext().getPublisher().equals(ffiPublisher)
+               && (nvaType.equals(NvaType.REPORT.getValue()) || nvaType.equals(NvaType.RESEARCH_REPORT.getValue()));
     }
 
     private static boolean publisherIsMissing(Record record) {
