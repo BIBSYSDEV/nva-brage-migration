@@ -12,7 +12,8 @@ public enum PrioritizedProperties {
     FUNDINGS("fundings"),
     REFERENCE("reference"),
     TAGS("tags"),
-    PUBLISHER("publisher");
+    PUBLISHER("publisher"),
+    PUBLICATION_DATE("publicationDate");
 
     private final String value;
 

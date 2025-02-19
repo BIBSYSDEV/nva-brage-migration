@@ -17,7 +17,8 @@ public final class PrioritizeField {
                PrioritizedProperties.PUBLISHER.getValue(),
                PrioritizedProperties.FUNDINGS.getValue(),
                PrioritizedProperties.TAGS.getValue(),
-               PrioritizedProperties.REFERENCE.getValue()
+               PrioritizedProperties.REFERENCE.getValue(),
+               PrioritizedProperties.PUBLICATION_DATE.getValue()
                );
 
     @JacocoGenerated

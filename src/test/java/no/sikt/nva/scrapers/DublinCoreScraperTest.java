@@ -1549,6 +1549,19 @@ public class DublinCoreScraperTest {
         assertEquals(NvaType.RESEARCH_REPORT.getValue(), record.getType().getNva());
     }
 
+    @Test
+    void shouldSetContributorsAffiliationToFfiWhenReportAndPublisherIsFfi() {
+        var type = toDcType("Rapport");
+        var contributor = new DcValue(Element.CONTRIBUTOR, Qualifier.AUTHOR, "Some, Person");
+        var subject = new DcValue(Element.SUBJECT, null, "tag");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, contributor, subject));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
+
+        var affiliation = record.getEntityDescription().getContributors().get(0).getAffiliations().iterator().next();
+        var tag = record.getEntityDescription().getTags();
+        assertEquals("7428.0.0.0", affiliation.getIdentifier());
+    }
+
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);
     }
