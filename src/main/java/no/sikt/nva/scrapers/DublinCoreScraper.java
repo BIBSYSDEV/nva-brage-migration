@@ -453,12 +453,13 @@ public class DublinCoreScraper {
                 record.getEntityDescription().getContributors()
                     .forEach(contributor -> contributor.setAffiliations(Set.of(new Affiliation("7428.0.0.0", "FFI", null))));
             }
-            record.getEntityDescription().getContributors()
-                .forEach(contributor -> {
-                    if (contributor.getRole().equals(OTHER_CONTRIBUTOR)) {
-                        contributor.setRole(AUTHOR);
-                    }
-                });
+            record.getEntityDescription().getContributors().forEach(DublinCoreScraper::updateRoleToAuthorWhenRolesIsOther);
+        }
+    }
+
+    private static void updateRoleToAuthorWhenRolesIsOther(Contributor contributor) {
+        if (contributor.getRole().equals(OTHER_CONTRIBUTOR)) {
+            contributor.setRole(AUTHOR);
         }
     }
 
