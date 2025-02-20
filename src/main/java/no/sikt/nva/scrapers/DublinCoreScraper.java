@@ -7,6 +7,8 @@ import static no.sikt.nva.brage.migration.common.model.BrageType.REPORT;
 import static no.sikt.nva.brage.migration.common.model.BrageType.RESEARCH_REPORT;
 import static no.sikt.nva.scrapers.CustomerMapper.FFI;
 import static no.sikt.nva.scrapers.CustomerMapper.UIO;
+import static no.sikt.nva.scrapers.EntityDescriptionExtractor.AUTHOR;
+import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
 import static no.sikt.nva.validators.DublinCoreValidator.DEHYPHENATION_REGEX;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreErrors;
 import static no.sikt.nva.validators.DublinCoreValidator.getDublinCoreWarnings;
@@ -451,7 +453,12 @@ public class DublinCoreScraper {
                 record.getEntityDescription().getContributors()
                     .forEach(contributor -> contributor.setAffiliations(Set.of(new Affiliation("7428.0.0.0", "FFI", null))));
             }
-
+            record.getEntityDescription().getContributors()
+                .forEach(contributor -> {
+                    if (contributor.getRole().equals(OTHER_CONTRIBUTOR)) {
+                        contributor.setRole(AUTHOR);
+                    }
+                });
         }
     }
 

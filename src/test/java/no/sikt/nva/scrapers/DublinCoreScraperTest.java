@@ -24,6 +24,7 @@ import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.War
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
+import static no.sikt.nva.scrapers.EntityDescriptionExtractor.AUTHOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.SUPERVISOR;
 import static no.sikt.nva.scrapers.LicenseScraper.DEFAULT_LICENSE;
@@ -1560,6 +1561,19 @@ public class DublinCoreScraperTest {
         var affiliation = record.getEntityDescription().getContributors().get(0).getAffiliations().iterator().next();
         var tag = record.getEntityDescription().getTags();
         assertEquals("7428.0.0.0", affiliation.getIdentifier());
+    }
+
+    @Test
+    void shouldSetContributorsRoleToAuthorWhenFfiAndContributorRoleIsMissing() {
+        var type = toDcType("Rapport");
+        var contributor = new DcValue(Element.CONTRIBUTOR, null, "Some, Person");
+        var subject = new DcValue(Element.SUBJECT, null, "tag");
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(type, contributor, subject));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ffi");
+
+        var role = record.getEntityDescription().getContributors().get(0).getRole();
+
+        assertEquals(AUTHOR, role);
     }
 
     private static DcValue toDcType(String t) {
