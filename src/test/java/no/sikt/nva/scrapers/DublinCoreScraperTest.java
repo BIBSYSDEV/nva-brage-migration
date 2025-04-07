@@ -7,6 +7,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALI
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_RIGHTS_URI;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_DC_TYPE;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.INVALID_ISSN;
+import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_ISSN_AND_DC_JOURNAL;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_LANGUAGES_PRESENT;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_DC_VERSION_VALUES;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MULTIPLE_UNMAPPABLE_TYPES;
@@ -28,6 +29,7 @@ import static no.sikt.nva.scrapers.EntityDescriptionExtractor.AUTHOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.SUPERVISOR;
 import static no.sikt.nva.scrapers.LicenseScraper.DEFAULT_LICENSE;
+import static no.sikt.nva.validators.DublinCoreValidator.NO_CUSTOMER;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -41,12 +43,14 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
@@ -73,6 +77,7 @@ import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
+import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -1574,6 +1579,17 @@ public class DublinCoreScraperTest {
         var role = record.getEntityDescription().getContributors().get(0).getRole();
 
         assertEquals(AUTHOR, role);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = BrageType.class, mode = Mode.INCLUDE, names =  {"JOURNAL_ARTICLE", "JOURNAL_ISSUE", "ARTICLE"})
+    void shouldReturnMissingIssnAndJournalErrorWhenJournalIsMissingIssnAndJournal(BrageType type) {
+        var dcValues = List.of(
+            new DcValue(Element.TYPE, null, type.getValue()));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
+
+        assertTrue(record.getErrors().stream().anyMatch(error -> error.getErrorCode().equals(MISSING_DC_ISSN_AND_DC_JOURNAL)));
     }
 
     private static DcValue toDcType(String t) {

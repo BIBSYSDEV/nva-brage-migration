@@ -381,7 +381,8 @@ public final class ChannelRegister {
 
     private static boolean isJournalArticle(DublinCore dublinCore, String customer) {
         return DublinCoreScraper.extractType(dublinCore, customer).contains(BrageType.JOURNAL_ARTICLE.getValue())
-               || DublinCoreScraper.extractType(dublinCore, customer).contains(BrageType.JOURNAL_ISSUE.getValue());
+               || DublinCoreScraper.extractType(dublinCore, customer).contains(BrageType.JOURNAL_ISSUE.getValue())
+               || DublinCoreScraper.extractType(dublinCore, customer).contains(BrageType.ARTICLE.getValue());
     }
 
     private String lookupInPublisherAliases(String publisher,
