@@ -114,7 +114,7 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
                    .orElseThrow();
     }
 
-    @SuppressWarnings("PMD.CognitiveComplexity")
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.DoNotUseThreads"})
     private boolean foundLockedFileOnline(HttpRequest request, URI fullUri, int retriesLeft) {
         try {
             var response = httpClient.send(request, BodyHandlers.ofString());

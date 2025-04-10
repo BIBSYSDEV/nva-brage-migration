@@ -55,7 +55,7 @@ public class S3MultipartUploader {
     }
 
     public static S3MultipartUploader fromKey(String value) {
-        return S3MultipartUploader.builder().withKey(value).build();
+        return builder().withKey(value).build();
     }
 
     public void upload(S3Client s3Client) {

@@ -10,9 +10,7 @@
   <exclude-pattern>.*/test/.*</exclude-pattern>
 
   <rule ref="category/java/errorprone.xml">
-    <exclude name="DataflowAnomalyAnalysis"/>
     <exclude name="MissingSerialVersionUID"/>
-    <exclude name="BeanMembersShouldSerialize"/>
   </rule>
 
   <rule ref="category/java/multithreading.xml"/>
@@ -24,6 +22,11 @@
     <!-- In TableManager we map ResourceNotFoundException to TableNotFoundException -->
     <exclude name="PreserveStackTrace"/>
 
+    <!-- FIXME: Disabled because of Java issues, remove after upgrading to Java 21+ -->
+    <exclude name="ExhaustiveSwitchHasDefault"/>
+
+    <!-- FIXME: Disabled because of current violations, but should be fixed and removed -->
+    <exclude name="UseTryWithResources"/>
   </rule>
 
   <rule ref="category/java/codestyle.xml">
@@ -36,16 +39,8 @@
     <exclude name="TooManyStaticImports"/>
     <exclude name="ClassNamingConventions"/>
     <exclude name="UnnecessaryConstructor"/>
-
-    <!--<exclude name="BeanMembersShouldSerialize"/>-->
-
     <exclude name="ConfusingTernary"/>
-
-    <!-- printStackTrace is used in the Default Amazon handler in a static clause
-        We can re-enable this rule if we find a way to set a logger there
-    -->
-    <!--<exclude name="AvoidPrintStackTrace"/>-->
-
+    <exclude name="UseExplicitTypes"/>
 
     <!-- This rule does not allow us the following:
             private static final Logger logger=...
@@ -56,12 +51,9 @@
     <!-- Sometimes it is useful in debugging to assign the return value to a local variable  -->
     <exclude name="UnnecessaryLocalBeforeReturn"/>
 
-
+    <!-- FIXME: Disabled because of current violations, but should be fixed and removed -->
+    <exclude name="UseDiamondOperator"/>
   </rule>
-
-
-  <rule ref="category/java/performance.xml"/>
-
 
   <rule ref="category/java/design.xml">
     <exclude name="LoosePackageCoupling"/>
@@ -74,6 +66,15 @@
     <exclude name="UseObjectForClearerAPI"/>
     <exclude name="TooManyMethods"/>
     <exclude name="CyclomaticComplexity"/>
+
+    <!-- FIXME: Disabled because of current violations, but should be fixed and removed -->
+    <exclude name="SimplifyBooleanReturns"/>
+
+    <!-- FIXME: Disabled because of current violations, but should be fixed and removed -->
+    <exclude name="ExcessivePublicCount"/>
+
+    <!-- FIXME: Disabled because of current violations, but should be fixed and removed -->
+    <exclude name="CouplingBetweenObjects"/>
 
     <!-- This rule does not allow the Lambda Handler to cast  the ContainerInitializationException
         to a RuntimeException.

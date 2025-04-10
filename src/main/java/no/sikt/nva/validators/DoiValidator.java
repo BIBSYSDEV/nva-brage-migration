@@ -34,7 +34,7 @@ public class DoiValidator {
     public static final String DOI = "doi";
     public static final String ORG = "org/";
 
-    public static Optional<ArrayList<ErrorDetails>> getDoiErrorDetailsOnline(DublinCore dublinCore) {
+    public static Optional<List<ErrorDetails>> getDoiErrorDetailsOnline(DublinCore dublinCore) {
         var doiList = extractDoiList(dublinCore);
         var filteredDoiList = doiList.stream().filter(doi -> !doi.isEmpty()).collect(Collectors.toList());
         if (filteredDoiList.isEmpty()) {
@@ -47,7 +47,7 @@ public class DoiValidator {
         }
     }
 
-    public static Optional<ArrayList<ErrorDetails>> getDoiErrorDetailsOffline(DublinCore dublinCore) {
+    public static Optional<List<ErrorDetails>> getDoiErrorDetailsOffline(DublinCore dublinCore) {
         var doiList = extractDoiList(dublinCore);
         var filteredDoiList = doiList.stream().filter(doi -> !doi.isEmpty()).collect(Collectors.toList());
         if (filteredDoiList.isEmpty()) {
@@ -142,7 +142,7 @@ public class DoiValidator {
                    : doi.split(DOI_WITH_COLON.toLowerCase(Locale.ROOT))[1];
     }
 
-    private static Optional<ArrayList<ErrorDetails>> validateDoiListOnline(List<String> doiList) {
+    private static Optional<List<ErrorDetails>> validateDoiListOnline(List<String> doiList) {
         var doiErrorList = new ArrayList<ErrorDetails>();
         for (String doi : doiList) {
             validateDoiOnline(doi).ifPresent(doiErrorList::add);
@@ -150,7 +150,7 @@ public class DoiValidator {
         return getErrorDetails(doiErrorList);
     }
 
-    private static Optional<ArrayList<ErrorDetails>> validateDoiListOffline(List<String> doiList) {
+    private static Optional<List<ErrorDetails>> validateDoiListOffline(List<String> doiList) {
         var doiErrorList = new ArrayList<ErrorDetails>();
         for (String doi : doiList) {
             validateDoiOffline(doi).ifPresent(doiErrorList::add);
@@ -159,7 +159,7 @@ public class DoiValidator {
     }
 
     @SuppressWarnings("PMD.LooseCoupling")
-    private static Optional<ArrayList<ErrorDetails>> getErrorDetails(ArrayList<ErrorDetails> doiErrorList) {
+    private static Optional<List<ErrorDetails>> getErrorDetails(List<ErrorDetails> doiErrorList) {
         if (!doiErrorList.isEmpty()) {
             return Optional.of(doiErrorList);
         } else {

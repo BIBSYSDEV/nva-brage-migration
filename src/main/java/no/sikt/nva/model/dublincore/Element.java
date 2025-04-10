@@ -70,7 +70,7 @@ public enum Element {
 
     @JacocoGenerated
     public static Element fromValue(String v) {
-        for (Element c : Element.values()) {
+        for (Element c : values()) {
             if (c.getValue().equals(v)) {
                 return c;
             }

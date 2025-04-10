@@ -221,7 +221,7 @@ public enum Qualifier {
 
     @JacocoGenerated
     public static Qualifier fromValue(String v) {
-        for (Qualifier c : Qualifier.values()) {
+        for (Qualifier c : values()) {
             if (c.getValue().equals(v)) {
                 return c;
             }
