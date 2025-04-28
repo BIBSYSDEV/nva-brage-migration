@@ -88,7 +88,7 @@ public class DublinCoreScraper {
     private static Map<String, Contributor> contributors;
     private final boolean enableOnlineValidation;
     private final boolean shouldLookUpInChannelRegister;
-    private ChannelRegister channelRegister;
+    private ChannelRegister channelRegister = null;
     private final FundingSources fundingSources;
 
     @SuppressWarnings("PMD.AssignmentToNonFinalStatic")
@@ -204,7 +204,7 @@ public class DublinCoreScraper {
     public static String extractJournal(DublinCore dublinCore, String customer) {
         var journal = extractJournalFromDublinCore(dublinCore);
         var issnSet = extractIssn(dublinCore);
-        if (isNull(journal) && issnSet.isEmpty() && customer.equals(UIO)) {
+        if (isNull(journal) && issnSet.isEmpty() && UIO.equals(customer)) {
             return extractJournalFromCitationField(dublinCore);
         } else {
             return journal;
@@ -458,7 +458,7 @@ public class DublinCoreScraper {
     }
 
     private static void updateRoleToAuthorWhenRolesIsOther(Contributor contributor) {
-        if (contributor.getRole().equals(OTHER_CONTRIBUTOR)) {
+        if (OTHER_CONTRIBUTOR.equals(contributor.getRole())) {
             contributor.setRole(AUTHOR);
         }
     }

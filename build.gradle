@@ -10,12 +10,11 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'checkstyle'
     id 'pmd'
     id 'jacoco'
     id 'application'
     id "com.github.johnrengelman.shadow" version "7.1.2"
-    id 'nebula.lint' version '17.7.0'
+    id 'nebula.lint' version '20.5.6'
 }
 
 group 'no.sikt.nva'
@@ -93,6 +92,7 @@ compileJava {
 }
 
 pmd {
+    toolVersion = "7.11.0"
     ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/ruleset.xml')
     ruleSets = []
     ignoreFailures = false
@@ -108,9 +108,9 @@ tasks.named('test') {
 
 tasks.withType(Checkstyle).configureEach {
     reports {
-        xml.enabled false
-        html.enabled true
-        html.stylesheet rootProject.resources.text.fromFile('config/checkstyle/checkstyle-simple.xsl')
+        xml.required = true
+        html.required = true
+        html.stylesheet = rootProject.resources.text.fromFile('config/checkstyle/checkstyle-simple.xsl')
     }
 }
 
@@ -122,8 +122,8 @@ gradleLint {
 
 jacocoTestReport {
     reports {
-        xml.enabled true
-        csv.enabled false
+        xml.required = true
+        csv.required = false
         html.destination file("${buildDir}/reports/jacoco")
     }
 }

@@ -123,6 +123,7 @@ public final class ChannelRegister {
         }
     }
 
+    @SuppressWarnings("PMD.AvoidSynchronizedStatement")
     public static ChannelRegister getRegister() {
         ChannelRegister result = register;
         if (result == null) {

@@ -623,7 +623,7 @@ public class BrageMigrationCommand implements Callable<Integer> {
         }
 
         public static AwsEnvironment fromValue(String v) {
-            for (AwsEnvironment c : AwsEnvironment.values()) {
+            for (AwsEnvironment c : values()) {
                 if (c.getValue().equalsIgnoreCase(v)) {
                     return c;
                 }
