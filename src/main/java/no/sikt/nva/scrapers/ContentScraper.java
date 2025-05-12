@@ -1,6 +1,7 @@
 package no.sikt.nva.scrapers;
 
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.scrapers.CustomerMapper.UIO;
 import static nva.commons.core.StringUtils.isEmpty;
 import static nva.commons.core.attempt.Try.attempt;
 import java.io.File;
@@ -48,12 +49,15 @@ public final class ContentScraper {
     private final BrageLocation brageLocation;
     private final License license;
     private final String embargo;
+    private final String customer;
 
-    public ContentScraper(Path contentFilePath, BrageLocation brageLocation, License license, String embargo) {
+    public ContentScraper(Path contentFilePath, BrageLocation brageLocation, License license, String embargo,
+                          String customer) {
         this.contentFilePath = contentFilePath;
         this.brageLocation = brageLocation;
         this.license = license;
         this.embargo = embargo;
+        this.customer = customer;
     }
 
     public ResourceContent scrapeContent() throws ContentException {
@@ -80,7 +84,8 @@ public final class ContentScraper {
     }
 
     private static BundleType extractBundleType(List<String> fileInformationList) {
-        return BundleType.valueOf(getBundleType(fileInformationList));
+        return attempt(() -> BundleType.valueOf(getBundleType(fileInformationList)))
+                   .orElse(failure -> BundleType.IGNORED);
     }
 
     private static String getFileName(List<String> list) {
@@ -122,12 +127,24 @@ public final class ContentScraper {
 
     private Optional<ContentFile> convertToFile(String fileInfo) {
         var fileInformationList = Arrays.asList(fileInfo.split("\t"));
-        if (isOriginalFileBundle(fileInformationList) || isNonDefaultLicense(fileInformationList)) {
+        if (isOriginalFileBundle(fileInformationList)
+            || isNonDefaultLicense(fileInformationList)
+            || shouldBeMigratedAsHiddenFile(fileInformationList)) {
             return Optional.of(extractFileContent(fileInformationList));
         } else {
             logWhenUnknownType(fileInformationList);
             return Optional.empty();
         }
+    }
+
+    private boolean shouldBeMigratedAsHiddenFile(List<String> fileInformationList) {
+        return !isOriginalFileBundle(fileInformationList)
+               && !isSwordFile(fileInformationList)
+               && UIO.equals(customer);
+    }
+
+    private boolean isSwordFile(List<String> fileInformationList) {
+        return BundleType.SWORD.name().equals(getBundleType(fileInformationList));
     }
 
     private boolean isNonDefaultLicense(List<String> fileInformationList) {
