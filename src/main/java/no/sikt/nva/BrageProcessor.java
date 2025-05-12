@@ -145,7 +145,7 @@ public class BrageProcessor implements Runnable {
                                        String embargo)
         throws ContentException {
         var license = new LicenseScraper(dublinCore).generateLicense();
-        var contentScraper = new ContentScraper(getContentFilePath(entryDirectory), brageLocation, license, embargo);
+        var contentScraper = new ContentScraper(getContentFilePath(entryDirectory), brageLocation, license, embargo, customer);
         return contentScraper.scrapeContent();
     }
 

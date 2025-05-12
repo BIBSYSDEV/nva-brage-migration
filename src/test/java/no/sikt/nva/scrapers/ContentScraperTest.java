@@ -2,8 +2,11 @@ package no.sikt.nva.scrapers;
 
 import static no.sikt.nva.ResourceNameConstants.CONTENT_FILE_PATH;
 import static no.sikt.nva.ResourceNameConstants.EMPTY_CONTENT_FILE_PATH;
+import static no.sikt.nva.ResourceNameConstants.UIO_CONTENT_FILE_PATH;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.CONTENT_FILE_MISSING;
 import static no.sikt.nva.scrapers.ContentScraper.UNKNOWN_FILE_LOG_MESSAGE;
+import static no.sikt.nva.scrapers.CustomerMapper.UIO;
+import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -30,9 +33,10 @@ public class ContentScraperTest {
     public static final String CUSTOM_LICENSE_PDF_FILENAME = "CustomLicense.pdf";
     public static final String DUBLIN_CORE_FILE_NAME = "dublin_core.xml";
     private static final License someLicense = new License(null, null);
+    protected static final String UNKNOWN_UIO_FILE = "uio_unknown_file.pdf";
     private ContentScraper contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
                                                                new BrageLocation(null),
-                                                               someLicense, null);
+                                                               someLicense, null, randomString());
 
     @Test
     void shouldCreateResourceContentCorrectly() throws ContentException {
@@ -59,7 +63,7 @@ public class ContentScraperTest {
         var expectedEmbargo = LocalDate.parse("3022-08-24").atStartOfDay(ZoneId.systemDefault()).toInstant();
         contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
                                             new BrageLocation(null),
-                                            someLicense, "3022-08-24");
+                                            someLicense, "3022-08-24", randomString());
         var actualContentFilenameList = contentScraper.scrapeContent().getContentFiles().stream()
                                             .filter(ContentScraperTest::isNotDublinCoreFile)
                                             .collect(Collectors.toList());
@@ -83,7 +87,7 @@ public class ContentScraperTest {
     void shouldReturnMissingFilesWarningMessageWhenContentFileIsEmpty() throws ContentException {
         var contentScraper = new ContentScraper(Path.of(EMPTY_CONTENT_FILE_PATH),
                                                 new BrageLocation(null),
-                                                someLicense, null);
+                                                someLicense, null, randomString());
         var appender = LogUtils.getTestingAppenderForRootLogger();
         contentScraper.scrapeContent();
         assertThat(appender.getMessages(), containsString(Warning.MISSING_FILES.toString()));
@@ -93,9 +97,20 @@ public class ContentScraperTest {
     void shouldReturnContentFileMissingErrorMessageWhenContentFileIsNotPresent() throws ContentException {
         var contentScraper = new ContentScraper(Path.of("some/Random/Path"),
                                                 new BrageLocation(null),
-                                                someLicense, null);
+                                                someLicense, null, randomString());
         var appender = LogUtils.getTestingAppenderForRootLogger();
         contentScraper.scrapeContent();
         assertThat(appender.getMessages(), containsString(String.valueOf(CONTENT_FILE_MISSING)));
+    }
+
+    @Test
+    void shouldMapUnknownFileWhenMappingFilesForUIOAndFilesIsNotOfTypeOriginalOrSword() throws ContentException {
+        var contentScraper = new ContentScraper(Path.of(UIO_CONTENT_FILE_PATH),
+                                                new BrageLocation(null),
+                                                someLicense, null, UIO);
+        assertTrue(contentScraper.scrapeContent()
+                                  .getContentFiles().stream()
+                                  .anyMatch(file -> file.getBundleType().equals(BundleType.IGNORED)
+                                                    && UNKNOWN_UIO_FILE.equals(file.getFilename())));
     }
 }
