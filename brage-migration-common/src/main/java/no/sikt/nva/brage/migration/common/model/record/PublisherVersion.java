@@ -20,6 +20,11 @@ public enum PublisherVersion {
                    .orElseThrow();
     }
 
+    public static boolean isSupportedPublisherVersion(String value) {
+        return Arrays.stream(PublisherVersion.values())
+            .anyMatch(version -> version.getValue().equalsIgnoreCase(value));
+    }
+
     @JsonValue
     public String getValue() {
         return value;

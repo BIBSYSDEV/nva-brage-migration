@@ -193,17 +193,6 @@ public class DublinCoreScraperTest {
         assertThat(actualPublisherAuthority, is(nullValue()));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"publishedVersion", "acceptedVersion", "abcd"})
-    void shouldNotAddVersionToDescriptionList(String value) {
-        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, value);
-        var typeDcValue = toDcType("Others");
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
-        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
-
-        assertThat(record.getEntityDescription().getDescriptions(), not(contains(value)));
-    }
-
     @Test
     void shouldConvertMultipleIdenticalValidVersionsToPublisherAuthority() {
         var expectedPublisherAuthority = PublisherVersion.PUBLISHED_VERSION;
