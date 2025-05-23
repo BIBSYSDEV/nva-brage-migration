@@ -1,6 +1,5 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
