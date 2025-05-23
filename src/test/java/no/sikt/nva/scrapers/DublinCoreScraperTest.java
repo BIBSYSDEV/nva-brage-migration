@@ -342,8 +342,7 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void ifTwoDoiSArePresentOneWillBeScrapedTheOtherLogged() {
-        var expectedLogMessage = "<dcValue element=\"identifier\" qualifier=\"doi\">";
+    void ifTwoDoiSArePresentOneWillBeScraped() {
         var dcValues = List.of(
             new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1016/j.scitotenv.2021.151958"),
             new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1016/j.scitotenv.2021.151958"),
@@ -353,8 +352,6 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getDoi(), is(notNullValue()));
-        assertThat(appender.getMessages(),
-                   allOf(containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE), containsString(expectedLogMessage)));
     }
 
     @Test

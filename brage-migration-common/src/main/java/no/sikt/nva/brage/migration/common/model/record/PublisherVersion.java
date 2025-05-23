@@ -1,5 +1,6 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
@@ -18,6 +19,11 @@ public enum PublisherVersion {
                    .filter(version -> version.getValue().equalsIgnoreCase(value))
                    .findFirst()
                    .orElseThrow();
+    }
+
+    public static boolean isSupportedPublisherVersion(String value) {
+        return Arrays.stream(PublisherVersion.values())
+            .anyMatch(version -> version.getValue().equalsIgnoreCase(value));
     }
 
     @JsonValue

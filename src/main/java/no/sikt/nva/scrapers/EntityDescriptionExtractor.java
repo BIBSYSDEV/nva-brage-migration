@@ -2,6 +2,7 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.brage.migration.common.model.record.PublisherVersion.isSupportedPublisherVersion;
 import static no.sikt.nva.model.dublincore.Qualifier.NONE;
 import static no.sikt.nva.model.dublincore.Qualifier.ORCID;
 import static no.sikt.nva.scrapers.DublinCoreScraper.isSingleton;
@@ -137,11 +138,15 @@ public final class EntityDescriptionExtractor {
     public static List<String> extractDescriptions(DublinCore dublinCore) {
         return dublinCore.getDcValues()
                    .stream()
-                   .filter(DcValue::isDescription)
+                   .filter(EntityDescriptionExtractor::shouldBeMappedToDescription)
                    .map(DcValue::scrapeValueAndSetToScraped)
                    .map(EntityDescriptionExtractor::trim)
                    .distinct()
                    .collect(Collectors.toList());
+    }
+
+    private static boolean shouldBeMappedToDescription(DcValue value) {
+        return value.isDescription() || !isSupportedPublisherVersion(value.getValue());
     }
 
     public static String extractVolume(DublinCore dublinCore) {
