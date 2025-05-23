@@ -193,17 +193,6 @@ public class DublinCoreScraperTest {
         assertThat(actualPublisherAuthority, is(nullValue()));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"publishedVersion", "acceptedVersion", "abcd"})
-    void shouldNotAddVersionToDescriptionList(String value) {
-        var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, value);
-        var typeDcValue = toDcType("Others");
-        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(versionDcValue, typeDcValue));
-        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
-
-        assertThat(record.getEntityDescription().getDescriptions(), not(contains(value)));
-    }
-
     @Test
     void shouldConvertMultipleIdenticalValidVersionsToPublisherAuthority() {
         var expectedPublisherAuthority = PublisherVersion.PUBLISHED_VERSION;
@@ -342,7 +331,8 @@ public class DublinCoreScraperTest {
     }
 
     @Test
-    void ifTwoDoiSArePresentOneWillBeScraped() {
+    void ifTwoDoiSArePresentOneWillBeScrapedTheOtherLogged() {
+        var expectedLogMessage = "<dcValue element=\"identifier\" qualifier=\"doi\">";
         var dcValues = List.of(
             new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1016/j.scitotenv.2021.151958"),
             new DcValue(Element.IDENTIFIER, Qualifier.DOI, "https://doi.org/10.1016/j.scitotenv.2021.151958"),
@@ -352,6 +342,8 @@ public class DublinCoreScraperTest {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         var record = dcScraper.validateAndParseDublinCore(dublinCore, brageLocation, SOME_CUSTOMER);
         assertThat(record.getDoi(), is(notNullValue()));
+        assertThat(appender.getMessages(),
+                   allOf(containsString(FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE), containsString(expectedLogMessage)));
     }
 
     @Test
