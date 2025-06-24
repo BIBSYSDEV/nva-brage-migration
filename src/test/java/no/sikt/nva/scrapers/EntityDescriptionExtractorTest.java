@@ -158,6 +158,21 @@ public class EntityDescriptionExtractorTest {
         assertFalse(descriptions.contains(publisherVersion.getValue()));
     }
 
+    @Test
+    void shouldRemoveNewLineWithWhitespaces() {
+        var firstPart = randomString();
+        var secondPart = randomString();
+        var value = new DcValue(Element.DESCRIPTION, Qualifier.ABSTRACT, String.format("%s\r\n%s", firstPart, secondPart));
+        var dublinCore = new DublinCore(List.of(value));
+        var dublinCoreScraper = new DublinCoreScraper(ONLINE_VALIDATION_DISABLED, LOOKUP_IN_CHANNEL_REGISTER, Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        var actualAbstract = record.getEntityDescription().getAbstracts().stream().findAny().orElseThrow();
+        var expected = String.format("%s %s", firstPart, secondPart);
+
+        assertEquals(expected, actualAbstract);
+    }
+
     private static DcValue orcIdWithValue(String orcId) {
         return new DcValue(Element.CONTRIBUTOR, Qualifier.ORCID, orcId);
     }
