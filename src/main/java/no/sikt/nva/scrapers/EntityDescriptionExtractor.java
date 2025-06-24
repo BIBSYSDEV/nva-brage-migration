@@ -157,12 +157,11 @@ public final class EntityDescriptionExtractor {
         return volumes.isEmpty() ? null : volumes.get(0);
     }
 
-    public static String trim(String string) {
-        return Optional.ofNullable(string)
-                   .map(s -> s.replaceAll("\\n\\r", StringUtils.SPACE))
-                   .map(s -> s.replaceAll("\\r\\n", StringUtils.SPACE))
-                   .map(s -> s.replaceAll(StringUtils.DOUBLE_WHITESPACE, StringUtils.SPACE))
-                   .orElse(null);
+    public static String trim(String value) {
+        return nonNull(value)
+                   ? value.replaceAll("\\r\\n|\\n\\r", StringUtils.SPACE)
+                   .replaceAll("\\s{2,}", StringUtils.SPACE)
+                   : null;
     }
 
     private static List<String> extreactMainTitles(DublinCore dublinCore) {
