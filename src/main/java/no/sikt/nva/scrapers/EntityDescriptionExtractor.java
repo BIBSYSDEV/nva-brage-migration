@@ -160,7 +160,8 @@ public final class EntityDescriptionExtractor {
     public static String trim(String string) {
         return Optional.ofNullable(string)
                    .map(s -> s.replaceAll("\\n\\r", StringUtils.SPACE))
-                   .map(s -> s.replaceAll(StringUtils.DOUBLE_WHITESPACE, StringUtils.EMPTY_STRING))
+                   .map(s -> s.replaceAll("\\r\\n", StringUtils.SPACE))
+                   .map(s -> s.replaceAll(StringUtils.DOUBLE_WHITESPACE, StringUtils.SPACE))
                    .orElse(null);
     }
 
