@@ -48,7 +48,7 @@ public final class TypeTranslator {
         CONFERENCE_OBJECT("Konferansebidrag"),
         DOCTORAL_THESIS_V2("Doktoravhandling"),
         REPORT("Rapport"),
-        REPORT_V2("rapport");;
+        REPORT_V2("rapport");
 
         private final String value;
 

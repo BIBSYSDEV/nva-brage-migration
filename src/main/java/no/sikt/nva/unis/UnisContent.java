@@ -43,7 +43,7 @@ public final class UnisContent {
 
     public static UnisContent fromRow(Row row) throws ExcelException, InvalidUnisContentException {
         validateRow(row);
-        return UnisContent.builder()
+        return builder()
                    .withCristinId(validateAndExtractCristinId(row))
                    .withTitle(validateAndExtractTitle(row))
                    .withPublisherAuthority(validateAndExtractPublisherAuthority(row))

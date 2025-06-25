@@ -81,12 +81,14 @@ public final class UnZipper {
         File parent = newFile.getParentFile();
         handleUnknownFileType(parent);
         var outputStream = Files.newOutputStream(Path.of(String.valueOf(newFile)));
-        int length;
-
-        while ((length = inputStream.read(buffer)) > 0) {
-            outputStream.write(buffer, 0, length);
+        try {
+            int length;
+            while ((length = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
+        } finally {
+            outputStream.close();
         }
-        outputStream.close();
     }
 
     private static void handleUnknownFileType(File newFile) throws IOException {
