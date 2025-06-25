@@ -42,7 +42,7 @@ public class ChannelRegisterTest {
         var publication = new Publication();
         publication.setIssnList(Set.of(issn));
         publication.setJournal("someTitle");
-        var actual = register.lookUpInJournal(publication, brageLocation);
+        var actual = register.lookUpInJournal(publication, brageLocation, randomString());
         var expectedIdentifier = "70196DF2-7107-40F2-B6DF-045F3FAED38D";
 
         assertThat(actual, is(equalTo(expectedIdentifier)));
@@ -56,7 +56,7 @@ public class ChannelRegisterTest {
         var publication = new Publication();
         publication.setIssnList(Set.of(issn));
         publication.setJournal("someTitle");
-        var actual = register.lookUpInJournal(publication, brageLocation);
+        var actual = register.lookUpInJournal(publication, brageLocation, randomString());
 
         assertThat(actual, is(nullValue()));
     }
@@ -68,7 +68,7 @@ public class ChannelRegisterTest {
         var publication = new Publication();
         publication.setIssnList(Set.of());
         publication.setJournal("someTitle");
-        var actual = register.lookUpInJournal(publication, brageLocation);
+        var actual = register.lookUpInJournal(publication, brageLocation, randomString());
 
         assertThat(actual, is(nullValue()));
     }
