@@ -136,7 +136,7 @@ public class LicenseScraperTest {
         var licenseScraper = new LicenseScraper(dublinCore);
         var license = licenseScraper.generateLicense();
 
-        var expectedLicense = URI.create("https://rightsstatements.org/vocab/InC/1.0/");
+        var expectedLicense = URI.create("https://nva.sikt.no/license/copyright-act/1.0");
         assertThat(license.getNvaLicense().getLicense(), is(equalTo(expectedLicense)));
     }
 }
