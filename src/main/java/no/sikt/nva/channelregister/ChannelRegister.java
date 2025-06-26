@@ -8,6 +8,7 @@ import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.DUPLIC
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_ISSN_AND_DC_JOURNAL;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.MISSING_DC_PUBLISHER;
 import static no.sikt.nva.scrapers.CustomerMapper.BORA;
+import static no.sikt.nva.scrapers.CustomerMapper.IMR;
 import static no.sikt.nva.scrapers.CustomerMapper.NMBU;
 import static no.sikt.nva.scrapers.CustomerMapper.OMSORGSFORSKNING;
 import static no.sikt.nva.scrapers.DublinCoreScraper.isInCristin;
@@ -201,9 +202,9 @@ public final class ChannelRegister {
         return customerIssuingDegrees.stream().anyMatch(customerIssuingDegree ->  customerIssuingDegree.getBrage().equals(customer));
     }
 
-    public String lookUpInJournal(Publication publication, BrageLocation brageLocation) {
+    public String lookUpInJournal(Publication publication, BrageLocation brageLocation, String customer) {
         var issnList = publication.getIssnSet();
-        var title = formatValue(publication.getJournal());
+        var title = formatValue(getTitleToSearchInChannelRegister(publication, customer));
         var identifiersForIssnList = issnList.stream()
                                          .map(issn -> lookUpInJournalByIssn(issn, brageLocation))
                                          .collect(Collectors.toList());
@@ -211,6 +212,18 @@ public final class ChannelRegister {
         return nonNull(identifierByIssn)
                    ? identifierByIssn
                    : lookUpInJournalByTitle(title, brageLocation);
+    }
+
+    private static String getTitleToSearchInChannelRegister(Publication publication, String customer) {
+        return IMR.equalsIgnoreCase(customer) && getBragePublisher(publication).map("FiskeribladetFiskaren"::equals).orElse(false)
+                   ? getBragePublisher(publication).get()
+                   : publication.getJournal();
+    }
+
+    private static Optional<String> getBragePublisher(Publication publication) {
+        return Optional.ofNullable(publication)
+                   .map(Publication::getPublicationContext)
+                   .map(PublicationContext::getBragePublisher);
     }
 
     private static String formatValue(String value) {
@@ -442,12 +455,13 @@ public final class ChannelRegister {
     private Optional<ErrorDetails> getErrorDetailsForJournalArticle(DublinCore dublinCore,
                                                                     BrageLocation brageLocation, String customer) {
         var publication = DublinCoreScraper.extractPublication(dublinCore, customer);
-        var possibleIdentifier = lookUpInJournal(publication, brageLocation);
+        var possibleIdentifier = lookUpInJournal(publication, brageLocation, customer);
         if (nonNull(possibleIdentifier)) {
             return Optional.empty();
         } else {
             return getChannelRegisterErrorDetailsWhenSearchingForJournals(publication.getIssnSet(),
-                                                                          publication.getJournal());
+                                                                          getTitleToSearchInChannelRegister(
+                                                                              publication, customer));
         }
     }
 
@@ -456,7 +470,7 @@ public final class ChannelRegister {
                                                                String customer) {
         var publisher = formatValue(DublinCoreScraper.extractPublisher(dublinCore));
         var publication = DublinCoreScraper.extractPublication(dublinCore, customer);
-        var journalIdentifier = lookUpInJournal(publication, brageLocation);
+        var journalIdentifier = lookUpInJournal(publication, brageLocation, customer);
         var publisherIdentifier = lookUpInPublisher(publisher, customer);
         if (nonNull(journalIdentifier)
             || nonNull(publisherIdentifier)) {

@@ -24,6 +24,7 @@ import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.War
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.PAGE_NUMBER_FORMAT_NOT_RECOGNIZED;
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
+import static no.sikt.nva.scrapers.CustomerMapper.IMR;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.AUTHOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
@@ -1579,6 +1580,28 @@ public class DublinCoreScraperTest {
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "ntnu");
 
         assertTrue(record.getErrors().stream().anyMatch(error -> error.getErrorCode().equals(MISSING_DC_ISSN_AND_DC_JOURNAL)));
+    }
+
+    @Test
+    void shouldMigrateFiskeribladetFiskarenAsJournalWhenDcValueIsPublisherAndCustomerIsIMR() {
+        var dcValues = List.of(new DcValue(Element.TYPE, null, "Journal article"),
+                               new DcValue(Element.PUBLISHER, null, "FiskeribladetFiskaren"));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), IMR);
+
+        assertEquals("FC3A7074-3080-4B12-A900-9FDBDED19473",
+                     record.getPublication().getPublicationContext().getJournal().getPid());
+    }
+
+    @Test
+    void shouldMigrateFiskeribladetFiskarenAsJournalWhenJournal() {
+        var dcValues = List.of(new DcValue(Element.TYPE, null, "Journal article"),
+                               new DcValue(Element.SOURCE, Qualifier.JOURNAL, "FiskeribladetFiskaren"));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), IMR);
+
+        assertEquals("FC3A7074-3080-4B12-A900-9FDBDED19473",
+                     record.getPublication().getPublicationContext().getJournal().getPid());
     }
 
     private static DcValue toDcType(String t) {

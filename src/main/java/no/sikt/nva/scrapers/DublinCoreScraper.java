@@ -907,25 +907,28 @@ public class DublinCoreScraper {
         publication.getPublicationContext().setBragePublisher(extractPublisher(dublinCore));
         record.setPublication(publication);
         if (nonNull(record.getType().getNva()) && shouldLookUpInChannelRegister) {
-            searchForSeriesAndJournalsInChannelRegister(brageLocation, record);
+            searchForSeriesAndJournalsInChannelRegister(brageLocation, record, customer);
             searchForPublisherInChannelRegister(record, customer);
         }
         return publication;
     }
 
-    private void searchForSeriesAndJournalsInChannelRegister(BrageLocation brageLocation, Record record) {
-        record.getPublication().getPublicationContext().setSeries(new Series(getSeriesPid(brageLocation, record).orElse(null)));
-        record.getPublication().getPublicationContext().setJournal(new Journal(getJournalPid(brageLocation, record).orElse(null)));
+    private void searchForSeriesAndJournalsInChannelRegister(BrageLocation brageLocation, Record record,
+                                                             String customer) {
+        record.getPublication().getPublicationContext().setSeries(new Series(getSeriesPid(brageLocation, record,
+                                                                                          customer).orElse(null)));
+        record.getPublication().getPublicationContext().setJournal(new Journal(getJournalPid(brageLocation, record,
+                                                                                             customer).orElse(null)));
     }
 
-    private Optional<String> getJournalPid(BrageLocation brageLocation, Record record) {
+    private Optional<String> getJournalPid(BrageLocation brageLocation, Record record, String customer) {
         return Optional.ofNullable(record.getPublication())
-                   .map(publication -> channelRegister.lookUpInJournal(publication, brageLocation));
+                   .map(publication -> channelRegister.lookUpInJournal(publication, brageLocation, customer));
     }
 
-    private Optional<String> getSeriesPid(BrageLocation brageLocation, Record record) {
+    private Optional<String> getSeriesPid(BrageLocation brageLocation, Record record, String customer) {
         return Optional.of(record.getPublication())
-                   .map(publication -> channelRegister.lookUpInJournal(publication, brageLocation))
+                   .map(publication -> channelRegister.lookUpInJournal(publication, brageLocation, customer))
                    .or(() -> Optional.ofNullable(channelRegister.lookUpInJournalByTitle(record.getPublication().getPartOfSeries().getName(), brageLocation)));
     }
 
