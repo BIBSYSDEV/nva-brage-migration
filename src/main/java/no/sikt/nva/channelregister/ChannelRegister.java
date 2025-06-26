@@ -215,7 +215,7 @@ public final class ChannelRegister {
     }
 
     private static String getTitleToSearchInChannelRegister(Publication publication, String customer) {
-        return IMR.equals(customer) && getBragePublisher(publication).map("FiskeribladetFiskaren"::equals).orElse(false)
+        return IMR.equalsIgnoreCase(customer) && getBragePublisher(publication).map("FiskeribladetFiskaren"::equals).orElse(false)
                    ? getBragePublisher(publication).get()
                    : publication.getJournal();
     }
