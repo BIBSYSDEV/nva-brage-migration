@@ -5,6 +5,8 @@ import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.BrageType.OTHER_TYPE_OF_REPORT;
 import static no.sikt.nva.brage.migration.common.model.BrageType.REPORT;
 import static no.sikt.nva.brage.migration.common.model.BrageType.RESEARCH_REPORT;
+import static no.sikt.nva.brage.migration.common.model.record.PublisherVersion.ACCEPTED_VERSION;
+import static no.sikt.nva.brage.migration.common.model.record.PublisherVersion.PUBLISHED_VERSION;
 import static no.sikt.nva.scrapers.CustomerMapper.FFI;
 import static no.sikt.nva.scrapers.CustomerMapper.UIO;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.AUTHOR;
@@ -810,28 +812,27 @@ public class DublinCoreScraper {
     }
 
     private static PublisherAuthority mapMultipleVersions(Set<String> versions) {
-        if (versions.contains(PublisherVersion.ACCEPTED_VERSION.getValue().toLowerCase(Locale.ROOT))) {
-            return new PublisherAuthority(Collections.singleton(PublisherVersion.ACCEPTED_VERSION.getValue()),
-                                          PublisherVersion.ACCEPTED_VERSION);
+        if (containsVersion(versions, ACCEPTED_VERSION)) {
+            return new PublisherAuthority(Collections.singleton(ACCEPTED_VERSION.getValue()), ACCEPTED_VERSION);
         }
-        if (versions.contains(PublisherVersion.PUBLISHED_VERSION.getValue().toLowerCase(Locale.ROOT))){
-            return new PublisherAuthority(Collections.singleton(PublisherVersion.PUBLISHED_VERSION.getValue()),
-                                          PublisherVersion.PUBLISHED_VERSION);
-
+        if (containsVersion(versions, PUBLISHED_VERSION)) {
+            return new PublisherAuthority(Collections.singleton(PUBLISHED_VERSION.getValue()), PUBLISHED_VERSION);
         } else {
             return new PublisherAuthority(versions, null);
         }
     }
 
+    private static boolean containsVersion(Set<String> versions, PublisherVersion publisherVersion) {
+        return versions.stream().map(PublisherVersion::fromValue)
+                   .filter(Optional::isPresent)
+                   .map(Optional::get)
+                   .anyMatch(publisherVersion::equals);
+    }
+
     private static PublisherAuthority mapSingleVersion(Set<String> versions) {
         var version = versions.iterator().next();
-        if (PublisherVersion.PUBLISHED_VERSION.getValue().equalsIgnoreCase(version)) {
-            return new PublisherAuthority(Collections.singleton(version), PublisherVersion.PUBLISHED_VERSION);
-        } else if (PublisherVersion.ACCEPTED_VERSION.getValue().equalsIgnoreCase(version)) {
-            return new PublisherAuthority(Collections.singleton(version), PublisherVersion.ACCEPTED_VERSION);
-        } else {
-            return new PublisherAuthority(Collections.singleton(version), null);
-        }
+        return new PublisherAuthority(Collections.singleton(version),
+                                      PublisherVersion.fromValue(version).orElse(null));
     }
 
     public static boolean isInCristin(DublinCore dublinCore) {

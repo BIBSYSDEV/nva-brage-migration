@@ -1,7 +1,10 @@
 package no.sikt.nva.brage.migration.common.model.record;
 
+import static nva.commons.core.StringUtils.EMPTY_STRING;
+import static nva.commons.core.StringUtils.WHITESPACES;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
+import java.util.Optional;
 
 public enum PublisherVersion {
     PUBLISHED_VERSION("PublishedVersion"),
@@ -13,11 +16,14 @@ public enum PublisherVersion {
         this.value = value;
     }
 
-    public static PublisherVersion fromValue(String value) {
+    public static Optional<PublisherVersion> fromValue(String value) {
         return Arrays.stream(PublisherVersion.values())
-                   .filter(version -> version.getValue().equalsIgnoreCase(value))
-                   .findFirst()
-                   .orElseThrow();
+                   .filter(version -> version.getValue().equalsIgnoreCase(trim(value)))
+                   .findFirst();
+    }
+
+    private static String trim(String value) {
+        return value.replaceAll(WHITESPACES, EMPTY_STRING).trim();
     }
 
     public static boolean isSupportedPublisherVersion(String value) {
