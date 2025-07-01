@@ -171,7 +171,7 @@ public class DublinCoreScraperTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"publishedVersion", "acceptedVersion"})
+    @ValueSource(strings = {"publishedVersion", "acceptedVersion", "Accepted version"})
     void shouldConvertValidVersionToPublisherAuthority(String value) {
         var versionDcValue = new DcValue(Element.DESCRIPTION, Qualifier.VERSION, value);
         var typeDcValue = toDcType("Others");
@@ -179,7 +179,7 @@ public class DublinCoreScraperTest {
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualPublisherAuthority = record.getPublisherAuthority().getNva();
 
-        assertThat(actualPublisherAuthority, is(equalTo(PublisherVersion.fromValue(value))));
+        assertThat(actualPublisherAuthority, is(equalTo(PublisherVersion.fromValue(value).orElseThrow())));
     }
 
     @ParameterizedTest
