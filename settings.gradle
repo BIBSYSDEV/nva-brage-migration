@@ -1,3 +1,16 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
 rootProject.name = 'nva-brage-migration'
 include 'brage-migration-common'
 include 'post-to-aws'
