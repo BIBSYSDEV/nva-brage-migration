@@ -33,12 +33,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class EntityDescriptionExtractorTest {
 
-    private static final String SOME_CUSTOMER = "nve";
-    private static final boolean ONLINE_VALIDATION_DISABLED = false;
-
-    private static final boolean LOOKUP_IN_CHANNEL_REGISTER = false;
     public static final String ORCID_VALUE = "0000-0000-0000-0000";
     public static final URI ORCID_URI = URI.create("https://orcid.org/0000-0000-0000-0000");
+    private static final String SOME_CUSTOMER = "nve";
+    private static final boolean ONLINE_VALIDATION_DISABLED = false;
+    private static final boolean LOOKUP_IN_CHANNEL_REGISTER = false;
 
     public static Stream<Arguments> contributorAndOrcIdProvider() {
         return Stream.of(arguments(named("Multiple contributors and single orcId",
@@ -148,8 +147,8 @@ public class EntityDescriptionExtractorTest {
     @ParameterizedTest
     @EnumSource(value = PublisherVersion.class)
     void shouldNotMapSupportedPublisherVersionToDescription(PublisherVersion publisherVersion) {
-        var dublinCore = new DublinCore(List.of(new DcValue(Element.DESCRIPTION, Qualifier.VERSION,
-                                                            publisherVersion.getValue())));
+        var dublinCore = new DublinCore(
+            List.of(new DcValue(Element.DESCRIPTION, Qualifier.VERSION, publisherVersion.getValue())));
         var dublinCoreScraper = new DublinCoreScraper(ONLINE_VALIDATION_DISABLED, LOOKUP_IN_CHANNEL_REGISTER, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
 
@@ -162,7 +161,8 @@ public class EntityDescriptionExtractorTest {
     void shouldRemoveNewLineWithWhitespaces() {
         var firstPart = randomString();
         var secondPart = randomString();
-        var value = new DcValue(Element.DESCRIPTION, Qualifier.ABSTRACT, String.format("%s\r\n%s", firstPart, secondPart));
+        var value = new DcValue(Element.DESCRIPTION, Qualifier.ABSTRACT,
+                                String.format("%s\r\n%s", firstPart, secondPart));
         var dublinCore = new DublinCore(List.of(value));
         var dublinCoreScraper = new DublinCoreScraper(ONLINE_VALIDATION_DISABLED, LOOKUP_IN_CHANNEL_REGISTER, Map.of());
         var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
