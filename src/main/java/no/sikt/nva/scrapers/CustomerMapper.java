@@ -177,7 +177,7 @@ public class CustomerMapper {
                     entry(SANDBOX, ""),
                     entry(DEVELOP, "8ddecceb-7d64-4df3-a842-489fe4d98f3a"),
                     entry(TEST, "33c17ef6-864b-4267-bc9d-0cee636e247e"),
-                    entry(PROD, "")));
+                    entry(PROD, "7509c2b8-dcaf-463e-a041-88dd89435f59")));
                 put(NR, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, "54bed9d9-2bc4-4fa4-a6c4-9e957f93870d"),
@@ -221,7 +221,7 @@ public class CustomerMapper {
                 put(ODA, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "8db4a8bd-3db5-420b-a2e4-fc17a489aa6d"),
                                        entry(TEST, "b7c2979e-c56b-4493-84ce-3cfa7bb3ba27"),
-                                       entry(PROD, "")));
+                                       entry(PROD, "60f650d1-43ae-453c-ae1a-d131f0500487")));
                 put(HIMOLDE, Map.ofEntries(entry(SANDBOX, ""),
                                            entry(DEVELOP, "2927ca20-cbd0-4b0a-abd3-3de23e8f2065"),
                                            entry(TEST, "e8833011-2e16-4765-b1dd-494b64c8d646"),
@@ -384,7 +384,7 @@ public class CustomerMapper {
                 put(UIS, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "3e1da1fd-559e-4334-acb9-797684e5bae2"),
                                        entry(TEST, "2d353a69-afa0-44a2-9028-211771d748ae"),
-                                       entry(PROD, "")));
+                                       entry(PROD, "48ab46e0-9a2e-4908-b144-25bfcdeb42e9")));
                 put(USN, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "702c4fbe-d51a-4d20-aec8-50beb813ff36"),
                                        entry(TEST, "b3d72c51-c4f2-4aa1-a15a-e9cc9b1f5e1e"),
@@ -404,7 +404,7 @@ public class CustomerMapper {
                 put(UIT, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "2d35d439-055d-40e5-94de-a9ec28493835"),
                                        entry(TEST, "acf2bd2e-a721-4f0f-91ca-3c7f46c0e375"),
-                                       entry(PROD, "")));
+                                       entry(PROD, "7c277049-48de-4901-bc7e-21768835d461")));
                 put(UIO, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "8db4a8bd-3db5-420b-a2e4-fc17a489aa6d"),
                                        entry(TEST, "e4fd5fe5-b073-47a7-bb3e-2516d40335e6"),
