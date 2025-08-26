@@ -1,30 +1,21 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath "gradle.plugin.com.github.johnrengelman:shadow:7.1.2"
-    }
-}
 
 plugins {
     id 'java'
-    id 'checkstyle'
     id 'pmd'
     id 'jacoco'
     id 'application'
-    id "com.github.johnrengelman.shadow" version "7.1.2"
-    id 'nebula.lint' version '17.7.0'
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.nebula.lint)
 }
 
 group 'no.sikt.nva'
-version '1.2'
+version '2.0'
 
-sourceCompatibility = JavaVersion.VERSION_11  // source-code version and must be <= targetCompatibility
-targetCompatibility = JavaVersion.VERSION_11 // bytecode target version
+sourceCompatibility = JavaVersion.VERSION_21  // source-code version and must be <= targetCompatibility
+targetCompatibility = JavaVersion.VERSION_21 // bytecode target version
 
 repositories {
+    gradlePluginPortal()
     mavenCentral()
 }
 
@@ -40,51 +31,36 @@ shadowJar {
 
 dependencies {
 
-    implementation group: 'com.opencsv', name: 'opencsv', version: '5.7.1'
-
-    implementation 'org.jetbrains:annotations:20.1.0'
-    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-core', version: '2.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.8.2'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.8.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.8.2'
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.2.0'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.2.0'
-
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.36'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.2'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.2'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j18-impl', version: '2.17.2'
-
-    implementation group: 'info.picocli', name: 'picocli', version: '4.7.0'
-    annotationProcessor 'info.picocli:picocli-codegen:4.7.0'
-
-    implementation group: "software.amazon.awssdk", name: "s3", version: "2.17.191"
-    implementation group: "com.amazonaws", name: "aws-java-sdk-sts", version: "1.12.609"
-
-
-    implementation group: 'com.github.bibsysdev', name: 'core', version: '1.27.2'
-    implementation group: 'com.github.bibsysdev', name: 'json', version: '1.27.2'
-    implementation group: 'com.github.bibsysdev', name: 'doi', version: '1.27.2'
-    implementation group: 'com.github.bibsysdev', name: 's3', version: '1.27.2'
-    testImplementation group: 'com.github.bibsysdev', name: 'nvatestutils', version: '1.27.2'
-    implementation group: 'com.github.bibsysdev', name: 'logutils', version: '1.27.2'
-
-    implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.0'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.1'
-    implementation 'com.io-informatics.oss:jackson-jsonld:0.1.1'
-
-    implementation group: 'org.apache.jena', name: 'jena-core', version: '4.6.1'
-    implementation group: 'org.apache.jena', name: 'jena-arq', version: '4.6.1'
-    implementation group: 'commons-validator', name: 'commons-validator', version: '1.7'
-    implementation group: 'joda-time', name: 'joda-time', version: '2.0'
-
+    implementation libs.opencsv
+    implementation libs.annotations
+    
+    testImplementation libs.bundles.testing
+    testImplementation libs.mockito.junit.jupiter
+    testRuntimeOnly libs.junit.jupiter.engine
+    
+    implementation libs.bundles.logging
+    
+    implementation libs.picocli
+    annotationProcessor libs.picocli.codegen
+    
+    implementation libs.aws.s3.v2
+    implementation libs.aws.sts
+    
+    implementation libs.bundles.nva
+    testImplementation libs.nva.testutils
+    
+    implementation libs.jaxb.runtime
+    implementation libs.bundles.jackson
+    
+    implementation libs.bundles.jena
+    implementation libs.commons.validator
+    implementation libs.joda.time
+    
     implementation project(':brage-migration-common')
     implementation project(':post-to-aws')
-
-    implementation 'org.apache.poi:poi:5.2.2'
-    implementation 'org.apache.poi:poi-ooxml:5.2.2'
-    implementation 'org.apache.any23:apache-any23-core:2.7'
+    
+    implementation libs.bundles.poi
+    implementation libs.any23.core
 }
 
 compileJava {
@@ -106,14 +82,6 @@ tasks.named('test') {
     finalizedBy jacocoTestReport
 }
 
-tasks.withType(Checkstyle).configureEach {
-    reports {
-        xml.enabled false
-        html.enabled true
-        html.stylesheet rootProject.resources.text.fromFile('config/checkstyle/checkstyle-simple.xsl')
-    }
-}
-
 gradleLint {
     rules = ['all-dependency']
     reportFormat = 'html'
@@ -122,9 +90,9 @@ gradleLint {
 
 jacocoTestReport {
     reports {
-        xml.enabled true
-        csv.enabled false
-        html.destination file("${buildDir}/reports/jacoco")
+        xml.required = true
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
     }
 }
 
