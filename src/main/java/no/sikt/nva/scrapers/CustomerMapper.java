@@ -400,7 +400,7 @@ public class CustomerMapper {
                 put(NGU, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "4ff971c0-071b-421e-8566-1c0899f3b26c"),
                                        entry(TEST, "897e5123-d4b5-425a-9872-bfd1c554e30b"),
-                                       entry(PROD, "0557ff2c-9658-47e6-8289-c98e4555bb64")));
+                                       entry(PROD, "5ab31e67-f936-442a-af5d-5d43fb0cae9e")));
                 put(UIT, Map.ofEntries(entry(SANDBOX, ""),
                                        entry(DEVELOP, "2d35d439-055d-40e5-94de-a9ec28493835"),
                                        entry(TEST, "acf2bd2e-a721-4f0f-91ca-3c7f46c0e375"),
