@@ -204,10 +204,10 @@ public class CustomerMapper {
                     entry(TEST, "648a3ed0-f34e-48ff-8db9-092b2f5d5fa2"),
                     entry(PROD, "d7aea10a-5643-4f8a-8e74-5b1a11ff669c")));
                 put(FDIR, Map.ofEntries(
-                    entry(SANDBOX, "2e8f2de9-b6e7-411e-93f4-615b6da4225a"),
+                    entry(SANDBOX, ""),
                     entry(DEVELOP, "4403a49b-a175-4985-a695-f16c5b87c9ac"),
                     entry(TEST, "c92c0f86-6a65-484a-ae0e-a045029168b5"),
-                    entry(PROD, "")));
+                    entry(PROD, "2e8f2de9-b6e7-411e-93f4-615b6da4225a")));
                 put(UIA, Map.ofEntries(
                     entry(SANDBOX, ""),
                     entry(DEVELOP, "8b77046d-2001-47cb-b061-0346d5b4b95c"),
