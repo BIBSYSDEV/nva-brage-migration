@@ -654,6 +654,16 @@ public class DublinCoreScraperTest {
     }
 
     @Test
+    void shouldScrapeRightsAsAccessCodeWhenCustomerIsUio() {
+        var rightsValue = randomString();
+        var rightsDcValue = new DcValue(Element.RIGHTS, null, rightsValue);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(rightsDcValue, toDcType("Conference object")));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), UIO);
+
+        assertThat(record.getAccessCode(), is(equalTo(rightsValue)));
+    }
+
+    @Test
     void shouldLoggInvalidDoi() {
         var dcType = toDcType("Book");
         var dcDoi = new DcValue(Element.IDENTIFIER, Qualifier.DOI, "0.1016/S0140-6736wefwfg.(20)30045-#%wt3");
