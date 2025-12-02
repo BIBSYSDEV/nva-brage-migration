@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import static no.sikt.nva.brage.migration.common.model.record.PublisherVersion.isSupportedPublisherVersion;
 import static no.sikt.nva.model.dublincore.Qualifier.NONE;
 import static no.sikt.nva.model.dublincore.Qualifier.ORCID;
+import static no.sikt.nva.scrapers.CustomerMapper.UIO;
 import static no.sikt.nva.scrapers.DublinCoreScraper.isSingleton;
 import static no.sikt.nva.validators.DublinCoreValidator.DASH;
 import static no.sikt.nva.validators.DublinCoreValidator.HYPHEN;
@@ -110,7 +111,7 @@ public final class EntityDescriptionExtractor {
     private static List<Contributor> constructContributors(DublinCore dublinCore, Map<String, Contributor> contributors,
                                                                     String customer) {
         return dublinCore.getDcValues().stream()
-                   .filter(EntityDescriptionExtractor::isContributor)
+                   .filter(value -> isContributor(value, customer))
                    .map(EntityDescriptionExtractor::createContributorFromDcValue)
                    .flatMap(Optional::stream)
                    .map(contributor -> updateRoleBasedOnType(contributor, dublinCore, customer))
@@ -177,8 +178,8 @@ public final class EntityDescriptionExtractor {
         return values.size() >= 2;
     }
 
-    private static boolean isContributor(DcValue dcValue) {
-        return dcValue.isContributor() || dcValue.isCreator();
+    private static boolean isContributor(DcValue dcValue, String customer) {
+        return UIO.equals(customer) ? dcValue.isCreator() : dcValue.isContributor() || dcValue.isCreator();
     }
 
     private static Contributor updateRoleBasedOnType(Contributor contributor, DublinCore dublinCore, String customer) {
