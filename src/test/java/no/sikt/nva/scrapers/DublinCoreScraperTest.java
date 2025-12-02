@@ -25,12 +25,12 @@ import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.War
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.CustomerMapper.IMR;
+import static no.sikt.nva.scrapers.CustomerMapper.UIO;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.AUTHOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.SUPERVISOR;
 import static no.sikt.nva.scrapers.LicenseScraper.DEFAULT_LICENSE;
-import static no.sikt.nva.validators.DublinCoreValidator.NO_CUSTOMER;
 import static no.unit.nva.testutils.RandomDataGenerator.randomIssn;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static no.unit.nva.testutils.RandomDataGenerator.randomUri;
@@ -44,14 +44,12 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
@@ -78,7 +76,6 @@ import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
 import no.sikt.nva.model.dublincore.DcValue;
 import no.sikt.nva.model.dublincore.Element;
 import no.sikt.nva.model.dublincore.Qualifier;
-import no.sikt.nva.validators.DublinCoreValidator;
 import nva.commons.logutils.LogUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -289,6 +286,29 @@ public class DublinCoreScraperTest {
         var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
         var actualContributors = record.getEntityDescription().getContributors();
         assertThat(actualContributors, is(equalTo(expectedContributors)));
+    }
+
+    @Test
+    void shouldCreateContributorFromDcCreatorOnlyWhenCustomerIsUio() {
+        var creator = new DcValue(Element.CREATOR, Qualifier.ADVISOR, "Creator, Creator");
+        var contributor = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Contributr, Contributor");
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(contributor, creator, toDcType("Others")));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), UIO);
+
+        assertEquals(1, record.getEntityDescription().getContributors().size());
+    }
+
+    @Test
+    void shouldUseDcCreatorValuesForGeneratingContributorsWhenCustomerIsUio() {
+        var creator = new DcValue(Element.CREATOR, Qualifier.ADVISOR, "Creator, Creator");
+        var contributor = new DcValue(Element.CONTRIBUTOR, Qualifier.ADVISOR, "Contributor, Contributor");
+
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(contributor, creator, toDcType("Others")));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), UIO);
+
+        var createdContributor = record.getEntityDescription().getContributors().get(0);
+        assertEquals("Creator Creator", createdContributor.getIdentity().getName());
     }
 
     @Test
@@ -1176,7 +1196,7 @@ public class DublinCoreScraperTest {
         var embargoDate = "2024-08-26";
         var dcValue = new DcValue(Element.DATE, Qualifier.fromValue("embargoEndDate"), embargoDate);
         var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(dcValue));
-        var embargo = DublinCoreScraper.extractEmbargo(dublinCore, CustomerMapper.UIO);
+        var embargo = DublinCoreScraper.extractEmbargo(dublinCore, UIO);
         assertThat(embargo, is(equalTo(embargoDate)));
     }
 
