@@ -145,6 +145,18 @@ public class EntityDescriptionExtractorTest {
         assertTrue(descriptions.contains(publisherVersion));
     }
 
+    @Test
+    void shouldMapNotSupportedPublisherVersionFromDcTypeVersionToDescription() {
+        var publisherVersion = randomString();
+        var dublinCore = new DublinCore(List.of(new DcValue(Element.TYPE, Qualifier.VERSION, publisherVersion)));
+        var dublinCoreScraper = new DublinCoreScraper(ONLINE_VALIDATION_DISABLED, LOOKUP_IN_CHANNEL_REGISTER, Map.of());
+        var record = dublinCoreScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), SOME_CUSTOMER);
+
+        var descriptions = record.getEntityDescription().getDescriptions();
+
+        assertTrue(descriptions.contains(publisherVersion));
+    }
+
     @ParameterizedTest
     @EnumSource(value = PublisherVersion.class)
     void shouldNotMapSupportedPublisherVersionToDescription(PublisherVersion publisherVersion) {

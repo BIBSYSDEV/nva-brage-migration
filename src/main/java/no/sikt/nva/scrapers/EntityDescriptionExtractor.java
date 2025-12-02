@@ -147,7 +147,7 @@ public final class EntityDescriptionExtractor {
     }
 
     private static boolean shouldBeMappedToDescription(DcValue value) {
-        return value.isDescription() || value.isVersion() && !isSupportedPublisherVersion(value.getValue());
+        return value.isDescription() || value.isOneOfTwoPossibleVersions() && !isSupportedPublisherVersion(value.getValue());
     }
 
     public static String extractVolume(DublinCore dublinCore) {
