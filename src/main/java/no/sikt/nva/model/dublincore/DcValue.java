@@ -1,5 +1,6 @@
 package no.sikt.nva.model.dublincore;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.scrapers.HandleScraper.HANDLE_DOMAIN;
 import jakarta.xml.bind.JAXB;
@@ -170,6 +171,10 @@ public class DcValue {
 
     public boolean isOneOfTwoPossibleVersions() {
         return isVersion() || isTypeAndVersion();
+    }
+
+    public boolean isRights() {
+        return Element.RIGHTS.equals(this.element) && isNull(this.qualifier);
     }
 
     public boolean isRightsholder() {

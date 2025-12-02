@@ -25,6 +25,7 @@ import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.War
 import static no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning.SUBJECT_WARNING;
 import static no.sikt.nva.channelregister.ChannelRegister.NOT_FOUND_IN_CHANNEL_REGISTER;
 import static no.sikt.nva.scrapers.CustomerMapper.IMR;
+import static no.sikt.nva.scrapers.CustomerMapper.UIO;
 import static no.sikt.nva.scrapers.DublinCoreScraper.FIELD_WAS_NOT_SCRAPED_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.AUTHOR;
 import static no.sikt.nva.scrapers.EntityDescriptionExtractor.OTHER_CONTRIBUTOR;
@@ -631,6 +632,16 @@ public class DublinCoreScraperTest {
 
         var expectedAccessCode = "Dokumentet er klausulert grunnet lovpålagt taushetsplikt";
         assertThat(record.getAccessCode(), is(equalTo(expectedAccessCode)));
+    }
+
+    @Test
+    void shouldScrapeRightsAsAccessCodeWhenCustomerIsUio() {
+        var rightsValue = randomString();
+        var rightsDcValue = new DcValue(Element.RIGHTS, null, rightsValue);
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(List.of(rightsDcValue, toDcType("Conference object")));
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), UIO);
+
+        assertThat(record.getAccessCode(), is(equalTo(rightsValue)));
     }
 
     @Test

@@ -867,7 +867,7 @@ public class DublinCoreScraper {
         record.setPartOf(extractPartOf(dublinCore));
         record.setPart(extractHasPart(dublinCore));
         record.setSubjects(extractSubjects(dublinCore));
-        record.setAccessCode(extractAccessCode(dublinCore));
+        record.setAccessCode(extractAccessCode(dublinCore, customer));
         record.setProjects(extractProjects(dublinCore, fundingSources));
         record.setPrioritizedProperties(determinePrioritizedProperties(dublinCore, customer));
         record.setInsperaIdentifier(extractInsperaIdentifier(dublinCore));
@@ -889,7 +889,19 @@ public class DublinCoreScraper {
                        .collect(Collectors.toList());
     }
 
-    private String extractAccessCode(DublinCore dublinCore) {
+    private String extractAccessCode(DublinCore dublinCore, String customer) {
+        return UIO.equals(customer) ? extractRights(dublinCore) : extractAccessCode(dublinCore);
+    }
+
+    private String extractRights(DublinCore dublinCore) {
+        return dublinCore.getDcValues().stream()
+            .filter(DcValue::isRights)
+            .map(DcValue::scrapeValueAndSetToScraped)
+            .filter(Objects::nonNull)
+            .findFirst().orElse(null);
+    }
+
+    private static String extractAccessCode(DublinCore dublinCore) {
         return dublinCore.getDcValues().stream()
                    .filter(DcValue::isAccessCode)
                    .map(DcValue::scrapeValueAndSetToScraped)
