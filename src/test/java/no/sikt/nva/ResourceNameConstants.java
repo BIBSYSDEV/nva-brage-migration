@@ -8,9 +8,8 @@ public class ResourceNameConstants {
     public static final String INPUT_WITH_LICENSE_ZIP_FILE_NAME = "inputWithLicense.zip";
     public static final String INPUT_WITHOUT_HANDLE_ZIP_FILE_NAME = "inputWithoutHandle.zip";
     public static final String INPUT_WHERE_DOI_HAS_VALID_STRUCTURE_BUT_HAS_INVALID_URI = "inputWithInvalidDoi.zip";
-    public static final String CONTENT_FILE_PATH = "src/test/resources/contents";
-    public static final String UIO_CONTENT_FILE_PATH = "src/test/resources/uio_contents";
-    public static final String EMPTY_CONTENT_FILE_PATH = "src/test/resources/emptyContents";
+    public static final String BUNDLE_PATH = "src/test/resources";
+    public static final String UIO_CONTENT_FILE_PATH = "src/test/resources/uio";
 
     public static final String EMBARGO_TEST_DIRECTORY = "src/test/resources/resourceWithEmbargo";
 

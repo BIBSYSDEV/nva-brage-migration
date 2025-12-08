@@ -76,6 +76,7 @@ public class S3StorageImpl implements S3Storage {
             logger.error(COULD_NOT_WRITE_RECORD_MESSAGE + "\n"
                          + "located at: " + record.getBrageLocation() + "\n"
                          + "with handle: " + record.getId());
+            logger.error(e.getMessage());
             throw new RuntimeException("Could not process record to aws!");
         }
     }
@@ -273,12 +274,15 @@ public class S3StorageImpl implements S3Storage {
                                .map(ContentFile::getFilename)
                                .findFirst()
                                .orElse(null);
-
-            S3MultipartUploader.fromKey(fileKey)
-                .bucket(bucketName)
-                .fileName(fileName)
-                .file(file)
-                .upload(s3Client);
+            try {
+                S3MultipartUploader.fromKey(fileKey)
+                    .bucket(bucketName)
+                    .fileName(fileName)
+                    .file(file)
+                    .upload(s3Client);
+            } catch (Exception e) {
+                logger.warn(String.format("Failed to save file %s for record: %s", fileName, record.getBrageLocation()));
+            }
         }
     }
 

@@ -1,10 +1,8 @@
 package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.ResourceNameConstants.CONTENT_FILE_PATH;
-import static no.sikt.nva.ResourceNameConstants.EMPTY_CONTENT_FILE_PATH;
+import static no.sikt.nva.ResourceNameConstants.BUNDLE_PATH;
 import static no.sikt.nva.ResourceNameConstants.UIO_CONTENT_FILE_PATH;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.CONTENT_FILE_MISSING;
-import static no.sikt.nva.scrapers.ContentScraper.UNKNOWN_FILE_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.CustomerMapper.UIO;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -18,7 +16,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
-import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails.Error;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.BundleType;
 import no.sikt.nva.brage.migration.common.model.record.license.License;
@@ -34,7 +32,7 @@ public class ContentScraperTest {
     public static final String DUBLIN_CORE_FILE_NAME = "dublin_core.xml";
     private static final License someLicense = new License(null, null);
     protected static final String UNKNOWN_UIO_FILE = "uio_unknown_file.pdf";
-    private ContentScraper contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
+    private ContentScraper contentScraper = new ContentScraper(Path.of(BUNDLE_PATH),
                                                                new BrageLocation(null),
                                                                someLicense, null, randomString());
 
@@ -61,7 +59,7 @@ public class ContentScraperTest {
     @Test
     void shouldCreateResourceContentWithEmbargoCorrectly() throws ContentException {
         var expectedEmbargo = LocalDate.parse("3022-08-24").atStartOfDay(ZoneId.systemDefault()).toInstant();
-        contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
+        contentScraper = new ContentScraper(Path.of(BUNDLE_PATH),
                                             new BrageLocation(null),
                                             someLicense, "3022-08-24", randomString());
         var actualContentFilenameList = contentScraper.scrapeContent().getContentFiles().stream()
@@ -77,20 +75,13 @@ public class ContentScraperTest {
     }
 
     @Test
-    void shouldNotLogKnownContentFile() throws ContentException {
-        var appender = LogUtils.getTestingAppenderForRootLogger();
-        contentScraper.scrapeContent();
-        assertThat(appender.getMessages(), containsString(UNKNOWN_FILE_LOG_MESSAGE));
-    }
-
-    @Test
-    void shouldReturnMissingFilesWarningMessageWhenContentFileIsEmpty() throws ContentException {
-        var contentScraper = new ContentScraper(Path.of(EMPTY_CONTENT_FILE_PATH),
+    void shouldReturnContentFileMissingErrorMessageWhenContentFileIsEmpty() throws ContentException {
+        var contentScraper = new ContentScraper(Path.of(randomString()),
                                                 new BrageLocation(null),
                                                 someLicense, null, randomString());
         var appender = LogUtils.getTestingAppenderForRootLogger();
         contentScraper.scrapeContent();
-        assertThat(appender.getMessages(), containsString(Warning.MISSING_FILES.toString()));
+        assertThat(appender.getMessages(), containsString(Error.CONTENT_FILE_MISSING.toString()));
     }
 
     @Test
@@ -104,7 +95,7 @@ public class ContentScraperTest {
     }
 
     @Test
-    void shouldMapUnknownFileWhenMappingFilesForUIOAndFilesIsNotOfTypeOriginalOrSword() throws ContentException {
+    void shouldMapAllUnknownFilesWhenMappingFilesForUIO() throws ContentException {
         var contentScraper = new ContentScraper(Path.of(UIO_CONTENT_FILE_PATH),
                                                 new BrageLocation(null),
                                                 someLicense, null, UIO);

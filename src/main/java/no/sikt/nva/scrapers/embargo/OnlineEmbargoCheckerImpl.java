@@ -48,7 +48,7 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
     public OnlineEmbargoCheckerImpl() {
         this(HttpClient.newBuilder()
                  .version(Version.HTTP_2)
-                 .followRedirects(Redirect.NORMAL)
+                 .followRedirects(Redirect.NEVER)
                  .build());
     }
 
