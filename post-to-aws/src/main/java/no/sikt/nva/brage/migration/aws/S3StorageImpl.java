@@ -274,15 +274,12 @@ public class S3StorageImpl implements S3Storage {
                                .map(ContentFile::getFilename)
                                .findFirst()
                                .orElse(null);
-            try {
+
                 S3MultipartUploader.fromKey(fileKey)
                     .bucket(bucketName)
                     .fileName(fileName)
                     .file(file)
                     .upload(s3Client);
-            } catch (Exception e) {
-                logger.warn(String.format("Failed to save file %s for record: %s", fileName, record.getBrageLocation()));
-            }
         }
     }
 
