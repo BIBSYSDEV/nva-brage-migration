@@ -128,7 +128,9 @@ public final class ContentScraper {
 
     private Optional<ContentFile> convertToFile(String fileInfo) {
         var fileInformationList = Arrays.asList(fileInfo.split("\t"));
-        if (!Files.exists(bundlePath.resolve(getFileName(fileInformationList)))) {
+        var fileName = getFileName(fileInformationList);
+        if (!Files.exists(bundlePath.resolve(fileName))) {
+            logger.warn("File {} does not exist at brage location {}", fileName, brageLocation);
             return Optional.empty();
         }
         if (isOriginalFileBundle(fileInformationList)
