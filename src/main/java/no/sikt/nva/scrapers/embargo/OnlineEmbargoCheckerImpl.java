@@ -124,6 +124,8 @@ public class OnlineEmbargoCheckerImpl implements OnlineEmbargoChecker {
             if (response.statusCode() == OK) {
                 return false;
             } else if (SHOULD_BE_LOCKED_STATUS_CODES.contains(response.statusCode())) {
+                logger.error("File locked {} by status code {}",
+                             fullUri.toString(), response.statusCode());
                 return true;
             } else if (response.statusCode() == TOO_MANY_REQUESTS) {
                 if (retriesLeft > 0) {

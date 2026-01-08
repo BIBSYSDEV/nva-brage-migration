@@ -2,15 +2,16 @@ package no.sikt.nva.scrapers;
 
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.scrapers.CustomerMapper.UIO;
+import static nva.commons.core.StringUtils.EMPTY_STRING;
 import static nva.commons.core.StringUtils.isEmpty;
 import static nva.commons.core.attempt.Try.attempt;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,14 +26,13 @@ import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.BundleType;
 import no.sikt.nva.brage.migration.common.model.record.license.License;
-import no.sikt.nva.exceptions.ContentException;
 import nva.commons.core.StringUtils;
+import nva.commons.core.attempt.Failure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class ContentScraper {
 
-    public static final String CONTENT_FILE_PARSING_ERROR_MESSAGE = "Could not parse content file: ";
     public static final String UNKNOWN_FILE_LOG_MESSAGE = "Unknown file in contents: ";
     public static final List<String> KNOWN_CONTENT_FILE_TYPES = List.of(BundleType.CCLICENSE.getValue(),
                                                                         BundleType.LICENSE.getValue(),
@@ -60,23 +60,10 @@ public final class ContentScraper {
         this.customer = customer;
     }
 
-    public ResourceContent scrapeContent() throws ContentException {
-        try {
-            return createResourceContent();
-        } catch (Exception e) {
-            var contentFile = new File(String.valueOf(contentFilePath));
-            if (!contentFile.exists()) {
-                logger.error(new ErrorDetails(Error.CONTENT_FILE_MISSING).toString());
-                return ResourceContent.emptyResourceContent();
-            }
-            var stringFromFile = attempt(() -> Files.readString(contentFilePath)).orElseThrow();
-            if (isEmpty(stringFromFile)) {
-                logger.info(new WarningDetails(Warning.MISSING_FILES).toString());
-                return ResourceContent.emptyResourceContent();
-            } else {
-                throw new ContentException(CONTENT_FILE_PARSING_ERROR_MESSAGE + e.getMessage());
-            }
-        }
+    public ResourceContent scrapeContent() {
+        var contentFileList = parseContentFile();
+        contentFileList.add(createDublinCoreFile());
+        return new ResourceContent(contentFileList);
     }
 
     private static boolean isOriginalFileBundle(List<String> fileInformationList) {
@@ -108,17 +95,41 @@ public final class ContentScraper {
         return Arrays.asList(list.get(1).split(":")).get(1);
     }
 
-    private ResourceContent createResourceContent()
-        throws IOException {
-        var contentFileAsString = Files.readString(contentFilePath)
-                                      .replaceAll(EMPTY_LINE_REGEX, StringUtils.EMPTY_STRING);
-        var contentFilesFromListAsString = contentFileAsString.split("\n");
-        var contentFileList = Arrays.stream(contentFilesFromListAsString)
-                                  .map(this::convertToFile)
-                                  .flatMap(Optional::stream)
-                                  .collect(Collectors.toList());
-        contentFileList.add(createDublinCoreFile());
-        return new ResourceContent(contentFileList);
+    private List<ContentFile> parseContentFile() {
+        var contentFile = new File(String.valueOf(contentFilePath));
+        if (!contentFile.exists()) {
+            logger.error(new ErrorDetails(Error.CONTENT_FILE_MISSING).toString());
+            return new ArrayList<>();
+        }
+
+        var contentFileAsString = attempt(() -> Files.readString(contentFilePath)).orElse(this::emptyString);
+
+        if (isEmpty(contentFileAsString)) {
+            logger.info(new WarningDetails(Warning.MISSING_FILES).toString());
+            return new ArrayList<>();
+        }
+
+        var cleanedContent = contentFileAsString.replaceAll(EMPTY_LINE_REGEX, EMPTY_STRING);
+        var contentFilesFromListAsString = cleanedContent.split("\n");
+
+        return Arrays.stream(contentFilesFromListAsString)
+                   .map(this::convertToFileWithErrorHandling)
+                   .flatMap(Optional::stream)
+                   .collect(Collectors.toList());
+    }
+
+    private String emptyString(Failure<String> failure) {
+        logger.error("Failed to read content file: " + failure.getException().getMessage());
+        return EMPTY_STRING;
+    }
+
+    private Optional<ContentFile> convertToFileWithErrorHandling(String fileInfo) {
+        try {
+            return convertToFile(fileInfo);
+        } catch (Exception e) {
+            logger.warn("Failed to parse file line: " + fileInfo + " - " + e.getMessage());
+            return Optional.empty();
+        }
     }
 
     private ContentFile createDublinCoreFile() {
