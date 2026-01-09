@@ -1634,6 +1634,17 @@ public class DublinCoreScraperTest {
                      record.getPublication().getPublicationContext().getJournal().getPid());
     }
 
+    @Test
+    void shouldMigrateRightsNoneAsAccessCodeWhenCustomerIsUio() {
+        var rights = randomString();
+        var dcValues = List.of(new DcValue(Element.TYPE, null, "Journal article"),
+                               new DcValue(Element.RIGHTS, Qualifier.NONE, rights));
+        var dublinCore = DublinCoreFactory.createDublinCoreWithDcValues(dcValues);
+        var record = dcScraper.validateAndParseDublinCore(dublinCore, new BrageLocation(null), "uio");
+
+        assertEquals(rights, record.getAccessCode());
+    }
+
     private static DcValue toDcType(String t) {
         return new DcValue(Element.TYPE, null, t);
     }
