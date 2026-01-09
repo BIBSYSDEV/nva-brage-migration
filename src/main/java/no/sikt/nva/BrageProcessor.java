@@ -44,7 +44,6 @@ public class BrageProcessor implements Runnable {
     private static final String HANDLE_DEFAULT_NAME = "handle";
     private static final String BRAGE_DUBLIN_CORE_XML_DEFAULT_NAME = "dublin_core.xml";
     private static final String FS_DUBLIN_CORE_XML_DEFAULT_NAME = "metadata_fs.xml";
-    private static final String CONTENT_FILE_DEFAULT_NAME = "contents";
     private final static Counter counter = new Counter();
     private final String zipfile;
     private final String destinationDirectory;
@@ -82,11 +81,6 @@ public class BrageProcessor implements Runnable {
         this.affiliationType = affiliationType;
         this.isUnzipped = isUnzipped;
         this.onlineEmbargoChecker = onlineEmbargoChecker;
-    }
-
-    public Path getContentFilePath(File entryDirectory) {
-        var bundlePath = entryDirectory.getPath();
-        return Path.of(bundlePath, CONTENT_FILE_DEFAULT_NAME);
     }
 
     public String getDestinationDirectory() {
@@ -145,7 +139,7 @@ public class BrageProcessor implements Runnable {
                                        String embargo)
         throws ContentException {
         var license = new LicenseScraper(dublinCore).generateLicense();
-        var contentScraper = new ContentScraper(getContentFilePath(entryDirectory), brageLocation, license, embargo, customer);
+        var contentScraper = new ContentScraper(entryDirectory.toPath(), brageLocation, license, embargo, customer);
         return contentScraper.scrapeContent();
     }
 

@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 public final class ContentScraper {
 
+    private static final String CONTENT_FILE_DEFAULT_NAME = "contents";
+    public static final String CONTENT_FILE_PARSING_ERROR_MESSAGE = "Could not parse content file: ";
     public static final String UNKNOWN_FILE_LOG_MESSAGE = "Unknown file in contents: ";
     public static final List<String> KNOWN_CONTENT_FILE_TYPES = List.of(BundleType.CCLICENSE.getValue(),
                                                                         BundleType.LICENSE.getValue(),
@@ -43,15 +45,15 @@ public final class ContentScraper {
     public static final String EMPTY_LINE_REGEX = "(?m)(^\\s*$\\r?\\n)+";
     public static final String DEFAULT_LICENSE_FILENAME = "license.txt";
     private static final Logger logger = LoggerFactory.getLogger(ContentScraper.class);
-    private final Path contentFilePath;
+    private final Path bundlePath;
     private final BrageLocation brageLocation;
     private final License license;
     private final String embargo;
     private final String customer;
 
-    public ContentScraper(Path contentFilePath, BrageLocation brageLocation, License license, String embargo,
+    public ContentScraper(Path bundlePath, BrageLocation brageLocation, License license, String embargo,
                           String customer) {
-        this.contentFilePath = contentFilePath;
+        this.bundlePath = bundlePath;
         this.brageLocation = brageLocation;
         this.license = license;
         this.embargo = embargo;
@@ -94,11 +96,11 @@ public final class ContentScraper {
     }
 
     private List<ContentFile> parseContentFile() {
-        if (!Files.exists(contentFilePath)) {
+        if (!Files.exists(bundlePath.resolve(CONTENT_FILE_DEFAULT_NAME))) {
             logger.error(new ErrorDetails(Error.CONTENT_FILE_MISSING).toString());
             return new ArrayList<>();
         }
-        var content = attempt(() -> Files.readAllLines(contentFilePath)).orElse(this::emptyString);
+        var content = attempt(() -> Files.readAllLines(bundlePath.resolve(CONTENT_FILE_DEFAULT_NAME))).orElse(this::emptyString);
         if (isNull(content) || content.isEmpty()) {
             logger.info(new WarningDetails(Warning.MISSING_FILES).toString());
             return new ArrayList<>();
@@ -131,6 +133,11 @@ public final class ContentScraper {
 
     private Optional<ContentFile> convertToFile(String fileInfo) {
         var fileInformationList = Arrays.asList(fileInfo.split("\t"));
+        var fileName = getFileName(fileInformationList);
+        if (!Files.exists(bundlePath.resolve(fileName))) {
+            logger.warn("File {} does not exist at brage location {}", fileName, brageLocation);
+            return Optional.empty();
+        }
         if (isOriginalFileBundle(fileInformationList)
             || isNonDefaultLicense(fileInformationList)
             || shouldBeMigratedAsHiddenFile(fileInformationList)) {

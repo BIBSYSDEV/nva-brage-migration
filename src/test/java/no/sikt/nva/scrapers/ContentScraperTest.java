@@ -1,10 +1,9 @@
 package no.sikt.nva.scrapers;
 
-import static no.sikt.nva.ResourceNameConstants.CONTENT_FILE_PATH;
+import static no.sikt.nva.ResourceNameConstants.BUNDLE_PATH;
 import static no.sikt.nva.ResourceNameConstants.EMPTY_CONTENT_FILE_PATH;
 import static no.sikt.nva.ResourceNameConstants.UIO_CONTENT_FILE_PATH;
 import static no.sikt.nva.brage.migration.common.model.ErrorDetails.Error.CONTENT_FILE_MISSING;
-import static no.sikt.nva.scrapers.ContentScraper.UNKNOWN_FILE_LOG_MESSAGE;
 import static no.sikt.nva.scrapers.CustomerMapper.UIO;
 import static no.unit.nva.testutils.RandomDataGenerator.randomString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,13 +12,14 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.stream.Collectors;
 import no.sikt.nva.brage.migration.common.model.BrageLocation;
-import no.sikt.nva.brage.migration.common.model.record.WarningDetails.Warning;
+import no.sikt.nva.brage.migration.common.model.ErrorDetails.Error;
 import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.BundleType;
 import no.sikt.nva.brage.migration.common.model.record.license.License;
@@ -35,7 +35,7 @@ public class ContentScraperTest {
     public static final String DUBLIN_CORE_FILE_NAME = "dublin_core.xml";
     private static final License someLicense = new License(null, null);
     protected static final String UNKNOWN_UIO_FILE = "uio_unknown_file.pdf";
-    private ContentScraper contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
+    private ContentScraper contentScraper = new ContentScraper(Path.of(BUNDLE_PATH),
                                                                new BrageLocation(null),
                                                                someLicense, null, randomString());
 
@@ -62,7 +62,7 @@ public class ContentScraperTest {
     @Test
     void shouldCreateResourceContentWithEmbargoCorrectly() {
         var expectedEmbargo = LocalDate.parse("3022-08-24").atStartOfDay(ZoneId.systemDefault()).toInstant();
-        contentScraper = new ContentScraper(Path.of(CONTENT_FILE_PATH),
+        contentScraper = new ContentScraper(Path.of(BUNDLE_PATH),
                                             new BrageLocation(null),
                                             someLicense, "3022-08-24", randomString());
         var actualContentFilenameList = contentScraper.scrapeContent().getContentFiles().stream()
@@ -74,10 +74,10 @@ public class ContentScraperTest {
     }
 
     @Test
-    void shouldNotLogKnownContentFile() {
+    void shouldLogUnknownContentFile() {
         var appender = LogUtils.getTestingAppenderForRootLogger();
         contentScraper.scrapeContent();
-        assertThat(appender.getMessages(), containsString(UNKNOWN_FILE_LOG_MESSAGE));
+        assertThat(appender.getMessages(), containsString("does not exist"));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class ContentScraperTest {
                                                 someLicense, null, randomString());
         var appender = LogUtils.getTestingAppenderForRootLogger();
         contentScraper.scrapeContent();
-        assertThat(appender.getMessages(), containsString(Warning.MISSING_FILES.toString()));
+        assertThat(appender.getMessages(), containsString(Error.CONTENT_FILE_MISSING.toString()));
     }
 
     @Test
@@ -135,21 +135,28 @@ public class ContentScraperTest {
 
     @Test
     void shouldSkipInvalidFilesFromContentFilesAndCreateValid(@TempDir Path tempDir) throws Exception {
-        var contentFile = tempDir.resolve("contents");
-        var contentWithInvalidLine = ORIGINAL_FILENAME_1 + "\tbundle:ORIGINAL\tdescription:Valid file\n"
-                                     + "invalid_file_line\n"
-                                     + ORIGINAL_FILENAME_2 + "\tbundle:ORIGINAL\tdescription:Another valid file";
-        Files.writeString(contentFile, contentWithInvalidLine);
-
-        var contentScraper = new ContentScraper(contentFile, new BrageLocation(null),
+        var bundle = initiateBundle(tempDir);
+        var contentScraper = new ContentScraper(bundle, new BrageLocation(null),
                                                 someLicense, null, randomString());
-        var resourceContent = contentScraper.scrapeContent();
-
-        var filenames = resourceContent.getContentFiles().stream()
+        var filenames = contentScraper.scrapeContent().getContentFiles().stream()
                             .map(ContentFile::getFilename)
                             .collect(Collectors.toList());
 
         assertThat(filenames, containsInAnyOrder(ORIGINAL_FILENAME_1, ORIGINAL_FILENAME_2, DUBLIN_CORE_FILE_NAME));
+    }
+
+    private static Path initiateBundle(Path tempDir) throws IOException {
+        var bundle = tempDir.resolve("bundle");
+        Files.createDirectories(bundle);
+        var contentsFile = bundle.resolve("contents");
+        var contentWithInvalidLine = ORIGINAL_FILENAME_1 + "\tbundle:ORIGINAL\tdescription:Valid file\n"
+                                     + "invalid_file_line\n"
+                                     + ORIGINAL_FILENAME_2 + "\tbundle:ORIGINAL\tdescription:Another valid file";
+        Files.writeString(contentsFile, contentWithInvalidLine);
+
+        Files.writeString(bundle.resolve(ORIGINAL_FILENAME_1), "test content 1");
+        Files.writeString(bundle.resolve(ORIGINAL_FILENAME_2), "test content 2");
+        return bundle;
     }
 
     private static boolean isNotDublinCoreFile(ContentFile file) {
