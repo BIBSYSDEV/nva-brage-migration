@@ -1,11 +1,9 @@
 package no.sikt.nva.scrapers;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.scrapers.CustomerMapper.UIO;
-import static nva.commons.core.StringUtils.EMPTY_STRING;
-import static nva.commons.core.StringUtils.isEmpty;
 import static nva.commons.core.attempt.Try.attempt;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -96,31 +94,26 @@ public final class ContentScraper {
     }
 
     private List<ContentFile> parseContentFile() {
-        var contentFile = new File(String.valueOf(contentFilePath));
-        if (!contentFile.exists()) {
+        if (!Files.exists(contentFilePath)) {
             logger.error(new ErrorDetails(Error.CONTENT_FILE_MISSING).toString());
             return new ArrayList<>();
         }
-
-        var contentFileAsString = attempt(() -> Files.readString(contentFilePath)).orElse(this::emptyString);
-
-        if (isEmpty(contentFileAsString)) {
+        var content = attempt(() -> Files.readAllLines(contentFilePath)).orElse(this::emptyString);
+        if (isNull(content) || content.isEmpty()) {
             logger.info(new WarningDetails(Warning.MISSING_FILES).toString());
             return new ArrayList<>();
         }
 
-        var cleanedContent = contentFileAsString.replaceAll(EMPTY_LINE_REGEX, EMPTY_STRING);
-        var contentFilesFromListAsString = cleanedContent.split("\n");
-
-        return Arrays.stream(contentFilesFromListAsString)
+        return content.stream()
+                   .filter(StringUtils::isNotBlank)
                    .map(this::convertToFileWithErrorHandling)
                    .flatMap(Optional::stream)
                    .collect(Collectors.toList());
     }
 
-    private String emptyString(Failure<String> failure) {
+    private List<String> emptyString(Failure<List<String>> failure) {
         logger.error("Failed to read content file: " + failure.getException().getMessage());
-        return EMPTY_STRING;
+        return List.of();
     }
 
     private Optional<ContentFile> convertToFileWithErrorHandling(String fileInfo) {
