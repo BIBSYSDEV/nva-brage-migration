@@ -2,6 +2,7 @@ package no.sikt.nva.model.dublincore;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static no.sikt.nva.model.dublincore.Qualifier.NONE;
 import static no.sikt.nva.scrapers.HandleScraper.HANDLE_DOMAIN;
 import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.annotation.XmlAttribute;
@@ -119,7 +120,7 @@ public class DcValue {
     }
 
     public boolean isMainTitle() {
-        return Element.TITLE.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
+        return Element.TITLE.equals(this.element) && NONE.equals(this.qualifier);
     }
 
     public boolean isAlternativeTitle() {
@@ -174,7 +175,7 @@ public class DcValue {
     }
 
     public boolean isRights() {
-        return Element.RIGHTS.equals(this.element) && isNull(this.qualifier);
+        return Element.RIGHTS.equals(this.element) && (isNull(this.qualifier) || Qualifier.NONE.equals(this.qualifier));
     }
 
     public boolean isRightsholder() {
@@ -186,11 +187,11 @@ public class DcValue {
     }
 
     public boolean isSourceNone() {
-        return Element.SOURCE.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
+        return Element.SOURCE.equals(this.element) && NONE.equals(this.qualifier);
     }
 
     public boolean isCreatorNone() {
-        return Element.CREATOR.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
+        return Element.CREATOR.equals(this.element) && NONE.equals(this.qualifier);
     }
 
     public boolean isFormatExtent() {
@@ -202,7 +203,7 @@ public class DcValue {
     }
 
     public boolean isIdentifierNone() {
-        return Element.IDENTIFIER.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
+        return Element.IDENTIFIER.equals(this.element) && NONE.equals(this.qualifier);
     }
 
     public boolean isAvailableDate() {
@@ -273,7 +274,7 @@ public class DcValue {
 
     public boolean isLicenseInformation() {
         return Element.RIGHTS.equals(this.element)
-               && (Qualifier.NONE.equals(this.qualifier)
+               && (NONE.equals(this.qualifier)
                    || Qualifier.URI.equals(this.qualifier));
     }
 
@@ -288,7 +289,7 @@ public class DcValue {
 
     public boolean isDescription() {
         return Element.DESCRIPTION.equals(this.element)
-               && (Qualifier.NONE.equals(this.qualifier) || Qualifier.LOCAL_CODE.equals(this.qualifier));
+               && (NONE.equals(this.qualifier) || Qualifier.LOCAL_CODE.equals(this.qualifier));
     }
 
     public boolean isSpatialCoverage() {
@@ -341,7 +342,7 @@ public class DcValue {
     }
 
     public boolean isNoneDate() {
-        return Element.DATE.equals(this.element) && Qualifier.NONE.equals(this.qualifier);
+        return Element.DATE.equals(this.element) && NONE.equals(this.qualifier);
     }
 
     public boolean isEmbargo() {
