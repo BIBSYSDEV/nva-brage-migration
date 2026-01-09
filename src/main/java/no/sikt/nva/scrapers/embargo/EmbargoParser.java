@@ -103,7 +103,7 @@ public class EmbargoParser {
     }
 
     private static void logEmbargoAsNotDetected(Embargo embargo) {
-        logger.error("Embargo file not found: "
+        logger.warn("Embargo file not found: "
                      + embargo.getFilename()
                      + ", for handle: "
                      + embargo.getHandle());
