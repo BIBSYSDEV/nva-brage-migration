@@ -1,16 +1,15 @@
 package no.sikt.nva.scrapers;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static no.sikt.nva.scrapers.CustomerMapper.UIO;
-import static nva.commons.core.StringUtils.isEmpty;
 import static nva.commons.core.attempt.Try.attempt;
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,8 +24,8 @@ import no.sikt.nva.brage.migration.common.model.record.content.ContentFile;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent;
 import no.sikt.nva.brage.migration.common.model.record.content.ResourceContent.BundleType;
 import no.sikt.nva.brage.migration.common.model.record.license.License;
-import no.sikt.nva.exceptions.ContentException;
 import nva.commons.core.StringUtils;
+import nva.commons.core.attempt.Failure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,23 +60,10 @@ public final class ContentScraper {
         this.customer = customer;
     }
 
-    public ResourceContent scrapeContent() throws ContentException {
-        try {
-            return createResourceContent();
-        } catch (Exception e) {
-            var contentFile = new File(String.valueOf(bundlePath.resolve(CONTENT_FILE_DEFAULT_NAME)));
-            if (!contentFile.exists()) {
-                logger.error(new ErrorDetails(Error.CONTENT_FILE_MISSING).toString());
-                return ResourceContent.emptyResourceContent();
-            }
-            var stringFromFile = attempt(() -> Files.readString(bundlePath.resolve(CONTENT_FILE_DEFAULT_NAME))).orElseThrow();
-            if (isEmpty(stringFromFile)) {
-                logger.info(new WarningDetails(Warning.MISSING_FILES).toString());
-                return ResourceContent.emptyResourceContent();
-            } else {
-                throw new ContentException(CONTENT_FILE_PARSING_ERROR_MESSAGE + e.getMessage());
-            }
-        }
+    public ResourceContent scrapeContent() {
+        var contentFileList = parseContentFile();
+        contentFileList.add(createDublinCoreFile());
+        return new ResourceContent(contentFileList);
     }
 
     private static boolean isOriginalFileBundle(List<String> fileInformationList) {
@@ -109,17 +95,36 @@ public final class ContentScraper {
         return Arrays.asList(list.get(1).split(":")).get(1);
     }
 
-    private ResourceContent createResourceContent()
-        throws IOException {
-        var contentFileAsString = Files.readString(bundlePath.resolve(CONTENT_FILE_DEFAULT_NAME))
-                                      .replaceAll(EMPTY_LINE_REGEX, StringUtils.EMPTY_STRING);
-        var contentFilesFromListAsString = contentFileAsString.split("\n");
-        var contentFileList = Arrays.stream(contentFilesFromListAsString)
-                                  .map(this::convertToFile)
-                                  .flatMap(Optional::stream)
-                                  .collect(Collectors.toList());
-        contentFileList.add(createDublinCoreFile());
-        return new ResourceContent(contentFileList);
+    private List<ContentFile> parseContentFile() {
+        if (!Files.exists(bundlePath.resolve(CONTENT_FILE_DEFAULT_NAME))) {
+            logger.error(new ErrorDetails(Error.CONTENT_FILE_MISSING).toString());
+            return new ArrayList<>();
+        }
+        var content = attempt(() -> Files.readAllLines(bundlePath.resolve(CONTENT_FILE_DEFAULT_NAME))).orElse(this::emptyString);
+        if (isNull(content) || content.isEmpty()) {
+            logger.info(new WarningDetails(Warning.MISSING_FILES).toString());
+            return new ArrayList<>();
+        }
+
+        return content.stream()
+                   .filter(StringUtils::isNotBlank)
+                   .map(this::convertToFileWithErrorHandling)
+                   .flatMap(Optional::stream)
+                   .collect(Collectors.toList());
+    }
+
+    private List<String> emptyString(Failure<List<String>> failure) {
+        logger.error("Failed to read content file: " + failure.getException().getMessage());
+        return List.of();
+    }
+
+    private Optional<ContentFile> convertToFileWithErrorHandling(String fileInfo) {
+        try {
+            return convertToFile(fileInfo);
+        } catch (Exception e) {
+            logger.warn("Failed to parse file line: " + fileInfo + " - " + e.getMessage());
+            return Optional.empty();
+        }
     }
 
     private ContentFile createDublinCoreFile() {
