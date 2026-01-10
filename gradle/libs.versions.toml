@@ -1,0 +1,87 @@
+[versions]
+
+awsSdk = { strictly = '1.12.787' }
+awsSdk2 = { strictly = '2.31.77' }
+commonsValidator = { strictly = '1.10.0' }
+hamcrest = { strictly = '3.0' }
+jackson = { strictly = '2.19.1' }
+jupiter = { strictly = '5.13.3' }
+log4j = { strictly = '2.25.0' }
+mockito = { strictly = '5.18.0' }
+slf4j = { strictly = '2.0.17' }
+nva = { strictly = '2.2.9' }
+picocli = { strictly = '4.7.0' }
+opencsv = { strictly = '5.7.1' }
+jaxb = { strictly = '4.0.0' }
+jena = { strictly = '4.6.1' }
+poi = { strictly = '5.2.2' }
+tika = { strictly = '2.3.0' }
+shadow = { strictly = '7.1.2' }
+nebulaLint = { strictly = '20.5.6' }
+annotations = { strictly = '20.1.0' }
+jodaTime = { strictly = '2.0' }
+any23 = { strictly = '2.7' }
+jacksonJsonld = { strictly = '0.1.1' }
+
+[libraries]
+# Build tools
+nebula-lint-plugin = { group = 'com.netflix.nebula', name = 'gradle-lint-plugin', version.ref = 'nebulaLint' }
+
+# Testing
+junit-jupiter-api = { group = 'org.junit.jupiter', name = 'junit-jupiter-api', version.ref = 'jupiter' }
+junit-jupiter-engine = { group = 'org.junit.jupiter', name = 'junit-jupiter-engine', version.ref = 'jupiter' }
+junit-jupiter-params = { group = 'org.junit.jupiter', name = 'junit-jupiter-params', version.ref = 'jupiter' }
+mockito-core = { group = 'org.mockito', name = 'mockito-core', version.ref = 'mockito' }
+mockito-junit-jupiter = { group = 'org.mockito', name = 'mockito-junit-jupiter', version.ref = 'mockito' }
+hamcrest = { group = 'org.hamcrest', name = 'hamcrest', version.ref = 'hamcrest' }
+hamcrest-core = { group = 'org.hamcrest', name = 'hamcrest-core', version.ref = 'hamcrest' }
+
+# NVA/BibSysDev libraries
+nva-core = { group = 'com.github.bibsysdev', name = 'core', version.ref = 'nva' }
+nva-json = { group = 'com.github.bibsysdev', name = 'json', version.ref = 'nva' }
+nva-doi = { group = 'com.github.bibsysdev', name = 'doi', version.ref = 'nva' }
+nva-s3 = { group = 'com.github.bibsysdev', name = 's3', version.ref = 'nva' }
+nva-testutils = { group = 'com.github.bibsysdev', name = 'nvatestutils', version.ref = 'nva' }
+nva-logutils = { group = 'com.github.bibsysdev', name = 'logutils', version.ref = 'nva' }
+
+# Logging
+log4j-core = { group = 'org.apache.logging.log4j', name = 'log4j-core', version.ref = 'log4j' }
+log4j-api = { group = 'org.apache.logging.log4j', name = 'log4j-api', version.ref = 'log4j' }
+log4j-slf4j-impl = { group = 'org.apache.logging.log4j', name = 'log4j-slf4j2-impl', version.ref = 'log4j' }
+slf4j-api = { group = 'org.slf4j', name = 'slf4j-api', version.ref = 'slf4j' }
+
+# AWS
+aws-s3-v2 = { group = 'software.amazon.awssdk', name = 's3', version.ref = 'awsSdk2' }
+aws-s3-v1 = { group = 'com.amazonaws', name = 'aws-java-sdk-s3', version.ref = 'awsSdk' }
+aws-sts = { group = 'com.amazonaws', name = 'aws-java-sdk-sts', version.ref = 'awsSdk'  }
+
+# Jackson
+jackson-databind = { group = 'com.fasterxml.jackson.core', name = 'jackson-databind', version.ref = 'jackson' }
+jackson-jsonld = { group = 'com.io-informatics.oss', name = 'jackson-jsonld', version.ref = 'jacksonJsonld' }
+
+# Other dependencies
+jaxb-runtime = { group = 'org.glassfish.jaxb', name = 'jaxb-runtime', version.ref = 'jaxb' }
+picocli = { group = 'info.picocli', name = 'picocli', version.ref = 'picocli' }
+picocli-codegen = { group = 'info.picocli', name = 'picocli-codegen', version.ref = 'picocli' }
+opencsv = { group = 'com.opencsv', name = 'opencsv', version.ref = 'opencsv' }
+annotations = { group = 'org.jetbrains', name = 'annotations', version.ref = 'annotations' }
+jena-core = { group = 'org.apache.jena', name = 'jena-core', version.ref = 'jena' }
+jena-arq = { group = 'org.apache.jena', name = 'jena-arq', version.ref = 'jena' }
+commons-validator = { group = 'commons-validator', name = 'commons-validator', version.ref = 'commonsValidator' }
+joda-time = { group = 'joda-time', name = 'joda-time', version.ref = 'jodaTime' }
+poi = { group = 'org.apache.poi', name = 'poi', version.ref = 'poi' }
+poi-ooxml = { group = 'org.apache.poi', name = 'poi-ooxml', version.ref = 'poi' }
+any23-core = { group = 'org.apache.any23', name = 'apache-any23-core', version.ref = 'any23' }
+tika-core = { group = 'org.apache.tika', name = 'tika-core', version.ref = 'tika' }
+
+[bundles]
+nva = ['nva-core', 'nva-json', 'nva-doi', 'nva-s3', 'nva-logutils']
+testing = ['junit-jupiter-api', 'junit-jupiter-engine', 'junit-jupiter-params', 'mockito-core', 'hamcrest', 'hamcrest-core', 'nva-testutils']
+logging = ['log4j-core', 'log4j-api', 'log4j-slf4j-impl', 'slf4j-api']
+jackson = ['jackson-databind', 'jackson-jsonld']
+jena = ['jena-core', 'jena-arq']
+poi = ['poi', 'poi-ooxml']
+
+[plugins]
+shadow = { id = 'com.github.johnrengelman.shadow', version.ref = 'shadow' }
+nebula-lint = { id = "nebula.lint", version.ref = 'nebulaLint' }
